@@ -387,7 +387,7 @@ class Bigwhamio {
 
   std::string getKernel()  {return  kernel_;}
 
-  int getSpatialDimension()  {return dimension_;}
+  int getSpatialDimension() const  {return dimension_;}
 
   int matrixSize(int k) {return  h_.size(k);};
 
