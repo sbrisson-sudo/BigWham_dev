@@ -1,38 +1,20 @@
-Modified May 13 2020
+Modified Dec 4 2020
+
+
 
 Important points:
-- static link the mkl in the shared lybrary to avoid clash with pre-loaded dynamic library in mathematica.
- (-> put the full path of the .a under macOS)
-
-- use a show In Terminal mathematica kernel - see http://szhorvat.net/pelican/displaying-debug-messages-coming-from-librarylink.html for how to set it up
-on OS-X just replace by -LinkMode Launch -LinkProtocol SharedMemory -LinkName "'/Users/bricelecampion/term_math' -wstp" -LinkOptions 3
+- now the mathematica link is in another repository - this is pure c++ code
 
 TODO:
 
-- further clean bigwhamio object class
+- compute Stress and displacement methods in the bigwhamio class
 - tidy up the 3D mesh object
 - tidy up the 3DT6 implementation
 - code up HLU solve on the C++ side [currently a problem with duplicate ludecomposition at link time - not solved with inline or static]
 - modify preconditioner -> put it bigwham instance ?
-- create an interface to output a sparse matrix with only full rank block of the bie matrix (for iterative linear solve in mma)
-- create an interface to output the block partitionning of the h-mat.
-- do the proper permutation for the HLU pre-conditioner.
-- code up post-processing: Get stress tensor at observation points
-- investigate use of JSON/string for kernel parameters setting ?https://mathematica.stackexchange.com/questions/31545/returning-multiple-results-from-a-librarylink-function
-- generalize Elastic Properties to the TI case
 - re-write google tests for basic operations of the C++ code, leave more intrincate benchmarks and physics verification on the mma side.
 
 
 Hmat-Lib:
-- better code the construction of the cluster tree so that small max_leaf_size can be used for large mesh (currently memory overflow)
-- mpi of the h-dot product
+- mpi of the h-dot product ? in a memory ??
 
-MMA side:
-- clean up code
-- package BigWHamLink -> add options to HSolve function
-- Gmres in mma
-- write documentation
-
-Regression tests / Wolfram
-- for api and simple crack benchmark (griffith etc,)   Located under BigWhanLink/Tests
-- benchmarks suites and Hmat convergence  (in 2D what Lisa did)   -> store nbs currently under BigWhanLink/Devts to be relocated as Examples in the Documentation later on
