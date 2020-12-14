@@ -177,7 +177,7 @@ set(SOURCE_FILES
         src/elasticity/2d/FullMatrixAssembly2D.h
         # 3D source code
         src/core/Mesh3D.cpp src/core/Mesh3D.h
-        src/core/TriangularElementData.cc
+        src/core/TriangularElementData.cpp
         src/elasticity/3d/ElasticHMatrix3DT6.h
         src/core/element_utilities.cpp
         src/elasticity/3d/Elastic3DT6_element.cpp
