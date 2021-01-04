@@ -192,6 +192,26 @@ double ip233(double& x, double& y, double& z, double& xi, double& eta) {
       (pow(R2, 3. / 2.) * pow(R + x - xi, 2.));
 }
 
+double ip333(double& x, double& y, double& z, double& xi, double& eta) {
+//    (-(2 R2^2 + R2 z^2 + 3 z^4) (z^2 + (y - \[Eta])^2) (y - \[Eta]) (z^2 + (x - \
+//    \[Xi])^2) (x - \[Xi]) + 2 (y - \[Eta])^3 (2 z^2 + (y - \[Eta])^2 + (x - \[Xi])^2)^2 (x - \
+//    \[Xi])^3)/(R2^(3/2) z (z^2 + (y - \[Eta])^2)^2 (z^2 + (x - \[Xi])^2)^2)
+
+    double R2, R, z2, xmxi, ymeta;
+    xmxi = (x - xi);
+    ymeta = (y - eta);
+    R2 = xmxi * xmxi + ymeta * ymeta + z * z;
+    R = sqrt(R2);
+    z2 = z * z
+
+    return (-(2 * R2 * R2 + R2 * z2 + 3 * z2 * z2) *
+             (z2 + pow(ymeta,2)) * ymeta *
+             (z2 + pow(xmxi,2)) * xmxi + 2 * pow(ymeta,3) *
+             pow(2 * z2 + pow(ymeta,2) + pow(xmxi,2),2) *
+             pow(xmxi,3)) / (pow(R2,1.5) * z * pow(z2 + pow(ymeta,2),2) *
+             pow(z2 + pow(xmxi,2),2));
+}
+
 // CHEMMERY Integration function
 
 typedef double (*vFunctionCall)(double& x, double& y, double& z, double& xi,
@@ -219,7 +239,7 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
 
   double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
 
-  double Ip111, Ip122, Ip133, Ip112, Ip113, Ip123, Ip222, Ip223, Ip233;
+  double Ip111, Ip122, Ip133, Ip112, Ip113, Ip123, Ip222, Ip223, Ip233, Ip333;
 
   double Ce = G / (4 * il::pi * (1. - nu));
   //  double sxx, sxy, sxz, syy, syz, szz;
@@ -243,12 +263,13 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
   Ip222 = rectangular_integration(x, y, z, a, b, ip222);
   Ip233 = rectangular_integration(x, y, z, a, b, ip233);
   Ip223 = rectangular_integration(x, y, z, a, b, ip223);
+  Ip333 = rectangular_integration(x, y, z, a, b, ip333);
 
   // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
 
   // stress due to displacement discontinuity DDx (shear)
   Stress(0, 0) = Ce * (2. * Ip13 - z * Ip111);         // sxx
-  Stress(0, 1) = Ce * (2. * nu * Ip13 - z * Ip122);    // syy
+  Stress(0, 1) = Ce * (2.   * nu * Ip13 - z * Ip122);    // syy
   Stress(0, 2) = Ce * (-z * Ip133);                    // szz
   Stress(0, 3) = Ce * ((1. - nu) * Ip23 - z * Ip112);  // sxy
   Stress(0, 4) = Ce * (Ip33 + nu * Ip22 - z * Ip113);  // sxz
@@ -265,10 +286,10 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
   // stress due to displacement discontinuity DDz (normal)
   Stress(2, 0) = Ce * (Ip33 + (1. - 2. * nu) * Ip22 - z * Ip113);  // sxx
   Stress(2, 1) = Ce * (Ip33 + (1. - 2. * nu) * Ip11 - z * Ip223);  // syy
-  Stress(2, 2) = Ce * (Ip33 - z * Ip113);                          // szz
+  Stress(2, 2) = Ce * (Ip33 - z * Ip333);                          // szz
   Stress(2, 3) = Ce * (-(1. - 2. * nu) * Ip12 - z * Ip123);        // sxy
   Stress(2, 4) = Ce * (-z * Ip133);                                // sxz
-  Stress(2, 5) = Ce * (z * Ip233);                                 // syz
+  Stress(2, 5) = Ce * (-z * Ip233);                                 // syz (a minus by CP 2020)
 
   return Stress;
 }
