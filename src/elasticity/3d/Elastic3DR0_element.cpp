@@ -9,7 +9,7 @@
 
 #include <il/math.h>
 
-#include "R0_element.h"
+#include "Elastic3DR0_element.h"
 
 
 // RONGVED SOLUTION FOR A P0 Rectangular dislocation in a full space
@@ -201,8 +201,7 @@ double ip333(double& x, double& y, double& z, double& xi, double& eta) {
     xmxi = (x - xi);
     ymeta = (y - eta);
     R2 = xmxi * xmxi + ymeta * ymeta + z * z;
-    R = sqrt(R2);
-    z2 = z * z
+    z2 = z * z;
 
     return (-(2 * R2 * R2 + R2 * z2 + 3 * z2 * z2) *
              (z2 + pow(ymeta,2)) * ymeta *
@@ -324,23 +323,23 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelRectangularP0DD(
     Ip13 = rectangular_integration(x, y, z, a, b, ip13);
 
     // Displacement row is dof (DDx,DDy,DDx), columns are Ux,Uy,Uz in the local reference system
-    2.   * nu * Ip13 - z * Ip122
+
     // displacement due to displacement discontinuity DDx (shear)
-    displacement(0, 0) = Ce * (z * Ip11 - 2 * (1 - nu) * Ip3);  // Ux
-    displacement(0, 1) = Ce * (z * Ip12);                       // Uy
-    displacement(0, 2) = Ce * (z * Ip13 - (1 - 2 * nu) * Ip1);  // Uz
+    Displacement(0, 0) = Ce * (z * Ip11 - 2 * (1 - nu) * Ip3);  // Ux
+    Displacement(0, 1) = Ce * (z * Ip12);                       // Uy
+    Displacement(0, 2) = Ce * (z * Ip13 - (1 - 2 * nu) * Ip1);  // Uz
 
     // displacement due to displacement discontinuity  DDy (shear)
-    displacement(1, 0) = Ce * (z * Ip12);    // Ux
-    displacement(1, 1) = Ce * (z * Ip22 - 2 * (1 - nu) * Ip3);  // Uy
-    displacement(1, 2) = Ce * (z * Ip23 - (1 - 2 * nu) * Ip2);  // Uz
+    Displacement(1, 0) = Ce * (z * Ip12);    // Ux
+    Displacement(1, 1) = Ce * (z * Ip22 - 2 * (1 - nu) * Ip3);  // Uy
+    Displacement(1, 2) = Ce * (z * Ip23 - (1 - 2 * nu) * Ip2);  // Uz
 
     // displacement due to displacement discontinuity DDz (normal)
-    displacement(2, 0) = Ce * (z * Ip13 + (1 - 2 * nu) * Ip1);  // Ux
-    displacement(2, 1) = Ce * (z * Ip23 + (1 - 2 * nu) * Ip2);  // Uy
-    displacement(2, 2) = Ce * (z * Ip33 - 2 * (1 - nu) * Ip3);  // Uz
+    Displacement(2, 0) = Ce * (z * Ip13 + (1 - 2 * nu) * Ip1);  // Ux
+    Displacement(2, 1) = Ce * (z * Ip23 + (1 - 2 * nu) * Ip2);  // Uy
+    Displacement(2, 2) = Ce * (z * Ip33 - 2 * (1 - nu) * Ip3);  // Uz
 
-    return displacement // expressed in the reference system of the DD element
+    return Displacement; // expressed in the reference system of the DD element
 }
 
 

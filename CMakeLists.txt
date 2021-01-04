@@ -185,6 +185,8 @@ set(SOURCE_FILES
         src/elasticity/3d/tensor_utilities.cpp
         #     src/elasticity/3d/Elastic3DT0_element.cpp
         #    src/elasticity/3d/Elastic3DT0_element.h
+        src/elasticity/3d/Elastic3DR0_element.cpp
+        src/elasticity/3d/Elastic3DR0_element.h
         Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
         # Solver
         src/solvers/HIterativeSolverUtilities.h
