@@ -296,11 +296,11 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
 
 // Fundamental displacement kernel
 il::StaticArray2D<double, 3, 3> DisplacementKernelRectangularP0DD(
-        double& x, double& y, double& z, double& a, double& b, double& G,
+        double& x, double& y, double& z, double& a, double& b,
         double& nu) {
     //  x , y , z location where to compute displacement
     //  a,b  1/2 size of the rectangular DD
-    //  G Shear modulus, nu Poisson's ratio'
+    //  nu Poisson's ratio'
     //  Rectangular DDon plan z=0   x \in [-a,a], y \in [-b,b]
     //  DDx (shear), DDy (shear), DDz (normal)
 
@@ -325,22 +325,22 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelRectangularP0DD(
 
     // Displacement row is dof (DDx,DDy,DDx), columns are Ux,Uy,Uz in the local reference system
     2.   * nu * Ip13 - z * Ip122
-    // stress due to displacement discontinuity DDx (shear)
+    // displacement due to displacement discontinuity DDx (shear)
     displacement(0, 0) = Ce * (z * Ip11 - 2 * (1 - nu) * Ip3);  // Ux
     displacement(0, 1) = Ce * (z * Ip12);                       // Uy
     displacement(0, 2) = Ce * (z * Ip13 - (1 - 2 * nu) * Ip1);  // Uz
 
-    // stress due to displacement discontinuity  DDy (shear)
+    // displacement due to displacement discontinuity  DDy (shear)
     displacement(1, 0) = Ce * (z * Ip12);    // Ux
     displacement(1, 1) = Ce * (z * Ip22 - 2 * (1 - nu) * Ip3);  // Uy
     displacement(1, 2) = Ce * (z * Ip23 - (1 - 2 * nu) * Ip2);  // Uz
 
-    // stress due to displacement discontinuity DDz (normal)
+    // displacement due to displacement discontinuity DDz (normal)
     displacement(2, 0) = Ce * (z * Ip13 + (1 - 2 * nu) * Ip1);  // Ux
     displacement(2, 1) = Ce * (z * Ip23 + (1 - 2 * nu) * Ip2);  // Uy
     displacement(2, 2) = Ce * (z * Ip33 - 2 * (1 - nu) * Ip3);  // Uz
 
-    return displacement
+    return displacement // expressed in the reference system of the DD element
 }
 
 
