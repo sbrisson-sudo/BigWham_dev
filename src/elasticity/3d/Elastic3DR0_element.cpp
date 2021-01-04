@@ -233,7 +233,6 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
   // x , y , z location where to compute stress
   //  a,b  1/2 size of the rectangular DD
   //  G Shear modulus, nu Poisson's ratio'
-  //  Ep instead of G ?
   //  Rectangular DDon plan z=0   x \in [-a,a], y \in [-b,b]
   //  DDx (shear), DDy (shear), DDz (normal)
 
@@ -286,14 +285,63 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
   // stress due to displacement discontinuity DDz (normal)
   Stress(2, 0) = Ce * (Ip33 + (1. - 2. * nu) * Ip22 - z * Ip113);  // sxx
   Stress(2, 1) = Ce * (Ip33 + (1. - 2. * nu) * Ip11 - z * Ip223);  // syy
-  Stress(2, 2) = Ce * (Ip33 - z * Ip333);                          // szz
+  Stress(2, 2) = Ce * (Ip33 - z * Ip333);                          // szz  (fixed by CP 2020)
   Stress(2, 3) = Ce * (-(1. - 2. * nu) * Ip12 - z * Ip123);        // sxy
   Stress(2, 4) = Ce * (-z * Ip133);                                // sxz
   Stress(2, 5) = Ce * (-z * Ip233);                                 // syz (a minus by CP 2020)
 
   return Stress;
 }
-
-
 // todo : implement mormalshearTraction routine to be used in BIE assembly
+
+// Fundamental displacement kernel
+il::StaticArray2D<double, 3, 3> DisplacementKernelRectangularP0DD(
+        double& x, double& y, double& z, double& a, double& b, double& G,
+        double& nu) {
+    //  x , y , z location where to compute displacement
+    //  a,b  1/2 size of the rectangular DD
+    //  G Shear modulus, nu Poisson's ratio'
+    //  Rectangular DDon plan z=0   x \in [-a,a], y \in [-b,b]
+    //  DDx (shear), DDy (shear), DDz (normal)
+
+    double Ip1, Ip2, Ip3;
+
+    double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
+
+    double Ce = -1 / (8 * il::pi * (1. - nu));
+
+    il::StaticArray2D<double, 3, 3> Displacement;
+    // compute the Is function derivatives....
+    Ip1 = rectangular_integration(x, y, z, a, b, ip1);
+    Ip2 = rectangular_integration(x, y, z, a, b, ip2);
+    Ip3 = rectangular_integration(x, y, z, a, b, ip3);
+
+    Ip11 = rectangular_integration(x, y, z, a, b, ip11);
+    Ip22 = rectangular_integration(x, y, z, a, b, ip22);
+    Ip33 = rectangular_integration(x, y, z, a, b, ip33);
+    Ip23 = rectangular_integration(x, y, z, a, b, ip23);
+    Ip12 = rectangular_integration(x, y, z, a, b, ip12);
+    Ip13 = rectangular_integration(x, y, z, a, b, ip13);
+
+    // Displacement row is dof (DDx,DDy,DDx), columns are Ux,Uy,Uz in the local reference system
+    2.   * nu * Ip13 - z * Ip122
+    // stress due to displacement discontinuity DDx (shear)
+    displacement(0, 0) = Ce * (z * Ip11 - 2 * (1 - nu) * Ip3);  // Ux
+    displacement(0, 1) = Ce * (z * Ip12);                       // Uy
+    displacement(0, 2) = Ce * (z * Ip13 - (1 - 2 * nu) * Ip1);  // Uz
+
+    // stress due to displacement discontinuity  DDy (shear)
+    displacement(1, 0) = Ce * (z * Ip12);    // Ux
+    displacement(1, 1) = Ce * (z * Ip22 - 2 * (1 - nu) * Ip3);  // Uy
+    displacement(1, 2) = Ce * (z * Ip23 - (1 - 2 * nu) * Ip2);  // Uz
+
+    // stress due to displacement discontinuity DDz (normal)
+    displacement(2, 0) = Ce * (z * Ip13 + (1 - 2 * nu) * Ip1);  // Ux
+    displacement(2, 1) = Ce * (z * Ip23 + (1 - 2 * nu) * Ip2);  // Uy
+    displacement(2, 2) = Ce * (z * Ip33 - 2 * (1 - nu) * Ip3);  // Uz
+
+    return displacement
+}
+
+
 

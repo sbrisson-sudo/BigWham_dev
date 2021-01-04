@@ -17,7 +17,9 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
     double& x, double& y, double& z, double& a, double& b, double& G,
     double& nu) ;
 
-
+il::StaticArray2D<double, 3, 3> DisplacementKernelRectangularP0DD(
+        double& x, double& y, double& z, double& a, double& b, double& G,
+        double& nu)
 
 
 #endif //HFPX3D_R0_ELEMENT_H
