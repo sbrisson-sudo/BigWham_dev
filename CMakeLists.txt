@@ -1,39 +1,44 @@
 cmake_minimum_required(VERSION 3.15)
 project(BigWham CXX)
-
 project(BigWham_exe CXX)
-
 set(CMAKE_CXX_STANDARD 11)
 
-set(CUSTOM 0)
+#####################################
+# set options: False = 0, True = 1  #
+#####################################
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
-set(IL_OPENMP 1)
+set(IL_OPENMP 0)
 
-set(USE_INTEL 0)
-set(USE_STATIC 0)
+set(USE_INTEL 0)  # compiler option
+set(USE_STATIC 0) # to add static option to CMAKE_CXX_FLAGS
 
-set(CMAKE_CXX_FLAGS_DEBUG  "${CMAKE_CXX_FLAGS_DEBUG} -g -std=c++11")
+set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG}   -g -std=c++11")
 set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} -g -std=c++11 -O3 -mavx2")
+
 if(USE_STATIC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    MESSAGE("Clang")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    MESSAGE("GNU")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    MESSAGE("Intel")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    MESSAGE("MSVC")
-endif()
+
 ################################################################################
 # choose compiler: clang, gcc, intel ???
 ################################################################################
+#
+MESSAGE("Detecting the compiler:")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    MESSAGE("-- The compiler is: Clang")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    MESSAGE("-- The compiler is: GNU")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    MESSAGE("-- The compiler is: Intel")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    MESSAGE("-- The compiler is: MSVC")
+endif()
 
 if(APPLE)
+    MESSAGE("-- located at /usr/bin/")
     set(CMAKE_C_COMPILER /usr/bin/clang)
     set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 elseif(UNIX)
@@ -57,25 +62,32 @@ endif()
 
 # For OpenMP
 if(IL_OPENMP)
+
     if(APPLE)
-        if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNUMBEROFTHREADS=4")
+        if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+            MESSAGE("-- OPENMP ENABLED")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libomp")
+            #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNUMBEROFTHREADS=4")
             #             link_directories(/opt/clang-3.9.0/lib)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            MESSAGE("-- OPENMP ENABLED")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
         endif()
     elseif(UNIX)
         if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+            MESSAGE("-- OPENMP ENABLED")
             # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
             # link_directories(/opt/clang-3.9.0/lib)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+            MESSAGE("-- OPENMP ENABLED")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+            MESSAGE("-- OPENMP ENABLED")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qopenmp")
         endif()
     elseif(WIN32)
         if(MINGW)
+            MESSAGE("-- OPENMP ENABLED")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
         endif()
     endif()
@@ -93,8 +105,10 @@ endif()
 
 # For Intel MKL
 if(IL_MKL)
+    MESSAGE("Detecting MKL")
     if(APPLE)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+            MESSAGE("-- The MKL is found at: " $ENV{MKLROOT}/lib/)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -DIL_MKL -DIL_BLAS")
             #           set(CMAKE_MKL_LIBRARIES mkl_intel_lp64 mkl_core mkl_sequential tbb dl pthread m) #iomp5
             set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/libmkl_core.a $ENV{MKLROOT}/lib/libmkl_sequential.a  tbb dl  pthread  m) #mkl_intel_thread mkl_sequential  iomp5
@@ -139,6 +153,7 @@ if(IL_MKL)
             # to fill up here ...
         endif()
     endif()
+
     # For OpenBlas
 elseif(IL_OPENBLAS)
     if(APPLE)
@@ -160,6 +175,8 @@ set(SOURCE_FILES_DIR ${PROJECT_SOURCE_DIR}/src)
 
 include_directories(il $ENV{TBBROOT}/include/tbb  src  Hmat-lib .)
 
+MESSAGE("Using TBB:")
+MESSAGE("-- The TBB is found at: " $ENV{TBBROOT})
 
 set(SOURCE_FILES
         Hmat-lib/cluster/cluster.h
@@ -196,14 +213,13 @@ set(SOURCE_FILES
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 add_library(BigWham STATIC ${SOURCE_FILES} )
-target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} )#${CMAKE_OPENBLAS_LIBRARIES}
+target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} ) #${CMAKE_OPENBLAS_LIBRARIES}
 
 set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)
-
 add_executable(BigWham_exe  main.cpp )
 include_directories(il $ENV{TBBROOT}/include/  )
 
-target_link_libraries(BigWham_exe   BigWham )#${CMAKE_OPENBLAS_LIBRARIES}
+target_link_libraries(BigWham_exe   BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
 
 if(IL_MKL)
     if(APPLE)
@@ -225,6 +241,4 @@ elseif(IL_OPENBLAS)
     target_compile_definitions(BigWham PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
     target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR})
 endif()
-
-message(${CMAKE_CXX_COMPILER_ID})
 
