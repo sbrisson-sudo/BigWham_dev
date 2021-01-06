@@ -1,4 +1,4 @@
-Modified Dec 4 2020
+Modified Jan 5 2021
 
 
 
@@ -13,7 +13,8 @@ TODO:
 - code up HLU solve on the C++ side [currently a problem with duplicate ludecomposition at link time - not solved with inline or static]
 - modify preconditioner -> put it bigwham instance ?
 - re-write google tests for basic operations of the C++ code, leave more intrincate benchmarks and physics verification on the mma side.
-
+  ---> #include <src/elasticity/AssemblyDDM.h> the file does not exist anymore
+- the google test package is embedded in the il library. One should take it out and make it available to other parts of the code.
 
 Hmat-Lib:
 - mpi of the h-dot product ? in a memory ??

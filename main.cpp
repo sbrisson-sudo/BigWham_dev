@@ -637,9 +637,9 @@ int main() {
 
   std::cout << "++++++++++++++++++++\n";
 
-  test2DP1();
+//test2DP1();
 //
-  testS3DP0();
+//testS3DP0();
 //  testFullMat();
 //  testHdot();
 
