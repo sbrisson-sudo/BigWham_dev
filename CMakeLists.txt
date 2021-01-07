@@ -195,6 +195,8 @@ set(SOURCE_FILES
         # 3D source code
         src/core/Mesh3D.cpp src/core/Mesh3D.h
         src/core/TriangularElementData.cc
+        src/core/FaceData.cc
+        src/core/FaceData.h
         src/elasticity/3d/ElasticHMatrix3DT6.h
         src/core/element_utilities.cpp
         src/elasticity/3d/Elastic3DT6_element.cpp
@@ -261,7 +263,6 @@ set(UNIT_TEST_FILES
 add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 
 target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest)
-#target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} ${CMAKE_PNG_LIBRARIES} ${CMAKE_OPENBLAS_LIBRARIES} pthread)
 target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
 
 # For unit tests: The precondition of our fonctions are checked with assert
@@ -269,12 +270,3 @@ target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
 # in our unit tests, the flag IL_UNIT_TEST turns them into exceptions that can
 # be caught and checked.
 target_compile_options(BigWhamElastUnitTest PRIVATE "-DIL_UNIT_TEST")
-
-#if (APPLE)
-#    if (IL_MKL)
-#        add_custom_command(TARGET BigWhamElasticityUnitTest POST_BUILD COMMAND /usr/bin/install_name_tool -change @rpath/libmkl_intel_lp64.dylib $ENV{MKLROOT}/lib/libmkl_intel_lp64.dylib $<TARGET_FILE:BigWhamElasticityUnitTest>)
-#        add_custom_command(TARGET BigWhamElasticityUnitTest POST_BUILD COMMAND /usr/bin/install_name_tool -change @rpath/libmkl_core.dylib $ENV{MKLROOT}/lib/libmkl_core.dylib $<TARGET_FILE:BigWhamElasticityUnitTest>)
-#        add_custom_command(TARGET BigWhamElasticityUnitTest POST_BUILD COMMAND /usr/bin/install_name_tool -change @rpath/libmkl_intel_thread.dylib $ENV{MKLROOT}/lib/libmkl_intel_thread.dylib $<TARGET_FILE:BigWhamElasticityUnitTest>)
-#        add_custom_command(TARGET BigWhamElasticityUnitTest POST_BUILD COMMAND /usr/bin/install_name_tool -change @rpath/libiomp5.dylib $ENV{MKLROOT}/../compiler/lib/libiomp5.dylib $<TARGET_FILE:BigWhamElasticityUnitTest>)
-#    endif()
-#endif()

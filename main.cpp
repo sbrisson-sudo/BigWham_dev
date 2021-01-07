@@ -23,11 +23,12 @@
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/PostProcessDDM.h>
 #include <elasticity/2d/FullMatrixAssembly2D.h>
-
 #include <src/core/ElasticProperties.h>
 //#include <src/solvers/HIterativeSolverUtilities.h>
 
 #include <BigWham.h>
+#include <src/core/FaceData.cc>
+#include <core/FaceData.h>
 
 int test2DP1(){
 
@@ -636,6 +637,13 @@ int testHdot() {
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
+  il::StaticArray2D<double,3,3> nodes;
+  il::Array2D<double> nods{il::value, {{-1.,1.,1.,-1.},{-1.,-1.,1.,1.},{1.,1.,1.,1.}}};
+  bie::TriangularElementData myclass(nodes, 1);
+  bie::FaceData dd(nods,1);
+//    {{-1.,-1.,1.},{1.,-1.,1.},{1.,1.,1.},{-1.,1.,1.}}
+
+
 
 //test2DP1();
 //
