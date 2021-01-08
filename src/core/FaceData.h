@@ -36,13 +36,13 @@ private:
     il::Array2D<double> collocation_points_; // collocation points' coordinates in global reference system
                                              // - size: number of collocation points x 3
 
-
     const double beta_ = 1.5 * 0.166666666666667; // collocation points' location parameter for linear
     // elements (see documentation)
     // collocation points' location parameters for quadratic elements
     const double beta1_ = 0.35; // 1.5 * 0.091576213509771 related to nodes at vertices (see documentation)
     const double beta2_ = 0.35; // 1.5 * 0.10810301816807 related to middle-edge nodes (see documentation)
-
+    double a_ = 0.; // half length of the 1st edge of an element
+    double b_ = 0.; // half length of the last edge of an element
 public:
 
     //////////////////////////////////////////////////////////////////////////
@@ -57,11 +57,14 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     il::Array2D<double> getNodes();
+    il::Array<double> getNormal();
     il::Array2D<double> getCollocationPoints();
     il::Array2D<double> getVertices(); // this function is a bit silly because
     // the object is indeed constructed by the vertices as input, however is needed due to the way the
     // construction of the elasticity matrix is coded up for quadratic (p=2) elements. This function
     // should be deleted in the future
+    double get_a();
+    double get_b();
     const double getBeta1(); // this function is needed because in the construction of the
     // elasticity matrix the computation of the collocation points is duplicated (done by a previous
     // function of Dmitry). This function should be deleted in the future
@@ -81,7 +84,7 @@ public:
         il::StaticArray<double, 3> computeCentroid(il::Array2D<double> xv);
         il::Array2D<double> computeNodes();
         il::Array2D<double> computeCollocationPoints();
-        il::StaticArray2D<double, 3, 3> rotationMatrix(); // never used so far, since for quadratic elements
+        il::Array2D<double> rotationMatrix(bool Transposed = false); // never used so far, since for quadratic elements
         // the function written by Dmitry is used
     private:
         il::int_t maxAbsArray(il::StaticArray<double, 3> x);

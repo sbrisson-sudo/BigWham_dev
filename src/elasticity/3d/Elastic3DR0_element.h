@@ -9,15 +9,15 @@
 #ifndef HFPX3D_R0_ELEMENT_H
 #define HFPX3D_R0_ELEMENT_H
 
-
-
 #include <il/StaticArray2D.h>
+#include <src/core/ElasticProperties.h>
 
-il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
+namespace bie{
+il::StaticArray2D<double, 3, 6> StressesKernelR0(
     double& x, double& y, double& z, double& a, double& b, double& G,
     double& nu) ;
 
-il::StaticArray2D<double, 3, 3> DisplacementKernelRectangularP0DD(
+il::StaticArray2D<double, 3, 3> DisplacementKernelR0(
         double& x, double& y, double& z, double& a, double& b,
         double& nu) ;
 
@@ -64,5 +64,5 @@ double ip223(double& x, double& y, double& z, double& xi, double& eta) ;
 double ip233(double& x, double& y, double& z, double& xi, double& eta) ;
 
 double ip333(double& x, double& y, double& z, double& xi, double& eta) ;
-
+}
 #endif //HFPX3D_R0_ELEMENT_H

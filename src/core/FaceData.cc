@@ -49,6 +49,8 @@ namespace bie {
         //     -the centroid (xc) coordinates
         //     -the nodes' coordinates
         //     -the collocation points' coordinates
+        //     -half length of the 1st edge of an element
+        //     -half length of the last edge of an element
 
         this->vertices_ = xv;
         this->interpolation_order_ = p;
@@ -72,7 +74,12 @@ namespace bie {
         vec02[2] = xv(this->NoV_ - 1, 2) - xv(0, 2);
 
         // dot product to check the collinearity of 1st, 2nd and last point of the face
+        //     -half length of the last edge of an element
+        //     -half length of the 1st edge of an element
         double vec01norm=sqrt(il::dot(vec01, vec01)), vec02norm=sqrt(il::dot(vec02, vec02));
+
+        this->a_=vec01norm/2.;
+        this->b_=vec02norm/2.;
 
         for (il::int_t k = 0; k < vec01.size(); ++k) {
             vec01[k]=vec01[k]/vec01norm;
@@ -157,6 +164,19 @@ namespace bie {
         return beta2_;
     }
 
+    double FaceData::get_a() {
+        return a_;
+    }
+
+    double FaceData::get_b() {
+        return b_;
+    }
+
+    il::Array<double> FaceData::getNormal(){
+        il::Array<double> n{3};
+        for (int i = 0; i < 3; ++i) { n[i] = n_[i]; }
+        return n;
+    }
     //////////////////////////////////////////////////////////////////////////
     //   Methods
     //////////////////////////////////////////////////////////////////////////
@@ -394,26 +414,32 @@ namespace bie {
         return cps;
     }
 
-    il::StaticArray2D<double, 3, 3> FaceData::rotationMatrix(){
+    il::Array2D<double> FaceData::rotationMatrix(bool Transposed){
         // inputs
-        //   -none; it requires the previous construction of an object of the class and then
-        //   uses its member variables implicitly
+        //   -Transposed; if false the matrix will rotate any vector from the global to local coordinate system
         // output
         //   -rotation matrix, from global to local, based on the local orthogonal basis (s,t,n).
         //    the rotation matrix has the following form:
         //    sx sy sz
         //    tx ty tz
         //    nx ny nz
-        //    Note 1: be careful with this form, you might want to use the transpose depending on
-        //    your convention
-        //    Note 2: as this function is not used so far, it has not been tested
 
-        il::StaticArray2D<double, 3, 3> rotM;
-        // loop over spatial coordinates
-        for (il::int_t i = 0; i < 3; i++) {
-            rotM(0,i) = this->s_[i]; // 1st row equal to s unit vector
-            rotM(1,i) = this->t_[i]; // 2nd row equal to t unit vector
-            rotM(2,i) = this->n_[i]; // 3rd row equal to n unit vector
+        il::Array2D<double> rotM{3,3};
+        if (Transposed){
+            // loop over spatial coordinates
+            for (il::int_t i = 0; i < 3; i++) {
+                rotM(0,i) = this->s_[i]; // 1st column equal to s unit vector
+                rotM(1,i) = this->t_[i]; // 2nd column equal to t unit vector
+                rotM(2,i) = this->n_[i]; // 3rd column equal to n unit vector
+            }
+        }
+        else{
+            // loop over spatial coordinates
+            for (il::int_t i = 0; i < 3; i++) {
+                rotM(i,0) = this->s_[i]; // 1st column equal to s unit vector
+                rotM(i,1) = this->t_[i]; // 2nd column equal to t unit vector
+                rotM(i,2) = this->n_[i]; // 3rd column equal to n unit vector
+            }
         }
         return rotM;
     }

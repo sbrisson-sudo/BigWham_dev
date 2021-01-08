@@ -8,10 +8,11 @@
 
 
 #include <il/math.h>
-
+#include <il/blas.h>
+#include <src/core/FaceData.h>
 #include "Elastic3DR0_element.h"
 
-
+namespace bie{
 // RONGVED SOLUTION FOR A P0 Rectangular dislocation in a full space
 // dislocation is centered on the origin in the plane z=0 , (-a,a) in x (-b,b)
 // in y
@@ -226,7 +227,7 @@ double rectangular_integration(double& x, double& y, double& z, double& a,
 }
 
 // Fundamental stress kernel
-il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
+il::StaticArray2D<double, 3, 6> StressesKernelR0(
     double& x, double& y, double& z, double& a, double& b, double& G,
     double& nu) {
   // x , y , z location where to compute stress
@@ -267,7 +268,7 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
 
   // stress due to displacement discontinuity DDx (shear)
   Stress(0, 0) = Ce * (2. * Ip13 - z * Ip111);         // sxx
-  Stress(0, 1) = Ce * (2.   * nu * Ip13 - z * Ip122);    // syy
+  Stress(0, 1) = Ce * (2.   * nu * Ip13 - z * Ip122);  // syy
   Stress(0, 2) = Ce * (-z * Ip133);                    // szz
   Stress(0, 3) = Ce * ((1. - nu) * Ip23 - z * Ip112);  // sxy
   Stress(0, 4) = Ce * (Ip33 + nu * Ip22 - z * Ip113);  // sxz
@@ -287,9 +288,12 @@ il::StaticArray2D<double, 3, 6> StressesKernelRectangularP0DD(
   Stress(2, 2) = Ce * (Ip33 - z * Ip333);                          // szz  (fixed by CP 2020)
   Stress(2, 3) = Ce * (-(1. - 2. * nu) * Ip12 - z * Ip123);        // sxy
   Stress(2, 4) = Ce * (-z * Ip133);                                // sxz
-  Stress(2, 5) = Ce * (-z * Ip233);                                 // syz (a minus by CP 2020)
+  Stress(2, 5) = Ce * (-z * Ip233);                                // syz (a minus by CP 2020)
 
   return Stress;
+        // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
+        // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
+        // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
 }
 
 // Fundamental displacement kernel
@@ -342,195 +346,112 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelRectangularP0DD(
 }
 
 
-//il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
-//        TriangularElementData &elem_data_s,
-//        bie::TriangularElementData &elem_data_r,
-//        il::int_t n_s,  // n_s is a node of the "source" element
-//        il::int_t  n_t,  // n_t is the collocation point of the "target" element
-//        bie::ElasticProperties const &elas_,
-//        il::int_t I_want_global_DD,
-//        il::int_t I_want_global_traction) {
-//
-//    il::Array2D<double> NodeDDtriplet_to_CPtraction_influence_matrix{3,3,0.0};
-//
-//    // Vertexes coordinates of the source element
-//    //  x0 x1 x2
-//    //  y0 y1 y2
-//    //  z0 z1 z2
-//
-//    il::StaticArray2D<double, 3, 3> el_vert_s;
-//    il::StaticArray2D<double, 3, 3> el_vert_s_aux;
-//    el_vert_s_aux = elem_data_s.getVertices();
-//    // now we have to transpose due to different conventions of Mesh3D/TriangularElementData classes and functions to compute
-//    // the quadratic triangular element kernel
-//    for (int j = 0; j < 3; ++j) {
-//        for (int i = 0; i < 3; ++i) {
-//            el_vert_s(j,i) = el_vert_s_aux(i, j);
-//        }
-//    }
-//
-//    // Basis (shape) functions and rotation tensor of the el-t
-//    il::StaticArray2D<double, 3, 3> r_tensor_s;
-//    il::StaticArray2D<std::complex<double>, 6, 6> sfm = make_el_sfm_uniform(el_vert_s, il::io, r_tensor_s);
-//
-//    // Complex-valued positions of "source" element nodes
-//    // from cartesian global coord to local complex repr. coord. (only 1st 2 component
-//    // the 3rd component is 0 because of the translation)
-//    il::StaticArray<std::complex<double>, 3> tau = make_el_tau_crd(el_vert_s, r_tensor_s);
-//
-//    // Vertexes coordinates of the source element
-//    //  x0 x1 x2
-//    //  y0 y1 y2
-//    //  z0 z1 z2
-//
-//    il::StaticArray2D<double,3 , 3> el_vert_t;
-//    il::StaticArray2D<double, 3, 3> el_vert_t_aux;
-//    el_vert_t_aux = elem_data_r.getVertices();
-//    // now we have to transpose due to different conventions of Mesh3D/TriangularElementData classes and functions to compute
-//    // the quadratic triangular element kernel
-//    for (int j = 0; j < 3; ++j) {
-//        for (int i = 0; i < 3; ++i) {
-//            el_vert_t(j,i) = el_vert_t_aux(i, j);
-//        }
-//    }
-//
-//    // Rotation tensor for the target element (the same function as for the source is being used)
-//    il::StaticArray2D<double, 3, 3> r_tensor_t =make_el_r_tensor(el_vert_t);
-//
-//
-//    // Take the Normal vector (n) at collocation point (x) from the r_tensor_t
-//    // minus because of n:=-e3
-//    il::StaticArray<double, 3> nrm_cp_glob;
-//    for (int j = 0; j < 3; ++j) {
-//        nrm_cp_glob[j] = -r_tensor_t(2, j);
-//    }
-//
-//    // Collocation points' coordinates  (in the Global coordinate system)
-//    il::StaticArray<il::StaticArray<double, 3>, 6> el_cp_crd = el_cp_uniform(el_vert_t, elem_data_r.getBeta1(), elem_data_r.getBeta2());
-//
-//
-//
-//    // Shifting to the n_t-th collocation pt
-//    HZ hz = make_el_pt_hz(el_vert_s, el_cp_crd[n_t], r_tensor_s);
-//
-//    //
-//    // Calculating DD-to stress influence
-//    // w.r. to the source element's local coordinate system (both DD and stresses!)
-//    il::StaticArray2D<double, 6, 18> stress_infl_el2p_loc_h =
-//            make_local_3dbem_submatrix(1,  elas_.getG(), elas_.getNu(), hz.h, hz.z, tau, sfm);
-//
-//
-//
-//    // Alternative 2: rotating nrm_cp_glob to
-//    // the source element's local coordinate system
-//    // because I need the normal ar the cp in the source coordinates system
-//    il::StaticArray<double, 3> nrm_cp_loc =
-//            il::dot(r_tensor_s, nrm_cp_glob);
-//    // nrm_cp_glob is the normal @ cp in the global coord system
-//    // Expressing it through the coord. system of the source el.
-//    // you get nrm_cp_loc
-//
-//
-//    il::StaticArray2D<double, 3, 18> trac_el2p_loc =nv_dot_sim(nrm_cp_loc, stress_infl_el2p_loc_h);
-//
-//    // Computing the traction vector @ cp
-//    // by multiplying the stress tensor (is in the coord. system of the
-//    // source element) with the normal in local coord of the source element.
-//    // we obtain traction in the collocation point in the local system of the source point
-//    //
-//    // trac_el2p_loc--> traction and DD are both in local system of the SOURCE element
-//    //
-//
-//
-//    il::StaticArray2D<double, 3, 18> trac_cp_local2global =il::dot(r_tensor_s, il::Dot::Transpose,trac_el2p_loc);
-//    // 3 component of traction vs 6 source nodes * 3 DD components
-//    // so 3*18 <(1 coll. point vs 6 source nodes)>
-//    //
-//    // trac_cp_local2global--> traction and DD are in the local system of the source element ,traction are in global coord. system
-//    // (for all the nodes of the source)
-//    //
-//    //
-//    // taking a block (one node of the "source" element)
-//    // traction matrix
-//    // t_dir_x_node(n_t)_dd1_on_node_(n_s)  t_dir_x_node(n_t)_dd2_on_node_(n_s)  t_dir_x_node(n_t)_dd3_on_node_(n_s)
-//    // t_dir_y_node(n_t)_dd1_on_node_(n_s)  t_dir_y_node(n_t)_dd2_on_node_(n_s)  t_dir_y_node(n_t)_dd3_on_node_(n_s)
-//    // t_dir_z_node(n_t)_dd1_on_node_(n_s)  t_dir_z_node(n_t)_dd2_on_node_(n_s)  t_dir_z_node(n_t)_dd3_on_node_(n_s)
-//    //
-//    // DD in the coordinate system: local of the source
-//    // Traction in the coordinate system: global coord system
-//    // <meaning that the DD have to be expressed in the
-//    // local reference system and the effect is
-//    // obtained in the global reference system.>
-//    //
-//    il::StaticArray2D<double, 3, 3> trac_infl_n2p_local2global;
-//    for (int j = 0; j < 3; ++j) {
-//        for (int k = 0; k < 3; ++k) {
-//            trac_infl_n2p_local2global(k, j) =
-//                    trac_cp_local2global(k, 3 * n_s + j);
-//        }
-//    }
-//    if (I_want_global_DD==0 && I_want_global_traction==1)
-//    {
-//        for (int j = 0; j < 3; ++j) {
-//            for (int k = 0; k < 3; ++k) {
-//                NodeDDtriplet_to_CPtraction_influence_matrix(k, j)=trac_infl_n2p_local2global(k, j);
-//            }
-//        }
-//    }
-//    //
-//    // trac_infl_n2p_local2global--> traction and DD are in the local system of the source element ,traction are in global coord. system
-//    //
-//    //
-//
-//    if (I_want_global_DD==0 && I_want_global_traction==0) {
-//        il::StaticArray2D<double, 3, 3> trac_infl_n2p_local2local;
-//        trac_infl_n2p_local2local = il::dot(r_tensor_t,trac_infl_n2p_local2global);
-//        //
-//        // trac_infl_n2p_local2local--> traction and DD are in the local system of the source element ,traction are in local system of the target
-//        //
-//        for (int j = 0; j < 3; ++j) {
-//            for (int k = 0; k < 3; ++k) {
-//                NodeDDtriplet_to_CPtraction_influence_matrix(k, j)=trac_infl_n2p_local2local(k, j);
-//            }
-//        }
-//    }
-//
-//    if  (I_want_global_DD==1 && I_want_global_traction==0)
-//    {
-//        // Coordinate rotation (for the unknown DD)
-//        // We transform the DD from local to global,
-//        // meaning that the DD have to be expressed
-//        // in the global coordinates to obtain global traction.
-//        il::StaticArray2D<double, 3, 3> trac_infl_n2p_global2local;
-//        trac_infl_n2p_global2local = il::dot(trac_infl_n2p_local2global,r_tensor_s);
-//        trac_infl_n2p_global2local = il::dot(r_tensor_t,trac_infl_n2p_global2local);
-//        //
-//        // trac_infl_n2p_global2local--> traction and DD are in the global system of the source element ,traction are in local system of the target
-//        //
-//        for (int j = 0; j < 3; ++j) {
-//            for (int k = 0; k < 3; ++k) {
-//                NodeDDtriplet_to_CPtraction_influence_matrix(k, j)=trac_infl_n2p_global2local(k, j);
-//            }
-//        }
-//    }
-//
-//    if  (I_want_global_DD==1 && I_want_global_traction==1)
-//    {
-//        il::StaticArray2D<double, 3, 3> trac_infl_n2p_global2global;
-//        trac_infl_n2p_global2global = il::dot(trac_infl_n2p_local2global,r_tensor_s);
-//        //
-//        // trac_infl_n2p_global2global--> traction and DD & traction are both in the global system
-//        //
-//        for (int j = 0; j < 3; ++j) {
-//            for (int k = 0; k < 3; ++k) {
-//                NodeDDtriplet_to_CPtraction_influence_matrix(k, j)=trac_infl_n2p_global2global(k, j);
-//            }
-//        }
-//    }
-//
-//
-//    return NodeDDtriplet_to_CPtraction_influence_matrix;
-//    // t_dir_x_node(n_t)_dd1_on_node_(n_s)  t_dir_x_node(n_t)_dd2_on_node_(n_s)  t_dir_x_node(n_t)_dd3_on_node_(n_s)
-//    // t_dir_y_node(n_t)_dd1_on_node_(n_s)  t_dir_y_node(n_t)_dd2_on_node_(n_s)  t_dir_y_node(n_t)_dd3_on_node_(n_s)
-//    // t_dir_z_node(n_t)_dd1_on_node_(n_s)  t_dir_z_node(n_t)_dd2_on_node_(n_s)  t_dir_z_node(n_t)_dd3_on_node_(n_s)
-//}
+il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
+        bie::FaceData &elem_data_s, // source element
+        bie::FaceData &elem_data_r, // receiver element
+        bie::ElasticProperties const &elas_, // elastic properties
+        il::int_t I_want_global_DD,
+        il::int_t I_want_global_traction) {
+
+    double a = elem_data_s.get_a(), b = elem_data_s.get_b();
+    double G = elas_.getG(), nu = elas_.getNu();
+
+    il::Array2D<double> el_cp_s;
+    el_cp_s = elem_data_s.getCollocationPoints();
+
+    il::Array2D<double> el_cp_r;
+    el_cp_r = elem_data_r.getCollocationPoints();
+
+    il::Array2D<double> R = elem_data_s.rotationMatrix();
+
+    il::Array<double> dxy{3};
+    for (int i = 0; i < 3; ++i) { dxy[i] = el_cp_r(0,i) - el_cp_s(0,i); }
+
+    // dxy contains the component of the distance between the source and the receiver
+    dxy = il::dot(R, dxy);
+
+
+    il::StaticArray2D<double, 3, 6> Stress = StressesKernelR0(el_cp_r(0,0),
+                                                              el_cp_r(0,1),
+                                                              el_cp_r(0,2),
+                                                              a, b,
+                                                              G,nu);
+    // index        ->    0    1    2    3    4    5
+    // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
+    // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
+    // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
+
+    // normal vector at the receiver location in the reference system of the source element
+    il::Array<double> nr = elem_data_r.getNormal();
+    nr = il::dot(R,nr);
+
+    il::Array<double> traction_temp;
+    il::Array2D<double> DDs_to_traction_local_local{3,3,0.0}, sigma_temp{3,3,0.0};
+
+    for (int i = 0; i < 3; ++i) { //loop over the rows of Stress
+        sigma_temp(0,0) = Stress(i,0); // sig_xx
+        sigma_temp(0,1) = Stress(i,3); // sig_xy
+        sigma_temp(0,2) = Stress(i,4); // sig_xz
+        sigma_temp(1,0) = Stress(i,3); // sig_yx
+        sigma_temp(1,1) = Stress(i,1); // sig_yy
+        sigma_temp(1,2) = Stress(i,5); // sig_yz
+        sigma_temp(2,0) = Stress(i,4); // sig_zx
+        sigma_temp(2,1) = Stress(i,5); // sig_zy
+        sigma_temp(2,2) = Stress(i,2); // sig_zz
+
+        traction_temp = il::dot(sigma_temp, nr);
+        for (int j = 0; j < 3; ++j) {
+            DDs_to_traction_local_local(j,i) = traction_temp[i];
+            // | t1/Dshear1   t1/Dshear2  t1/Dnormal |
+            // | t2/Dshear1   t2/Dshear2  t2/Dnormal |
+            // | t3/Dshear1   t3/Dshear2  t3/Dnormal |
+            // localDD & local traction
+        }
+    }
+
+    il::Array2D<double> DDs_to_traction{3,3,0.0};
+
+    switch (I_want_global_DD) {
+        case 0 : { //false
+            switch (I_want_global_traction) {
+                case 0: { //false
+                    DDs_to_traction = DDs_to_traction_local_local;
+                    break;
+                }
+                case 1: { //true
+                    //R(from local to global)*(M_localDD_localTraction) = (M_globalDD_localTraction)
+                    il::Array2D<double> RT = elem_data_s.rotationMatrix(true);
+                    DDs_to_traction = il::dot(RT,DDs_to_traction_local_local);
+                    break;
+                }
+            }
+        }
+        case 1: { //true
+            switch (I_want_global_traction) {
+                case 1: { //true
+                    //R(from local to global)*(M_localDD_localTraction)*R(from global to local) = (M_globalDD_globalTraction)
+                    DDs_to_traction = il::dot(DDs_to_traction_local_local,R);
+                    il::Array2D<double> RT = elem_data_s.rotationMatrix(true);
+                    DDs_to_traction = il::dot(RT,DDs_to_traction);
+                    break;
+                }
+                case 0: { //false
+                    //(M_localDD_localTraction)*R(from global to local) = (M_globalDD_localTraction)
+                    DDs_to_traction = il::dot(DDs_to_traction_local_local,R);
+                    break;
+                }
+            }
+        }
+    }
+
+
+    return DDs_to_traction;
+
+    // | t1/Dshear1   t1/Dshear2  t1/Dnormal |
+    // | t2/Dshear1   t2/Dshear2  t2/Dnormal |
+    // | t3/Dshear1   t3/Dshear2  t3/Dnormal |
+    //
+    // doirections 1, 2 or 3
+}
+
+}
