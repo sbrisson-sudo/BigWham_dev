@@ -17,9 +17,23 @@ il::StaticArray2D<double, 3, 6> StressesKernelR0(
     double& x, double& y, double& z, double& a, double& b, double& G,
     double& nu) ;
 
-il::StaticArray2D<double, 3, 3> DisplacementKernelR0(
+il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
+            bie::FaceData &elem_data_s, // source element
+            bie::FaceData &elem_data_r, // receiver element
+            bie::ElasticProperties const &elas_, // elastic properties
+            il::int_t I_want_global_DD,
+            il::int_t I_want_global_traction) ;
+
+il::Array2D<double> DisplacementKernelR0(
         double& x, double& y, double& z, double& a, double& b,
         double& nu) ;
+
+il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence(
+            bie::FaceData &elem_data_s, // source element
+            bie::FaceData &elem_data_r, // receiver element
+            bie::ElasticProperties const &elas_, // elastic properties
+            il::int_t I_want_global_DD,
+            il::int_t I_want_global_displacement) ;
 
 // first order derivatives of I(x,y,z,xi,eta)
 
