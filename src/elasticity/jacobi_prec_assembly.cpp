@@ -97,8 +97,8 @@ e_k1 = il::floor(old_i / 6.);  // element number where we have the node old_k1 i
 // % gives the remainder of the division
 is_l = old_i % 6;
 
-il::StaticArray2D<double, 3, 3> xv = i_meshtools.getVerticesElt(e_k1);
-bie::TriangularElementData elem_data_s(xv, 2); // 2 = interpolation order
+il::Array2D<double> xv = i_meshtools.getVerticesElt(e_k1);
+bie::FaceData elem_data_s(xv, 2); // 2 = interpolation order
 
 // call to the kernel
 stnl = NodeDDtriplet_to_CPtraction_influence(elem_data_s, elem_data_s, is_l, is_l, elas, I_want_global_DD,I_want_global_traction);

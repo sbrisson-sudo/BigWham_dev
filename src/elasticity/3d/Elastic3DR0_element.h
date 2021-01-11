@@ -10,7 +10,9 @@
 #define HFPX3D_R0_ELEMENT_H
 
 #include <il/StaticArray2D.h>
+#include <src/core/FaceData.h>
 #include <src/core/ElasticProperties.h>
+
 
 namespace bie{
 il::StaticArray2D<double, 3, 6> StressesKernelR0(

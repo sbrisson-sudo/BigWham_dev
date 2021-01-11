@@ -27,7 +27,7 @@
 //#include <src/solvers/HIterativeSolverUtilities.h>
 
 #include <BigWham.h>
-#include <src/core/FaceData.cc>
+#include <src/core/FaceData.cpp>
 #include <core/FaceData.h>
 
 int test2DP1(){
@@ -639,15 +639,15 @@ int main() {
   std::cout << "++++++++++++++++++++\n";
   il::StaticArray2D<double,3,3> nodes;
   il::Array2D<double> nods{il::value, {{-1.,1.,1.,-1.},{-1.,-1.,1.,1.},{1.,1.,1.,1.}}};
-  bie::TriangularElementData myclass(nodes, 1);
+//  bie::TriangularElementData myclass(nodes, 1);
   bie::FaceData dd(nods,1);
 //    {{-1.,-1.,1.},{1.,-1.,1.},{1.,1.,1.},{-1.,1.,1.}}
 
 
 
-//test2DP1();
+test2DP1();
 //
-//testS3DP0();
+testS3DP0();
 //  testFullMat();
 //  testHdot();
 

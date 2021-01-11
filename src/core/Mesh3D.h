@@ -16,10 +16,11 @@
 #include <elasticity/3d/constants.h>
 
 #include <src/core/TriangularElementData.h>
+#include <src/core/FaceData.h>
 
 namespace bie {
 
-    class Mesh3D { // class for 2D triangular elements
+    class Mesh3D { // class for polygonal elements
 
     private:
 
@@ -33,8 +34,8 @@ namespace bie {
         //////////////////////////////////////////////////////////////////////////
 
         //   Mesh3D default constructor;
-        Mesh3D(){};
-        ~Mesh3D(){};
+        Mesh3D() = default;
+        ~Mesh3D() = default;
 
         // Basic constructor with coordinates and connectivity matrices and interpolation order 'p'
         Mesh3D(const il::Array2D<double> &coordinates, const il::Array2D<il::int_t> &connectivity,
@@ -54,10 +55,12 @@ namespace bie {
         //   Methods
         ////////////////////////////////////////////////////////////////////////////////////////////
 
-        il::StaticArray2D<double,3,3> getVerticesElt(il::int_t ne) const; // vertices' coordinates for element
+        il::Array2D<double> getVerticesElt(il::int_t ne) const; // vertices' coordinates for element
         // number/ID 'ne'
-        bie::TriangularElementData getElementData(il::int_t ne) const; // build triangular element object for
-        // element number/ID 'ne'
+//      The following line has been dismissed since the advent of FaceData
+//      bie::TriangularElementData getElementData(il::int_t ne) const; // build triangular element object for
+
+        bie::FaceData getElementData(il::int_t ne) const; // build face element object for the element number/ID 'ne'
         il::Array2D<double> getCollocationPoints(); // get all the collocation points of the mesh
         il::Array2D<double> getNodes(); // get all the nodes of the mesh
         int getConnectivity(il::int_t e, il::int_t ln); // keep it here because it is passed to mma

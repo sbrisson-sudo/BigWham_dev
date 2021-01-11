@@ -85,7 +85,7 @@ public:
         il::Array2D<double> computeNodes();
         il::Array2D<double> computeCollocationPoints();
         il::Array2D<double> rotationMatrix(bool Transposed = false); // or quadratic elements the function written by Dmitry is used
-    private:
+private:
         il::int_t maxAbsArray(il::StaticArray<double, 3> x);
         il::StaticArray<double, 3> intersectLines(il::StaticArray<double, 3> x1, il::StaticArray<double, 3> x2,
                                                   il::StaticArray<double, 3> x3, il::StaticArray<double, 3> x4);

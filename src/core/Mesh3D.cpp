@@ -88,21 +88,15 @@ namespace bie {
     //   Methods
     ////////////////////////////////////////////////////////////////////////////////////////////
 
-    bie::TriangularElementData Mesh3D::getElementData(const il::int_t ne) const {
+    bie::FaceData Mesh3D::getElementData(const il::int_t ne) const {
         // inputs
         //   -ne: element number/ID
         // output
-        //   -triangular element object of TriangularElementData class containing all its member variables
+        //   -face element object of FaceData class containing all its member variables
         //   that are initialized when calling the constructor
 
-        il::StaticArray2D<double, 3, 3> xv;
-        // loop over vertices
-        for (il::int_t i = 0; i < 3; i++){
-            xv(i, 0) = this->coordinates_(this->connectivity_(ne, i), 0);
-            xv(i, 1) = this->coordinates_(this->connectivity_(ne, i), 1);
-            xv(i, 2) = this->coordinates_(this->connectivity_(ne, i), 2);
-        }
-        return TriangularElementData(xv, this->interpolation_order_);
+        il::Array2D<double> xv=Mesh3D::getVerticesElt(ne);
+        return FaceData(xv, this->interpolation_order_);
     }
 
     il::Array2D<double> Mesh3D::getCollocationPoints() {
@@ -127,7 +121,7 @@ namespace bie {
         il::int_t j = 0;
         // loop over the elements
         for (il::int_t i = 0; i < this -> numberElts(); i++) {
-            bie::TriangularElementData elt = this->getElementData(i);
+            bie::FaceData elt = this->getElementData(i);
             collPtsElt = elt.getCollocationPoints();
             // loop over collocation points per element
             for (il::int_t j1 = 0; j1 < this -> numberCollPtsElt(); j1++) {
@@ -162,7 +156,7 @@ namespace bie {
         il::int_t j = 0;
         // loop over the elements
         for (il::int_t i = 0; i < this -> numberElts(); i++) {
-            bie::TriangularElementData elt = this->getElementData(i);
+            bie::FaceData elt = this->getElementData(i);
             nodesElt = elt.getNodes();
             // loop over collocation points per element
             for (il::int_t j1 = 0; j1 < this -> numberCollPtsElt(); j1++) {
@@ -179,7 +173,7 @@ namespace bie {
         return connectivity_(e, ln);
     }
 
-    il::StaticArray2D<double, 3, 3> Mesh3D::getVerticesElt(il::int_t ne) const {
+    il::Array2D<double> Mesh3D::getVerticesElt(il::int_t ne) const {
         // inputs
         //   -ne: element number/ID
         // output
@@ -188,14 +182,16 @@ namespace bie {
         //     x0 y0 z0
         //     x1 y1 z1
         //     x2 y2 z2
-        //    where 0, 1, 2 are the three vertices of the element
+        //     ...
+        //
+        //    where 0, 1, 2, ... are the vertices of the element
         // Note: The output expected by the methods that compute the quadratic kernel in 3D is
         // transposed w.r.t. this form, so you will find a transpose operation after calling this function
         // in the kernel files
 
-        il::StaticArray2D<double, 3, 3> vertElt;
+        il::Array2D<double> vertElt;
         // loop over the vertices
-        for (il::int_t i = 0; i < 3; i++) {
+        for (il::int_t i = 0; i < connectivity_.size(1); i++) {
             vertElt(i,0) = this -> coordinates_(this -> connectivity_(ne,i), 0); // x coordinate
             vertElt(i,1) = this -> coordinates_(this -> connectivity_(ne,i), 1); // y coordinate
             vertElt(i,2) = this -> coordinates_(this -> connectivity_(ne,i), 2); // z coordinate

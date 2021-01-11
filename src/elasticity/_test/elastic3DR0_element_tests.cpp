@@ -45,25 +45,25 @@ TEST(R0, ip_expressions) {
   ReferenceValues(17,0) = -0.12951122377562768;     //ip233
   ReferenceValues(18,0) = -0.0019957694764766985;   //ip333
 
-  ASSERT_NEAR(ReferenceValues(0,0), ip1(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(1,0), ip2(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(2,0), ip3(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(3,0), ip11(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(4,0), ip12(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(5,0), ip13(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(6,0), ip22(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(7,0), ip23(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(8,0), ip33(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(9,0), ip111(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(10,0), ip112(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(11,0), ip113(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(12,0), ip122(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(13,0), ip123(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(14,0), ip133(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(15,0), ip222(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(16,0), ip223(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(17,0), ip233(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(18,0), ip333(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(0,0), bie::ip1(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(1,0), bie::ip2(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(2,0), bie::ip3(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(3,0), bie::ip11(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(4,0), bie::ip12(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(5,0), bie::ip13(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(6,0), bie::ip22(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(7,0), bie::ip23(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(8,0), bie::ip33(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(9,0), bie::ip111(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(10,0), bie::ip112(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(11,0), bie::ip113(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(12,0), bie::ip122(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(13,0), bie::ip123(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(14,0), bie::ip133(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(15,0), bie::ip222(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(16,0), bie::ip223(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(17,0), bie::ip233(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(18,0), bie::ip333(x, y, z, xi, eta), 1.e-5);
 }
 
 TEST(R0, stress_expressions) {
@@ -77,7 +77,7 @@ TEST(R0, stress_expressions) {
     b = 2.;
     G = 10.;
     nu = 0.3;
-    Stress = StressesKernelRectangularP0DD(x, y,  z,  a,  b, G, nu);
+    Stress = bie::StressesKernelR0(x, y,  z,  a,  b, G, nu);
 
     // Reference values from Mathematica with 18 decimals
     // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
@@ -127,7 +127,7 @@ TEST(R0, stress_expressions) {
 }
 
 TEST(R0, displacement_expressions) {
-    il::StaticArray2D<double, 3, 3> Displacement;
+    il::Array2D<double> Displacement;
     il::Array2D<double> ReferenceDisplacement{3, 3, 0.};
     double x, y, z, a, b, nu;
     x = 1.12;
@@ -136,7 +136,7 @@ TEST(R0, displacement_expressions) {
     a = 1.;
     b = 2.;
     nu = 0.3;
-    Displacement = DisplacementKernelRectangularP0DD( x, y, z, a, b, nu);
+    Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
 
     // Reference values from Mathematica with 18 decimals
     // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz

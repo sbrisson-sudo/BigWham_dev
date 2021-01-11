@@ -17,7 +17,7 @@
 #include <il/Array2D.h>
 #include <il/StaticArray2D.h>
 
-#include <src/core/TriangularElementData.h>
+#include <src/core/FaceData.h>
 #include <src/core/ElasticProperties.h>
 
 namespace bie {
@@ -82,7 +82,7 @@ namespace bie {
 /// Function to assemble by Nodes - required for hmat
 // todo move to StaticArray
 il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
-            bie::TriangularElementData &elem_data_s, bie::TriangularElementData &elem_data_r,
+            bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
             il::int_t n_s,
             il::int_t  n_t, bie::ElasticProperties const &elas_,
             il::int_t I_want_global_DD,

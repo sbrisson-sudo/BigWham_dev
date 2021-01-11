@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(BigWham CXX)
 project(BigWham_exe CXX)
+project(BigWhamElastUnitTest)
 set(CMAKE_CXX_STANDARD 11)
 
 #####################################
@@ -193,20 +194,21 @@ set(SOURCE_FILES
         src/elasticity/2d/FullMatrixAssembly2D.cpp
         src/elasticity/2d/FullMatrixAssembly2D.h
         # 3D source code
+        Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
         src/core/Mesh3D.cpp src/core/Mesh3D.h
-        src/core/TriangularElementData.cc
-        src/core/FaceData.cc
-        src/core/FaceData.h
-        src/elasticity/3d/ElasticHMatrix3DT6.h
+#        src/core/TriangularElementData.cpp
+        src/core/FaceData.cpp
+        #  - T6 element
         src/core/element_utilities.cpp
         src/elasticity/3d/Elastic3DT6_element.cpp
         src/elasticity/3d/h_potential.cpp
         src/elasticity/3d/tensor_utilities.cpp
-        #     src/elasticity/3d/Elastic3DT0_element.cpp
-        #    src/elasticity/3d/Elastic3DT0_element.h
+        src/elasticity/3d/ElasticHMatrix3DT6.h
+        #  - R0 element
+#        src/elasticity/3d/Elastic3DR0_element.h
         src/elasticity/3d/Elastic3DR0_element.cpp
-        src/elasticity/3d/Elastic3DR0_element.h
-        Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
+        src/elasticity/3d/ElasticHMatrix3DR0.h
+
         # Solver
         src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
@@ -251,6 +253,7 @@ set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
 set(TESTED_SOURCE_FILES
+        src/core/FaceData.cpp
         src/elasticity/3d/Elastic3DR0_element.cpp
         src/elasticity/3d/Elastic3DR0_element.h
         )

@@ -11,7 +11,6 @@
 #include <il/linearAlgebra.h>
 #include <il/StaticArray.h>
 #include <il/Array2D.h>
-#include <il/StaticArray2D.h>
 #include "FaceData.h"
 #include <iostream>
 #include <limits>
@@ -168,9 +167,7 @@ namespace bie {
         return a_;
     }
 
-    double FaceData::get_b() {
-        return b_;
-    }
+    double FaceData::get_b() {return b_;}
 
     il::Array<double> FaceData::getNormal(){
         il::Array<double> n{3};

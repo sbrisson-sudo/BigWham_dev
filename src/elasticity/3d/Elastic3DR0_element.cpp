@@ -9,7 +9,6 @@
 
 #include <il/math.h>
 #include <il/blas.h>
-#include <src/core/FaceData.h>
 #include "Elastic3DR0_element.h"
 
 namespace bie{
@@ -359,7 +358,7 @@ namespace bie{
         return MT;
     }
 
-    il::Array2D<double> change_ref_system (il::Array2D<double> linearApplication,il::int_t change_domain, il::int_t change_codomain, il::Array2D<double> RglobalTOlocal){
+    il::Array2D<double> change_ref_system (const il::Array2D<double>& linearApplication,il::int_t change_domain, il::int_t change_codomain, const il::Array2D<double>& RglobalTOlocal){
         // Description:
         // A linear application takes values from a domain and outputs values in a codomain.
         // This function changes the base in the domain, in the codomain or in bonth.
@@ -416,9 +415,9 @@ namespace bie{
     }
 
     il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
-        bie::FaceData &elem_data_s, // source element
-        bie::FaceData &elem_data_r, // receiver element
-        bie::ElasticProperties const &elas_, // elastic properties
+        FaceData &elem_data_s, // source element
+        FaceData &elem_data_r, // receiver element
+        ElasticProperties const &elas_, // elastic properties
         il::int_t I_want_global_DD,
         il::int_t I_want_global_traction) {
 
@@ -487,12 +486,10 @@ namespace bie{
     // directions 1, 2 or 3
 }
 
-
-
     il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence(
-            bie::FaceData &elem_data_s, // source element
-            bie::FaceData &elem_data_r, // receiver element
-            bie::ElasticProperties const &elas_, // elastic properties
+            FaceData &elem_data_s, // source element
+            FaceData &elem_data_r, // receiver element
+            ElasticProperties const &elas_, // elastic properties
             il::int_t I_want_global_DD,
             il::int_t I_want_global_displacement) {
 
@@ -505,7 +502,8 @@ namespace bie{
         il::Array2D<double> el_cp_r;
         el_cp_r = elem_data_r.getCollocationPoints();
 
-        il::Array2D<double> R = elem_data_s.rotationMatrix();
+        il::Array2D<double> R;
+        R = elem_data_s.rotationMatrix();
 
         il::Array<double> dsr{3};
         for (int i = 0; i < 3; ++i) { dsr[i] = el_cp_r(0,i) - el_cp_s(0,i); }

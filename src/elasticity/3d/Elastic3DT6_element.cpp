@@ -351,7 +351,7 @@ namespace bie {
     ///////////////////////////////////////////////////////////////////////////
 
 il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
-        bie::TriangularElementData &elem_data_s, bie::TriangularElementData &elem_data_r,
+        bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
         il::int_t n_s,  // n_s is a node of the "source" element
         il::int_t  n_t,  // n_t is the collocation point of the "target" element
         bie::ElasticProperties const &elas_,
@@ -366,7 +366,7 @@ il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
     //  z0 z1 z2
 
   il::StaticArray2D<double, 3, 3> el_vert_s;
-  il::StaticArray2D<double, 3, 3> el_vert_s_aux;
+  il::Array2D<double> el_vert_s_aux{3,3};
   el_vert_s_aux = elem_data_s.getVertices();
   // now we have to transpose due to different conventions of Mesh3D/TriangularElementData classes and functions to compute
   // the quadratic triangular element kernel
@@ -391,7 +391,7 @@ il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
   //  z0 z1 z2
 
   il::StaticArray2D<double,3 , 3> el_vert_t;
-  il::StaticArray2D<double, 3, 3> el_vert_t_aux;
+  il::Array2D<double> el_vert_t_aux{3, 3};
   el_vert_t_aux = elem_data_r.getVertices();
   // now we have to transpose due to different conventions of Mesh3D/TriangularElementData classes and functions to compute
   // the quadratic triangular element kernel
