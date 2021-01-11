@@ -137,23 +137,27 @@ TEST(R0, displacement_expressions) {
     b = 2.;
     nu = 0.3;
     Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
+    // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
+    //   0      -> |       Ux,            Ux,             Ux            |
+    //   1      -> |       Uy,            Uy,             Uy            |
+    //   2      -> |       Uz,            Uz,             Uz            |
 
     // Reference values from Mathematica with 18 decimals
     // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
 
     // stress due to displacement discontinuity DDx (shear)
     ReferenceDisplacement(0, 0) = -0.03892389878412812;    // ux
-    ReferenceDisplacement(0, 1) = -0.01092630818159775;    // uy
-    ReferenceDisplacement(0, 2) = -0.0456133521126238;     // uz
+    ReferenceDisplacement(1, 0) = -0.01092630818159775;    // uy
+    ReferenceDisplacement(2, 0) = -0.0456133521126238;     // uz
 
     // stress due to displacement discontinuity  DDy (shear)
-    ReferenceDisplacement(1, 0) = -0.01092630818159775;     // ux
+    ReferenceDisplacement(0, 1) = -0.01092630818159775;     // ux
     ReferenceDisplacement(1, 1) = -0.04055468222934548;     // uy
-    ReferenceDisplacement(1, 2) = -0.03183576694099982;     // uz
+    ReferenceDisplacement(2, 1) = -0.03183576694099982;     // uz
 
     // stress due to displacement discontinuity DDz (normal)
-    ReferenceDisplacement(2, 0) = -0.02924589971874653;     // ux
-    ReferenceDisplacement(2, 1) = -0.01815531445891874;     // uy
+    ReferenceDisplacement(0, 2) = -0.02924589971874653;     // ux
+    ReferenceDisplacement(1, 2) = -0.01815531445891874;     // uy
     ReferenceDisplacement(2, 2) = -0.1086065957871454;      // uz
 
 
