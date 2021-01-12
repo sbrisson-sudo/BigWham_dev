@@ -41,8 +41,6 @@ private:
     // collocation points' location parameters for quadratic elements
     const double beta1_ = 0.35; // 1.5 * 0.091576213509771 related to nodes at vertices (see documentation)
     const double beta2_ = 0.35; // 1.5 * 0.10810301816807 related to middle-edge nodes (see documentation)
-    double a_ = 0.; // half length of the 1st edge of an element
-    double b_ = 0.; // half length of the last edge of an element
 public:
 
     //////////////////////////////////////////////////////////////////////////
@@ -57,14 +55,13 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     il::Array2D<double> getNodes();
+    double getNoV();
     il::Array<double> getNormal();
     il::Array2D<double> getCollocationPoints();
     il::Array2D<double> getVertices(); // this function is a bit silly because
     // the object is indeed constructed by the vertices as input, however is needed due to the way the
     // construction of the elasticity matrix is coded up for quadratic (p=2) elements. This function
     // should be deleted in the future
-    double get_a();
-    double get_b();
     const double getBeta1(); // this function is needed because in the construction of the
     // elasticity matrix the computation of the collocation points is duplicated (done by a previous
     // function of Dmitry). This function should be deleted in the future

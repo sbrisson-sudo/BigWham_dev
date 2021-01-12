@@ -152,8 +152,8 @@ namespace bie {
                         stnl = bie::NodeDDtriplet_to_CPdisplacement_influence(elem_data_s, // source element
                                                                             elem_data_r, // receiver element
                                                                             elas_, // elastic properties
-                                                                            I_want_global_DD,
-                                                                            I_want_global_codomain);
+                                                                            I_want_global_DD = 0,
+                                                                            I_want_global_codomain = 0); //https://en.wikipedia.org/wiki/Codomain
                         break;
                     }
                     case 1: { //true
@@ -161,7 +161,7 @@ namespace bie {
                                                                      elem_data_r,
                                                                      elas_,
                                                                      I_want_global_DD,
-                                                                     I_want_global_codomain);
+                                                                     I_want_global_codomain); //https://en.wikipedia.org/wiki/Codomain
                         break;
                     }
                 }

@@ -180,6 +180,25 @@ double ip233(double x, double y, double z, double xi, double eta) {
          (pow(R2, 3. / 2.) * ((R + x - xi) * (R + x - xi)));
 }
 
+    double ip333(double x, double y, double z, double xi, double eta) {
+        //    (-(2 R2^2 + R2 z^2 + 3 z^4) (z^2 + (y - \[Eta])^2) (y - \[Eta]) (z^2 + (x - \
+    //    \[Xi])^2) (x - \[Xi]) + 2 (y - \[Eta])^3 (2 z^2 + (y - \[Eta])^2 + (x - \[Xi])^2)^2 (x - \
+    //    \[Xi])^3)/(R2^(3/2) z (z^2 + (y - \[Eta])^2)^2 (z^2 + (x - \[Xi])^2)^2)
+
+        double R2, R, z2, xmxi, ymeta;
+        xmxi = (x - xi);
+        ymeta = (y - eta);
+        R2 = xmxi * xmxi + ymeta * ymeta + z * z;
+        z2 = z * z;
+
+        return (-(2 * R2 * R2 + R2 * z2 + 3 * z2 * z2) *
+                (z2 + pow(ymeta,2)) * ymeta *
+                (z2 + pow(xmxi,2)) * xmxi + 2 * pow(ymeta,3) *
+                                            pow(2 * z2 + pow(ymeta,2) + pow(xmxi,2),2) *
+                                            pow(xmxi,3)) / (pow(R2,1.5) * z * pow(z2 + pow(ymeta,2),2) *
+                                                            pow(z2 + pow(xmxi,2),2));
+    }
+
 // CHEMMERY Integration function
 
 typedef double (*vFunctionCall)(double x, double y, double z, double xi,
@@ -306,7 +325,7 @@ il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
 
   double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
 
-  double Ip111, Ip122, Ip133, Ip112, Ip113, Ip123, Ip222, Ip223, Ip233;
+  double Ip111, Ip122, Ip133, Ip112, Ip113, Ip123, Ip222, Ip223, Ip233, Ip333;
 
   double Ce = 1. * G / (4 * il::pi * (1. - nu));
 
@@ -342,6 +361,7 @@ il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
   //  Ip222 = rectangular_integration(x, y, z, a, b, ip222);
   //  Ip233 = rectangular_integration(x, y, z, a, b, ip233);
   //  Ip223 = rectangular_integration(x, y, z, a, b, ip223);
+  Ip333 = rectangular_integration(x, y, z, a, b, ip333);
 
   // StressInPlane row is dof (DDshear,DDnormal),
   // columns are sxx,sxy,syy (in 2D plane frame)
@@ -364,7 +384,7 @@ il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
   StressInPlane(1, 1) = Ce * C12 * (-z * Ip133);  // sxz[which is sxy in the 2D]
   //  Stress(1, 5) = Ce * (z * Ip233);                                 // syz
   //  Stress(1, 1) = Ce * (Ip33 + (1. - 2. * nu) * Ip11 - z * Ip223);  // syy
-  StressInPlane(1, 2) = Ce * C11 * (Ip33 - z * Ip113);
+  StressInPlane(1, 2) = Ce * C11 * (Ip33 - z * Ip333);         // modified 2021
     // szz[which is syy in the 2D]
 
   return StressInPlane;

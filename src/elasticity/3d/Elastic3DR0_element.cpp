@@ -8,6 +8,7 @@
 
 
 #include <il/math.h>
+#include <il/linearAlgebra.h>
 #include <il/blas.h>
 #include "Elastic3DR0_element.h"
 
@@ -211,7 +212,7 @@ namespace bie{
                  pow(z2 + pow(xmxi,2),2));
     }
 
-    // CHEMMERY Integration function
+    // Chinnery Integration function - M. A. Chinnery, The deformations of the ground around surface faults, Bulletin of the Seismological Society of America (1961), 51 355-372
 
     typedef double (*vFunctionCall)(double& x, double& y, double& z, double& xi,
                                     double& eta);
@@ -358,7 +359,7 @@ namespace bie{
         return MT;
     }
 
-    il::Array2D<double> change_ref_system (const il::Array2D<double>& linearApplication,il::int_t change_domain, il::int_t change_codomain, const il::Array2D<double>& RglobalTOlocal){
+    il::Array2D<double> change_ref_system (const il::Array2D<double>& linearApplication,il::int_t change_domain, il::int_t change_codomain, const il::Array2D<double>& RglobalTOlocal_domain, const il::Array2D<double>& RglobalTOlocal_codomain){
         // Description:
         // A linear application takes values from a domain and outputs values in a codomain.
         // This function changes the base in the domain, in the codomain or in bonth.
@@ -366,8 +367,14 @@ namespace bie{
         // Input:
         // linearApplication is a matrix that thought to be in a local reference system both in the domain and in the codomain
         // change_domain can be 0 (false) or 1 (true)
+        //      - if false the domain will be expressed with respect to the local reference system to the source element
+        //      - if true the domain will be expressed with respect to the global reference system
         // change_codomain can be 0 (false) or 1 (true)
-        // RglobalTOlocal it is a matrix that rotates a vector from the global reference system to the local
+        //      - if false the domain will be expressed with respect to the local reference system to the receiver element
+        //      - if true the codomain will be expressed with respect to the global reference system
+        //
+        // RglobalTOlocal_domain it is a matrix that rotates a vector from the global reference system (r.s.) to the local r.s. of the source element
+        // RglobalTOlocal_codomain it is a matrix that rotates a vector from the global reference system (r.s.) to the local r.s. of the receiver element
         //
         // Output:
         // A rotated matrix i.e. linear application
@@ -377,14 +384,19 @@ namespace bie{
             case 0 : { //false
                 switch (change_codomain) {
                     case 0: { //false
-                        rotatedLinearApplication = linearApplication;
+                        //Explanation with regard to the problem at hand:
+                        //    R(global to local codomain)*R(from local to global domain)*(M_localDD_localTraction_source) = (M_globalDD_localTraction_receiver)
+                        //    R(global to local codomain)*R(from local to global domain)*(M_localDD_localTraction_source) = (M_globalDD_localDisplacements_receiver)
+                        il::Array2D<double> RT = transpose(RglobalTOlocal_domain);
+                        rotatedLinearApplication = il::dot(RT,linearApplication);
+                        rotatedLinearApplication = il::dot(RglobalTOlocal_codomain,rotatedLinearApplication);
                         break;
                     }
                     case 1: { //true
                         //Explanation with regard to the problem at hand:
-                        //    R(from local to global)*(M_localDD_localTraction) = (M_globalDD_localTraction)
-                        //    R(from local to global)*(M_localDD_localDisplacement) = (M_globalDD_localDisplacement)
-                        il::Array2D<double> RT = transpose(RglobalTOlocal);
+                        //    R(from local domain to global)*(M_localDD_localTraction) = (M_globalDD_localTraction)
+                        //    R(from local domain to global)*(M_localDD_localDisplacement) = (M_globalDD_localDisplacement)
+                        il::Array2D<double> RT = transpose(RglobalTOlocal_domain);
                         rotatedLinearApplication = il::dot(RT,linearApplication);
                         break;
                     }
@@ -394,18 +406,22 @@ namespace bie{
                 switch (change_codomain) {
                     case 1: { //true
                         //Explanation with regard to the problem at hand:
-                        //R(from local to global)*(M_localDD_localTraction)*R(from global to local) = (M_globalDD_globalTraction)
-                        //R(from local to global)*(M_localDD_localDisplacement)*R(from global to local) = (M_globalDD_globalDisplacement)
-                        rotatedLinearApplication = il::dot(linearApplication,RglobalTOlocal);
-                        il::Array2D<double> RT = transpose(RglobalTOlocal);
+                        //R(from local domain to global)*(M_localDD_localTraction)*R(from global to local domain) = (M_globalDD_globalTraction)
+                        //R(from local domain to global)*(M_localDD_localDisplacement)*R(from global to local domain) = (M_globalDD_globalDisplacement)
+                        rotatedLinearApplication = il::dot(linearApplication,RglobalTOlocal_domain);
+                        il::Array2D<double> RT = transpose(RglobalTOlocal_domain);
                         rotatedLinearApplication = il::dot(RT,rotatedLinearApplication);
                         break;
                     }
                     case 0: { //false
                         //Explanation with regard to the problem at hand:
-                        //(M_localDD_localTraction)*R(from global to local) = (M_globalDD_localTraction)
-                        //(M_localDD_localDisplacement)*R(from global to local) = (M_globalDD_localDisplacement)
-                        rotatedLinearApplication = il::dot(linearApplication,RglobalTOlocal);
+                        //R(global to local codomain)*R(from local domain to global)*(M_localDD_localTraction)*R(from global to local domain) = (M_globalDD_localTraction)
+                        //R(global to local codomain)*R(from local domain to global)*(M_localDD_localDisplacement)*R(from global to local domain) = (M_globalDD_localDisplacement)
+
+                        rotatedLinearApplication = il::dot(linearApplication,RglobalTOlocal_domain);
+                        il::Array2D<double> RT = transpose(RglobalTOlocal_domain);
+                        rotatedLinearApplication = il::dot(RT,rotatedLinearApplication);
+                        rotatedLinearApplication = il::dot(RglobalTOlocal_codomain,rotatedLinearApplication);
                         break;
                     }
                 }
@@ -414,15 +430,43 @@ namespace bie{
         return rotatedLinearApplication;
     }
 
+    il::StaticArray<double,2> get_a_and_b(il::Array2D <double>xv, double NoV) {
+        /*
+         * This function returns two values:
+         *
+         * a := half length of the 1st edge of an element
+         * b := half length of the last edge of an element
+         */
+        il::StaticArray<double,2> a_and_b;
+
+        // vec01 goes from vertex 0 to vertex 1
+        // vec02 goes from vertex 0 to vertex NoV_ (vertex 2 in case of triangular element)
+        il::StaticArray<double, 3> vec01, vec02;
+        vec01[0] = xv(1, 0) - xv(0, 0);
+        vec01[1] = xv(1, 1) - xv(0, 1);
+        vec01[2] = xv(1, 2) - xv(0, 2);
+        vec02[0] = xv(NoV - 1, 0) - xv(0, 0);
+        vec02[1] = xv(NoV - 1, 1) - xv(0, 1);
+        vec02[2] = xv(NoV - 1, 2) - xv(0, 2);
+
+        double vec01norm=sqrt(il::dot(vec01, vec01)), vec02norm=sqrt(il::dot(vec02, vec02));
+
+        a_and_b[0] =vec01norm/2.; // a
+        a_and_b[0] =vec02norm/2.; // b
+
+        return a_and_b ;}
+
     il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
         FaceData &elem_data_s, // source element
         FaceData &elem_data_r, // receiver element
         ElasticProperties const &elas_, // elastic properties
-        il::int_t I_want_global_DD,
-        il::int_t I_want_global_traction) {
+        il::int_t I_want_global_DD = 0,
+        il::int_t I_want_global_traction = 0) {
 
-        double a = elem_data_s.get_a(), b = elem_data_s.get_b();
+
         double G = elas_.getG(), nu = elas_.getNu();
+        il::StaticArray<double,2> a_and_b = get_a_and_b(elem_data_s.getVertices(),elem_data_s.getNoV());
+        double a = a_and_b[0], b = a_and_b[1];
 
         il::Array2D<double> el_cp_s;
         el_cp_s = elem_data_s.getCollocationPoints();
@@ -444,6 +488,7 @@ namespace bie{
                                                                   dsr[2],
                                                                   a, b,
                                                                   G,nu);
+        // in the reference system of the source element both in the domain and in the codomain
         // index        ->    0    1    2    3    4    5
         // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
         // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
@@ -474,10 +519,11 @@ namespace bie{
             // | t2/Dshear1   t2/Dshear2  t2/Dnormal |
             // | t3/Dshear1   t3/Dshear2  t3/Dnormal |
             // localDD & local traction
+            // in the reference system of the source element both in the domain and in the codomain
         }
     }
 
-    return change_ref_system(DDs_to_traction_local_local, I_want_global_DD, I_want_global_traction, R);
+    return change_ref_system(DDs_to_traction_local_local, I_want_global_DD, I_want_global_traction, R, elem_data_r.rotationMatrix());
 
     // | t1/Dshear1   t1/Dshear2  t1/Dnormal |
     // | t2/Dshear1   t2/Dshear2  t2/Dnormal |
@@ -521,7 +567,7 @@ namespace bie{
         //   1      -> |       Uy,            Uy,             Uy            |
         //   2      -> |       Uz,            Uz,             Uz            |
 
-        return change_ref_system(DDs_to_Displacement_local_local, I_want_global_DD, I_want_global_displacement, R);
+        return change_ref_system(DDs_to_Displacement_local_local, I_want_global_DD, I_want_global_displacement, R, elem_data_r.rotationMatrix());
 
         // | U1/Dshear1   U1/Dshear2  U1/Dnormal |
         // | U2/Dshear1   U2/Dshear2  U2/Dnormal |

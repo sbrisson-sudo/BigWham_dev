@@ -246,6 +246,31 @@ elseif(IL_OPENBLAS)
     target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR})
 endif()
 
+################################################################
+# Pybind
+################################################################
+#
+#include_directories(pybind11) #OR find_package(pybind11 REQUIRED)
+#find_package(pybind11 REQUIRED)
+#add_library(pypart MODULE pypart.cpp)
+#target_link_libraries(pypart PRIVATE pybind11::module part)
+##set_target_properties(pypart PROPERTIES
+##  PREFIX "${PYTHON_MODULE_PREFIX}"
+##  SUFFIX "${PYTHON_MODULE_EXTENSION}"
+##  )
+#set_target_properties(pypart PROPERTIES PREFIX "")
+#set_target_properties(pypart PROPERTIES OUTPUT_NAME "pypart")
+#
+##LIBRARY_OUTPUT_DIRECTORY "/home/xy/cmake_practice/lib/
+#add_custom_command(TARGET pypart POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PROJECT_SOURCE_DIR}/../src/pypart.so
+#        COMMENT "Created  ${PROJECT_SOURCE_DIR}/../src/pypart.so"
+#        )
+##file(
+##        COPY ${CMAKE_CURRENT_BINARY_DIR}/pypart.so
+##        DESTINATION ${PROJECT_SOURCE_DIR}/src/pypart.so
+##)
+
 ################################################################################
 # For Unit Tests
 ################################################################################
@@ -256,10 +281,12 @@ set(TESTED_SOURCE_FILES
         src/core/FaceData.cpp
         src/elasticity/3d/Elastic3DR0_element.cpp
         src/elasticity/3d/Elastic3DR0_element.h
+
         )
 set(UNIT_TEST_FILES
         #src/elasticity/_test/elasticity_tests.cpp
         src/elasticity/_test/elastic3DR0_element_tests.cpp
+
         il/gtest/src/gtest-all.cc
         )
 

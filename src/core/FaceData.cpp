@@ -77,9 +77,6 @@ namespace bie {
         //     -half length of the 1st edge of an element
         double vec01norm=sqrt(il::dot(vec01, vec01)), vec02norm=sqrt(il::dot(vec02, vec02));
 
-        this->a_=vec01norm/2.;
-        this->b_=vec02norm/2.;
-
         for (il::int_t k = 0; k < vec01.size(); ++k) {
             vec01[k]=vec01[k]/vec01norm;
             vec02[k]=vec02[k]/vec02norm;}
@@ -147,6 +144,10 @@ namespace bie {
         return nodes_;
     }
 
+    double FaceData::getNoV() { // get number of vertexes
+        return NoV_;
+    }
+
     il::Array2D<double> FaceData::getCollocationPoints() { // get collocation points' coordinates
         return collocation_points_;
     }
@@ -162,12 +163,6 @@ namespace bie {
     const double FaceData::getBeta2() {
         return beta2_;
     }
-
-    double FaceData::get_a() {
-        return a_;
-    }
-
-    double FaceData::get_b() {return b_;}
 
     il::Array<double> FaceData::getNormal(){
         il::Array<double> n{3};
@@ -445,6 +440,7 @@ namespace bie {
                                                    il::StaticArray<double, 3> x2,
                                                    il::StaticArray<double, 3> x3,
                                                    il::StaticArray<double, 3> x4){
+        // used to compute the centroid of a general quadrilateral
         // inputs
         //   -x1, x2, x3, x4; {x1,x3} and {x2,x4} defines two intersecting segments
         // output
@@ -487,6 +483,7 @@ namespace bie {
     }
 
     il::int_t FaceData::maxAbsArray(il::StaticArray<double, 3> x){
+        // used to compute the centroid of a general quadrilateral
         // inputs
         //   -x array with 3 components
         // output

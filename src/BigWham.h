@@ -638,6 +638,9 @@ class Bigwhamio {
   //    }
   //  }
 
+  // todo: make it work in 2D but in 3D needs to be recoded
+  // todo: make the displacement version as well
+
   //  //---------------------------------------------------------------------------
   //  double* computeStresses(const double* solution, const double* obsPts,
   //                          const int npts) {
