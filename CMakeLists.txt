@@ -196,7 +196,6 @@ set(SOURCE_FILES
         # 3D source code
         Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
         src/core/Mesh3D.cpp src/core/Mesh3D.h
-#        src/core/TriangularElementData.cpp
         src/core/FaceData.cpp
         #  - T6 element
         src/core/element_utilities.cpp
