@@ -463,7 +463,6 @@ namespace bie{
         il::int_t I_want_global_DD = 0,
         il::int_t I_want_global_traction = 0) {
 
-
         double G = elas_.getG(), nu = elas_.getNu();
         il::StaticArray<double,2> a_and_b = get_a_and_b(elem_data_s.getVertices(),elem_data_s.getNoV());
         double a = a_and_b[0], b = a_and_b[1];
@@ -539,7 +538,8 @@ namespace bie{
             il::int_t I_want_global_DD,
             il::int_t I_want_global_displacement) {
 
-        double a = elem_data_s.get_a(), b = elem_data_s.get_b();
+        il::StaticArray<double,2> a_and_b = get_a_and_b(elem_data_s.getVertices(),elem_data_s.getNoV());
+        double a = a_and_b[0], b = a_and_b[1];
         double nu = elas_.getNu();
 
         il::Array2D<double> el_cp_s;
