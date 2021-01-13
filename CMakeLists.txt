@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(BigWham CXX)
 project(BigWham_exe CXX)
+project(pyparty)
 project(BigWhamElastUnitTest)
 set(CMAKE_CXX_STANDARD 11)
 
@@ -248,27 +249,80 @@ endif()
 ################################################################
 # Pybind
 ################################################################
+add_library(party SHARED
+#        Hmat-lib/cluster/cluster.h
+#        Hmat-lib/cluster/cluster.cpp
+#        # 2D source code
+#        src/core/Mesh2D.cpp src/core/Mesh2D.h
+#        src/core/SegmentData.h
+#        src/elasticity/2d/ElasticS3DP0_element.cpp
+#        src/elasticity/2d/Elastic2DP1_element.cpp
+#        src/elasticity/2d/ElasticHMatrix2DP0.h
+#        src/elasticity/2d/ElasticHMatrix2DP1.h
+#        src/elasticity/jacobi_prec_assembly.cpp
+#        src/elasticity/PostProcessDDM.cpp
+#        src/elasticity/2d/FullMatrixAssembly2D.cpp
+#        src/elasticity/2d/FullMatrixAssembly2D.h
+#        # 3D source code
+#        Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
+#        src/core/Mesh3D.cpp src/core/Mesh3D.h
+#        src/core/FaceData.cpp
+#        #  - T6 element
+#        src/core/element_utilities.cpp
+#        src/elasticity/3d/Elastic3DT6_element.cpp
+#        src/elasticity/3d/h_potential.cpp
+#        src/elasticity/3d/tensor_utilities.cpp
+#        src/elasticity/3d/ElasticHMatrix3DT6.h
+#        #  - R0 element
+#        #        src/elasticity/3d/Elastic3DR0_element.h
+#        src/elasticity/3d/Elastic3DR0_element.cpp
+#        src/elasticity/3d/ElasticHMatrix3DR0.h
 #
-#include_directories(pybind11) #OR find_package(pybind11 REQUIRED)
-#find_package(pybind11 REQUIRED)
-#add_library(pypart MODULE pypart.cpp)
-#target_link_libraries(pypart PRIVATE pybind11::module part)
-##set_target_properties(pypart PROPERTIES
-##  PREFIX "${PYTHON_MODULE_PREFIX}"
-##  SUFFIX "${PYTHON_MODULE_EXTENSION}"
-##  )
-#set_target_properties(pypart PROPERTIES PREFIX "")
-#set_target_properties(pypart PROPERTIES OUTPUT_NAME "pypart")
-#
-##LIBRARY_OUTPUT_DIRECTORY "/home/xy/cmake_practice/lib/
-#add_custom_command(TARGET pypart POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PROJECT_SOURCE_DIR}/../src/pypart.so
-#        COMMENT "Created  ${PROJECT_SOURCE_DIR}/../src/pypart.so"
-#        )
-##file(
-##        COPY ${CMAKE_CURRENT_BINARY_DIR}/pypart.so
-##        DESTINATION ${PROJECT_SOURCE_DIR}/src/pypart.so
-##)
+#        # Solver
+#        src/solvers/HIterativeSolverUtilities.h
+#        # BigWham Interface
+#        src/BigWham.h
+        src/test.cpp
+        )
+#target_link_libraries(party  ${CMAKE_MKL_LIBRARIES} ) #${CMAKE_OPENBLAS_LIBRARIES}
+#if(IL_MKL)
+#    if(APPLE)
+#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+#    elseif(UNIX)
+#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+#        # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
+#    elseif(WIN32)
+#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
+#    endif()
+#elseif(IL_OPENBLAS)
+#    target_compile_definitions(party PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
+#    target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR})
+#endif()
+
+# use this
+include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/pybind11)
+add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11-master)
+# or use
+# find_package(pybind11 REQUIRED)
+
+add_library(pyparty MODULE ${PROJECT_SOURCE_DIR}/src/pyparty.cpp)
+target_link_libraries(pyparty PRIVATE pybind11::module party)
+
+set_target_properties(pyparty PROPERTIES PREFIX "")
+set_target_properties(pyparty PROPERTIES OUTPUT_NAME "pyparty")
+
+
+add_custom_command(TARGET pyparty POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> /Users/carloperuzzo/PyFrac_git/src/pyparty.so
+        COMMENT "Created  /Users/carloperuzzo/PyFrac_git/src/pyparty.so"
+        )
+add_custom_command(TARGET pyparty POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> /Users/carloperuzzo/bigwham/pybind_test/pyparty.so
+        COMMENT "Created  /Users/carloperuzzo/bigwham/pybind_test/pyparty.so"
+        )
 
 ################################################################################
 # For Unit Tests

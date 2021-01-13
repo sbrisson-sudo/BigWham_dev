@@ -133,7 +133,7 @@ namespace bie {
             old_k1 = permutation_[k1];
             e_k1 = old_k1; // il::floor(old_k1 / number of nodes per element);
 
-            il::StaticArray2D<double, 3, 3> xv = mesh_.getVerticesElt(e_k1); // get vertices' coordinates of source element
+            il::Array2D<double> xv = mesh_.getVerticesElt(e_k1); // get vertices' coordinates of source element
             bie::FaceData elem_data_s(xv, 0); // 0 = interpolation order
 
             // Loop over a subset of collocation points
@@ -142,7 +142,7 @@ namespace bie {
             {
                 il::int_t k0 = b0 + j0;
                 old_k0 = permutation_[k0];
-                e_k0 = old_k0 // il::floor(old_k1 / number of nodes per element);
+                e_k0 = old_k0; // il::floor(old_k1 / number of nodes per element);
 
                 xv = mesh_.getVerticesElt(e_k0); // get vertices' coordinates of receiver element
                 bie::FaceData elem_data_r(xv, 0); // 0 = interpolation order

@@ -37,6 +37,7 @@
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
+#include <elasticity/3d/ElasticHMatrix3DR0.h>
 
 class Bigwhamio {
  private:
