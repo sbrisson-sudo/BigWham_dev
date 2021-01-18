@@ -19,6 +19,9 @@ il::StaticArray2D<double, 3, 6> StressesKernelR0(
     double& x, double& y, double& z, double& a, double& b, double& G,
     double& nu) ;
 
+bool is_stress_singular_at_given_location(double&x, double& y, double& a, double& b, bool verbose = true) ;
+
+
 il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
             bie::FaceData &elem_data_s, // source element
             bie::FaceData &elem_data_r, // receiver element
@@ -80,5 +83,20 @@ double ip223(double& x, double& y, double& z, double& xi, double& eta) ;
 double ip233(double& x, double& y, double& z, double& xi, double& eta) ;
 
 double ip333(double& x, double& y, double& z, double& xi, double& eta) ;
+
+// special cases:
+
+double ip11_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta);
+
+double ip22_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta);
+
+double ip33_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta);
+
+double ip12_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta);
+
+double Ip33_lim_z_to_0_and_x_to_a(double& x, double& y, double& a, double& b);
+
+double Ip33_lim_z_to_0_and_y_to_b(double& x, double& y, double& a, double& b);
+
 }
 #endif //HFPX3D_R0_ELEMENT_H

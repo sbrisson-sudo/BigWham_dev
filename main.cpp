@@ -8,10 +8,17 @@
 //
 
 #include <iostream>
+#include <il/Array2D.h>
+#include <src/core/FaceData.cpp>
+#include <src/core/FaceData.h>
+#include <BigWham.h>
+
+/*
+
 #include <string>
 #include <random>
 
-#include <il/Array2D.h>
+
 
 #include <Hmat-lib/cluster/cluster.h>
 #include <Hmat-lib/compression/toHMatrix.h>
@@ -26,9 +33,6 @@
 #include <src/core/ElasticProperties.h>
 //#include <src/solvers/HIterativeSolverUtilities.h>
 
-#include <BigWham.h>
-#include <src/core/FaceData.cpp>
-#include <core/FaceData.h>
 
 int test2DP1(){
 
@@ -632,22 +636,43 @@ int testHdot() {
 
 }
 
-
+*/
 
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
   il::StaticArray2D<double,3,3> nodes;
-  il::Array2D<double> nods{il::value, {{-1.,1.,1.,-1.},{-1.,-1.,1.,1.},{1.,1.,1.,1.}}};
+  il::Array2D<double> nods{il::value, {{-1.,1.,1.,-1.},{-1.,-1.,1.,1.},{0.,0.,0.,0.}}};
 //  bie::TriangularElementData myclass(nodes, 1);
   bie::FaceData dd(nods,1);
 //    {{-1.,-1.,1.},{1.,-1.,1.},{1.,1.,1.},{-1.,1.,1.}}
+    const std::vector<double> coor={-1.,-1.,0.,
+                                    1.,-1.,0.,
+                                    1.,1.,0.,
+                                    -1.,1.,0.,
+                                    -1.,2.,0.,
+                                    1.,2.,0.};
+    const std::vector<int64_t> conn = {0,1,2,3,
+                                  3,2,5,4};
+    const std::string kernel = "3DR0";
+    const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
+    const int max_leaf_size = 1;
+    const double eta = 0.;
+    const double eps_aca = 0.001;
+
+    Bigwhamio a;
+    a.set(coor,
+          conn,
+          kernel,
+          properties,
+          max_leaf_size,
+          eta,
+          eps_aca);
 
 
-
-test2DP1();
+//test2DP1();
 //
-testS3DP0();
+//testS3DP0();
 //  testFullMat();
 //  testHdot();
 

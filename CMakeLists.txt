@@ -16,8 +16,8 @@ set(IL_OPENMP 0)
 set(USE_INTEL 0)  # compiler option
 set(USE_STATIC 0) # to add static option to CMAKE_CXX_FLAGS
 
-set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG}   -g -std=c++11")
-set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE} -g -std=c++11 -O3 -mavx2")
+set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG}   -std=c++11")
+set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++11 -O3 -mavx2")
 
 if(USE_STATIC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
@@ -250,75 +250,70 @@ endif()
 # Pybind
 ################################################################
 add_library(party SHARED
-#        Hmat-lib/cluster/cluster.h
-#        Hmat-lib/cluster/cluster.cpp
-#        # 2D source code
-#        src/core/Mesh2D.cpp src/core/Mesh2D.h
-#        src/core/SegmentData.h
-#        src/elasticity/2d/ElasticS3DP0_element.cpp
-#        src/elasticity/2d/Elastic2DP1_element.cpp
-#        src/elasticity/2d/ElasticHMatrix2DP0.h
-#        src/elasticity/2d/ElasticHMatrix2DP1.h
-#        src/elasticity/jacobi_prec_assembly.cpp
-#        src/elasticity/PostProcessDDM.cpp
-#        src/elasticity/2d/FullMatrixAssembly2D.cpp
-#        src/elasticity/2d/FullMatrixAssembly2D.h
-#        # 3D source code
-#        Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
-#        src/core/Mesh3D.cpp src/core/Mesh3D.h
-#        src/core/FaceData.cpp
-#        #  - T6 element
-#        src/core/element_utilities.cpp
-#        src/elasticity/3d/Elastic3DT6_element.cpp
-#        src/elasticity/3d/h_potential.cpp
-#        src/elasticity/3d/tensor_utilities.cpp
-#        src/elasticity/3d/ElasticHMatrix3DT6.h
-#        #  - R0 element
-#        #        src/elasticity/3d/Elastic3DR0_element.h
-#        src/elasticity/3d/Elastic3DR0_element.cpp
-#        src/elasticity/3d/ElasticHMatrix3DR0.h
-#
-#        # Solver
-#        src/solvers/HIterativeSolverUtilities.h
-#        # BigWham Interface
-#        src/BigWham.h
-        src/test.cpp
+        Hmat-lib/cluster/cluster.h
+        Hmat-lib/cluster/cluster.cpp
+        # 2D source code
+        src/core/Mesh2D.cpp src/core/Mesh2D.h
+        src/core/SegmentData.h
+        src/elasticity/2d/ElasticS3DP0_element.cpp
+        src/elasticity/2d/Elastic2DP1_element.cpp
+        src/elasticity/2d/ElasticHMatrix2DP0.h
+        src/elasticity/2d/ElasticHMatrix2DP1.h
+        src/elasticity/jacobi_prec_assembly.cpp
+        src/elasticity/PostProcessDDM.cpp
+        src/elasticity/2d/FullMatrixAssembly2D.cpp
+        src/elasticity/2d/FullMatrixAssembly2D.h
+        # 3D source code
+        Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
+        src/core/Mesh3D.cpp src/core/Mesh3D.h
+        src/core/FaceData.cpp
+        #  - T6 element
+        src/core/element_utilities.cpp
+        src/elasticity/3d/Elastic3DT6_element.cpp
+        src/elasticity/3d/h_potential.cpp
+        src/elasticity/3d/tensor_utilities.cpp
+        src/elasticity/3d/ElasticHMatrix3DT6.h
+        #  - R0 element
+        #        src/elasticity/3d/Elastic3DR0_element.h
+        src/elasticity/3d/Elastic3DR0_element.cpp
+        src/elasticity/3d/ElasticHMatrix3DR0.h
+
+        # Solver
+        src/solvers/HIterativeSolverUtilities.h
+        # BigWham Interface
+        src/BigWham.h
         )
-#target_link_libraries(party  ${CMAKE_MKL_LIBRARIES} ) #${CMAKE_OPENBLAS_LIBRARIES}
-#if(IL_MKL)
-#    if(APPLE)
-#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-#    elseif(UNIX)
-#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-#        # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
-#    elseif(WIN32)
-#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
-#    endif()
-#elseif(IL_OPENBLAS)
-#    target_compile_definitions(party PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
-#    target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR})
-#endif()
+
+target_link_libraries(party  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
+if(IL_MKL)
+    if(APPLE)
+        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+    elseif(UNIX)
+        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+        # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
+    elseif(WIN32)
+        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
+    endif()
+elseif(IL_OPENBLAS)
+    target_compile_definitions(party PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
+    target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR})
+endif()
 
 # use this
-include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/pybind11)
 add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11-master)
+include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
 # or use
 # find_package(pybind11 REQUIRED)
-
 add_library(pyparty MODULE ${PROJECT_SOURCE_DIR}/src/pyparty.cpp)
 target_link_libraries(pyparty PRIVATE pybind11::module party)
 
-set_target_properties(pyparty PROPERTIES PREFIX "")
-set_target_properties(pyparty PROPERTIES OUTPUT_NAME "pyparty")
-
-
-add_custom_command(TARGET pyparty POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> /Users/carloperuzzo/PyFrac_git/src/pyparty.so
-        COMMENT "Created  /Users/carloperuzzo/PyFrac_git/src/pyparty.so"
-        )
+#add_custom_command(TARGET pyparty POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> /Users/carloperuzzo/PyFrac_git/src/pyparty.so
+#        COMMENT "Created  /Users/carloperuzzo/PyFrac_git/src/pyparty.so"
+#        )
 add_custom_command(TARGET pyparty POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> /Users/carloperuzzo/bigwham/pybind_test/pyparty.so
         COMMENT "Created  /Users/carloperuzzo/bigwham/pybind_test/pyparty.so"
@@ -333,14 +328,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
 set(TESTED_SOURCE_FILES
         src/core/FaceData.cpp
         src/elasticity/3d/Elastic3DR0_element.cpp
-        src/elasticity/3d/Elastic3DR0_element.h
-
         )
 set(UNIT_TEST_FILES
+        il/gtest/src/gtest-all.cc
         #src/elasticity/_test/elasticity_tests.cpp
+        src/core/_test/FaceData_tests.cpp
         src/elasticity/_test/elastic3DR0_element_tests.cpp
 
-        il/gtest/src/gtest-all.cc
         )
 
 add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )

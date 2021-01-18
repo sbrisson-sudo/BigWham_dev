@@ -9,25 +9,31 @@
 // last modifications :: Jan. 12 2021
 
 #include <pybind11-master/include/pybind11/pybind11.h>
+#include <pybind11-master/include/pybind11/numpy.h>
+#include <pybind11-master/include/pybind11/stl.h>
+#include <pybind11-master/include/pybind11/complex.h>
+#include <pybind11-master/include/pybind11/functional.h>
+#include <pybind11-master/include/pybind11/chrono.h>
+
 #include "BigWham.h"
-#include "test.cpp"
-#include <il/Array2D.h>
+//#include <il/Array2D.h>
 
 
 namespace py = pybind11;
 
 
 PYBIND11_MODULE(pyparty, m) {
-    m.doc() = "pybind pyexample plugin"; // optional docstring
-    m.def("add_withdefaults", &add, "A function adding two numbers with defaults",
-          py::arg("i") = 1, // with default argument
-          py::arg("j") = 2  // with default argument
-    );
+//    m.doc() = "pybind pyexample plugin"; // optional docstring
+//    m.def("addwithdefaults", &add, "A function adding two numbers with defaults",
+//          py::arg("i") = 1, // with default argument
+//          py::arg("j") = 3  // with default argument
+//    );
 
 //    // Binding the mother class Bigwhamio
 //    // option py::dynamic_attr() added to allow new members to be created dynamically);
-//    py::class_<Bigwhamio>(m, "Bigwhamio", py::dynamic_attr())
-//    .def("set",                    &Bigwhamio::set)
+    py::class_<Bigwhamio>(m, "Bigwhamio", py::dynamic_attr())
+      .def(py::init<>())       // constructor
+      .def("set",                    &Bigwhamio::set);
 //    .def("setHpattern",            &Bigwhamio::setHpattern)
 //    .def("getCollocationPoints",   &Bigwhamio::getCollocationPoints)
 //    .def("getPermutation",         &Bigwhamio::getPermutation)

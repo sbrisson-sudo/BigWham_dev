@@ -10,14 +10,14 @@
 #include <iostream>
 #include <il/Array2D.h>
 #include <src/elasticity/3d/Elastic3DR0_element.h>
-
+#include "elastic3DR0_element_tests_def.h"
 
 //--------------------------------------------------------------------------
 
 
 TEST(R0, ip_expressions) {
   il::Array2D<double> ReferenceValues{19, 1, 0.};
-  double x, y, z, xi, eta, res;
+  double x, y, z, xi, eta;
   x = 1.12;
   y = 1.3;
   z = 2.14;
@@ -66,9 +66,42 @@ TEST(R0, ip_expressions) {
   ASSERT_NEAR(ReferenceValues(18,0), bie::ip333(x, y, z, xi, eta), 1.e-5);
 }
 
-TEST(R0, stress_expressions) {
-    il::StaticArray2D<double, 3, 6> Stress;
-    il::Array2D<double> ReferenceStress{3, 6, 0.};
+
+TEST(R0, Ip_special_expressions) {
+    il::Array2D<double> ReferenceValues{2, 1, 0.};
+    double x, y, a, b;
+    a = 2.000;
+    b = 3.000;
+
+    // Reference values from Mathematica with 18 decimals
+    ReferenceValues(0,0) = -0.14308728328344156;       //ip33 limits z->0 and x->a
+    ReferenceValues(1,0) = -0.0921292729553324;        //ip33 limits z->0 and y->b
+
+    ASSERT_NEAR(ReferenceValues(0,0), bie::Ip33_lim_z_to_0_and_x_to_a (x=a, y=6.000, a, b), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(1,0), bie::Ip33_lim_z_to_0_and_y_to_b (x=6.000, y=b, a, b), 1.e-5);
+}
+
+TEST(R0, ip_special_expressions) {
+    il::Array2D<double> ReferenceValues{4, 1, 0.};
+    double x, y, z=0.000, xi, eta;
+    x = 4.000;
+    y = 6.000;
+    xi = 2.000;
+    eta = 3.000;
+
+    // Reference values from Mathematica with 18 decimals
+    ReferenceValues(0,0) = 0.2773500981126146;       //ip12, z->0
+    ReferenceValues(1,0) = 0.0839748528310782;       //ip11, z->0
+    ReferenceValues(2,0) = 0.1484332679249236;       //ip22, z->0
+    ReferenceValues(3,0) = 0.6009252125773314;       //ip33, z->0
+
+    ASSERT_NEAR(ReferenceValues(0,0), bie::ip12_lim_z_to_0(x, y, z, xi, eta), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(1,0), bie::ip11_lim_z_to_0(x, y, z, xi, eta), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(2,0), bie::ip22_lim_z_to_0(x, y, z, xi, eta), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(3,0), bie::ip33_lim_z_to_0(x, y, z, xi, eta), 1.e-5);
+}
+
+TEST_F(Test3DR0Stress, stress_expressions_at_non_zero_z) {
     double x, y, z, a, b, G, nu;
     x = 1.12;
     y = 1.3;
@@ -77,8 +110,8 @@ TEST(R0, stress_expressions) {
     b = 2.;
     G = 10.;
     nu = 0.3;
-    Stress = bie::StressesKernelR0(x, y,  z,  a,  b, G, nu);
 
+    il::Array2D<double> ReferenceStress{3,6,0.};
     // Reference values from Mathematica with 18 decimals
     // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
 
@@ -106,25 +139,161 @@ TEST(R0, stress_expressions) {
     ReferenceStress(2, 4) = 0.807226930217385;      // sxz
     ReferenceStress(2, 5) = 0.3920679058913323;     // syz
 
-    ASSERT_NEAR(ReferenceStress(0, 0), Stress(0, 0), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(0, 1), Stress(0, 1), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(0, 2), Stress(0, 2), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(0, 3), Stress(0, 3), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(0, 4), Stress(0, 4), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(0, 5), Stress(0, 5), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(1, 0), Stress(1, 0), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(1, 1), Stress(1, 1), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(1, 2), Stress(1, 2), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(1, 3), Stress(1, 3), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(1, 4), Stress(1, 4), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(1, 5), Stress(1, 5), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(2, 0), Stress(2, 0), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(2, 1), Stress(2, 1), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(2, 2), Stress(2, 2), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(2, 3), Stress(2, 3), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(2, 4), Stress(2, 4), 1.e-5);
-    ASSERT_NEAR(ReferenceStress(2, 5), Stress(2, 5), 1.e-5);
+    TestStress(x, y, z, a, b, G, nu, ReferenceStress);
 }
+
+
+TEST_F(Test3DR0Stress, stress_expressions_at_zero_z) {
+    double x, y, z, a, b, G, nu;
+    x = 0.9;
+    y = 3.1000000;
+    z = 0.0000000;
+    a = 1.;
+    b = 2.;
+    G = 200.;
+    nu = 0.3;
+
+    il::Array2D<double> ReferenceStress{3,6,0.};
+    // Reference values from Mathematica with 18 decimals
+    // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
+
+    ReferenceStress(0, 0) = 0.0;                    // sxx
+    ReferenceStress(0, 1) = 0.0;                    // syy
+    ReferenceStress(0, 2) = 0.0;                    // szz
+    ReferenceStress(0, 3) = 0.0;                    // sxy
+    ReferenceStress(0, 4) = -6.572822442880559;     // sxz
+    ReferenceStress(0, 5) = -2.98463799233973;      // syz
+
+    // stress due to displacement discontinuity  DDy (shear)
+    ReferenceStress(1, 0) = 0.0;                     // sxx
+    ReferenceStress(1, 1) = 0.0;                     // syy
+    ReferenceStress(1, 2) = 0.0;                     // szz
+    ReferenceStress(1, 3) = 0.0;                     // sxy
+    ReferenceStress(1, 4) = -2.98463799233973;       // sxz
+    ReferenceStress(1, 5) = -13.83986218452465;      // syz
+
+    // stress due to displacement discontinuity DDz (normal)
+    ReferenceStress(2, 0) = -4.761276075329918;      // sxx
+    ReferenceStress(2, 1) = -14.45066239752203;     // syy
+    ReferenceStress(2, 2) = -12.007461545532491;     // szz
+    ReferenceStress(2, 3) = -3.9795173231196403;      // sxy
+    ReferenceStress(2, 4) = 0.0;                     // sxz
+    ReferenceStress(2, 5) = 0.0;                     // syz
+
+    TestStress(x, y, z, a, b, G, nu, ReferenceStress);
+}
+
+TEST_F(Test3DR0Stress, stress_expressions_at_zero_z_and_x_to_a) {
+    double x, y, z, a, b, G, nu;
+    x = 1.;
+    y = 3.1000000;
+    z = 0.0000000;
+    a = 1.;
+    b = 2.;
+    G = 200.;
+    nu = 0.3;
+
+    il::Array2D<double> ReferenceStress{3,6,0.};
+    // Reference values from Mathematica with 18 decimals
+    // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
+
+    ReferenceStress(0, 0) = 0.0;                    // sxx
+    ReferenceStress(0, 1) = 0.0;                    // syy
+    ReferenceStress(0, 2) = 0.0;                    // szz
+    ReferenceStress(0, 3) = 0.0;                    // sxy
+    ReferenceStress(0, 4) = -6.433376219207982;     // sxz
+    ReferenceStress(0, 5) = -3.120220980453658;      // syz
+
+    // stress due to displacement discontinuity  DDy (shear)
+    ReferenceStress(1, 0) = 0.0;                     // sxx
+    ReferenceStress(1, 1) = 0.0;                     // syy
+    ReferenceStress(1, 2) = 0.0;                     // szz
+    ReferenceStress(1, 3) = 0.0;                     // sxy
+    ReferenceStress(1, 4) = -3.120220980453658;       // sxz
+    ReferenceStress(1, 5) = -12.9098547996334;      // syz
+
+    // stress due to displacement discontinuity DDz (normal)
+    ReferenceStress(2, 0) = -4.785044563092725;      // sxx
+    ReferenceStress(2, 1) = -13.42034933699328;     // syy
+    ReferenceStress(2, 2) = -11.37837118755376;     // szz
+    ReferenceStress(2, 3) = -4.160294640604879;      // sxy
+    ReferenceStress(2, 4) = 0.0;                     // sxz
+    ReferenceStress(2, 5) = 0.0;                     // syz
+
+    TestStress(x, y, z, a, b, G, nu, ReferenceStress);
+}
+
+
+TEST_F(Test3DR0Stress, stress_expressions_at_zero_z_and_y_to_b) {
+    double x, y, z, a, b, G, nu;
+    x = 1.50000;
+    y = 2.00000;
+    z = 0.0000000;
+    a = 1.00000;
+    b = 2.00000;
+    G = 200.;
+    nu = 0.3;
+
+    il::Array2D<double> ReferenceStress{3,6,0.};
+    // Reference values from Mathematica with 18 decimals
+    // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
+
+    ReferenceStress(0, 0) = 0.0;                    // sxx
+    ReferenceStress(0, 1) = 0.0;                    // syy
+    ReferenceStress(0, 2) = 0.0;                    // szz
+    ReferenceStress(0, 3) = 0.0;                    // sxy
+    ReferenceStress(0, 4) = -35.79423536018405;     // sxz
+    ReferenceStress(0, 5) = -10.66745173504686;      // syz
+
+    // stress due to displacement discontinuity  DDy (shear)
+    ReferenceStress(1, 0) = 0.0;                     // sxx
+    ReferenceStress(1, 1) = 0.0;                     // syy
+    ReferenceStress(1, 2) = 0.0;                     // szz
+    ReferenceStress(1, 3) = 0.0;                     // sxy
+    ReferenceStress(1, 4) = -10.66745173504686;       // sxz
+    ReferenceStress(1, 5) = -23.87911771266086;      // syz
+
+    // stress due to displacement discontinuity DDz (normal)
+    ReferenceStress(2, 0) = -36.02498968164837;      // sxx
+    ReferenceStress(2, 1) = -20.13816615161743;     // syy
+    ReferenceStress(2, 2) = -35.10197239579112;     // szz
+    ReferenceStress(2, 3) = -14.223268980062478;      // sxy
+    ReferenceStress(2, 4) = 0.0;                     // sxz
+    ReferenceStress(2, 5) = 0.0;                     // syz
+
+    TestStress(x, y, z, a, b, G, nu, ReferenceStress);
+}
+
+TEST(R0, singular_stress){
+    double x, y, a, b;
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = 2., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = 2., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = -2., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = -2., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = 1., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = 1., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = -1., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = -1., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 1., y = 10., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -1., y = 10., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -1., y = -10., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 1., y = -10., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.5, y = 2., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -0.5, y = 2., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -0.5, y = -2., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.5, y = -2., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = 2., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = 2., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = -2., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = -2., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 0., y = 0., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = 10., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = 10., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = -10., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = -10., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 0.9999, y = -1.99999, a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.999999999999999999999, y = -1.999999999999999999999, a = 1., b = 2., false));
+};
 
 TEST(R0, displacement_expressions) {
     il::Array2D<double> Displacement;

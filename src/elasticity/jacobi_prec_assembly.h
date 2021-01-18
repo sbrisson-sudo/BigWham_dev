@@ -16,7 +16,6 @@
 #include <src/core/SegmentData.h>
 
 #include <src/core/Mesh3D.h>
-#include <src/core/TriangularElementData.h>
 
 namespace bie {
 

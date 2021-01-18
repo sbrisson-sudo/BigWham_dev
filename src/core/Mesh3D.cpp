@@ -189,7 +189,7 @@ namespace bie {
         // transposed w.r.t. this form, so you will find a transpose operation after calling this function
         // in the kernel files
 
-        il::Array2D<double> vertElt;
+        il::Array2D<double> vertElt{connectivity_.size(1),3};
         // loop over the vertices
         for (il::int_t i = 0; i < connectivity_.size(1); i++) {
             vertElt(i,0) = this -> coordinates_(this -> connectivity_(ne,i), 0); // x coordinate

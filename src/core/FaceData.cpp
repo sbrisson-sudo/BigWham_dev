@@ -57,7 +57,7 @@ namespace bie {
         // check that the number of vertexes is at least 3
         if (NoV_ < 3 || xv.size(1) < 3) {std::cout << "FaceData - ERROR! The coordinates are non sufficient to define a face\n";}
         // check that the shape of xv is (number of vertex x 3) and not (3 x number of vertex)
-        if (xv.size(1) > NoV_) {std::cout << "FaceData - ERROR! The array of vertex coordinates was not of size (number of vertex x 3)\n";}
+        if (xv.size(1) > NoV_) {std::cout << "FaceData - ERROR! Please, traspose the array of vertex coordinates and retry! \n It wasn't of size (number of vertex x 3)\n";}
 
         // compute unit normal vector n_
 
@@ -128,7 +128,6 @@ namespace bie {
 
         // compute centroid of the element
         this->xc_ = this->computeCentroid(xv); // go to function to see convention and other details
-
         // compute nodes' coordinates depending on the interpolation order
         this->nodes_ = this->computeNodes(); // go to function to see convention and other details
 
@@ -194,21 +193,21 @@ namespace bie {
             }
             case 4: {
                 il::StaticArray<double, 3> x1,x2,x3,x4;
-                x1[0]=(xv(0, 0) + xv(1, 0) + xv(2, 0))/ 3.;
-                x1[1]=(xv(0, 1) + xv(1, 1) + xv(2, 1))/ 3.;
-                x1[2]=(xv(0, 2) + xv(1, 2) + xv(2, 2))/ 3.;
+                x2[0]=(xv(0, 0) + xv(1, 0) + xv(2, 0))/ 3.;
+                x2[1]=(xv(0, 1) + xv(1, 1) + xv(2, 1))/ 3.;
+                x2[2]=(xv(0, 2) + xv(1, 2) + xv(2, 2))/ 3.;
 
-                x2[0]=(xv(0, 0) + xv(2, 0) + xv(3, 0))/ 3.;
-                x2[1]=(xv(0, 1) + xv(2, 1) + xv(3, 1))/ 3.;
-                x2[2]=(xv(0, 2) + xv(2, 2) + xv(3, 2))/ 3.;
+                x4[0]=(xv(0, 0) + xv(2, 0) + xv(3, 0))/ 3.;
+                x4[1]=(xv(0, 1) + xv(2, 1) + xv(3, 1))/ 3.;
+                x4[2]=(xv(0, 2) + xv(2, 2) + xv(3, 2))/ 3.;
 
-                x3[0]=(xv(0, 0) + xv(1, 0) + xv(3, 0))/ 3.;
-                x3[1]=(xv(0, 1) + xv(1, 1) + xv(3, 1))/ 3.;
-                x3[2]=(xv(0, 2) + xv(1, 2) + xv(3, 2))/ 3.;
+                x1[0]=(xv(0, 0) + xv(1, 0) + xv(3, 0))/ 3.;
+                x1[1]=(xv(0, 1) + xv(1, 1) + xv(3, 1))/ 3.;
+                x1[2]=(xv(0, 2) + xv(1, 2) + xv(3, 2))/ 3.;
 
-                x4[0]=(xv(2, 0) + xv(1, 0) + xv(3, 0))/ 3.;
-                x4[1]=(xv(2, 1) + xv(1, 1) + xv(3, 1))/ 3.;
-                x4[2]=(xv(2, 2) + xv(1, 2) + xv(3, 2))/ 3.;
+                x3[0]=(xv(2, 0) + xv(1, 0) + xv(3, 0))/ 3.;
+                x3[1]=(xv(2, 1) + xv(1, 1) + xv(3, 1))/ 3.;
+                x3[2]=(xv(2, 2) + xv(1, 2) + xv(3, 2))/ 3.;
 
                 xc=this->intersectLines(x1, x2, x3, x4);
                 break;
@@ -447,6 +446,7 @@ namespace bie {
         //   -intersection point
 
         il::StaticArray<double, 3> D31, D42, D12, D, intersectingPoint;
+
         for (il::int_t i = 0; i < 3; i++) {
             D31[i] = x3[i] - x1[i];
             D42[i] = x4[i] - x2[i];
@@ -457,7 +457,6 @@ namespace bie {
         D[0] = D31[0] * D42[1] - D42[0] * D31[1];
         D[1] = D31[0] * D42[2] - D42[0] * D31[2];
         D[2] = D31[1] * D42[2] - D42[1] * D31[2];
-
         il::int_t index, i, j, k;
         index = this->maxAbsArray(D);
         switch (index) {

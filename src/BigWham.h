@@ -8,13 +8,11 @@
 //
 // last modifications :: Nov. 12 2020
 
-//#pragma once
 #include <iostream>
 
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/Dynamic.h>
-//#include <il/Gmres.h>
 #include <il/Map.h>
 #include <il/SparseMatrixCSR.h>
 
@@ -24,14 +22,10 @@
 #include <Hmat-lib/hmatrix/HMatrixUtils.h>
 #include <Hmat-lib/linearAlgebra/blas/hdot.h>
 
-//#include <Hmat-lib/linearAlgebra/factorization/luDecomposition.h>
-
 #include <src/core/ElasticProperties.h>
 #include <src/core/Mesh2D.h>
 #include <src/core/Mesh3D.h>
-//#include <src/elasticity/jacobi_prec_assembly.h>  // for diagonal
 #include <src/elasticity/PostProcessDDM.h>
-//#include <src/solvers/HIterativeSolverUtilities.h>
 
 // kernels.
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
@@ -39,12 +33,23 @@
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
 #include <elasticity/3d/ElasticHMatrix3DR0.h>
 
+//#pragma once
+
+//#include <il/Gmres.h>
+//#include <Hmat-lib/linearAlgebra/factorization/luDecomposition.h>
+//#include <src/elasticity/jacobi_prec_assembly.h>  // for diagonal
+//#include <src/solvers/HIterativeSolverUtilities.h>
+
+
 class Bigwhamio {
  private:
-  il::HMatrix<double> h_;
+  il::HMatrix<double> h_; // dd to traction
+  il::HMatrix<double> hdispl_; // dd to displacements
   //   arrays storing the pattern (to speed up the hdot ...).
   il::Array2D<il::int_t> lr_pattern_;  // low rank block pattern
   il::Array2D<il::int_t> fr_pattern_;  // full rank block pattern
+  il::Array2D<il::int_t> lr_pattern_hdispl_;  // low rank block pattern dd to displacement h
+  il::Array2D<il::int_t> fr_pattern_hdispl_;  // full rank block pattern dd to displacement h
 
   il::Array<il::int_t> permutation_;  // permutation of the dof.
 
@@ -75,19 +80,19 @@ class Bigwhamio {
       kernel_="none";
   };
   ~Bigwhamio() = default;
-
   void set(const std::vector<double>& coor, const std::vector<int64_t>& conn,
            const std::string& kernel, const std::vector<double>& properties,
-           const int max_leaf_size,const double eta,const double eps_aca) {
-    // coor and conn are assumed to be passed in row-major storage format
-    kernel_ = kernel;
-    // switch depending on Kernels for mesh building
+           const int max_leaf_size,const double eta,const double eps_aca)
+           {
+            // coor and conn are assumed to be passed in row-major storage format
+            kernel_ = kernel;
 
-    max_leaf_size_ = max_leaf_size;
-    eta_ = eta;
-    epsilon_aca_ = eps_aca;
-    std::cout << " Now setting things... " << kernel_ << "\n";
-    il::Timer tt;
+            // switch depending on Kernels for mesh building
+            max_leaf_size_ = max_leaf_size;
+            eta_ = eta;
+            epsilon_aca_ = eps_aca;
+            std::cout << " Now setting things... " << kernel_ << "\n";
+            il::Timer tt;
 
     // if on kernel name - separating 2D and 3D kernels,
     // duplicating code for simplicity
@@ -187,7 +192,7 @@ class Bigwhamio {
       std::cout << "H mat set : CR = " << il::compressionRatio(h_)
                 << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
       tt.Reset();
-    } else if (kernel_=="3DT6") {
+    } else if (kernel_=="3DT6" || kernel_=="3DR0") {
       // check this  NOTE 1: the 3D mesh uses points and connectivity matrix that are
       // transposed w.r. to the 2D mesh
 
@@ -195,25 +200,28 @@ class Bigwhamio {
       dimension_ = 3;
       dof_dimension_ = 3;
 
+      il::int_t nnodes_elts = 0; // n of nodes per element
+      int p = 0; // interpolation order
+
+      if (kernel_=="3DT6") {nnodes_elts = 3; p = 2;}
+      else if (kernel_=="3DR0") {nnodes_elts = 4; p = 0;}
+      else {std::cout << "Invalid kernel name ---\n"; return; };
+
+      IL_ASSERT(conn.size() % nnodes_elts == 0);
       IL_ASSERT(coor.size() % dimension_ == 0);
-      IL_ASSERT(conn.size() % dimension_ == 0);
 
-      std::cout << "Number of nodes " << coor.size() / dimension_ << " .. mod "
+      std::cout << " Number of nodes " << coor.size() / dimension_ << " .. mod "
                 << (coor.size() % dimension_) << "\n";
-      std::cout << " Number of elts " << conn.size() / dimension_ << "\n";
+      std::cout << " Number of elts " << conn.size() / nnodes_elts << "\n";
+      std::cout << " Interpolation order  " << p << "\n";
 
+      il::int_t nelts = conn.size() / nnodes_elts;
       il::int_t nvertex = coor.size() / dimension_;
-      il::int_t nelts = conn.size() / dimension_;
-      il::int_t nnodes_elts = dimension_;
+
       il::Array2D<double> Coor{nvertex, dimension_,0.}; // columm major order
       il::Array2D<il::int_t> Conn{nelts, nnodes_elts, 0};
 
-      // interpolation order
-      int p = 0;
-      if (kernel_ == "3DT6") {
-        p = 2;
-      }
-      std::cout << " interpolation order  " << p << "\n";
+
       // populate mesh (loops could be optimized - passage row-major to col-major)
       int index = 0;
       for (il::int_t i = 0; i < Coor.size(0); i++) {
@@ -233,16 +241,15 @@ class Bigwhamio {
 
       bie::Mesh3D mesh3d(Coor, Conn, p);
       std::cout << "... mesh done"<< "\n";
-      std::cout << "Number elts " << mesh3d.numberElts() <<"\n";
+      std::cout << " Number elts " << mesh3d.numberElts() <<"\n";
 
       collocationPoints_ = mesh3d.getCollocationPoints();
 
-      std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
+      std::cout << " Coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
       std::cout << "Creating cluster tree - number of collocation pts: " << collocationPoints_.size(0) <<"\n";
 
       tt.Start();
-      const il::Cluster cluster =
-          il::cluster(max_leaf_size_, il::io, collocationPoints_);
+      const il::Cluster cluster = il::cluster(max_leaf_size_, il::io, collocationPoints_);
       tt.Stop();
       std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
       tt.Reset();
@@ -274,10 +281,29 @@ class Bigwhamio {
         h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
         std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
       }
+      else if (kernel_ == "3DR0")
+      {
+        std::cout << "Kernel Isotropic ELasticity 3D R0 (constant) rectangle \n";
+        std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
+
+        // DD to traction HMAT
+        const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0,1};
+        h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+        std::cout << "DD to traction HMAT --> built \n";
+
+        // DD to displacement HMAT
+        const bie::ElasticHMatrix3DR0<double> Mdispl{collocationPoints_, permutation_, mesh3d, elas, 0, 0,0};
+        hdispl_ = il::toHMatrix(Mdispl, hmatrix_tree, epsilon_aca_);
+        std::cout << "DD to displacement HMAT --> built \n";
+
+        std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
+        std::cout << "H mat DD2traction set : CR = " << il::compressionRatio(h_)
+                    << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
+        std::cout << "H mat DD2displacements set : CR = " << il::compressionRatio(hdispl_)
+                    << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
+      }
       tt.Stop();
       std::cout << "H-mat time = :  " << tt.time() << "\n";
-      std::cout << "H mat set : CR = " << il::compressionRatio(h_)
-                << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
       tt.Reset();
       std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
 
@@ -288,8 +314,13 @@ class Bigwhamio {
     };
 
     tt.Start();
-    std::cout << "now saving the H-mat pattern ...  ";
-    setHpattern();  // set Hpattern
+
+    setHpattern("DD2traction");  // set Hpattern
+    if (kernel_ == "3DR0"){
+        setHpattern("DD2displacements");  // set Hpattern
+        std::cout << "now saving the H-mat patterns for DD to displacements and DD to tractions...  ";
+    }
+    else{ std::cout << "now saving the H-mat pattern ...  ";}
     tt.Stop();
     std::cout << " in " << tt.time() << "\n";
 
@@ -301,45 +332,54 @@ class Bigwhamio {
 
     std::cout << "end of set() of bigwhamio object \n";
   }
-  //---------------------------------------------------------------------------
-  void setHpattern() {
-    // store the h_pattern in a il::Array2D<double> for future use
 
-    IL_EXPECT_FAST(h_.isBuilt());
-    il::Array2D<il::int_t> pattern = il::output_hmatPattern(h_);
-    //  separate full rank and low rank blocks to speed up the hdot
-    il::Array2D<il::int_t> lr_patt{pattern.size(0), 0};
-    il::Array2D<il::int_t> fr_patt{pattern.size(0), 0};
-    lr_patt.Reserve(3, pattern.size(1));
-    fr_patt.Reserve(3, pattern.size(1));
-    il::int_t nfb = 0;
-    il::int_t nlb = 0;
-    for (il::int_t i = 0; i < pattern.size(1); i++) {
-      il::spot_t s(pattern(0, i));
-      if (h_.isFullRank(s)) {
-        fr_patt.Resize(3, nfb + 1);
-        fr_patt(0, nfb) = pattern(0, i);
-        fr_patt(1, nfb) = pattern(1, i);
-        fr_patt(2, nfb) = pattern(2, i);
-        nfb++;
-      } else if (h_.isLowRank(s)) {
-        lr_patt.Resize(3, nlb + 1);
-        lr_patt(0, nlb) = pattern(0, i);
-        lr_patt(1, nlb) = pattern(1, i);
-        lr_patt(2, nlb) = pattern(2, i);
-        nlb++;
-      } else {
-        std::cout << "error in pattern !\n";
-        il::abort();
-      }
+    //---------------------------------------------------------------------------
+    void setHpattern(std::string option) {
+      // store the h pattern in a il::Array2D<double> for future use
+        il::HMatrix<double> h;
+        if(option == "DD2traction") {h = h_;}
+        else if (option == "DD2displacements") {h = hdispl_;}
+        else {std::cout << "Non valid option \n";}
+
+        IL_EXPECT_FAST(h.isBuilt());
+        il::Array2D<il::int_t> pattern = il::output_hmatPattern(h);
+        //  separate full rank and low rank blocks to speed up the hdot
+        il::Array2D<il::int_t> lr_patt{pattern.size(0), 0};
+        il::Array2D<il::int_t> fr_patt{pattern.size(0), 0};
+        lr_patt.Reserve(3, pattern.size(1));
+        fr_patt.Reserve(3, pattern.size(1));
+        il::int_t nfb = 0;
+        il::int_t nlb = 0;
+        for (il::int_t i = 0; i < pattern.size(1); i++) {
+            il::spot_t s(pattern(0, i));
+            if (h.isFullRank(s)) {
+            fr_patt.Resize(3, nfb + 1);
+            fr_patt(0, nfb) = pattern(0, i);
+            fr_patt(1, nfb) = pattern(1, i);
+            fr_patt(2, nfb) = pattern(2, i);
+            nfb++;
+            } else if (h.isLowRank(s)) {
+            lr_patt.Resize(3, nlb + 1);
+            lr_patt(0, nlb) = pattern(0, i);
+            lr_patt(1, nlb) = pattern(1, i);
+            lr_patt(2, nlb) = pattern(2, i);
+            nlb++;
+            } else {
+            std::cout << "error in pattern !\n";
+            il::abort();
+            }
+        }
+        if(option == "DD2traction") {
+            lr_pattern_ = lr_patt;
+            fr_pattern_ = fr_patt;}
+        else if (option == "DD2displacements") {
+            lr_pattern_hdispl_ = lr_patt;
+            fr_pattern_hdispl_ = fr_patt;}
+        else {std::cout << "Non valid option \n";}
     }
-    lr_pattern_ = lr_patt;
-    fr_pattern_ = fr_patt;
-  }
 
-
-  bool isBuilt() {return isBuilt_;} ;
-
+    bool isBuilt() {return isBuilt_;} ;
+    /*
   //---------------------------------------------------------------------------
   //  get and other methods below
   std::vector<double> getCollocationPoints() {
@@ -545,6 +585,10 @@ class Bigwhamio {
     return y;
 
   }
+
+     */
+
+
   //
 
   //  //---------------------------------------------------------------------------
