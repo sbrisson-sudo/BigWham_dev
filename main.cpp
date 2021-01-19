@@ -668,7 +668,16 @@ int main() {
           max_leaf_size,
           eta,
           eps_aca);
+    const std::vector<double>  xx = {1.,2.,3.,4.,5.,6.};
+    std::vector<double> x;
+    x = a.hdotProduct(xx,true);
 
+    for(int i=0; i<x.size(); ++i)
+        std::cout << x[i] << ' ';
+    x = a.hdotProduct(xx,false);
+    std::cout << "\n" ;
+    for(int i=0; i<x.size(); ++i)
+        std::cout << x[i] << ' ';
 
 //test2DP1();
 //
@@ -681,7 +690,7 @@ int main() {
 //    std::string connectivity_file = "/home/alexis/bigwham/connectivity5000.csv";
 //  test3DT6PennyShaped(vertices_file,connectivity_file);
 
-  std::cout << " End of BigWham - exe " << "\n";
+  std::cout << "\n End of BigWham - exe " << "\n";
 
 }
 

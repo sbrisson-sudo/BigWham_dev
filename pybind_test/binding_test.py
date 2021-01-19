@@ -1,8 +1,10 @@
 import numpy as np
 import pyparty
-# from pyparty import addwithdefaults
+
 from pyparty import Bigwhamio
-a = Bigwhamio()
+BigwhamOBJ = Bigwhamio()
+
+# Defining the variables:
 
 # coordinates   - const std::vector<double>
 # connectivity  - const std::vector<int64_t>
@@ -25,7 +27,8 @@ max_leaf_size = 1
 eta = 0.
 eps_aca = 0.001
 
-a.set(coor,
+# set the object
+BigwhamOBJ.set(coor,
       conn,
       kernel,
       properties,
@@ -33,4 +36,22 @@ a.set(coor,
       eta,
       eps_aca)
 
-print(b)
+# flattened collocation points
+mycollp = BigwhamOBJ.getCollocationPoints()
+print(mycollp)
+print("\n")
+
+# hdot product
+tractions = BigwhamOBJ.hdotProduct([1.,2.,3.,4.,5.,6.], False)
+print(tractions)
+tractions = BigwhamOBJ.hdotProduct([1.,2.,3.,4.,5.,6.], True)
+print(tractions)
+
+# BigwhamOBJ.getPermutation()
+# BigwhamOBJ.getCompressionRatio()
+# BigwhamOBJ.getKernel()
+# BigwhamOBJ.getSpatialDimension()
+# BigwhamOBJ.matrixSize()
+# BigwhamOBJ.getHpattern()
+# BigwhamOBJ.getFullBlocks()
+
