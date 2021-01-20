@@ -21,7 +21,7 @@ namespace bie {
     //////////////////////////////////////////////////////////////////////////
 
     Mesh3D::Mesh3D(const il::Array2D<double> &coordinates, const il::Array2D<il::int_t> &connectivity,
-           const il::int_t p){
+           const il::int_t p, bool verbose){
 
         // inputs
         //   -coordinates: vertices' coordinates in the global reference system - size: number of vertices x 3
@@ -36,20 +36,21 @@ namespace bie {
         this->coordinates_ = coordinates;
         this->connectivity_ = connectivity;
         this->interpolation_order_ = p;
-
-        // to be printed in the mma kernel shell
-        std::cout << " Mesh features" << "\n";
-        std::cout << "  Number of vertices : " << this->numberVertices() << "\n";
-        std::cout << "  Number of elements : " << this->numberElts() << "\n";
-        std::cout << "  Number of collocation points : " << this->numberCollPts() << "\n";
-        std::cout << "  Number of unknowns : " << 3 * this->numberCollPts() << "\n";
+        if (verbose) {
+            // to be printed in the mma kernel shell
+            std::cout << " Mesh features" << "\n";
+            std::cout << "  Number of vertices : " << this->numberVertices() << "\n";
+            std::cout << "  Number of elements : " << this->numberOfElts() << "\n";
+            std::cout << "  Number of collocation points : " << this->numberCollPts() << "\n";
+            std::cout << "  Number of unknowns : " << 3 * this->numberCollPts() << "\n";
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
     //        get-set functions  - i.e. public interfaces
     //////////////////////////////////////////////////////////////////////////
 
-    il::int_t Mesh3D::numberElts() const { // total number of elements
+    il::int_t Mesh3D::numberOfElts() const { // total number of elements
         return this->connectivity_.size(0);
     }
 
@@ -77,7 +78,7 @@ namespace bie {
     }
 
     il::int_t Mesh3D::numberCollPts() const { // total number of collocation points = total number of nodes
-        return this->numberElts() * this->numberCollPtsElt();
+        return this->numberOfElts() * this->numberCollPtsElt();
     }
 
     il::int_t Mesh3D::interpolationOrder() const {
@@ -114,13 +115,13 @@ namespace bie {
         //     xN yN zN
         //    where N+1 is the total number of collocation points
 
-        il::Array2D<double> collPts{this -> numberElts() * this -> numberCollPtsElt(), 3, 0};
+        il::Array2D<double> collPts{this -> numberOfElts() * this -> numberCollPtsElt(), 3, 0};
 
         il::Array2D<double> collPtsElt;
 
         il::int_t j = 0;
         // loop over the elements
-        for (il::int_t i = 0; i < this -> numberElts(); i++) {
+        for (il::int_t i = 0; i < this -> numberOfElts(); i++) {
             bie::FaceData elt = this->getElementData(i);
             collPtsElt = elt.getCollocationPoints();
             // loop over collocation points per element
@@ -149,13 +150,13 @@ namespace bie {
         //     xN yN zN
         //    where N+1 is the total number of nodes
 
-        il::Array2D<double> nodes{this -> numberElts() * this -> numberCollPtsElt(), 3, 0};
+        il::Array2D<double> nodes{this -> numberOfElts() * this -> numberCollPtsElt(), 3, 0};
 
         il::Array2D<double> nodesElt;
 
         il::int_t j = 0;
         // loop over the elements
-        for (il::int_t i = 0; i < this -> numberElts(); i++) {
+        for (il::int_t i = 0; i < this -> numberOfElts(); i++) {
             bie::FaceData elt = this->getElementData(i);
             nodesElt = elt.getNodes();
             // loop over collocation points per element

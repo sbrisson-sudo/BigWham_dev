@@ -25,7 +25,8 @@
 #include <src/core/ElasticProperties.h>
 #include <src/core/Mesh2D.h>
 #include <src/core/Mesh3D.h>
-#include <src/elasticity/PostProcessDDM.h>
+#include <src/elasticity/PostProcessDDM_2d.h>
+#include <src/elasticity/PostProcessDDM_3d.h>
 
 // kernels.
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
@@ -45,12 +46,9 @@ class Bigwhamio
         {
           private:
           il::HMatrix<double> h_; // dd to traction
-          il::HMatrix<double> hdispl_; // dd to displacements
           //   arrays storing the pattern (to speed up the hdot ...).
           il::Array2D<il::int_t> lr_pattern_;  // low rank block pattern
           il::Array2D<il::int_t> fr_pattern_;  // full rank block pattern
-          il::Array2D<il::int_t> lr_pattern_hdispl_;  // low rank block pattern dd to displacement h
-          il::Array2D<il::int_t> fr_pattern_hdispl_;  // full rank block pattern dd to displacement h
 
           il::Array<il::int_t> permutation_;  // permutation of the dof.
 
@@ -192,7 +190,7 @@ class Bigwhamio
                           std::cout << "H mat set : CR = " << il::compressionRatio(h_)
                                     << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
                           tt.Reset();
-                        } else if (kernel_=="3DT6" || kernel_=="3DR0") {
+                        } else if (kernel_=="3DT6" || kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction") {
                           // check this  NOTE 1: the 3D mesh uses points and connectivity matrix that are
                           // transposed w.r. to the 2D mesh
 
@@ -202,10 +200,9 @@ class Bigwhamio
 
                           il::int_t nnodes_elts = 0; // n of nodes per element
                           int p = 0; // interpolation order
-
                           if (kernel_=="3DT6") {nnodes_elts = 3; p = 2;}
-                          else if (kernel_=="3DR0") {nnodes_elts = 4; p = 0;}
-                          else {std::cout << "Invalid kernel name ---\n"; return; };
+                          else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction") {nnodes_elts = 4; p = 0;}
+                          else {std::cout << "Invalid kernel name ---\n"; il::abort(); };
 
                           IL_ASSERT(conn.size() % nnodes_elts == 0);
                           IL_ASSERT(coor.size() % dimension_ == 0);
@@ -241,7 +238,7 @@ class Bigwhamio
 
                           bie::Mesh3D mesh3d(Coor, Conn, p);
                           std::cout << "... mesh done"<< "\n";
-                          std::cout << " Number elts " << mesh3d.numberElts() <<"\n";
+                          std::cout << " Number elts " << mesh3d.numberOfElts() <<"\n";
 
                           collocationPoints_ = mesh3d.getCollocationPoints();
 
@@ -281,25 +278,27 @@ class Bigwhamio
                             h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
                           }
-                          else if (kernel_ == "3DR0")
+                          else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction")
                           {
                             std::cout << "Kernel Isotropic ELasticity 3D R0 (constant) rectangle \n";
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
 
-                            // DD to traction HMAT
-                            const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0,1};
-                            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
-                            std::cout << "DD to traction HMAT --> built \n";
+                            if ( kernel_ == "3DR0_traction"){
+                                // DD to traction HMAT
+                                const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0,1};
+                                h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+                                std::cout << "DD to traction HMAT --> built \n";
+                            }
 
-                            // DD to displacement HMAT
-                            const bie::ElasticHMatrix3DR0<double> Mdispl{collocationPoints_, permutation_, mesh3d, elas, 0, 0,0};
-                            hdispl_ = il::toHMatrix(Mdispl, hmatrix_tree, epsilon_aca_);
-                            std::cout << "DD to displacement HMAT --> built \n";
+                            if (kernel_ == "3DR0_displ" ){
+                                // DD to displacement HMAT
+                                const bie::ElasticHMatrix3DR0<double> Mdispl{collocationPoints_, permutation_, mesh3d, elas, 0, 0,0};
+                                h_ = il::toHMatrix(Mdispl, hmatrix_tree, epsilon_aca_);
+                                std::cout << "DD to displacement HMAT --> built \n";
+                            }
 
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
-                            std::cout << "H mat DD2traction set : CR = " << il::compressionRatio(h_)
-                                        << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
-                            std::cout << "H mat DD2displacements set : CR = " << il::compressionRatio(hdispl_)
+                            std::cout << "H mat set : CR = " << il::compressionRatio(h_)
                                         << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
                           }
                           tt.Stop();
@@ -312,14 +311,8 @@ class Bigwhamio
                         };
 
                         tt.Start();
-
-                        setHpattern("DD2traction");  // set Hpattern
-                        if (kernel_ == "3DR0")
-                        {
-                            setHpattern("DD2displacements");  // set Hpattern
-                            std::cout << "now saving the H-mat patterns for DD to displacements and DD to tractions...  ";
-                        }
-                        else{ std::cout << "now saving the H-mat pattern ...  ";}
+                        std::cout << "now saving the H-mat patterns...  ";
+                        setHpattern();  // set Hpattern
                         tt.Stop();
                         std::cout << " in " << tt.time() << "\n";
 
@@ -333,16 +326,12 @@ class Bigwhamio
                    }
 
          //---------------------------------------------------------------------------
-          void setHpattern(std::string option)
+          void setHpattern()
           {
                 // store the h pattern in a il::Array2D<double> for future use
-                il::HMatrix<double> h;
-                if(option == "DD2traction") {h = h_;}
-                else if (option == "DD2displacements") {h = hdispl_;}
-                else {std::cout << "Non valid option \n";}
 
-                IL_EXPECT_FAST(h.isBuilt());
-                il::Array2D<il::int_t> pattern = il::output_hmatPattern(h);
+                IL_EXPECT_FAST(h_.isBuilt());
+                il::Array2D<il::int_t> pattern = il::output_hmatPattern(h_);
                 //  separate full rank and low rank blocks to speed up the hdot
                 il::Array2D<il::int_t> lr_patt{pattern.size(0), 0};
                 il::Array2D<il::int_t> fr_patt{pattern.size(0), 0};
@@ -352,13 +341,13 @@ class Bigwhamio
                 il::int_t nlb = 0;
                 for (il::int_t i = 0; i < pattern.size(1); i++) {
                     il::spot_t s(pattern(0, i));
-                    if (h.isFullRank(s)) {
+                    if (h_.isFullRank(s)) {
                     fr_patt.Resize(3, nfb + 1);
                     fr_patt(0, nfb) = pattern(0, i);
                     fr_patt(1, nfb) = pattern(1, i);
                     fr_patt(2, nfb) = pattern(2, i);
                     nfb++;
-                    } else if (h.isLowRank(s)) {
+                    } else if (h_.isLowRank(s)) {
                     lr_patt.Resize(3, nlb + 1);
                     lr_patt(0, nlb) = pattern(0, i);
                     lr_patt(1, nlb) = pattern(1, i);
@@ -369,13 +358,8 @@ class Bigwhamio
                     il::abort();
                     }
                 }
-                if(option == "DD2traction") {
-                    lr_pattern_ = lr_patt;
-                    fr_pattern_ = fr_patt;}
-                else if (option == "DD2displacements") {
-                    lr_pattern_hdispl_ = lr_patt;
-                    fr_pattern_hdispl_ = fr_patt;}
-                else {std::cout << "Non valid option \n";}
+                lr_pattern_ = lr_patt;
+                fr_pattern_ = fr_patt;
           }
 
           bool isBuilt() {return isBuilt_;} ;
@@ -423,23 +407,20 @@ class Bigwhamio
           //---------------------------------------------------------------------------
 
           //---------------------------------------------------------------------------
-          double getCompressionRatio(bool UseTractionKernel = true)
+          double getCompressionRatio()
           {
             IL_EXPECT_FAST(isBuilt_);
-              if (UseTractionKernel) {return il::compressionRatio(h_);}
-              else {return il::compressionRatio(hdispl_);}
+              return il::compressionRatio(h_);
           }
 
           std::string getKernel()  {return  kernel_;}
 
           int getSpatialDimension() const  {return dimension_;}
 
-          int matrixSize(int k, bool UseTractionKernel = true) {
-              if (UseTractionKernel) {return  h_.size(k);}
-              else {return  hdispl_.size(k);}};
+          int matrixSize(int k) {return  h_.size(k);};
 
           //---------------------------------------------------------------------------
-             std::vector<int> getHpattern(bool UseTractionKernel = true)
+             std::vector<int> getHpattern()
           {
             // API function to output the hmatrix pattern
             //  as flattened list via a pointer
@@ -455,14 +436,8 @@ class Bigwhamio
 
             int fullRankPatternSize1, lowRankPatternSize1;
 
-            if (UseTractionKernel){
-                lowRankPatternSize1 =  lr_pattern_.size(1);
-                fullRankPatternSize1 = fr_pattern_.size(1);
-            }
-            else {
-                lowRankPatternSize1 =  lr_pattern_hdispl_.size(1);
-                fullRankPatternSize1 = fr_pattern_hdispl_.size(1);
-            };
+            lowRankPatternSize1 =  lr_pattern_.size(1);
+            fullRankPatternSize1 = fr_pattern_.size(1);
 
             int numberofblocks = lowRankPatternSize1 + fullRankPatternSize1;
             int len = 6 * numberofblocks;
@@ -473,46 +448,24 @@ class Bigwhamio
             int index = 0;
             //  starts with full rank
 
-            if (UseTractionKernel){
-                  for (il::int_t j = 0; j < fullRankPatternSize1; j++) {
-                      il::spot_t s(fr_pattern_(0, j));
-                      // check is low rank or not
-                      il::Array2DView<double> A = h_.asFullRank(s);
-                      //        std::cout << "block :" << i  << " | " << pat_SPOT(1,i) << "," <<
-                      //        pat_SPOT(2,i) <<
-                      //                  "/ " << pat_SPOT(1,i)+A.size(0)-1 << ","
-                      //                  <<pat_SPOT(2,i)+A.size(1)-1 << " -   "  << k << " - "
-                      //                  << A.size(0)*A.size(1) << "\n";
-                      patternlist[index++] = fr_pattern_(1, j);
-                      patternlist[index++] = fr_pattern_(2, j);
-                      patternlist[index++] = fr_pattern_(1, j) + A.size(0) - 1;
-                      patternlist[index++] = fr_pattern_(2, j) + A.size(1) - 1;
-                      patternlist[index++] = 0;
-                      patternlist[index++] = A.size(0) * A.size(1);
-                  }
+            for (il::int_t j = 0; j < fullRankPatternSize1; j++) {
+              il::spot_t s(fr_pattern_(0, j));
+              // check is low rank or not
+              il::Array2DView<double> A = h_.asFullRank(s);
+              //        std::cout << "block :" << i  << " | " << pat_SPOT(1,i) << "," <<
+              //        pat_SPOT(2,i) <<
+              //                  "/ " << pat_SPOT(1,i)+A.size(0)-1 << ","
+              //                  <<pat_SPOT(2,i)+A.size(1)-1 << " -   "  << k << " - "
+              //                  << A.size(0)*A.size(1) << "\n";
+              patternlist[index++] = fr_pattern_(1, j);
+              patternlist[index++] = fr_pattern_(2, j);
+              patternlist[index++] = fr_pattern_(1, j) + A.size(0) - 1;
+              patternlist[index++] = fr_pattern_(2, j) + A.size(1) - 1;
+              patternlist[index++] = 0;
+              patternlist[index++] = A.size(0) * A.size(1);
             }
-            else {
-                  for (il::int_t j = 0; j < fullRankPatternSize1; j++) {
-                      il::spot_t s(fr_pattern_hdispl_(0, j));
-                      // check is low rank or not
-                      il::Array2DView<double> A = h_.asFullRank(s);
-                      //        std::cout << "block :" << i  << " | " << pat_SPOT(1,i) << "," <<
-                      //        pat_SPOT(2,i) <<
-                      //                  "/ " << pat_SPOT(1,i)+A.size(0)-1 << ","
-                      //                  <<pat_SPOT(2,i)+A.size(1)-1 << " -   "  << k << " - "
-                      //                  << A.size(0)*A.size(1) << "\n";
-                      patternlist[index++] = fr_pattern_hdispl_(1, j);
-                      patternlist[index++] = fr_pattern_hdispl_(2, j);
-                      patternlist[index++] = fr_pattern_hdispl_(1, j) + A.size(0) - 1;
-                      patternlist[index++] = fr_pattern_hdispl_(2, j) + A.size(1) - 1;
-                      patternlist[index++] = 0;
-                      patternlist[index++] = A.size(0) * A.size(1);
-                  }
-            };
-
 
             // then low ranks
-            if (UseTractionKernel) {
                 for (il::int_t j = 0; j < lowRankPatternSize1; j++) {
                     il::spot_t s(lr_pattern_(0, j));
                     il::Array2DView<double> A = h_.asLowRankA(s);
@@ -530,26 +483,6 @@ class Bigwhamio
                     patternlist[index++] = 1;
                     patternlist[index++] = A.size(0) * A.size(1) + B.size(0) * B.size(1);
                 }
-            }
-            else{
-                for (il::int_t j = 0; j < lowRankPatternSize1; j++) {
-                    il::spot_t s(lr_pattern_hdispl_(0, j));
-                    il::Array2DView<double> A = h_.asLowRankA(s);
-                    il::Array2DView<double> B = h_.asLowRankB(s);
-                    //        std::cout << "block :" << i  << " | " << pat_SPOT(1,i) << "," <<
-                    //        pat_SPOT(2,i) <<
-                    //                  "/ " << pat_SPOT(1,i)+A.size(0)-1 << ","
-                    //                  <<pat_SPOT(2,i)+B.size(0)-1
-                    //                  << " - "  <<  k <<  " - "  <<
-                    //                  A.size(0)*A.size(1)+B.size(0)*B.size(1) << "\n";
-                    patternlist[index++] = lr_pattern_hdispl_(1, j);
-                    patternlist[index++] = lr_pattern_hdispl_(2, j);
-                    patternlist[index++] = lr_pattern_hdispl_(1, j) + A.size(0) - 1;
-                    patternlist[index++] = lr_pattern_hdispl_(2, j) + B.size(0) - 1;
-                    patternlist[index++] = 1;
-                    patternlist[index++] = A.size(0) * A.size(1) + B.size(0) * B.size(1);
-                }
-            }
             // return a row major flatten vector
             return patternlist;
           }
@@ -595,12 +528,10 @@ class Bigwhamio
 
 
           // ---------------------------------------------------------------------------
-          std::vector<double> hdotProduct(const std::vector<double>& x, bool UseTractionKernel = true)
+          std::vector<double> hdotProduct(const std::vector<double>& x)
           {
-              // UseTractionKernel:   it is true if you want to build the HMatrix for the DD to traction kernel
-              //                      it is false if you want to build the HMatrix for the DD to displacement kernel
             IL_EXPECT_FAST(this->isBuilt_);
-            if (UseTractionKernel) {
+
                 IL_EXPECT_FAST(h_.size(0) == h_.size(1));
                 IL_EXPECT_FAST(h_.size(1) == x.size());
 
@@ -628,46 +559,13 @@ class Bigwhamio
                     }
                 }
                 return y;
-            }
-            else {
-                IL_EXPECT_FAST(hdispl_.size(0) == hdispl_.size(1));
-                IL_EXPECT_FAST(hdispl_.size(1) == x.size());
-
-                il::Array<double> z{hdispl_.size(1), 0.};
-
-                // permutation of the dofs according to the re-ordering sue to clustering
-                il::int_t numberofcollocationpoints = collocationPoints_.size(0);
-
-                for (il::int_t i = 0; i < numberofcollocationpoints; i++) {
-                    for (int j = 0; j < dof_dimension_; j++) {
-                        z[dof_dimension_ * i + j] = x[dof_dimension_ * (permutation_[i]) + j];
-                    }
-                }
-
-                z = il::dotwithpattern(hdispl_, fr_pattern_hdispl_, lr_pattern_hdispl_, z);
-                ////    z = il::dot(h_,z);
-
-                std::vector<double> y;
-                y.assign(z.size(), 0.);
-                // permut back
-                for (il::int_t i = 0; i < numberofcollocationpoints; i++) {
-                    for (int j = 0; j < dof_dimension_; j++) {
-                        y[dof_dimension_ * (this->permutation_[i]) + j] =
-                                z[dof_dimension_ * i + j];
-                    }
-                }
-                return y;
-            }
-
           }
           //---------------------------------------------------------------------------
-          std::vector<double> hdotProductInPermutted(const std::vector<double> & x, bool UseTractionKernel = true)
+          std::vector<double> hdotProductInPermutted(const std::vector<double> & x)
           {
-            // UseTractionKernel:   it is true if you want to build the HMatrix for the DD to traction kernel
-            //                      it is false if you want to build the HMatrix for the DD to displacement kernel
                 IL_EXPECT_FAST(this->isBuilt_);
 
-                if (UseTractionKernel) {
+
                     IL_EXPECT_FAST(h_.size(0) == h_.size(1));
                     IL_EXPECT_FAST(h_.size(1) == x.size());
 
@@ -682,29 +580,159 @@ class Bigwhamio
                         y[i] = z[i];
                     }
                     return y;
-                }
-                else {
-                    IL_EXPECT_FAST(hdispl_.size(0) == hdispl_.size(1));
-                    IL_EXPECT_FAST(hdispl_.size(1) == x.size());
-
-                    il::Array<double> z{hdispl_.size(1), 0.};
-                    for (il::int_t i = 0; i < hdispl_.size(1); i++) {
-                        z[i] = x[i];
-                    }
-
-                    z = il::dotwithpattern(hdispl_,fr_pattern_hdispl_,lr_pattern_hdispl_,z);
-                    std::vector<double> y=x;
-                    for (il::int_t i = 0; i < hdispl_.size(1); i++) {
-                        y[i] = z[i];
-                    }
-                    return y;
-                }
-
-
-
-
           }
 
+          int getNodesPerElem()
+          {        int nnodes_elts =0;
+                 if (kernel_=="3DT6") {nnodes_elts = 3; }
+                 else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction") {nnodes_elts = 4; }
+                 else if (kernel_ == "2DP1") {nnodes_elts = 2;}
+                 else if (kernel_ == "S3DP0") {nnodes_elts = 3;}
+                 else {std::cout << "Invalid kernel name ---\n"; il::abort(); };
+                 return nnodes_elts;
+          }
+
+          int getInterpOrder()
+          {     int p =1000;
+                if (kernel_=="3DT6") {p = 2;}
+                else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction") {p = 0;}
+                else if (kernel_ == "2DP1") {p = 1;}
+                else if (kernel_ == "S3DP0") {p = 0;}
+                else {std::cout << "Invalid kernel name ---\n"; il::abort(); };
+                return p;
+          }
+
+          il::Array2D<il::int_t>getConn(const std::vector<int64_t>& conn){
+
+                int nnodes_elts = getNodesPerElem();
+                il::int_t nelts = conn.size() / nnodes_elts;
+
+                il::Array2D<il::int_t> Conn{nelts, nnodes_elts, 0};
+                int index = 0;
+                for (il::int_t i = 0; i < Conn.size(0); i++) {
+                    for (il::int_t j = 0; j < Conn.size(1); j++) {
+                        Conn(i, j) = conn[index];
+                        index++;
+                    }
+                }
+                return Conn;
+          }
+
+          il::Array2D<double> getCoor(const std::vector<double>& coor){
+            il::int_t nvertex = coor.size() / dimension_;
+            il::Array2D<double> Coor{nvertex, dimension_, 0.}; // columm major order
+            // populate mesh (loops could be optimized - passage row-major to col-major)
+            int index = 0;
+            for (il::int_t i = 0; i < Coor.size(0); i++) {
+                for (il::int_t j = 0; j < Coor.size(1); j++) {
+                    Coor(i, j) = coor[index];
+                    index++;
+                }
+            }
+            return Coor;
+          }
+
+          //---------------------------------------------------------------------------
+          std::vector<double> computeStresses(std::vector<double>& solution,
+                                            std::vector<double>& obsPts,
+                                            int npts,
+                                            const std::vector<double>& properties,
+                                            const std::vector<double>& coor,
+                                            const std::vector<int64_t>& conn) {
+
+                 /* BE CAREFUL 2D CASES NEVER TESTED! */
+
+            // PURPOSE: compute stresses at list of points (of size npts )
+            //          from a solution vector.
+            // INPUT:   "solution" a flattened list containing the solution in terms of DDs
+            //          "obsPts" a flattened list containing the observation points coordinates
+            //          [ x(1), y(1), z(1), ... ,x(npts), y(npts), z(npts) ]
+            //          "npts" the number of points
+            //          "properties" is a vector of size 2 or 3 depending on the kernel
+            //          It should contain at least
+            //          - properties[0] = YoungModulus
+            //          - properties[1] = PoissonRatio
+            //          - properties[2] = fracture height (mandatory only for "S3DP0" kernel)
+            //          "coor" are the coordinates of the nodes of the mesh
+            //          "conn" is the connectivity matrix node to elements of the mesh
+            // OUTPUT:  a flattened list containing the stress at each required point
+
+
+            IL_EXPECT_FAST(this->isBuilt_);
+            // note solution MUST be of length = number of dofs !
+
+            il::Array2D<double> pts{npts, dimension_};
+            il::int_t numberofunknowns = solution.size();
+            il::Array<double> solu{numberofunknowns};
+            il::Array2D<double> stress;
+            bie::ElasticProperties elas(properties[0], properties[1]);
+
+            int nnodes_elts = getNodesPerElem(); // n of nodes per element
+            int p = getInterpOrder(); // interpolation order
+
+            il::Array2D<il::int_t> Conn = getConn(conn);
+            il::Array2D<double> Coor = getCoor(coor);
+            for (il::int_t i = 0; i < numberofunknowns; i++) {
+                solu[i] = solution[i];
+            }
+            switch (dimension_) {
+                case 2: {
+                    std::cout << "\n WARNING: computeStresses never tested !!\n";
+
+                    il::int_t index = 0;
+                    for (il::int_t i = 0; i < npts; i++) {
+                        pts(i, 0) = obsPts[index++];
+                        pts(i, 1) = obsPts[index++];
+                    }
+
+                    std::cout << " compute stress - " << kernel_ <<"\n";
+                    if (kernel_ == "2DP1") {
+                        bie::Mesh mesh2d(Coor, Conn, p);
+                        stress = bie::computeStresses2D(
+                                pts, mesh2d, elas, solu, bie::point_stress_s2d_dp1_dd,0.);
+                    } else if (kernel_ == "S3DP0") {
+                        bie::Mesh mesh2d(Coor, Conn, p);
+                        stress = bie::computeStresses2D(pts, mesh2d, elas, solu, bie::point_stress_s3d_dp0_dd, properties[2]);
+                    }
+                    break;
+
+                }
+                case 3: {
+                    /*
+                        implemented only for constant DD over a rectangular element
+                    */
+                    il::int_t index = 0;
+                    for (il::int_t i = 0; i < npts; i++) {
+                        pts(i, 0) = obsPts[index++];
+                        pts(i, 1) = obsPts[index++];
+                        pts(i, 2) = obsPts[index++];
+                    }
+
+                    std::cout << "\n compute stress - " << kernel_ <<"\n";
+                    if (kernel_ == "3DT6") {
+                        bie::Mesh3D mesh3d(Coor, Conn, p);
+                        std::cout << "\n WARNING: not implemented !!\n";
+                        il::abort();
+                    } else if (kernel_ == "3DR0_traction") {
+                        bie::Mesh3D mesh3d(Coor, Conn, p, false);
+                        stress = bie::computeStresses3D(pts, mesh3d, elas, solu, bie::point_stress_3DR0);
+                    }
+                    break;
+                }
+            }
+
+            std::vector<double> stress_out(stress.size(0) * stress.size(1));
+
+            il::int_t index = 0;
+            for (il::int_t i= 0; i < stress.size(0); i++){
+                for (il::int_t j=0; j < stress.size(1); j++){
+                    stress_out[index]=stress(i,j);
+                    index = index +1 ;
+                } // loop on the stress components
+            } // loop on the observation points
+
+            return stress_out;
+          }
 
           //
 
@@ -798,65 +826,6 @@ class Bigwhamio
           //    } else {
           //      return 1;
           //    }
-          //  }
-
-          // todo: make it work in 2D but in 3D needs to be recoded
-          // todo: make the displacement version as well
-
-          //  //---------------------------------------------------------------------------
-          //  double* computeStresses(const double* solution, const double* obsPts,
-          //                          const int npts) {
-          //    // compute stresses at list of points (of size npts )
-          //    // from a solution vector.
-          //
-          //    IL_EXPECT_FAST(this->isMeshbuilt == 1);
-          //    // note solution MUST be of length = number of dofs !
-          //
-          //    IL_EXPECT_FAST((obsPts != (double*)nullptr));
-          //    IL_EXPECT_FAST((solution != (double*)nullptr));
-          //
-          //    il::Array2D<double> pts{npts, dimension_};
-          //    il::Array<double> solu{numberofunknowns};
-          //    il::Array2D<double> stress;
-          //
-          //    switch (dimension_) {
-          //      case 2: {
-          //        il::int_t index = 0;
-          //        for (il::int_t i = 0; i < npts; i++) {
-          //          pts(i, 0) = obsPts[index++];
-          //          pts(i, 1) = obsPts[index++];
-          //        }
-          //        for (il::int_t i = 0; i < numberofunknowns; i++) {
-          //          solu[i] = solution[i];
-          //        }
-          //        std::cout << " compute stress - " << this->kernel <<"\n";
-          //        if (this->kernel == "2DP1") {
-          //          stress = bie::computeStresses2D(
-          //              pts, the_mesh_2D, elas_, solu, bie::point_stress_s2d_dp1_dd,
-          //              frac_height_);
-          //        } else if (this->kernel == "S3DP0") {
-          //
-          //          stress = bie::computeStresses2D(
-          //              pts, the_mesh_2D, elas_, solu, bie::point_stress_s3d_dp0_dd,
-          //              frac_height_);
-          //        }
-          //        break;
-          //      }
-          //      case 3: {
-          //        std::cout << "Not implemented\n";
-          //        il::abort();
-          //      }
-          //    }
-          //    // transfert back as a pointer to a flattened list....
-          //    double* stress_o = new double[stress.size(0) * stress.size(1)];
-          //    il::int_t index =0;
-          //    for (il::int_t i=0;i<stress.size(0);i++){
-          //      stress_o[index++]=stress(i,0);
-          //      stress_o[index++]=stress(i,1);
-          //      stress_o[index++]=stress(i,2);
-          //    }
-          //
-          //    return stress_o;
           //  }
 
         };  // end class bigwhamio

@@ -40,6 +40,18 @@ il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence(
             il::int_t I_want_global_DD,
             il::int_t I_want_global_displacement) ;
 
+il::Array<double> point_stress_3DR0(
+            il::Array<double> &observ_pt, // coordinates
+            FaceData &elem_data_s, // source element
+            il::Array<double> &dd, // dislacement discontinuities components
+            ElasticProperties const &elas_); // elastic properties
+
+il::Array<double> point_displacement_3DR0(
+            il::Array<double> &observ_pt, // coordinates
+            FaceData &elem_data_s, // source element
+            il::Array<double> &dd, // dislacement discontinuities components
+            ElasticProperties const &elas_); // elastic properties
+
 // first order derivatives of I(x,y,z,xi,eta)
 
 double ip1(double& x, double& y, double& z, double& xi, double& eta) ;

@@ -408,6 +408,8 @@ namespace bie {
     il::Array2D<double> FaceData::rotationMatrix(bool Transposed){
         // inputs
         //   -Transposed; if false the matrix will rotate any vector from the global to local coordinate system
+        //                if true the matrix will rotate any vector from the local coordinate system to the global one
+        //                The DEFAULT is FALSE
         // output
         //   -rotation matrix, from global to local, based on the local orthogonal basis (s,t,n).
         //    the rotation matrix has the following form:

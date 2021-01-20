@@ -191,7 +191,8 @@ set(SOURCE_FILES
         src/elasticity/2d/ElasticHMatrix2DP0.h
         src/elasticity/2d/ElasticHMatrix2DP1.h
         src/elasticity/jacobi_prec_assembly.cpp
-        src/elasticity/PostProcessDDM.cpp
+        src/elasticity/PostProcessDDM_2d.cpp
+        src/elasticity/PostProcessDDM_3d.cpp
         src/elasticity/2d/FullMatrixAssembly2D.cpp
         src/elasticity/2d/FullMatrixAssembly2D.h
         # 3D source code
@@ -260,7 +261,8 @@ add_library(party SHARED
         src/elasticity/2d/ElasticHMatrix2DP0.h
         src/elasticity/2d/ElasticHMatrix2DP1.h
         src/elasticity/jacobi_prec_assembly.cpp
-        src/elasticity/PostProcessDDM.cpp
+        src/elasticity/PostProcessDDM_2d.cpp
+        src/elasticity/PostProcessDDM_3d.cpp
         src/elasticity/2d/FullMatrixAssembly2D.cpp
         src/elasticity/2d/FullMatrixAssembly2D.h
         # 3D source code

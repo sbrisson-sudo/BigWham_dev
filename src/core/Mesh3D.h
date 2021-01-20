@@ -37,13 +37,13 @@ namespace bie {
 
         // Basic constructor with coordinates and connectivity matrices and interpolation order 'p'
         Mesh3D(const il::Array2D<double> &coordinates, const il::Array2D<il::int_t> &connectivity,
-             const il::int_t interpolationOrder);
+             const il::int_t interpolationOrder, bool verbose = true);
 
         //////////////////////////////////////////////////////////////////////////
         //        get-set functions  - i.e. public interfaces
         //////////////////////////////////////////////////////////////////////////
 
-        il::int_t numberElts() const; // total number of elements
+        il::int_t numberOfElts() const; // total number of elements
         il::int_t numberVertices() const; // total number of vertices
         il::int_t numberCollPtsElt() const; // number of collocation points per element
         il::int_t numberCollPts() const; // total number of collocation points = total number of nodes

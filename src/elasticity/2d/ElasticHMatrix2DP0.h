@@ -117,7 +117,6 @@ void ElasticHMatrix2DP0<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       }
       bie::SegmentData seg_r = mesh_.getElementData(e_k0);
       il::int_t const p1 = 1;
-
       stnl = normal_shear_stress_kernel_s3d_dp0_dd_nodal(
           seg_s, seg_r, is_l, ir_l, elas_, ker_opts_);
 

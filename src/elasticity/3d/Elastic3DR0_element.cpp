@@ -656,20 +656,13 @@ namespace bie{
         dsr = il::dot(R, dsr);
 
         il::StaticArray2D<double, 3, 6> Stress;
-        double EPSILON;
-        EPSILON = std::numeric_limits<double>::epsilon();
-        if (abs(dsr[2]) > EPSILON){
-            Stress = StressesKernelR0(dsr[0],
-                                      dsr[1],
-                                      dsr[2],
-                                      a, b,
-                                      G,nu);}
-        else{
-            Stress = StressesKernelR0_NULL_z(dsr[0],
-                                              dsr[1],
-                                              a, b,
-                                              G,nu);
-        }
+
+        Stress = StressesKernelR0(dsr[0],
+                                  dsr[1],
+                                  dsr[2],
+                                  a, b,
+                                  G,nu);
+
         // in the reference system of the source element both in the domain and in the codomain
         // index        ->    0    1    2    3    4    5
         // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
@@ -740,8 +733,10 @@ namespace bie{
         for (int i = 0; i < 3; ++i) { dsr[i] = el_cp_r(0,i) - el_cp_s(0,i); }
 
         // dsr contains the component of the distance between the source and the receiver
+        // in the reference system of the source element
         dsr = il::dot(R, dsr);
 
+        // displacement in the referece system local to the source element
         il::Array2D<double> DDs_to_Displacement_local_local =DisplacementKernelR0(dsr[0],
                                                                                dsr[1],
                                                                                dsr[2],
@@ -760,4 +755,122 @@ namespace bie{
         //
         // directions 1, 2 or 3
     }
+
+    il::Array<double> point_stress_3DR0(
+            il::Array<double> &observ_pt,
+            FaceData &elem_data_s, // source element
+            il::Array<double> &dd,
+            ElasticProperties const &elas_ // elastic properties
+            )
+    {
+        /*
+         * It returns the stress components:
+         * sig_xx, sig_yy, sig_zz, sig_xy, sig_xz, sig_yz
+         * expressed in the global reference system
+         *
+         */
+        double G = elas_.getG(), nu = elas_.getNu();
+        il::StaticArray<double,2> a_and_b = get_a_and_b(elem_data_s.getVertices(),elem_data_s.getNoV());
+        double a = a_and_b[0], b = a_and_b[1];
+
+        il::Array2D<double> el_cp_s;
+        el_cp_s = elem_data_s.getCollocationPoints();
+
+        il::Array2D<double> R = elem_data_s.rotationMatrix();
+
+        il::Array<double> dsr{3};
+        for (int i = 0; i < 3; ++i) { dsr[i] = observ_pt[i] - el_cp_s(0,i); }
+
+        // dsr contains the component of the distance between the source and the receiver
+        dsr = il::dot(R, dsr);
+
+        il::StaticArray2D<double, 3, 6> stress = StressesKernelR0(dsr[0],
+                                                                  dsr[1],
+                                                                  dsr[2],
+                                                                  a, b,
+                                                                  G,nu);
+        // in the reference system of the source element both in the domain and in the codomain
+        // index        ->    0    1    2    3    4    5
+        // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
+        // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
+        // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
+
+        il::Array2D<double> stress_local_2_local{3,3};
+        stress_local_2_local(0,0) = stress(0,0) * dd[0] + stress(1,0) * dd[1] + stress(2,0) * dd[2] ; // sxx
+        stress_local_2_local(0,1) = stress(0,3) * dd[0] + stress(1,3) * dd[1] + stress(2,3) * dd[2] ; // sxy
+        stress_local_2_local(0,2) = stress(0,4) * dd[0] + stress(1,4) * dd[1] + stress(2,4) * dd[2] ; // sxz
+        stress_local_2_local(1,0) = stress_local_2_local(0,1); // syx = sxy
+        stress_local_2_local(1,1) = stress(0,1) * dd[0] + stress(1,1) * dd[1] + stress(2,1) * dd[2] ; // syy
+        stress_local_2_local(1,2) = stress(0,5) * dd[0] + stress(1,5) * dd[1] + stress(2,5) * dd[2] ; // syz
+        stress_local_2_local(2,0) = stress_local_2_local(0,2); // szxy = sxz
+        stress_local_2_local(2,1) = stress_local_2_local(1,2); // szy = syz
+        stress_local_2_local(2,2) = stress(0,2) * dd[0] + stress(1,2) * dd[1] + stress(2,2) * dd[2] ; // szz
+
+        il::Array2D<double> RT = elem_data_s.rotationMatrix(true);
+        // the matrix RT will rotate any vector from the local coordinate system to the global one
+
+        il::Array2D<double> stress_local_2_global = il::dot(RT, stress_local_2_local);
+
+        il::Array<double> stress_at_point{6};
+        stress_at_point[0] = stress_local_2_global(0,0) ; // sxx
+        stress_at_point[1] = stress_local_2_global(1,1) ; // syy
+        stress_at_point[2] = stress_local_2_global(2,2) ; // szz
+        stress_at_point[3] = stress_local_2_global(0,1) ; // sxy
+        stress_at_point[4] = stress_local_2_global(0,2) ; // sxz
+        stress_at_point[5] = stress_local_2_global(1,2) ; // syz
+
+        return stress_at_point;
+    }
+
+    il::Array<double> point_displacement_3DR0(
+            il::Array<double> &observ_pt,
+            FaceData &elem_data_s, // source element
+            il::Array<double> &dd,
+            ElasticProperties const &elas_ // elastic properties
+            )
+    {
+        /*
+         * It returns the displacement components:
+         * u_xx, u_yy, u_zz
+         * expressed in the global reference system
+         *
+         */
+
+        il::StaticArray<double,2> a_and_b = get_a_and_b(elem_data_s.getVertices(),elem_data_s.getNoV());
+        double a = a_and_b[0], b = a_and_b[1];
+        double nu = elas_.getNu();
+
+        il::Array2D<double> el_cp_s;
+        el_cp_s = elem_data_s.getCollocationPoints();
+
+        il::Array2D<double> R;
+        R = elem_data_s.rotationMatrix();
+
+        il::Array<double> dsr{3};
+        for (int i = 0; i < 3; ++i) { dsr[i] = observ_pt[i] - el_cp_s(0,i); }
+
+        // dsr contains the component of the distance between the source and the receiver
+        // in the reference system of the source element
+        dsr = il::dot(R, dsr);
+
+        // displacement in the referece system local to the source element
+        il::Array2D<double> DDs_to_Displacement_local_local =DisplacementKernelR0(dsr[0],
+                                                                                  dsr[1],
+                                                                                  dsr[2],
+                                                                                  a, b,
+                                                                                  nu);
+        // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
+        //   0      -> |       Ux,            Ux,             Ux            |
+        //   1      -> |       Uy,            Uy,             Uy            |
+        //   2      -> |       Uz,            Uz,             Uz            |
+
+        //
+        il::Array2D<double> RT = transpose(R), DDs_to_Displacement_local_global;
+        DDs_to_Displacement_local_global = il::dot(RT,DDs_to_Displacement_local_local);
+
+        il::Array<double> displacement_at_point = il::dot(DDs_to_Displacement_local_global,dd);
+
+        return displacement_at_point;
+    }
+
 }

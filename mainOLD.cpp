@@ -21,7 +21,7 @@
 #include <Hmat-lib/linearAlgebra/factorization/luDecomposition.h>
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
-#include <elasticity/PostProcessDDM.h>
+#include <elasticity/PostProcessDDM_2d.h>
 #include <elasticity/2d/FullMatrixAssembly2D.h>
 
 #include <src/core/ElasticProperties.h>

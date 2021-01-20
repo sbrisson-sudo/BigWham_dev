@@ -7,8 +7,8 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-#ifndef HFP_POSTPROCESSDDM_H
-#define HFP_POSTPROCESSDDM_H
+#ifndef HFP_POSTPROCESSDDM2D_H
+#define HFP_POSTPROCESSDDM2D_H
 
 // Inclusion from Inside Loop library
 #include <il/Array2D.h>

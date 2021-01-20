@@ -384,9 +384,15 @@ il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
   StressInPlane(1, 1) = Ce * C12 * (-z * Ip133);  // sxz[which is sxy in the 2D]
   //  Stress(1, 5) = Ce * (z * Ip233);                                 // syz
   //  Stress(1, 1) = Ce * (Ip33 + (1. - 2. * nu) * Ip11 - z * Ip223);  // syy
-  StressInPlane(1, 2) = Ce * C11 * (Ip33 - z * Ip333);         // modified 2021
+  double EPSILON;
+  EPSILON = std::numeric_limits<double>::epsilon();
+  if (abs(z) <= EPSILON) {
+      StressInPlane(1, 2) = Ce * C11 * (Ip33);
+  }
+  else {
+      StressInPlane(1, 2) = Ce * C11 * (Ip33 - z * Ip333); // modified 2021
+  }
     // szz[which is syy in the 2D]
-
   return StressInPlane;
 }
 

@@ -13,7 +13,7 @@
 #include <src/core/FaceData.h>
 #include <BigWham.h>
 
-/*
+
 
 #include <string>
 #include <random>
@@ -28,7 +28,7 @@
 #include <Hmat-lib/linearAlgebra/factorization/luDecomposition.h>
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
-#include <elasticity/PostProcessDDM.h>
+#include <elasticity/PostProcessDDM_2d.h>
 #include <elasticity/2d/FullMatrixAssembly2D.h>
 #include <src/core/ElasticProperties.h>
 //#include <src/solvers/HIterativeSolverUtilities.h>
@@ -219,9 +219,9 @@ int testS3DP0(){
 //  std::cout << " in set h mat 2 " << cluster.permutation.size() << " e aca " << test->epsilon_aca <<"\n";
 
   std::cout << " create h mat " << M.size(0) <<"\n";
-
+    std::cout << "heree";
   h_= il::toHMatrix(M, hmatrix_tree, 0.001);
-
+    std::cout << "here";
   std::cout << " create h mat ended " << h_.isBuilt() <<"\n";
   std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
 
@@ -636,52 +636,77 @@ int testHdot() {
 
 }
 
-*/
+int test3DR0() {
+    std::cout << "-------------- test3DR0 ---------------------\n";
 
-int main() {
-
-  std::cout << "++++++++++++++++++++\n";
-  il::StaticArray2D<double,3,3> nodes;
-  il::Array2D<double> nods{il::value, {{-1.,1.,1.,-1.},{-1.,-1.,1.,1.},{0.,0.,0.,0.}}};
-//  bie::TriangularElementData myclass(nodes, 1);
-  bie::FaceData dd(nods,1);
-//    {{-1.,-1.,1.},{1.,-1.,1.},{1.,1.,1.},{-1.,1.,1.}}
+    // coordinates
     const std::vector<double> coor={-1.,-1.,0.,
                                     1.,-1.,0.,
                                     1.,1.,0.,
                                     -1.,1.,0.,
                                     -1.,2.,0.,
                                     1.,2.,0.};
+    // connectivity
     const std::vector<int64_t> conn = {0,1,2,3,
-                                  3,2,5,4};
-    const std::string kernel = "3DR0";
+                                       3,2,5,4};
+
     const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
     const int max_leaf_size = 1;
     const double eta = 0.;
     const double eps_aca = 0.001;
 
-    Bigwhamio a;
-    a.set(coor,
-          conn,
-          kernel,
-          properties,
-          max_leaf_size,
-          eta,
-          eps_aca);
+    // create displacement HMAT
+    const std::string displacementKernel = "3DR0_displ";
+    Bigwhamio displacementHMAT;
+    displacementHMAT.set(coor,conn,displacementKernel,properties,
+                         max_leaf_size, eta, eps_aca);
+
+
+    const std::string tractionKernel = "3DR0_traction";
+    Bigwhamio tractionHMAT;
+    tractionHMAT.set(coor,conn,tractionKernel,properties,
+                     max_leaf_size, eta, eps_aca);
+
+    // use the Hdot product
     const std::vector<double>  xx = {1.,2.,3.,4.,5.,6.};
     std::vector<double> x;
-    x = a.hdotProduct(xx,true);
-
-    for(int i=0; i<x.size(); ++i)
-        std::cout << x[i] << ' ';
-    x = a.hdotProduct(xx,false);
+    std::cout << "Traction HMAT dot product \n" ;
+    x = tractionHMAT.hdotProduct(xx);
+    for(int i=0; i<x.size(); ++i) std::cout << x[i] << " ";
     std::cout << "\n" ;
-    for(int i=0; i<x.size(); ++i)
-        std::cout << x[i] << ' ';
+    std::cout << "Displacement HMAT dot product \n" ;
+    x = displacementHMAT.hdotProduct(xx);
+    for(int i=0; i<x.size(); ++i) std::cout << x[i] << ' ';
 
-//test2DP1();
-//
-//testS3DP0();
+    // compute stresses at a set of observation points
+    std::vector<double> coorobsp={-10.,-10.,0.,
+                                   20.,-20.,0.};
+    std::vector<double> mysol = {1.,1.,1.,1.,1.,1.};
+    std::vector<double> bb = tractionHMAT.computeStresses(mysol, coorobsp, 2, properties, coor, conn);
+
+    for(int i=0; i<bb.size()/6; ++i) {
+        std::cout << "\n stress at point #" << i << "\n ";
+        for(int j=0; j<6; ++j){
+            std::cout << bb[i*6+j] << " ";
+        }
+    }
+
+
+
+        std::cout << "\n----------end of test 3DR0  ---------------------\n";
+    return 0;
+}
+
+
+int main() {
+
+  std::cout << "++++++++++++++++++++\n";
+  test3DR0();
+
+  //test2DP1();
+
+  //testS3DP0();
+
 //  testFullMat();
 //  testHdot();
 
