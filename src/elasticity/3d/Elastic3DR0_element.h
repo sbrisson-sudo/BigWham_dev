@@ -98,14 +98,6 @@ double ip333(double& x, double& y, double& z, double& xi, double& eta) ;
 
 // special cases:
 
-double ip11_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta);
-
-double ip22_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta);
-
-double ip33_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta);
-
-double ip12_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta);
-
 double Ip33_lim_z_to_0_and_x_to_a(double& x, double& y, double& a, double& b);
 
 double Ip33_lim_z_to_0_and_y_to_b(double& x, double& y, double& a, double& b);

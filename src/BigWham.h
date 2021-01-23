@@ -667,7 +667,6 @@ class Bigwhamio
             il::Array2D<double> stress;
             bie::ElasticProperties elas(properties[0], properties[1]);
 
-            int nnodes_elts = getNodesPerElem(); // n of nodes per element
             int p = getInterpOrder(); // interpolation order
 
             il::Array2D<il::int_t> Conn = getConn(conn);
@@ -734,6 +733,121 @@ class Bigwhamio
             return stress_out;
           }
 
+
+        //---------------------------------------------------------------------------
+        std::vector<double> computeDisplacements(std::vector<double>& solution,
+                                                std::vector<double>& obsPts,
+                                                int npts,
+                                                const std::vector<double>& properties,
+                                                const std::vector<double>& coor,
+                                                const std::vector<int64_t>& conn) {
+
+
+            // PURPOSE: compute displacements at list of points (of size npts )
+            //          from a solution vector.
+            // INPUT:   "solution" a flattened list containing the solution in terms of DDs
+            //          "obsPts" a flattened list containing the observation points coordinates
+            //          [ x(1), y(1), z(1), ... ,x(npts), y(npts), z(npts) ]
+            //          "npts" the number of points
+            //          "properties" is a vector of size 2 or 3 depending on the kernel
+            //          It should contain at least
+            //          - properties[0] = YoungModulus
+            //          - properties[1] = PoissonRatio
+            //          - properties[2] = fracture height (mandatory only for "S3DP0" kernel)
+            //          "coor" are the coordinates of the nodes of the mesh
+            //          "conn" is the connectivity matrix node to elements of the mesh
+            // OUTPUT:  a flattened list containing the displacements at each required point
+
+
+            IL_EXPECT_FAST(this->isBuilt_);
+            // note solution MUST be of length = number of dofs !
+
+            il::Array2D<double> pts{npts, dimension_};
+            il::int_t numberofunknowns = solution.size();
+            il::Array<double> solu{numberofunknowns};
+            il::Array2D<double> displacements;
+            bie::ElasticProperties elas(properties[0], properties[1]);
+
+            int p = getInterpOrder(); // interpolation order
+
+            il::Array2D<il::int_t> Conn = getConn(conn);
+            il::Array2D<double> Coor = getCoor(coor);
+            for (il::int_t i = 0; i < numberofunknowns; i++) {
+                solu[i] = solution[i];
+            }
+            switch (dimension_) {
+                case 2: {
+
+                    il::int_t index = 0;
+                    for (il::int_t i = 0; i < npts; i++) {
+                        pts(i, 0) = obsPts[index++];
+                        pts(i, 1) = obsPts[index++];
+                    }
+
+                    std::cout << " compute displacement - " << kernel_ <<"\n";
+                    if (kernel_ == "2DP1") {
+                        bie::Mesh mesh2d(Coor, Conn, p);
+                        std::cout << "\n WARNING: not implemented !!\n";
+                        il::abort();
+                    } else if (kernel_ == "S3DP0") {
+                        bie::Mesh mesh2d(Coor, Conn, p);
+                        std::cout << "\n WARNING: not implemented !!\n";
+                        il::abort();
+                    }
+                    break;
+
+                }
+                case 3: {
+                    /*
+                        implemented only for constant DD over a rectangular element
+                    */
+                    il::int_t index = 0;
+                    for (il::int_t i = 0; i < npts; i++) {
+                        pts(i, 0) = obsPts[index++];
+                        pts(i, 1) = obsPts[index++];
+                        pts(i, 2) = obsPts[index++];
+                    }
+
+                    std::cout << "\n compute displacement - " << kernel_ <<"\n";
+                    if (kernel_ == "3DT6") {
+                        bie::Mesh3D mesh3d(Coor, Conn, p);
+                        std::cout << "\n WARNING: not implemented !!\n";
+                        il::abort();
+                    } else if (kernel_ == "3DR0_traction") {
+                        bie::Mesh3D mesh3d(Coor, Conn, p, false);
+                        displacements = bie::computeDisplacements3D(pts, mesh3d, elas, solu, bie::point_displacement_3DR0);
+                    }
+                    break;
+                }
+            }
+
+            std::vector<double> displacements_out(displacements.size(0) * displacements.size(1));
+
+            il::int_t index = 0;
+            for (il::int_t i= 0; i < displacements.size(0); i++){
+                for (il::int_t j=0; j < displacements.size(1); j++){
+                    displacements_out[index]=displacements(i,j);
+                    index = index +1 ;
+                } // loop on the displacements components
+            } // loop on the observation points
+
+            return displacements_out;
+        }
+
+        std::vector<double> getInfluenceCoe(double x, double y, double  z, double  a, double  b, double G, double nu)
+        {   std::vector<double> the_stress_out(18);
+            il::StaticArray2D<double, 3, 6> Stress;
+            Stress = bie::StressesKernelR0(x, y,  z,  a,  b, G, nu);
+
+            il::int_t index = 0;
+            for (il::int_t i= 0; i < Stress.size(0); i++){
+                for (il::int_t j=0; j < Stress.size(1); j++){
+                    the_stress_out[index]=Stress(i,j);
+                    index = index +1 ;
+                }
+            }
+            return the_stress_out;
+        }
           //
 
           //  //---------------------------------------------------------------------------

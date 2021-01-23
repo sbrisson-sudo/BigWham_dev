@@ -81,8 +81,8 @@ TEST(R0, Ip_special_expressions) {
     ASSERT_NEAR(ReferenceValues(1,0), bie::Ip33_lim_z_to_0_and_y_to_b (x=6.000, y=b, a, b), 1.e-5);
 }
 
-TEST(R0, ip_special_expressions) {
-    il::Array2D<double> ReferenceValues{4, 1, 0.};
+TEST(R0, ip_cheking_limits) {
+    il::Array2D<double> ReferenceValues{3, 1, 0.};
     double x, y, z=0.000, xi, eta;
     x = 4.000;
     y = 6.000;
@@ -90,15 +90,14 @@ TEST(R0, ip_special_expressions) {
     eta = 3.000;
 
     // Reference values from Mathematica with 18 decimals
-    ReferenceValues(0,0) = 0.2773500981126146;       //ip12, z->0
-    ReferenceValues(1,0) = 0.0839748528310782;       //ip11, z->0
-    ReferenceValues(2,0) = 0.1484332679249236;       //ip22, z->0
-    ReferenceValues(3,0) = 0.6009252125773314;       //ip33, z->0
 
-    ASSERT_NEAR(ReferenceValues(0,0), bie::ip12_lim_z_to_0(x, y, z, xi, eta), 1.e-5);
-    ASSERT_NEAR(ReferenceValues(1,0), bie::ip11_lim_z_to_0(x, y, z, xi, eta), 1.e-5);
-    ASSERT_NEAR(ReferenceValues(2,0), bie::ip22_lim_z_to_0(x, y, z, xi, eta), 1.e-5);
-    ASSERT_NEAR(ReferenceValues(3,0), bie::ip33_lim_z_to_0(x, y, z, xi, eta), 1.e-5);
+    ReferenceValues(0,0) = 0.0839748528310782;       //ip11, z->0
+    ReferenceValues(1,0) = 0.1484332679249236;       //ip22, z->0
+    ReferenceValues(2,0) = 0.6009252125773314;       //ip33, z->0
+
+    ASSERT_NEAR(ReferenceValues(0,0), bie::ip11(x, y, z, xi, eta), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(1,0), bie::ip22(x, y, z, xi, eta), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(2,0), bie::ip33(x, y, z, xi, eta), 1.e-5);
 }
 
 TEST_F(Test3DR0Stress, stress_expressions_at_non_zero_z) {

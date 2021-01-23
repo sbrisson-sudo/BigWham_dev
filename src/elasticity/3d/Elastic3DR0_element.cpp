@@ -28,37 +28,6 @@ namespace bie{
     //                                                                                                  //
     //--------------------------------------------------------------------------------------------------//
 
-    double ip11_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta) {
-        //(x - \[Xi])/((y - \[Eta] + Sqrt[(y - \[Eta])^2 + (x - \[Xi])^2])
-        //   Sqrt[(y - \[Eta])^2 + (x - \[Xi])^2])
-        double y_m_eta, x_m_xi, my_sqrt_;
-        y_m_eta = y - eta ;
-        x_m_xi = x - xi ;
-        my_sqrt_ = sqrt(y_m_eta * y_m_eta + x_m_xi * x_m_xi);
-
-        return x_m_xi / (my_sqrt_ * (y + my_sqrt_ - eta));
-    }
-
-    double ip22_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta) {
-        // (y - \[Eta])/(Sqrt[(y - \[Eta])^2 + (x - \[Xi])^2] (x +
-        //   Sqrt[(y - \[Eta])^2 + (x - \[Xi])^2] - \[Xi]))
-        double y_m_eta, x_m_xi, my_sqrt_;
-        y_m_eta = y - eta ;
-        x_m_xi = x - xi ;
-        my_sqrt_ = sqrt(y_m_eta * y_m_eta + x_m_xi * x_m_xi);
-
-        return y_m_eta / (my_sqrt_ * (x + my_sqrt_ - xi));
-    }
-
-    double ip33_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta) {
-        // Sqrt[(y - \[Eta])^2 + (x - \[Xi])^2]/((y - \[Eta]) (x - \[Xi]))
-        double y_m_eta, x_m_xi;
-        y_m_eta = y - eta ;
-        x_m_xi = x - xi ;
-
-        return sqrt(y_m_eta * y_m_eta + x_m_xi * x_m_xi) / (y_m_eta * x_m_xi);
-    }
-
     double Ip33_lim_z_to_0_and_x_to_a(double& x, double& y, double& a, double& b) {
         // -(Sqrt[(a + x)^2 + (-b + y)^2]/((a + x) (-b + y))) + Sqrt[(a +
         //    x)^2 + (b + y)^2]/((a + x) (b + y))
@@ -83,10 +52,6 @@ namespace bie{
         sqrt_2nd = sqrt(a_plus_x * a_plus_x + b_plus_y * b_plus_y);
 
         return - sqrt_1st / (b_plus_y * x_minus_a) + sqrt_2nd / (a_plus_x * b_plus_y);
-    }
-
-    double ip12_lim_z_to_0(double& x, double& y, double& z, double& xi, double& eta) {
-        return 1. / sqrt( (y - eta) * (y - eta) + (x - xi) * (x - xi));
     }
 
     //--------------------------------------------------------------------------------------------------//
@@ -158,15 +123,33 @@ namespace bie{
     }
 
     double ip33(double& x, double& y, double& z, double& xi, double& eta) {
-      //  ((y - \[Eta]) (2 z^2 + (y - \[Eta])^2 + (x - \[Xi])^2) (x - \
-        //\[Xi]))/((z^2 + (y - \[Eta])^2) (z^2 + (x - \[Xi])^2) Sqrt[
-      //  z^2 + (y - \[Eta])^2 + (x - \[Xi])^2])
-      double R;
-      R = sqrt((x - xi) * (x - xi) + (y - eta) * (y - eta) + z * z);
+        /*
+         *
+         *   The following way of writing leads to indeterminate results on the plane z = 0
+         *   Reimplementing below - CP 2021
+         *
+              //  ((y - \[Eta]) (2 z^2 + (y - \[Eta])^2 + (x - \[Xi])^2) (x - \
+                //\[Xi]))/((z^2 + (y - \[Eta])^2) (z^2 + (x - \[Xi])^2) Sqrt[
+              //  z^2 + (y - \[Eta])^2 + (x - \[Xi])^2])
+              double R;
+              R = sqrt((x - xi) * (x - xi) + (y - eta) * (y - eta) + z * z);
 
-      return (x - xi) * (y - eta) *
-          (2 * z * z + (y - eta) * (y - eta) + (xi - x) * (xi - x)) /
-          (R * (z * z + (x - xi) * (x - xi)) * (z * z + (y - eta) * (y - eta)));
+              return (x - xi) * (y - eta) *
+                  (2 * z * z + (y - eta) * (y - eta) + (xi - x) * (xi - x)) /
+                  (R * (z * z + (x - xi) * (x - xi)) * (z * z + (y - eta) * (y - eta)));
+
+          *   The new way:
+          */
+
+            //        ((y - \[Eta]) (x - \[Xi]) (x^2 + y^2 + 2 z^2 -
+            //        2 y \[Eta] + \[Eta]^2 - 2 x \[Xi] + \[Xi]^2))/((y^2 + z^2 -
+            //        2 y \[Eta] + \[Eta]^2) (x^2 + z^2 - 2 x \[Xi] + \[Xi]^2) Sqrt[
+            //        x^2 + y^2 + z^2 - 2 y \[Eta] + \[Eta]^2 - 2 x \[Xi] + \[Xi]^2])
+
+            double xx = x * x, yy = y * y, zz = z * z, xixi = xi * xi, etaeta = eta * eta ;
+            double mysqrt = sqrt( xx + yy + zz - 2 * y * eta + etaeta - 2 * x * xi + xixi);
+            return ((y - eta) * (x - xi) * (xx + yy + 2 * zz - 2 * y * eta + etaeta - 2 * x *xi + xixi)) / (
+                    (yy + zz - 2 * y * eta + etaeta) * (xx + zz - 2 * x * xi + xixi) * mysqrt);
     }
 
     //// third order derivatives of I(x,y,z,xi,eta)
@@ -301,75 +284,6 @@ namespace bie{
     }
 
     // Fundamental stress kernel
-    il::StaticArray2D<double, 3, 6> StressesKernelR0_NON_NULL_z(
-        double& x, double& y, double& z, double& a, double& b, double& G,
-        double& nu) {
-      // x , y , z location where to compute stress
-      //  a,b  1/2 size of the rectangular DD
-      //  G Shear modulus, nu Poisson's ratio'
-      //  Rectangular DDon plan z=0   x \in [-a,a], y \in [-b,b]
-      //  DDx (shear), DDy (shear), DDz (normal)
-
-      double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
-
-      double Ip111, Ip122, Ip133, Ip112, Ip113, Ip123, Ip222, Ip223, Ip233, Ip333;
-
-      double Ce = G / (4 * il::pi * (1. - nu));
-      //  double sxx, sxy, sxz, syy, syz, szz;
-      //
-      il::StaticArray2D<double, 3, 6> Stress;
-      // compute the Is function derivatives....
-
-      Ip11 = rectangular_integration(x, y, z, a, b, ip11);
-      Ip22 = rectangular_integration(x, y, z, a, b, ip22);
-      Ip33 = rectangular_integration(x, y, z, a, b, ip33);
-      Ip23 = rectangular_integration(x, y, z, a, b, ip23);
-      Ip12 = rectangular_integration(x, y, z, a, b, ip12);
-      Ip13 = rectangular_integration(x, y, z, a, b, ip13);
-
-      Ip111 = rectangular_integration(x, y, z, a, b, ip111);
-      Ip122 = rectangular_integration(x, y, z, a, b, ip122);
-      Ip133 = rectangular_integration(x, y, z, a, b, ip133);
-      Ip112 = rectangular_integration(x, y, z, a, b, ip112);
-      Ip113 = rectangular_integration(x, y, z, a, b, ip113);
-      Ip123 = rectangular_integration(x, y, z, a, b, ip123);
-      Ip222 = rectangular_integration(x, y, z, a, b, ip222);
-      Ip233 = rectangular_integration(x, y, z, a, b, ip233);
-      Ip223 = rectangular_integration(x, y, z, a, b, ip223);
-      Ip333 = rectangular_integration(x, y, z, a, b, ip333);
-
-      // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
-
-      // stress due to displacement discontinuity DDx (shear)
-      Stress(0, 0) = Ce * (2. * Ip13 - z * Ip111);         // sxx
-      Stress(0, 1) = Ce * (2.   * nu * Ip13 - z * Ip122);  // syy
-      Stress(0, 2) = Ce * (-z * Ip133);                    // szz
-      Stress(0, 3) = Ce * ((1. - nu) * Ip23 - z * Ip112);  // sxy
-      Stress(0, 4) = Ce * (Ip33 + nu * Ip22 - z * Ip113);  // sxz
-      Stress(0, 5) = Ce * (-nu * Ip12 - z * Ip123);        // syz
-
-      // stress due to displacement discontinuity  DDy (shear)
-      Stress(1, 0) = Ce * (2. * nu * Ip23 - z * Ip112);    // sxx
-      Stress(1, 1) = Ce * (2. * Ip23 - z * Ip222);         // syy
-      Stress(1, 2) = Ce * (-z * Ip233);                    // szz
-      Stress(1, 3) = Ce * ((1. - nu) * Ip13 - z * Ip122);  // sxy
-      Stress(1, 4) = Ce * (-nu * Ip12 - z * Ip123);        // sxz
-      Stress(1, 5) = Ce * (Ip33 + nu * Ip11 - z * Ip223);  // syz
-
-      // stress due to displacement discontinuity DDz (normal)
-      Stress(2, 0) = Ce * (Ip33 + (1. - 2. * nu) * Ip22 - z * Ip113);  // sxx
-      Stress(2, 1) = Ce * (Ip33 + (1. - 2. * nu) * Ip11 - z * Ip223);  // syy
-      Stress(2, 2) = Ce * (Ip33 - z * Ip333);                          // szz  (fixed by CP 2020)
-      Stress(2, 3) = Ce * (-(1. - 2. * nu) * Ip12 - z * Ip123);        // sxy
-      Stress(2, 4) = Ce * (-z * Ip133);                                // sxz
-      Stress(2, 5) = Ce * (-z * Ip233);                                // syz (a minus by CP 2020)
-
-      return Stress;
-            // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
-            // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
-            // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
-    }
-
     bool is_stress_singular_at_given_location(double& x, double& y, double& a, double& b, bool verbose)
     {   double EPSILON;
         EPSILON = std::numeric_limits<double>::epsilon();
@@ -391,23 +305,21 @@ namespace bie{
     }
 
 
-    il::StaticArray2D<double, 3, 6> StressesKernelR0_NULL_z(
-            double& x, double& y, double& a, double& b, double& G,
+    il::StaticArray2D<double, 3, 6> StressesKernelR0(
+            double& x, double& y, double& z, double& a, double& b, double& G,
             double& nu) {
-        // x , y , (z = 0) location where to compute stress
+        // x , y , z location where to compute stress
         //  a,b  1/2 size of the rectangular DD
         //  G Shear modulus, nu Poisson's ratio'
         //  Rectangular DDon plan z=0   x \in [-a,a], y \in [-b,b]
         //  DDx (shear), DDy (shear), DDz (normal)
 
-        bool answer;
         il::StaticArray2D<double, 3, 6> Stress;
         double EPSILON;
         EPSILON = std::numeric_limits<double>::epsilon();
 
         if (!is_stress_singular_at_given_location(x, y, a, b))
         {
-            double z = 0.;
 
             double Ce = G / (4 * il::pi * (1. - nu));
             //  double sxx, sxy, sxz, syy, syz, szz;
@@ -415,44 +327,68 @@ namespace bie{
 
             // compute the Is function derivatives....
 
-            double Ip11_lim_z_to_0, Ip22_lim_z_to_0, Ip33_lim_z_to_0, Ip12_lim_z_to_0;
-            Ip11_lim_z_to_0 = rectangular_integration(x, y, z, a, b, ip11_lim_z_to_0);
-            Ip22_lim_z_to_0 = rectangular_integration(x, y, z, a, b, ip22_lim_z_to_0);
+            double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
 
-            if (abs(abs(x) / a - 1.) <= EPSILON && (abs(y) > b))
+            double Ip111, Ip122, Ip133, Ip112, Ip113, Ip123, Ip222, Ip223, Ip233, Ip333 = 0.;
+
+            Ip11 = rectangular_integration(x, y, z, a, b, ip11);
+            Ip22 = rectangular_integration(x, y, z, a, b, ip22);
+            Ip33 = rectangular_integration(x, y, z, a, b, ip33);
+            Ip23 = rectangular_integration(x, y, z, a, b, ip23);
+            Ip12 = rectangular_integration(x, y, z, a, b, ip12);
+            Ip13 = rectangular_integration(x, y, z, a, b, ip13);
+
+            Ip111 = rectangular_integration(x, y, z, a, b, ip111);
+            Ip122 = rectangular_integration(x, y, z, a, b, ip122);
+            Ip133 = rectangular_integration(x, y, z, a, b, ip133);
+            Ip112 = rectangular_integration(x, y, z, a, b, ip112);
+            Ip113 = rectangular_integration(x, y, z, a, b, ip113);
+            Ip123 = rectangular_integration(x, y, z, a, b, ip123);
+            Ip222 = rectangular_integration(x, y, z, a, b, ip222);
+            Ip233 = rectangular_integration(x, y, z, a, b, ip233);
+            Ip223 = rectangular_integration(x, y, z, a, b, ip223);
+            // Ip333 <--- this is non trivial that it goes to 0 when z->0 i.e. limit to be taken
+
+            double Ip33_lim_z_to_0, z_times_Ip333;
+
+            if (abs(z) <= EPSILON )
+                z_times_Ip333 = 0.;
+            else{ Ip333 = rectangular_integration(x, y, z, a, b, ip333);
+                  z_times_Ip333 = z * Ip333;}
+
+            if (abs(abs(x) / a - 1.) <= EPSILON && (abs(y) > b) && abs(z) <= EPSILON)
                 Ip33_lim_z_to_0 = Ip33_lim_z_to_0_and_x_to_a(x, y, a, b);
-            else if (abs(abs(y) / b - 1.) <= EPSILON && (abs(x) > a))
+            else if (abs(abs(y) / b - 1.) <= EPSILON && (abs(x) > a) && abs(z) <= EPSILON)
                 Ip33_lim_z_to_0 = Ip33_lim_z_to_0_and_y_to_b(x, y, a, b);
             else
-                Ip33_lim_z_to_0 = rectangular_integration(x, y, z, a, b, ip33_lim_z_to_0);
-
-            Ip12_lim_z_to_0 = rectangular_integration(x, y, z, a, b, ip12_lim_z_to_0);
+                Ip33_lim_z_to_0 = Ip33;
 
             // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
 
             // stress due to displacement discontinuity DDx (shear)
-            Stress(0, 0) = 0.;                                              // sxx
-            Stress(0, 1) = 0.;                                              // syy
-            Stress(0, 2) = 0.;                                              // szz
-            Stress(0, 3) = 0.;                                              // sxy
-            Stress(0, 4) = Ce * (Ip33_lim_z_to_0 + nu * Ip22_lim_z_to_0);   // sxz
-            Stress(0, 5) = Ce * (-nu) * Ip12_lim_z_to_0;                    // syz
+            Stress(0, 0) = Ce * (2. * Ip13 - z * Ip111);                    // sxx -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(0, 1) = Ce * (2.   * nu * Ip13 - z * Ip122);             // syy -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(0, 2) = Ce * (-z * Ip133);                               // szz -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(0, 3) = Ce * ((1. - nu) * Ip23 - z * Ip112);             // sxy -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(0, 4) = Ce * (Ip33_lim_z_to_0 + nu * Ip22 - z * Ip113);  // sxz
+            Stress(0, 5) = Ce * (-nu * Ip12 - z * Ip123);                   // syz if z=0. (unchanged expresssion)
 
             // stress due to displacement discontinuity  DDy (shear)
-            Stress(1, 0) = 0.;                                              // sxx
-            Stress(1, 1) = 0.;                                              // syy
-            Stress(1, 2) = 0.;                                              // szz
-            Stress(1, 3) = 0.;                                              // sxy
-            Stress(1, 4) = Ce * (-nu) * Ip12_lim_z_to_0;                    // sxz
-            Stress(1, 5) = Ce * (Ip33_lim_z_to_0 + nu * Ip11_lim_z_to_0);   // syz
+
+            Stress(1, 0) = Ce * (2. * nu * Ip23 - z * Ip112);               // sxx -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(1, 1) = Ce * (2. * Ip23 - z * Ip222);                    // syy -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(1, 2) = Ce * (-z * Ip233);                               // szz -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(1, 3) = Ce * ((1. - nu) * Ip13 - z * Ip122);             // sxy -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(1, 4) = Stress(0, 5);                             // sxz -> if z=0. (unchanged expresssion)
+            Stress(1, 5) = Ce * (Ip33_lim_z_to_0 + nu * Ip11 - z * Ip223);  // syz
 
             // stress due to displacement discontinuity DDz (normal)
-            Stress(2, 0) = Ce * (Ip33_lim_z_to_0 + (1 - 2 * nu) * Ip22_lim_z_to_0);  // sxx
-            Stress(2, 1) = Ce * (Ip33_lim_z_to_0 + (1 - 2 * nu) * Ip11_lim_z_to_0);  // syy
-            Stress(2, 2) = Ce * Ip33_lim_z_to_0;                                     // szz
-            Stress(2, 3) = Ce * (-1 + 2 * nu) * Ip12_lim_z_to_0;                     // sxy
-            Stress(2, 4) = 0.;                                                       // sxz
-            Stress(2, 5) = 0.;                                                       // syz
+            Stress(2, 0) = Ce * (Ip33_lim_z_to_0 + (1 - 2 * nu) * Ip22 - z * Ip113); // sxx
+            Stress(2, 1) = Ce * (Ip33_lim_z_to_0 + (1 - 2 * nu) * Ip11 - z * Ip223); // syy
+            Stress(2, 2) = Ce * (Ip33_lim_z_to_0 - z_times_Ip333);                   // szz
+            Stress(2, 3) = Ce * ((-1 + 2 * nu) * Ip12 - z * Ip123);                  // sxy if z=0. (unchanged expresssion)
+            Stress(2, 4) = Ce * (-z * Ip133);                                        // sxz -> if z=0. it will be 0. (unchanged expresssion)
+            Stress(2, 5) = Ce * (-z * Ip233);                                        // syz -> if z=0. it will be 0. (unchanged expresssion)
         }
         else {  for (il::int_t i = 0; i < 3; i++) {
                     for (il::int_t j = 0; j < 6; j++) {
@@ -466,16 +402,61 @@ namespace bie{
         // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
     }
 
-    il::StaticArray2D<double, 3, 6> StressesKernelR0(
-            double& x, double& y, double& z, double& a, double& b, double& G,
-            double& nu)
-    {
+    double get_Ip3 (double & x,double &y,double &z,double &a,double &b, double& Ip3_out_plane_z_EQ_0, bool verbose = true){
+    /*
+     * This function evaluate the position x,y,z with respect to a rectangle of coordinates
+     * A=(-a,-b,0), B=(a,-b,0), C=(a,b,0) and D=(-a,b,0) and it returns the proper limit for the
+     * kernel Ip3_lim_z_to_0
+     *
+     *              D________I____C
+     *              |             |
+     *              |             |
+     *              |      +      |
+     *              H        E    G      F
+     *              |             |
+     *              A--------J----B
+     *
+     *  Point   Value   Location
+     *    A     -Pi/2   corner
+     *    B     -Pi/2   corner
+     *    C     -Pi/2   corner
+     *    D     -Pi/2   corner
+     *    E     -2*Pi   inside ABCDA
+     *    F      0      outside ABCDA
+     *    G     +Pi/2   on an edge (not corner)
+     *    H     +Pi/2   on an edge (not corner)
+     *    I     +Pi/2   on an edge (not corner)
+     *    J     +Pi/2   on an edge (not corner)
+     *
+     */
         double EPSILON;
         EPSILON = std::numeric_limits<double>::epsilon();
-        if ( abs(z) <= EPSILON ) {return StressesKernelR0_NULL_z(x, y, a, b, G, nu);}
-        else                     {return StressesKernelR0_NON_NULL_z(x, y, z, a, b, G, nu);}
-    }
+        if (abs(z) > EPSILON) { // NOT on the plane z==0
+             return Ip3_out_plane_z_EQ_0;
+        }
+        else
+        {   if (abs(abs(x) / a - 1.) <= EPSILON && (abs(y) / b - 1 < (-EPSILON )))   // internal vertical edges
+                return -il::pi;
+            else if (abs(abs(y) / b - 1.) <= EPSILON && (abs(x) / a - 1 < (- EPSILON) ))   // internal horizontal edges
+                return -il::pi;
+            else if ((abs(abs(x) / a - 1.) <= EPSILON) && (abs(abs(y) / b - 1.) <= EPSILON)) // corners
+                {   if (verbose){
+                        std::cout << "WARNING: \n " \
+                          << " you are computing the displacement at the corner of a 3DR0 element. \n" \
+                          << " At that location some components of the displacement are theoretically infinite (because Ip1 and Ip2 go to -inf). \n" \
+                          << " Suggestions: \n" \
+                          << "    - check that your collocation points do not lie on the corner of another element \n" ;
+                    }
+                    return -il::pi/2.;}
+            else if  (((abs(x) / a - 1.) <= (-EPSILON)) && ((abs(y) / b - 1.) <= (-EPSILON)))// inside the rectangular element
+                return -2.*il::pi;
 
+            else // on the plane and outside the rectangle
+                //  also on the prolongation of vertical edges
+                //  also on the prolongation of horizontal edges
+                return 0.;
+        }
+    }
     // Fundamental displacement kernel
     il::Array2D<double> DisplacementKernelR0(
             double& x, double& y, double& z, double& a, double& b,
@@ -486,7 +467,7 @@ namespace bie{
         //  Rectangular DDon plan z=0   x \in [-a,a], y \in [-b,b]
         //  DDx (shear), DDy (shear), DDz (normal)
 
-        double Ip1, Ip2, Ip3;
+        double Ip1, Ip2, Ip3_out_plane_z_EQ_0;
 
         double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
 
@@ -496,7 +477,7 @@ namespace bie{
         // compute the Is function derivatives....
         Ip1 = rectangular_integration(x, y, z, a, b, ip1);
         Ip2 = rectangular_integration(x, y, z, a, b, ip2);
-        Ip3 = rectangular_integration(x, y, z, a, b, ip3);
+        Ip3_out_plane_z_EQ_0 = rectangular_integration(x, y, z, a, b, ip3);
 
         Ip11 = rectangular_integration(x, y, z, a, b, ip11);
         Ip22 = rectangular_integration(x, y, z, a, b, ip22);
@@ -505,15 +486,17 @@ namespace bie{
         Ip12 = rectangular_integration(x, y, z, a, b, ip12);
         Ip13 = rectangular_integration(x, y, z, a, b, ip13);
 
+        double Ip3 = get_Ip3 ( x, y, z, a, b, Ip3_out_plane_z_EQ_0);
+
         // Displacement row is dof (DDx,DDy,DDx), columns are Ux,Uy,Uz in the local reference system
 
         // displacement due to displacement discontinuity DDx (shear)
         Displacement(0, 0) = Ce * (z * Ip11 - 2 * (1 - nu) * Ip3);  // Ux
-        Displacement(1, 0) = Ce * (z * Ip12);                       // Uy
+        Displacement(1, 0) = Ce * (z * Ip12);                       // Uy -> if z=0. it will be 0. (unchanged expresssion)
         Displacement(2, 0) = Ce * (z * Ip13 - (1 - 2 * nu) * Ip1);  // Uz
 
         // displacement due to displacement discontinuity  DDy (shear)
-        Displacement(0, 1) = Ce * (z * Ip12);                       // Ux
+        Displacement(0, 1) = Ce * (z * Ip12);                       // Ux  -> if z=0. it will be 0. (unchanged expresssion)
         Displacement(1, 1) = Ce * (z * Ip22 - 2 * (1 - nu) * Ip3);  // Uy
         Displacement(2, 1) = Ce * (z * Ip23 - (1 - 2 * nu) * Ip2);  // Uz
 
@@ -655,11 +638,14 @@ namespace bie{
         // dsr contains the component of the distance between the source and the receiver
         dsr = il::dot(R, dsr);
 
+        // computing the values for positive z:
+        double abs_z = abs(dsr[2]);
+
         il::StaticArray2D<double, 3, 6> Stress;
 
         Stress = StressesKernelR0(dsr[0],
                                   dsr[1],
-                                  dsr[2],
+                                  abs_z,
                                   a, b,
                                   G,nu);
 
@@ -668,6 +654,31 @@ namespace bie{
         // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
         // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
         // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
+
+        if (dsr[2] < 0.){
+            /*
+             * DDx (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
+             * f(-z) = -f(z)
+             * DDy (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
+             * f(-z) = -f(z)
+             * DDz (normal) is an Even action with respect to the plane z=0, thus the field will be symmetric with respect to that plane
+             * f(-z) = f(z)
+             *
+             */
+            Stress(0,0) = - Stress(0,0);
+            Stress(0,1) = - Stress(0,1);
+            Stress(0,2) = - Stress(0,2);
+            Stress(0,3) = - Stress(0,3);
+            Stress(0,4) = - Stress(0,4);
+            Stress(0,5) = - Stress(0,5);
+
+            Stress(1,0) = - Stress(1,0);
+            Stress(1,1) = - Stress(1,1);
+            Stress(1,2) = - Stress(1,2);
+            Stress(1,3) = - Stress(1,3);
+            Stress(1,4) = - Stress(1,4);
+            Stress(1,5) = - Stress(1,5);
+        }
 
         // normal vector at the receiver location in the reference system of the source element
         il::Array<double> nr = elem_data_r.getNormal();
@@ -736,17 +747,36 @@ namespace bie{
         // in the reference system of the source element
         dsr = il::dot(R, dsr);
 
+        // computing the values for positive z:
+        double abs_z = abs(dsr[2]);
+
         // displacement in the referece system local to the source element
         il::Array2D<double> DDs_to_Displacement_local_local =DisplacementKernelR0(dsr[0],
                                                                                dsr[1],
-                                                                               dsr[2],
+                                                                               abs_z,
                                                                                a, b,
                                                                                nu);
         // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
         //   0      -> |       Ux,            Ux,             Ux            |
         //   1      -> |       Uy,            Uy,             Uy            |
         //   2      -> |       Uz,            Uz,             Uz            |
-
+        if (dsr[2] < 0.){
+            /*
+             * DDx (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
+             * f(-z) = -f(z)
+             * DDy (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
+             * f(-z) = -f(z)
+             * DDz (normal) is an Even action with respect to the plane z=0, thus the field will be symmetric with respect to that plane
+             * f(-z) = f(z)
+             *
+             */
+            DDs_to_Displacement_local_local(0,0) = - DDs_to_Displacement_local_local(0,0);
+            DDs_to_Displacement_local_local(1,0) = - DDs_to_Displacement_local_local(1,0);
+            DDs_to_Displacement_local_local(2,0) = - DDs_to_Displacement_local_local(2,0);
+            DDs_to_Displacement_local_local(0,1) = - DDs_to_Displacement_local_local(0,1);
+            DDs_to_Displacement_local_local(1,1) = - DDs_to_Displacement_local_local(1,1);
+            DDs_to_Displacement_local_local(2,1) = - DDs_to_Displacement_local_local(2,1);
+        }
         return change_ref_system(DDs_to_Displacement_local_local, I_want_global_DD, I_want_global_displacement, R, elem_data_r.rotationMatrix());
 
         // | U1/Dshear1   U1/Dshear2  U1/Dnormal |
@@ -784,9 +814,12 @@ namespace bie{
         // dsr contains the component of the distance between the source and the receiver
         dsr = il::dot(R, dsr);
 
-        il::StaticArray2D<double, 3, 6> stress = StressesKernelR0(dsr[0],
+        // computing the values for positive z:
+        double abs_z = abs(dsr[2]);
+
+        il::StaticArray2D<double, 3, 6> Stress = StressesKernelR0(dsr[0],
                                                                   dsr[1],
-                                                                  dsr[2],
+                                                                  abs_z,
                                                                   a, b,
                                                                   G,nu);
         // in the reference system of the source element both in the domain and in the codomain
@@ -795,16 +828,41 @@ namespace bie{
         // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
         // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
 
+        if (dsr[2] < 0.){
+            /*
+             * DDx (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
+             * f(-z) = -f(z)
+             * DDy (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
+             * f(-z) = -f(z)
+             * DDz (normal) is an Even action with respect to the plane z=0, thus the field will be symmetric with respect to that plane
+             * f(-z) = f(z)
+             *
+             */
+            Stress(0,0) = - Stress(0,0);
+            Stress(0,1) = - Stress(0,1);
+            Stress(0,2) = - Stress(0,2);
+            Stress(0,3) = - Stress(0,3);
+            Stress(0,4) = - Stress(0,4);
+            Stress(0,5) = - Stress(0,5);
+
+            Stress(1,0) = - Stress(1,0);
+            Stress(1,1) = - Stress(1,1);
+            Stress(1,2) = - Stress(1,2);
+            Stress(1,3) = - Stress(1,3);
+            Stress(1,4) = - Stress(1,4);
+            Stress(1,5) = - Stress(1,5);
+        }
+
         il::Array2D<double> stress_local_2_local{3,3};
-        stress_local_2_local(0,0) = stress(0,0) * dd[0] + stress(1,0) * dd[1] + stress(2,0) * dd[2] ; // sxx
-        stress_local_2_local(0,1) = stress(0,3) * dd[0] + stress(1,3) * dd[1] + stress(2,3) * dd[2] ; // sxy
-        stress_local_2_local(0,2) = stress(0,4) * dd[0] + stress(1,4) * dd[1] + stress(2,4) * dd[2] ; // sxz
+        stress_local_2_local(0,0) = Stress(0,0) * dd[0] + Stress(1,0) * dd[1] + Stress(2,0) * dd[2] ; // sxx
+        stress_local_2_local(0,1) = Stress(0,3) * dd[0] + Stress(1,3) * dd[1] + Stress(2,3) * dd[2] ; // sxy
+        stress_local_2_local(0,2) = Stress(0,4) * dd[0] + Stress(1,4) * dd[1] + Stress(2,4) * dd[2] ; // sxz
         stress_local_2_local(1,0) = stress_local_2_local(0,1); // syx = sxy
-        stress_local_2_local(1,1) = stress(0,1) * dd[0] + stress(1,1) * dd[1] + stress(2,1) * dd[2] ; // syy
-        stress_local_2_local(1,2) = stress(0,5) * dd[0] + stress(1,5) * dd[1] + stress(2,5) * dd[2] ; // syz
+        stress_local_2_local(1,1) = Stress(0,1) * dd[0] + Stress(1,1) * dd[1] + Stress(2,1) * dd[2] ; // syy
+        stress_local_2_local(1,2) = Stress(0,5) * dd[0] + Stress(1,5) * dd[1] + Stress(2,5) * dd[2] ; // syz
         stress_local_2_local(2,0) = stress_local_2_local(0,2); // szxy = sxz
         stress_local_2_local(2,1) = stress_local_2_local(1,2); // szy = syz
-        stress_local_2_local(2,2) = stress(0,2) * dd[0] + stress(1,2) * dd[1] + stress(2,2) * dd[2] ; // szz
+        stress_local_2_local(2,2) = Stress(0,2) * dd[0] + Stress(1,2) * dd[1] + Stress(2,2) * dd[2] ; // szz
 
         il::Array2D<double> RT = elem_data_s.rotationMatrix(true);
         // the matrix RT will rotate any vector from the local coordinate system to the global one
