@@ -12,8 +12,7 @@
 #include <src/core/FaceData.cpp>
 #include <src/core/FaceData.h>
 #include <BigWham.h>
-
-
+#include <src/elasticity/3d/Elastic3DT0_element.h>
 
 #include <string>
 #include <random>
@@ -704,11 +703,494 @@ int test3DR0() {
     return 0;
 }
 
+int test3DT0() {
+
+    std::cout << "--------------- test3DT0 ---------------------\n";
+
+    il::StaticArray<double, 3> x;
+    x[0] = 0.3;
+    x[1] = 0.3;
+    x[2] = 0.33;
+    il::StaticArray2D<double, 3, 3> xv;
+    xv(0,0) = 0.0;
+    xv(0,1) = 0.0;
+    xv(0,2) = 0.0;
+    xv(1,0) = 1.0;
+    xv(1,1) = 0.0;
+    xv(1,2) = 0.0;
+    xv(2,0) = 0.0;
+    xv(2,1) = 1.0;
+    xv(2,2) = 0.0;
+
+    // get triangle vertices coordinates separated
+    il::StaticArray<double, 3> y1, y2, y3;
+    for (il::int_t i = 0; i < 3; i++) {
+        y1[i] = xv(0, i);
+        y2[i] = xv(1, i);
+        y3[i] = xv(2, i);
+    }
+    // subtractions of coordinates vectors
+    il::StaticArray<double, 3> y31, y21, y1x;
+    for (il::int_t i = 0; i < 3; i++) {
+        y31[i] = y3[i] - y1[i];
+        y21[i] = y2[i] - y1[i];
+        y1x[i] = y1[i] - x[i];
+    }
+
+    // local reference system (e1,e2,e3)
+    il::StaticArray<double, 3> e1, e2, e3;
+
+    // e1
+    e1[0] = y21[0] / il::norm(y21, il::Norm::L2);
+    e1[1] = y21[1] / il::norm(y21, il::Norm::L2);
+    e1[2] = y21[2] / il::norm(y21, il::Norm::L2);
+
+    // e2
+    double sigma = il::dot(y31,y21) / pow(il::norm(y21, il::Norm::L2),2.0);
+    il::StaticArray<double, 3> e2vector; // not normalized
+    e2vector[0] = y31[0] - sigma * y21[0];
+    e2vector[1] = y31[1] - sigma * y21[1];
+    e2vector[2] = y31[2] - sigma * y21[2];
+    e2[0] = e2vector[0] / il::norm(e2vector, il::Norm::L2);
+    e2[1] = e2vector[1] / il::norm(e2vector, il::Norm::L2);
+    e2[2] = e2vector[2] / il::norm(e2vector, il::Norm::L2);
+
+    // e3
+    e3 = il::cross(e1,e2);
+
+    std::cout << " e1: " << e1[0] << " " << e1[1] << " " << e1[2] <<"\n";
+    std::cout << " e2: " << e2[0] << " " << e2[1] << " " << e2[2] <<"\n";
+    std::cout << " e3: " << e3[0] << " " << e3[1] << " " << e3[2] <<"\n";
+
+    // geometrical parameters
+    double a, b, c;
+    a = il::dot(y31,e2);
+    b = il::dot(y21,e1);
+    c = il::dot(y31,e1);
+    double theta1, theta2, theta3;
+    theta1 = acos(c / sqrt( pow(c,2.0) + pow(a,2.0) ) );
+    theta2 = acos((b - c) / sqrt( pow(b-c,2.0) + pow(a,2.0) ) );
+    theta3 = il::pi - (theta1 + theta2);
+
+    std::cout << " a, b, c: " << a << " " << b << " " << c <<"\n";
+    std::cout << " theta1, theta2, theta3: " << theta1 << " " << theta2 << " " << theta3 <<"\n";
+
+    // endpoints' coordinates of each triangle edge for the local coordinate systems of each edge
+
+    // vertex 1 coordinates
+    double xi1, zeta1, eta;
+    xi1 = il::dot(y1x,e1);
+    zeta1 = il::dot(y1x,e2);
+    eta = il::dot(y1x,e3);
+
+    // auxiliary angles
+    double alpha1, alpha2, alpha3;
+    alpha1 = 0.;
+    alpha2 = il::pi - theta2;
+    alpha3 = il::pi + theta1;
+
+    // endpoints' coordinates edge L1
+    double p11, p12, q1;
+    p11 = xi1;
+    p12 = b + xi1;
+    q1 = zeta1;
+
+    // endpoints' coordinates edge L2
+    double p22, p23, q2;
+    p22 = (b + xi1) * cos(alpha2) + zeta1 * sin(alpha2);
+    p23 = (c + xi1) * cos(alpha2) + (a + zeta1) * sin(alpha2);
+    q2 = -(b + xi1) * sin(alpha2) + zeta1 * cos(alpha2);
+
+    // endpoints' coordinates edge L3
+    double p33, p31, q3;
+    p33 = (c + xi1) * cos(alpha3) + (a + zeta1) * sin(alpha3);
+    p31 = xi1 * cos(alpha3) + zeta1 * sin(alpha3);
+    q3 = -xi1 * sin(alpha3) + zeta1 * cos(alpha3);
+
+    // generic recursive functions
+
+    // previous definitions
+
+    // p
+    il::StaticArray2D<double, 3, 3> p;
+    p(0,0) = p11;
+    p(1,1) = p22;
+    p(2,2) = p33;
+    p(0,1) = p12;
+    p(1,2) = p23;
+    p(2,0) = p31;
+
+    // q
+    il::StaticArray<double, 3> q;
+    q[0] = q1;
+    q[1] = q2;
+    q[2] = q3;
+
+    std::cout << " p11, p12, q1: " << p(0,0) << " " << p(0,1) << " " << q[0] <<"\n";
+    std::cout << " p22, p23, q2: " << p(1,1) << " " << p(1,2) << " " << q[1] <<"\n";
+    std::cout << " p33, p31, q3: " << p(2,2) << " " << p(2,0) << " " << q[2] <<"\n";
+
+    // rho - distance between source/receiver point 'x' and i-th vertex of triangle
+    il::StaticArray<double, 3> rho;
+    for (int i = 0; i < 3; i++) {
+        rho[i] = sqrt( pow(p(i,i),2.0) + pow(q[i],2.0) + pow(eta,2.0) );
+    }
+
+    std::cout << " rho: " << rho[0] << " " << rho[1] << " " << rho[2] <<"\n";
+
+    // definition of cases - where the projected source/receiver point lies
+    // also, computation of theta_0
+
+    // rho_plane - distance between projected source/receiver point 'x' and i-th vertex of triangle
+    il::StaticArray<double, 3> rho_plane;
+    for (int i = 0; i < 3; i++) {
+        rho_plane[i] = sqrt( pow(p(i,i),2.0) + pow(q[i],2.0) );
+    }
+
+    std::cout << " rho_plane: " << rho_plane[0] << " " << rho_plane[1] << " " << rho_plane[2] <<"\n";
+
+    double eps_tol = 2.221e-016; // 1.0e-015 parameter used for "if conditions" involving inequalities due to numerical precision
+
+    int id;
+    double theta_0;
+    if( q[0] > eps_tol || q[1] > eps_tol || q[2] > eps_tol ){
+        // if projected point lies strictly outside of the triangle
+        id = -1;
+        theta_0 = 0.0;
+    } else if( q[0] < -eps_tol && q[1] < -eps_tol && q[2] < -eps_tol ){
+        // if projected point lies strictly inside of the triangle
+        id = 0;
+        theta_0 = 2*il::pi;
+    } else if( rho_plane[0] > eps_tol && rho_plane[1] > eps_tol && rho_plane[2] > eps_tol){
+        // if projected point lies on an edge of the triangle but not on a vertex
+        id = 4;
+        theta_0 = il::pi;
+    } else if( rho_plane[0] < eps_tol ){
+        // if projected point lies exactly on vertex 1
+        id = 1;
+        theta_0 = theta1;
+    } else if( rho_plane[1] < eps_tol ){
+        // if projected point lies exactly on vertex 2
+        id = 2;
+        theta_0 = theta2;
+    } else if( rho_plane[2] < eps_tol ){
+        // if projected point lies exactly on vertex 3
+        id = 3;
+        theta_0 = theta3;
+    }
+
+    std::cout << " id: " << id << "\n";
+    std::cout << " theta_0 for unit triangle: " << theta_0 << "\n";
+    double teta2 = atan(1.0);
+    double teta1 = il::pi/2;
+    double teta3 = il::pi-teta1-teta2;
+
+    std::cout << " tetas: " << teta1 << " " << teta2 << " " << teta3 <<"\n";
+
+    // check if summation algorithm is working
+
+    double sum = 0.0;
+    for (int i = 0; i < 3; i++) {
+        sum += rho_plane[i];
+    }
+
+    std::cout << " sum: " << sum << "\n";
+
+    // now the generic recursive functions
+
+    int i1; // i+1, will be used in all recursive generic functions
+
+    // d
+    il::StaticArray<double, 3> d;
+    for (int i = 0; i < 3; i++) {
+        d[i] = pow(q[i],2.0) + pow(eta, 2.0);
+    }
+
+    // rho tilde
+    il::StaticArray<double, 3> rho_t;
+    for (int i = 0; i < 3; i++) {
+        i1 = i + 1;
+        if (i1 > 2) { i1 = 0; } // if index is equal to 3, replace by 0
+        rho_t[i] = rho[i] - rho[i1];
+    }
+
+    // phi
+    il::StaticArray<double, 3> phi;
+    for (int i = 0; i < 3; i++) {
+        i1 = i + 1;
+        if (i1 > 2) { i1 = 0; } // if index is equal to 3, replace by 0
+        phi[i] = p(i, i) * rho[i] - p(i, i1) * rho[i1];
+    }
+
+    // chi
+    // Note: in Nintcheu Fata (2009, 2011) there are no comments for the case
+    // in which the log arguments are negative or zero and this can happen! Brice
+    // regularized this in his mathematica notebook but I don't know yet how (Alexis).
+    // I use here Brice's solution
+    il::StaticArray<double, 3> chi;
+    for (int i = 0; i < 3; i++) {
+        i1 = i + 1;
+        if (i1 > 2) { i1 = 0; } // if index is equal to 3, replace by 0
+        if ((p(i, i) + rho[i]) > eps_tol && (p(i, i1) + rho[i1]) > eps_tol) {
+            // if the log arguments are strictly positive
+            chi[i] = log(p(i, i) + rho[i]) - log(p(i, i1) + rho[i1]);
+        } else if ((p(i, i) + rho[i]) < -eps_tol && (p(i, i1) + rho[i1]) < -eps_tol) {
+            // if the log arguments are strictly negative
+            double d = pow(q[i], 2.0) + pow(eta, 2.0);
+            double p1 = p(i, i) + rho[i];
+            double p2 = p(i, i1) + rho[i1];
+            double z1 = (d / p1) / p1;
+            double z2 = (d / p2) / p2;
+            chi[i] = log(
+                    abs(p2 / p1) * ((1.0 - 0.25 * z1 * (1.0 - 0.5 * z1)) / (1.0 - 0.25 * z2 * (1.0 - 0.5 * z2))));
+        } else {
+            // if any of the log arguments is zero
+            chi[i] = 0.0;
+        }
+    }
+
+    // delta
+    il::StaticArray<double, 3> delta;
+    for (int i = 0; i < 3; i++) {
+        i1 = i + 1;
+        if (i1 > 2) { i1 = 0; } // if index is equal to 3, replace by 0
+        delta[i] = p(i, i) / rho[i] - p(i, i1) / rho[i1];
+    }
+
+    // L
+    il::StaticArray<double, 3> L;
+    for (int i = 0; i < 3; i++) {
+        i1 = i + 1;
+        if (i1 > 2) { i1 = 0; } // if index is equal to 3, replace by 0
+        L[i] = 1.0 / rho[i] - 1.0 / rho[i1];
+    }
+
+    // D
+    il::StaticArray<double, 3> D;
+    for (int i = 0; i < 3; i++) {
+        i1 = i + 1;
+        if (i1 > 2) { i1 = 0; } // if index is equal to 3, replace by 0
+        D[i] = p(i, i) / pow(rho[i], 3.0) - p(i, i1) / pow(rho[i1], 3.0);
+    }
+
+    // Lambda
+    il::StaticArray<double, 3> Lambda;
+    for (int i = 0; i < 3; i++) {
+        i1 = i + 1;
+        if (i1 > 2) { i1 = 0; } // if index is equal to 3, replace by 0
+        Lambda[i] = 1.0 / pow(rho[i], 3.0) - 1.0 / pow(rho[i1], 3.0);
+    }
+
+    // gamma
+
+    // Note: in Nintcheu Fata (2009, 2011) there are no comments for the case
+    // in which the arctan arguments are not defined (in this case, 0/0) and this can happen! Brice
+    // regularized this in his mathematica notebook by taking the limits, I understand the case of
+    // the edge, but not the cases for the vertices. I just coded up Brice's solution for now, but
+    // I didn't include the case inside the element and the case right at the vertices
+    il::StaticArray<double, 3> gamma;
+
+    if (id == 1) {
+        // if the projected source/receiver point lies on vertex 1
+        gamma[0] = 0.0;
+        gamma[2] = 0.0;
+        int i = 1;
+        i1 = 2;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+    } else if (id == 2) {
+        // if the projected source/receiver point lies on vertex 2
+        gamma[0] = 0.0;
+        gamma[1] = 0.0;
+        int i = 2;
+        i1 = 0;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+    } else if (id == 3) {
+        // if the projected source/receiver point lies on vertex 3
+        gamma[1] = 0.0;
+        gamma[2] = 0.0;
+        int i = 0;
+        i1 = 1;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+    } else if (abs(q[0]) < eps_tol) {
+        // if the projected source/receiver point lies on the edge 1 or its prolongation (in both directions)
+        // the limit is needed only for the case eta = 0. However, for eta =! 0, the value of gamma1 is the same
+        // as the limit (=zero), so that's why I don't make the difference
+        gamma[0] = 0.0;
+        int i = 1;
+        i1 = 2;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+        i = 2;
+        i1 = 0;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+    } else if (abs(q[1]) < eps_tol) {
+        // if the projected source/receiver point lies on the edge 2 or its prolongation (in both directions)
+        // the limit is needed only for the case eta = 0. However, for eta =! 0, the value of gamma2 is the same
+        // as the limit (=zero), so that's why I don't make the difference
+        gamma[1] = 0.0;
+        int i = 0;
+        i1 = 1;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+        i = 2;
+        i1 = 0;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+    } else if (abs(q[2]) < eps_tol) {
+        // if the projected source/receiver point lies on the edge 3 or its prolongation (in both directions)
+        // the limit is needed only for the case eta = 0. However, for eta =! 0, the value of gamma3 is the same
+        // as the limit (=zero), so that's why I don't make the difference
+        gamma[2] = 0.0;
+        int i = 0;
+        i1 = 1;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+        i = 1;
+        i1 = 2;
+        gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                        (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                   - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                          (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+    } else {
+        // any other case
+        for (int i = 0; i < 3; i++) {
+            i1 = i + 1;
+            if (i1 > 2) { i1 = 0; } // if index is equal to 3, replace by 0
+            gamma[i] = atan((-2.0 * p(i, i) * q[i] * eta * rho[i]) /
+                            (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
+                       - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
+                              (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
+        }
+    }
+
+    // theta for displacements and tractions at the boundary of the domain
+    double theta;
+    double thetaSum = 0.0;
+    for (int i = 0; i < 3; i++) {
+        thetaSum += gamma[i];
+    }
+    if (eta < eps_tol) {
+        // if eta is negative or zero
+        theta = 0.5 * thetaSum - theta_0;
+    } else {
+        // if eta is strictly positive
+        theta = 0.5 * thetaSum + theta_0;
+    }
+
+    std::cout << " Checking parameters sensitive to cases... " << "\n";
+
+    std::cout << " theta: " << theta << "\n";
+    std::cout << " eta: " << eta << "\n";
+    std::cout << " gamma 1: " << gamma[0] << " gamma 2: " << gamma[1] << " gamma 3: " << gamma[2] << "\n";
+    std::cout << " theta_0: " << theta_0 << "\n";
+
+    // sin(alpha[i]) and cos(alpha[i])
+
+    // alpha
+    il::StaticArray<double, 3> alpha;
+    alpha[0] = alpha1;
+    alpha[1] = alpha2;
+    alpha[2] = alpha3;
+
+    il::StaticArray<double, 3> sinAlpha;
+    il::StaticArray<double, 3> cosAlpha;
+    for (int i = 0; i < 3; i++) {
+        sinAlpha[i] = sin(alpha[i]);
+        cosAlpha[i] = cos(alpha[i]);
+    }
+
+    // check generic integrals for DD1
+
+    double I5_Xi = bie::i5_Xi(delta,d,sinAlpha);
+    double I7_Xi_Xi_Xi = bie::i7_Xi_Xi_Xi(q,d,sinAlpha,cosAlpha,D,Lambda,delta);
+    double I7_Xi_Zeta_Zeta = bie::i7_Xi_Zeta_Zeta(q,d,sinAlpha,cosAlpha,D,Lambda,delta);
+    double I7_Xi = bie::i7_Xi(d,D,delta,sinAlpha);
+    double I7_Xi_Xi_Zeta = bie::i7_Xi_Xi_Zeta(q,d,sinAlpha,cosAlpha,D,Lambda,delta);
+    double I5_Zeta = bie::i5_Zeta(delta,d,cosAlpha);
+    double I7_Xi_Xi_Aux = bie::i7_Xi_Xi_Aux(eta,cosAlpha,Lambda,sinAlpha,q,d,D,delta);
+    double I7_Xi_Xi_By_Aux = I7_Xi_Xi_Aux/pow(eta,2.0)+theta/(15.0*pow(eta,3.0)); // to verify when eta =! 0 against mma
+    double I5_Zeta_Zeta_Aux = bie::i5_Zeta_Zeta_Aux(L,sinAlpha,q,d,delta,cosAlpha);
+    double I5_Zeta_Zeta_By_Aux = I5_Zeta_Zeta_Aux + theta/(3*eta); // to verify when eta =! 0 against mma
+    double I7_Xi_Zeta = bie::i7_Xi_Zeta(sinAlpha,Lambda,cosAlpha,q,d,D,delta);
+    double I5_Xi_Zeta = bie::i5_Xi_Zeta(L,sinAlpha,q,d,delta,cosAlpha);
+
+    std::cout << " Checking generic integrals for DD1 ... " << "\n";
+
+    std::cout << " I5_Xi: " << I5_Xi << "\n";
+    std::cout << " I7_Xi_Xi_Xi: " << I7_Xi_Xi_Xi << "\n";
+    std::cout << " I7_Xi_Zeta_Zeta: " << I7_Xi_Zeta_Zeta << "\n";
+    std::cout << " I7_Xi: " << I7_Xi << "\n";
+    std::cout << " I7_Xi_Xi_Zeta: " << I7_Xi_Xi_Zeta << "\n";
+    std::cout << " I5_Zeta: " << I5_Zeta << "\n";
+//    std::cout << " I7_Xi_Xi_Aux: " << I7_Xi_Xi_Aux << "\n";
+    std::cout << " I7_Xi_Xi_By_Aux: " << I7_Xi_Xi_By_Aux << "\n";
+//    std::cout << " I5_Zeta_Zeta_Aux: " << I5_Zeta_Zeta_Aux << "\n";
+    std::cout << " I5_Zeta_Zeta_By_Aux: " << I5_Zeta_Zeta_By_Aux << "\n";
+    std::cout << " I7_Xi_Zeta: " << I7_Xi_Zeta << "\n";
+    std::cout << " I5_Xi_Zeta: " << I5_Xi_Zeta << "\n";
+
+    // check generic integrals for DD2
+
+    double I7_Zeta_Zeta_Zeta = bie::i7_Zeta_Zeta_Zeta(q,d,sinAlpha,cosAlpha,D,Lambda,delta);
+    double I7_Zeta = bie::i7_Zeta(d,D,delta,cosAlpha);
+    double I7_Zeta_Zeta_Aux = bie::i7_Zeta_Zeta_Aux(eta,cosAlpha,Lambda,sinAlpha,q,d,D,delta);
+    double I7_Zeta_Zeta_By_Aux = I7_Zeta_Zeta_Aux/pow(eta,2.0)+theta/(15.0*pow(eta,3.0)); // to verify when eta =! 0 against mma
+    double I5_Xi_Xi_Aux = bie::i5_Xi_Xi_Aux(L,sinAlpha,q,d,delta,cosAlpha);
+    double I5_Xi_Xi_By_Aux = I5_Xi_Xi_Aux + theta/(3*eta); // to verify when eta =! 0 against mma
+
+    std::cout << " Checking generic integrals for DD2 ... " << "\n";
+
+    std::cout << " I7_Zeta_Zeta_Zeta: " << I7_Zeta_Zeta_Zeta << "\n";
+    std::cout << " I7_Zeta: " << I7_Zeta << "\n";
+//    std::cout << " I7_Zeta_Zeta_Aux: " << I7_Zeta_Zeta_Aux << "\n";
+    std::cout << " I7_Zeta_Zeta_By_Aux: " << I7_Zeta_Zeta_By_Aux << "\n";
+//    std::cout << " I5_Xi_Xi_Aux: " << I5_Xi_Xi_Aux << "\n";
+    std::cout << " I5_Xi_Xi_By_Aux: " << I5_Xi_Xi_By_Aux << "\n";
+
+    // check generic integrals for DD2
+
+    double I5_Aux = bie::i5_Aux(q,d,delta);
+    double I5_By_Aux = I5_Aux/pow(eta,2.0) + theta/(3.0*pow(eta,3.0)); // to verify when eta =! 0 against mma
+    double I7_Aux = bie::i7_Aux(eta,q,d,D,delta);
+    double I7_By_Aux = I7_Aux/pow(eta,4.0) + theta/(5.0*pow(eta,5.0)); // to verify when eta =! 0 against mma
+
+    std::cout << " Checking generic integrals for DD3 ... " << "\n";
+
+    //    std::cout << " I5_Aux: " << I5_Aux << "\n";
+    std::cout << " I5_By_Aux: " << I5_By_Aux << "\n";
+//    std::cout << " I7_Aux: " << I7_Aux << "\n";
+    std::cout << " I7_By_Aux: " << I7_By_Aux << "\n";
+
+    std::cout << "----------end of test 3DT0  ---------------------\n";
+
+    return 0;
+
+}
 
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
-  test3DR0();
+//  test3DR0();
 
   //test2DP1();
 
@@ -721,6 +1203,8 @@ int main() {
 //    std::string vertices_file = "/home/alexis/bigwham/vertices5000.csv";
 //    std::string connectivity_file = "/home/alexis/bigwham/connectivity5000.csv";
 //  test3DT6PennyShaped(vertices_file,connectivity_file);
+
+test3DT0();
 
   std::cout << "\n End of BigWham - exe " << "\n";
 
