@@ -813,7 +813,7 @@ class Bigwhamio
                         bie::Mesh3D mesh3d(Coor, Conn, p);
                         std::cout << "\n WARNING: not implemented !!\n";
                         il::abort();
-                    } else if (kernel_ == "3DR0_traction") {
+                    } else if (kernel_ == "3DR0_displ") {
                         bie::Mesh3D mesh3d(Coor, Conn, p, false);
                         displacements = bie::computeDisplacements3D(pts, mesh3d, elas, solu, bie::point_displacement_3DR0);
                     }

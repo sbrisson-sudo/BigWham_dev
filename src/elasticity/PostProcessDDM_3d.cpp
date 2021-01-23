@@ -95,7 +95,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
                                           bie::Mesh3D& mesh,
                                           bie::ElasticProperties& elas,
                                           il::Array<double> solution,
-                                          vPPrCall3D PPrCall, double ker_options)
+                                          vPPrCall3D PPrCall)
     {
         // Function to get displacements (u_x, u_y, u_z) at given points
         // due to DDs of solution
@@ -113,7 +113,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
         // CONVENTION:
         // positive tension / positive overlap DD;
 
-        il::Array2D<double> displacement_out{observ_pts.size(0), 6, 0.0};
+        il::Array2D<double> displacement_out{observ_pts.size(0), 3, 0.0};
 
         il::Array<double> displacement_at_pt{6, 0.0};
         il::int_t numberCollPtsElt = mesh.numberCollPtsElt();

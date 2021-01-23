@@ -37,5 +37,6 @@ PYBIND11_MODULE(pyparty, m) {
       .def("hdotProductInPermutted", &Bigwhamio::hdotProductInPermutted)
       .def("hdotProduct",            &Bigwhamio::hdotProduct, " dot product between hmat and a vector x",py::arg("x"))
       .def("computeStresses", &Bigwhamio::computeStresses, "function to compute the stress at a given set of points")
-      .def("getInfluenceCoe", &Bigwhamio::getInfluenceCoe);
+      .def("getInfluenceCoe", &Bigwhamio::getInfluenceCoe)
+      .def("computeDisplacements", &Bigwhamio::computeDisplacements);
     }

@@ -691,7 +691,16 @@ int test3DR0() {
         }
     }
 
+    // compute displacements at a set of observation points
 
+    std::vector<double> cc = displacementHMAT.computeDisplacements(mysol, coorobsp, 2, properties, coor, conn);
+
+    for(int i=0; i<cc.size()/3; ++i) {
+        std::cout << "\n displacement at point #" << i << "\n ";
+        for(int j=0; j<3; ++j){
+            std::cout << cc[i*3+j] << " ";
+        }
+    }
 
         std::cout << "\n----------end of test 3DR0  ---------------------\n";
     return 0;
