@@ -10,11 +10,156 @@
 #include "Elastic3DT0_element.h"
 #include <il/linearAlgebra.h>
 #include <il/linearAlgebra/dense/norm.h>
-
-// Some auxiliary functions (norm, cross product)
-//TODO: we alresady have il::norm...
+#include <iostream>
+#include "Elastic3DR0_element.cpp" // TODO: sorry, but the function's names and arguments are duplicated, we need to re-organized things
 
 namespace bie {
+
+    il::Array2D<double> NodeDDtriplet_to_CPtraction_influence_3DT0(
+            bie::FaceData &elem_data_s, // source element
+            bie::FaceData &elem_data_r, // receiver element
+            bie::ElasticProperties const &elas_, // elastic properties
+            il::int_t I_want_global_DD = 0, // 0 if local, 1 if global
+            il::int_t I_want_global_traction = 0){ //0 if local, 1 if global
+        // TODO: change everything with static arrays
+
+        // get constitutive parameters
+        double G = elas_.getG();
+        double nu = elas_.getNu();
+
+        // get coordinates receiver cp
+        il::Array2D<double> el_cp_r;
+        el_cp_r = elem_data_r.getCollocationPoints();
+
+        // convert from dynamic 2D array to static 1D
+        il::StaticArray<double, 3> x;
+        x[0] = el_cp_r(0, 0);
+        x[1] = el_cp_r(0, 1);
+        x[2] = el_cp_r(0, 2);
+
+        // get coordinates vertices of triangular source element
+        il::Array2D<double> el_vertices_s;
+        el_vertices_s = elem_data_s.getVertices();
+
+        // convert from dynamic 2D array to static 2D
+        il::StaticArray2D<double, 3, 3> xv;
+        for (int i = 0; i < 3; i++) {
+            xv(0,i) = el_vertices_s(0,i); // vertex 1
+            xv(1,i) = el_vertices_s(1,i); // vertex 2
+            xv(2,i) = el_vertices_s(2,i); // vertex 3
+        }
+
+        // get stress influence coefficients - in the local coordinate system of the source element
+        il::StaticArray2D<double, 3, 6> Stress;
+        Stress = StressesKernelT0(x,xv,G,nu);
+
+        // index        ->    0    1    2    3    4    5
+        // DD1 (shear)  -> | s11, s22, s33, s12, s13, s23  |
+        // DD2 (shear)  -> | s11, s22, s33, s12, s13, s23  |
+        // DD3 (normal) -> | s11, s22, s33, s12, s13, s23  |
+
+        // normal vector at the receiver location in the reference system of the source element
+        il::Array2D<double> R = elem_data_s.rotationMatrix();
+        il::Array<double> nr = elem_data_r.getNormal();
+        nr = il::dot(R,nr);
+
+        // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source element
+        // in the reference system of the source element
+        il::Array2D<double> DDs_to_traction_local_local{3,3,0.0}; // traction vectors
+        il::Array<double> traction_temp; // temporary traction vector
+        il::Array2D<double> sigma_temp{3,3,0.0}; // temporary stress tensor
+
+        for (int i = 0; i < 3; ++i)
+        { //loop over the rows of Stress, i.e., over each DD component effect
+            // definition of temporary stress tensor
+            sigma_temp(0,0) = Stress(i,0); // S11
+            sigma_temp(0,1) = Stress(i,3); // S12
+            sigma_temp(0,2) = Stress(i,4); // S13
+            sigma_temp(1,0) = Stress(i,3); // S21
+            sigma_temp(1,1) = Stress(i,1); // S22
+            sigma_temp(1,2) = Stress(i,5); // S23
+            sigma_temp(2,0) = Stress(i,4); // S31
+            sigma_temp(2,1) = Stress(i,5); // S32
+            sigma_temp(2,2) = Stress(i,2); // S33
+
+            // compute temporary traction vector
+            traction_temp = il::dot(sigma_temp, nr);
+            for (int j = 0; j < 3; ++j) {
+                // fill the traction vectors at receiver element cp due to (DD1,DD2,DD3) source element
+                DDs_to_traction_local_local(j,i) = traction_temp[j];
+                // | t1/D1   t1/D2  t1/D3 |
+                // | t2/D1   t2/D2  t2/D3 |
+                // | t3/D1   t3/D2  t3/D3 |
+                // local DD & local traction
+                // both in the reference system of the source element
+            }
+        }
+
+        return change_ref_system(DDs_to_traction_local_local,
+                I_want_global_DD, I_want_global_traction, R, elem_data_r.rotationMatrix());
+        // | t1/D1   t1/D2  t1/D3 |
+        // | t2/D1   t2/D2  t2/D3 |
+        // | t3/D1   t3/D2  t3/D3 |
+    }
+
+    il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence_3DT0(
+            FaceData &elem_data_s, // source element
+            FaceData &elem_data_r, // receiver element
+            ElasticProperties const &elas_, // elastic properties
+            il::int_t I_want_global_DD,
+            il::int_t I_want_global_displacement)
+    {
+        // TODO: change everything with static arrays, also, this function does almost nothing, just change ref. system
+
+        // get constitutive parameters - only nu is needed
+        double nu = elas_.getNu();
+
+        // get coordinates receiver cp
+        il::Array2D<double> el_cp_r;
+        el_cp_r = elem_data_r.getCollocationPoints();
+
+        // convert from dynamic 2D array to static 1D
+        il::StaticArray<double, 3> x;
+        x[0] = el_cp_r(0, 0);
+        x[1] = el_cp_r(0, 1);
+        x[2] = el_cp_r(0, 2);
+
+        // get coordinates vertices of triangular source element
+        il::Array2D<double> el_vertices_s;
+        el_vertices_s = elem_data_s.getVertices();
+
+        // convert from dynamic 2D array to static 2D
+        il::StaticArray2D<double, 3, 3> xv;
+        for (int i = 0; i < 3; i++) {
+            xv(0,i) = el_vertices_s(0,i); // vertex 1
+            xv(1,i) = el_vertices_s(1,i); // vertex 2
+            xv(2,i) = el_vertices_s(2,i); // vertex 3
+        }
+
+        // compute displacement components at receiver element cp due to (DD1,DD2,DD3) source element
+        // in the reference system of the source element
+
+        il::StaticArray2D<double, 3, 3> DDs_to_Displacement_local_local;
+        DDs_to_Displacement_local_local = DisplacementKernelT0(x,xv,nu);
+        // index        ->    DD1 (shear)    DD2 (shear)     DD3 (normal)
+        //   0      -> |       U1,            U1,             U1            |
+        //   1      -> |       U2,            U2,             U2            |
+        //   2      -> |       U3,            U3,             U3            |
+
+        // convert from static 2D array to dynamic
+        il::Array2D<double> X{3,3};
+        for (int i = 0; i < 3; i++) {
+            X(0,i) = DDs_to_Displacement_local_local(0,i);
+            X(1,i) = DDs_to_Displacement_local_local(1,i);
+            X(2,i) = DDs_to_Displacement_local_local(2,i);
+        }
+
+        return change_ref_system(X,I_want_global_DD, I_want_global_displacement,
+                elem_data_s.rotationMatrix(), elem_data_r.rotationMatrix());
+        // | U1/D1   U1/D2  U1/D3 |
+        // | U2/D1   U2/D2  U2/D3 |
+        // | U3/D1   U3/D2  U3/D3 |
+    }
 
 // Fundamental stress kernel = stress influence coefficients
     il::StaticArray2D<double, 3, 6> StressesKernelT0(
@@ -1233,5 +1378,4 @@ namespace bie {
         }
         return -sum;
     }
-
 }

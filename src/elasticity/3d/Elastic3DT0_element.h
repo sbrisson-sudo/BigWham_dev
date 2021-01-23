@@ -16,11 +16,31 @@
 
 namespace bie{
 
+    il::Array2D<double> NodeDDtriplet_to_CPtraction_influence_3DT0(
+            bie::FaceData &elem_data_s, // source element
+            bie::FaceData &elem_data_r, // receiver element
+            bie::ElasticProperties const &elas_, // elastic properties
+            il::int_t I_want_global_DD,
+            il::int_t I_want_global_traction);
+
+    il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence_3DT0(
+            bie::FaceData &elem_data_s, // source element
+            bie::FaceData &elem_data_r, // receiver element
+            bie::ElasticProperties const &elas_, // elastic properties
+            il::int_t I_want_global_DD,
+            il::int_t I_want_global_displacement);
+
     il::StaticArray2D<double, 3, 6> StressesKernelT0(
             il::StaticArray<double, 3> &x,
             il::StaticArray2D<double, 3, 3> &xv,
             double& G,
             double& nu) ;
+
+    // Fundamental displacement kernel = displacement influence coefficients
+    il::StaticArray2D<double, 3, 3> DisplacementKernelT0(
+            il::StaticArray<double, 3> &x,
+            il::StaticArray2D<double, 3, 3> &xv,
+            double &nu);
 
     // generic integrals
 
@@ -168,12 +188,6 @@ namespace bie{
             il::StaticArray<double, 3> &delta
     );
 
-    // Fundamental displacement kernel = displacement influence coefficients
-    il::StaticArray2D<double, 3, 3> DisplacementKernelT0(
-            il::StaticArray<double, 3> &x,
-            il::StaticArray2D<double, 3, 3> &xv,
-            double &nu);
-
     // generic (and auxiliary) integrals first appearing for displacement influence coefficients
 
     // By order of appearance in displacement influence coefficients due to DD1
@@ -189,24 +203,6 @@ namespace bie{
             il::StaticArray<double, 3> &chi,
             il::StaticArray<double, 3> &cosAlpha
     );
-
-//    il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
-//            bie::FaceData &elem_data_s, // source element
-//            bie::FaceData &elem_data_r, // receiver element
-//            bie::ElasticProperties const &elas_, // elastic properties
-//            il::int_t I_want_global_DD,
-//            il::int_t I_want_global_traction) ;
-//
-//    il::Array2D<double> DisplacementKernelT0(
-//            double& x, double& y, double& z, double& a, double& b,
-//            double& nu) ;
-//
-//    il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence(
-//            bie::FaceData &elem_data_s, // source element
-//            bie::FaceData &elem_data_r, // receiver element
-//            bie::ElasticProperties const &elas_, // elastic properties
-//            il::int_t I_want_global_DD,
-//            il::int_t I_want_global_displacement) ;
 }
 
 #endif  // BIGWHAM_EXE_ELASTIC3DT0_ELEMENT_H
