@@ -27,6 +27,7 @@
 #include <Hmat-lib/linearAlgebra/factorization/luDecomposition.h>
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
+#include <elasticity/3d/ElasticHMatrix3DT0.h>
 #include <elasticity/PostProcessDDM_2d.h>
 #include <elasticity/2d/FullMatrixAssembly2D.h>
 #include <src/core/ElasticProperties.h>
@@ -708,9 +709,12 @@ int test3DT0() {
     std::cout << "--------------- test3DT0 ---------------------\n";
 
     il::StaticArray<double, 3> x;
+//    x[0] = 1.0;
+//    x[1] = 0.0;
+//    x[2] = 0.3;
     x[0] = 0.3;
     x[1] = 0.3;
-    x[2] = 0.33;
+    x[2] = 0.7;
     il::StaticArray2D<double, 3, 3> xv;
     xv(0,0) = 0.0;
     xv(0,1) = 0.0;
@@ -1119,6 +1123,8 @@ int test3DT0() {
         cosAlpha[i] = cos(alpha[i]);
     }
 
+    // check generic integrals for stress influence coefficients
+
     // check generic integrals for DD1
 
     double I5_Xi = bie::i5_Xi(delta,d,sinAlpha);
@@ -1133,6 +1139,8 @@ int test3DT0() {
     double I5_Zeta_Zeta_By_Aux = I5_Zeta_Zeta_Aux + theta/(3*eta); // to verify when eta =! 0 against mma
     double I7_Xi_Zeta = bie::i7_Xi_Zeta(sinAlpha,Lambda,cosAlpha,q,d,D,delta);
     double I5_Xi_Zeta = bie::i5_Xi_Zeta(L,sinAlpha,q,d,delta,cosAlpha);
+
+    std::cout << " Checking generic integrals for stress ... " << "\n";
 
     std::cout << " Checking generic integrals for DD1 ... " << "\n";
 
@@ -1167,7 +1175,7 @@ int test3DT0() {
 //    std::cout << " I5_Xi_Xi_Aux: " << I5_Xi_Xi_Aux << "\n";
     std::cout << " I5_Xi_Xi_By_Aux: " << I5_Xi_Xi_By_Aux << "\n";
 
-    // check generic integrals for DD2
+    // check generic integrals for DD3
 
     double I5_Aux = bie::i5_Aux(q,d,delta);
     double I5_By_Aux = I5_Aux/pow(eta,2.0) + theta/(3.0*pow(eta,3.0)); // to verify when eta =! 0 against mma
@@ -1181,9 +1189,593 @@ int test3DT0() {
 //    std::cout << " I7_Aux: " << I7_Aux << "\n";
     std::cout << " I7_By_Aux: " << I7_By_Aux << "\n";
 
+    // Check the stress influence coefficients
+
+    double G = 1.0;
+    double nu = 0.3;
+
+//    double prefactor = (G/(4.0*il::pi*(1.0-nu))); // common prefactor of all coefficients
+//
+//    il::StaticArray2D<double, 3, 6> Stress; // output
+//
+//    // recall:
+//    // DD1 (shear), DD2 (shear), DD3 (normal) -> for rows
+//    // Stress components: S11, S22, S33, S12, S13, S23 -> for columns
+//
+//    // stress components due to the unit displacement discontinuity component DD1 (shear)
+//
+//    Stress(0, 0) = prefactor * ( -3.0 * eta * (I5_Xi - 5.0 * I7_Xi_Xi_Xi) );
+//    // s11 = b111
+//    Stress(0, 1) = prefactor * ( 3.0 * eta * ( I5_Xi * (-1.0 + 2.0*nu)
+//                                               + 5.0 * I7_Xi_Zeta_Zeta ) );
+//    // s22 = b221
+//    Stress(0, 2) = prefactor * ( -3.0 * eta * ( I5_Xi - 5.0 * I7_Xi * pow(eta,2.0) ) );
+//    // s33 = b331
+//    Stress(0, 3) = prefactor * ( 3.0 * eta * ( 5.0 * I7_Xi_Xi_Zeta - I5_Zeta * nu ) );
+//    // s12 = b121
+//    Stress(0, 4) = prefactor * ( 3.0 * ( 5.0 * I7_Xi_Xi_Aux + I5_Zeta_Zeta_Aux * nu ) );
+//    // s13 = b131
+//    Stress(0, 5) = prefactor * ( 15.0 * I7_Xi_Zeta * pow(eta,2.0)
+//                                 - 3.0 * I5_Xi_Zeta * nu );
+//    // s23 = b231
+//
+//    // stress components due to the unit displacement discontinuity component DD2 (shear)
+//
+//    Stress(1, 0) = prefactor * ( 3.0 * eta * ( 5.0 * I7_Xi_Xi_Zeta
+//                                               + I5_Zeta * (-1.0 + 2.0*nu) ) ); // s11 = b112
+//    Stress(1, 1) = prefactor * ( -3.0 * eta * ( I5_Zeta - 5.0 * I7_Zeta_Zeta_Zeta ) );
+//    // s22 = b222
+//    Stress(1, 2) = prefactor * ( -3.0 * eta * ( I5_Zeta - 5.0 * I7_Zeta * pow(eta,2.0) ) );
+//    // s33 = b332
+//    Stress(1, 3) = prefactor * ( 3.0 * eta * ( 5.0 * I7_Xi_Zeta_Zeta - I5_Xi * nu ) );
+//    // s12 = b122
+//    Stress(1, 4) = prefactor * ( 15.0 * I7_Xi_Zeta * pow(eta,2.0) - 3.0 * I5_Xi_Zeta * nu );
+//    // s13 = b132
+//    Stress(1, 5) = prefactor * ( 3.0 * (5.0 * I7_Zeta_Zeta_Aux + I5_Xi_Xi_Aux * nu ) );
+//    // s23 = b232
+//
+//    // stress components due to the unit displacement discontinuity component DD3 (normal)
+//
+//    Stress(2, 0) = prefactor * ( 3.0 * ( I5_Zeta_Zeta_Aux + 5.0 * I7_Xi_Xi_Aux
+//                                         - 2.0 * I5_Zeta_Zeta_Aux * nu ) ); // s11 = b113 TODO: it can be factorized
+//    Stress(2, 1) = prefactor * ( 3.0 * ( I5_Xi_Xi_Aux + 5.0 * I7_Zeta_Zeta_Aux
+//                                         - 2.0 * I5_Xi_Xi_Aux * nu ) ); // s22 = b223 TODO: it can be factorized
+//    Stress(2, 2) = prefactor * ( -6.0 * I5_Aux + 15.0 * I7_Aux );
+//    // s33 = b333
+//    Stress(2, 3) = prefactor * ( 15.0 * I7_Xi_Zeta * pow(eta,2.0)
+//                                 + I5_Xi_Zeta * (-3.0 + 6.0*nu) ); // s12 = b123
+//    Stress(2, 4) = prefactor * ( -3.0 * eta * ( I5_Xi - 5.0 * I7_Xi * pow(eta,2.0) ) );
+//    // s13 = b133
+//    Stress(2, 5) = prefactor * ( -3.0 * eta * ( I5_Zeta - 5.0 * I7_Zeta * pow(eta,2.0) ) );
+//    // s23 = b233
+//
+//    std::cout << " Checking stress influence coefficients ... " << "\n";
+//
+//    std::cout << " For DD1 ... " << "\n";
+//
+//    std::cout << " b111: " << Stress(0, 0) << "\n";
+//    std::cout << " b221: " << Stress(0, 1) << "\n";
+//    std::cout << " b331: " << Stress(0, 2) << "\n";
+//    std::cout << " b121: " << Stress(0, 3) << "\n";
+//    std::cout << " b131: " << Stress(0, 4) << "\n";
+//    std::cout << " b231: " << Stress(0, 5) << "\n";
+//
+//    std::cout << " For DD2 ... " << "\n";
+//
+//    std::cout << " b112: " << Stress(1, 0) << "\n";
+//    std::cout << " b222: " << Stress(1, 1) << "\n";
+//    std::cout << " b332: " << Stress(1, 2) << "\n";
+//    std::cout << " b122: " << Stress(1, 3) << "\n";
+//    std::cout << " b132: " << Stress(1, 4) << "\n";
+//    std::cout << " b232: " << Stress(1, 5) << "\n";
+//
+//    std::cout << " For DD3 ... " << "\n";
+//
+//    std::cout << " b113: " << Stress(2, 0) << "\n";
+//    std::cout << " b223: " << Stress(2, 1) << "\n";
+//    std::cout << " b333: " << Stress(2, 2) << "\n";
+//    std::cout << " b123: " << Stress(2, 3) << "\n";
+//    std::cout << " b133: " << Stress(2, 4) << "\n";
+//    std::cout << " b233: " << Stress(2, 5) << "\n";
+//
+    il::StaticArray2D<double, 3, 6> B = bie::StressesKernelT0(x,xv,G,nu);
+
+    std::cout << " Checking stress influence coefficients ... " << "\n";
+
+    std::cout << " For DD1 ... " << "\n";
+
+    std::cout << " b111: " << B(0, 0) << "\n";
+    std::cout << " b221: " << B(0, 1) << "\n";
+    std::cout << " b331: " << B(0, 2) << "\n";
+    std::cout << " b121: " << B(0, 3) << "\n";
+    std::cout << " b131: " << B(0, 4) << "\n";
+    std::cout << " b231: " << B(0, 5) << "\n";
+
+    std::cout << " For DD2 ... " << "\n";
+
+    std::cout << " b112: " << B(1, 0) << "\n";
+    std::cout << " b222: " << B(1, 1) << "\n";
+    std::cout << " b332: " << B(1, 2) << "\n";
+    std::cout << " b122: " << B(1, 3) << "\n";
+    std::cout << " b132: " << B(1, 4) << "\n";
+    std::cout << " b232: " << B(1, 5) << "\n";
+
+    std::cout << " For DD3 ... " << "\n";
+
+    std::cout << " b113: " << B(2, 0) << "\n";
+    std::cout << " b223: " << B(2, 1) << "\n";
+    std::cout << " b333: " << B(2, 2) << "\n";
+    std::cout << " b123: " << B(2, 3) << "\n";
+    std::cout << " b133: " << B(2, 4) << "\n";
+    std::cout << " b233: " << B(2, 5) << "\n";
+
+    // check additional generic integrals for displacement influence coefficients
+
+    double I3_Xi = bie::i3_Xi(chi,sinAlpha);
+    double I3_Zeta = bie::i3_Zeta(chi,cosAlpha);
+
+    std::cout << " Checking remaining generic integrals for displacement ... " << "\n";
+
+    std::cout << " I3_Xi: " << I3_Xi << "\n";
+    std::cout << " I3_Zeta: " << I3_Zeta << "\n";
+
+    // Check the displacement influence factors
+
+//    double prefactor = (1.0/(8.0*il::pi*(1.0-nu))); // common prefactor of all coefficients
+//
+//    il::StaticArray2D<double, 3, 3> Displacement; // output
+//
+//    // Displacement row is dof (DDx,DDy,DDx), columns are Ux,Uy,Uz in the local reference system
+//    // TODO: check if this is ok, Carlo's comment above is not what's done
+//
+//    // displacement components due to the unit displacement discontinuity DD1 (shear)
+//    Displacement(0, 0) = prefactor * ( 3.0 * I5_Xi_Xi_Aux * eta - 2.0 * theta * (-1.0 + nu) );
+//    // U1 = a11
+//    Displacement(1, 0) = prefactor * ( 3.0 * I5_Xi_Zeta * eta );
+//    // U2 = a21
+//    Displacement(2, 0) = prefactor * ( I3_Xi + 3.0 * I5_Xi * pow(eta,2.0) - 2.0 * I3_Xi * nu );
+//    // U3 = a31 TODO: it can be factorized
+//
+//    // displacement components due to the unit displacement discontinuity DD2 (shear)
+//    Displacement(0, 1) = prefactor * ( 3.0 * I5_Xi_Zeta * eta );
+//    // U1 = a12
+//    Displacement(1, 1) = prefactor * ( 3.0 * I5_Zeta_Zeta_Aux * eta - 2.0 * theta * (-1 + nu) );
+//    // U2 = a22
+//    Displacement(2, 1) = prefactor * ( I3_Zeta + 3.0 * I5_Zeta * pow(eta,2.0) - 2.0 * I3_Zeta * nu );
+//    // U3 = a32 TODO: it can be factorized
+//
+//    // displacement components due to the unit displacement discontinuity DD3 (normal)
+//    Displacement(0, 2) = prefactor * ( 3.0 * I5_Xi * pow(eta,2.0) + I3_Xi * (-1.0 + 2.0 * nu) );
+//    // U1 = a13
+//    Displacement(1, 2) = prefactor * ( 3.0 * I5_Zeta * pow(eta,2.0) + I3_Zeta * (-1.0 + 2.0 * nu) );
+//    // U2 = a23
+//    Displacement(2, 2) = prefactor * ( 3.0 * I5_Aux * eta - 2.0 * theta * (-1.0 + nu) );
+//    // U3 = a33
+//
+//    std::cout << " Checking displacement influence coefficients ... " << "\n";
+//
+//    std::cout << " For DD1 ... " << "\n";
+//
+//    std::cout << " a11: " << Displacement(0, 0) << "\n";
+//    std::cout << " a21: " << Displacement(1, 0) << "\n";
+//    std::cout << " a31: " << Displacement(2, 0) << "\n";
+//
+//    std::cout << " For DD2 ... " << "\n";
+//
+//    std::cout << " a12: " << Displacement(0, 1) << "\n";
+//    std::cout << " a22: " << Displacement(1, 1) << "\n";
+//    std::cout << " a32: " << Displacement(2, 1) << "\n";
+//
+//    std::cout << " For DD3 ... " << "\n";
+//
+//    std::cout << " a13: " << Displacement(0, 2) << "\n";
+//    std::cout << " a23: " << Displacement(1, 2) << "\n";
+//    std::cout << " a33: " << Displacement(2, 2) << "\n";
+
+    il::StaticArray2D<double, 3, 3> A = bie::DisplacementKernelT0(x,xv,nu);
+
+    std::cout << " Checking displacement influence coefficients ... " << "\n";
+
+    std::cout << " For DD1 ... " << "\n";
+
+    std::cout << " a11: " << A(0, 0) << "\n";
+    std::cout << " a21: " << A(1, 0) << "\n";
+    std::cout << " a31: " << A(2, 0) << "\n";
+
+    std::cout << " For DD2 ... " << "\n";
+
+    std::cout << " a12: " << A(0, 1) << "\n";
+    std::cout << " a22: " << A(1, 1) << "\n";
+    std::cout << " a32: " << A(2, 1) << "\n";
+
+    std::cout << " For DD3 ... " << "\n";
+
+    std::cout << " a13: " << A(0, 2) << "\n";
+    std::cout << " a23: " << A(1, 2) << "\n";
+    std::cout << " a33: " << A(2, 2) << "\n";
+
+
     std::cout << "----------end of test 3DT0  ---------------------\n";
 
     return 0;
+}
+
+// For the 3D code
+// Functions to read coordinate matrix and connectivity matrix from CSV file
+
+il::Array2D<double> read_coord_CSV(std::string& inputfileCOORD){
+
+    il::Array2D<double> coordinates_table;
+
+    std::string line = "", subline = "";
+    char delim = ',';
+
+    std::ifstream nf; // node coordinate file stream
+    nf.open(inputfileCOORD.c_str());
+    if(nf.is_open()) {
+        // counting the array size
+        il::int_t n_row = 0, n_col = 0;
+        while(!nf.eof()) {
+            std::getline(nf, line);
+            if (line.length() == 0) {
+                std::cout << "Empty row" << std::endl;
+            } else {
+                std::stringstream linestream(line);
+                ++n_row;
+                il::int_t n_col_t = 0;
+                do {
+                    subline = "";
+                    std::getline(linestream, subline, delim);
+                    if (subline.length() > 0){
+                        ++n_col_t;
+                    }
+                } while(subline.length() > 0);
+                if (n_col_t != n_col && n_col > 0) {
+                    std::cout << "Row size is not constant" << std::endl;
+                }
+                else n_col = n_col_t;
+            }
+        }
+        nf.clear();
+        nf.seekg(0);
+        // resizing the output array (node coordinates)
+        coordinates_table.Resize(n_row,n_col);
+        // importing the array
+        for (il::int_t k = 0; k < coordinates_table.size(0); ++k) {
+            std::getline(nf, line);
+            std::stringstream linestream(line);
+            for (il::int_t j = 0; j < coordinates_table.size(1); ++j) {
+                subline = "";
+                std::getline(linestream, subline, delim);
+                if (subline.length() > 0){
+                    double value = -1.0;
+                    std::stringstream sublinestream(subline);
+                    sublinestream >> value;
+                    coordinates_table(k,j) = value;
+                }
+            }
+        }
+        nf.close();
+        return coordinates_table;
+    }
+    else {
+        std::cout << "Can't open the file" << std::endl;
+    }
+}
+
+il::Array2D<il::int_t> read_conn_CSV(std::string& inputfileCONN){
+
+    il::Array2D<il::int_t> connectivity_table;
+
+    std::string line = "", subline = "";
+    char delim = ',';
+    std::ifstream cf; // connectivity file stream
+    cf.open(inputfileCONN.c_str());
+    if(cf.is_open()) {
+        // counting the array size
+        il::int_t n_row = 0, n_col = 0;
+        while(!cf.eof()) {
+            std::getline(cf, line);
+            if (line.length() == 0) {
+                std::cout << "Empty row" << std::endl;
+            } else {
+                std::stringstream linestream(line);
+                ++n_row;
+                il::int_t n_col_t = 0;
+                do {
+                    subline = "";
+                    std::getline(linestream, subline, delim);
+                    if (subline.length() > 0){
+                        ++n_col_t;
+                    }
+                } while(subline.length() > 0);
+                if (n_col_t != n_col && n_col > 0) {
+                    std::cout << "Row size is not constant" << std::endl;
+                }
+                else n_col = n_col_t;
+            }
+        }
+        cf.clear();
+        cf.seekg(0);
+        // resizing the output array (mesh connectivity)
+        connectivity_table.Resize(n_row,n_col);
+        // importing the array
+        for (il::int_t k = 0; k < connectivity_table.size(0); ++k) {
+            std::getline(cf, line);
+            std::stringstream linestream(line);
+            for (il::int_t j = 0; j < connectivity_table.size(1); ++j) {
+                subline = "";
+                std::getline(linestream, subline, delim);
+                if (subline.length() > 0){
+                    il::int_t value = -1;
+                    std::stringstream sublinestream(subline);
+                    sublinestream >> value;
+                    connectivity_table(k, j) = value;
+                }
+            }
+        }
+
+        cf.close();
+        return connectivity_table;
+    }
+    else {
+        std::cout << "Can't open the file" << std::endl;
+    }
+
+}
+
+int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_file){
+
+    std::cout << "-------------- test3DT0 Penny-Shaped Crack ---------------------\n";
+
+    il::Array2D<double> nodes = read_coord_CSV(vertices_file);
+    il::Array2D<il::int_t> conn = read_conn_CSV(connectivity_file);
+
+    std::cout << nodes.size(0) << " x " << nodes.size(1) << "\n";
+
+    std::cout << nodes(0,0) << " " << nodes(0,1) << " " << nodes(0,2) <<  "\n";
+    std::cout << nodes(1,0) << " " << nodes(1,1) << " " << nodes(1,2) <<  "\n";
+    std::cout << nodes(2,0) << " " << nodes(2,1) << " " << nodes(2,2) <<  "\n";
+
+    std::cout << conn.size(0) << " x " << conn.size(1) << "\n";
+
+    std::cout << conn(0,0) << " " << conn(0,1) << " " << conn(0,2) <<  "\n";
+    std::cout << conn(1,0) << " " << conn(1,1) << " " << conn(1,2) <<  "\n";
+    std::cout << conn(2,0) << " " << conn(2,1) << " " << conn(2,2) <<  "\n";
+
+    bie::Mesh3D mesh(nodes, conn, 0);
+
+    il::Array2D<double> coll_points = mesh.getCollocationPoints();
+
+    il::int_t leaf_size = 32; // 10
+    il::Timer tt;
+    tt.Start();
+    const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+
+    double eta=10;
+    const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
+            il::hmatrixTree(coll_points, cluster.partition, eta);
+    tt.Stop();
+
+    std::cout << "Time for cluster construction " << tt.time() <<"\n";
+    tt.Reset();
+    std::cout << cluster.partition.depth() <<"\n";
+
+    double nu = 0.2;
+    double G = 1.0;
+    double young = 2.0 * G * (1.0+nu);
+    bie::ElasticProperties elas(young,nu);
+
+    il::HMatrix<double> h_ ;
+    const bie::ElasticHMatrix3DT0<double> M{coll_points,cluster.permutation,mesh,elas,1,1,1};
+
+    std::cout << " create h mat " << M.size(0) <<"\n";
+    tt.Start();
+    double epsilon_aca = 0.001;
+    h_= il::toHMatrix(M, hmatrix_tree, epsilon_aca);
+    tt.Stop();
+    std::cout << " create h mat ended " << h_.isBuilt() << "time" << tt.time() << "\n";
+    tt.Reset();
+    std::cout << " compression ratio " << il::compressionRatio(h_) << "\n";
+
+    // Analytical solution
+
+    // compute radius at all nodes ( = collocation points for T0)
+
+    il::Array2D<double> nodes_coor = mesh.getNodes();
+    il::Array<double> radius{nodes_coor.size(0)};
+
+    for (int i = 0; i < nodes_coor.size(0); i++){
+        double sum = 0.0;
+        for (int j = 0; j < 3; j++){
+            sum += pow(nodes_coor(i,j),2.0);
+        }
+        radius[i] = sqrt(sum);
+    }
+
+    std::cout << "radius ... " << "\n";
+    for (int i = 0; i < 9; i++) {
+        std::cout << radius[i] << "\n";
+    }
+
+    // compute dd at all nodes ( = collocation points for T0)
+
+    // choose the direction to be tested
+    int direction = 2;
+
+    double load = 1.0;
+    double R = 1.0;
+    il::Array<double> dd_analytical{3*nodes_coor.size(0)};
+
+    switch (direction) {
+        case 1: {
+            // For 1 (shear)
+            double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
+            for (int i = 0; i < nodes_coor.size(0); i++){
+                dd_analytical[3*i] = ( ((8.0*lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+                dd_analytical[3*i+1] = 0.0;
+                dd_analytical[3*i+2] = 0.0;
+            }
+            break;
+        }
+        case 2: {
+            // For 2 (shear)
+            double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
+            for (int i = 0; i < nodes_coor.size(0); i++){
+                dd_analytical[3*i] = 0.0;
+                dd_analytical[3*i+1] = ( ((8.0*lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+                * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+                dd_analytical[3*i+2] = 0.0;
+            }
+            break;
+        }
+        case 3: {
+            // For 3 (normal)
+            for (int i = 0; i < nodes_coor.size(0); i++){
+                dd_analytical[3*i] = 0.0;
+                dd_analytical[3*i+1] = 0.0;
+                dd_analytical[3*i+2] = ( (8.0*load)/( il::pi * (young/(1.0 - pow(nu,2.0))) ) )
+                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+            }
+        }
+    }
+
+    std::cout << "analytical dd ... " << "\n";
+    for (int i = 0; i < 9; i++){
+        std::cout << dd_analytical[i] << "\n";
+    }
+
+    // perform h-dot
+
+    // first see permutation
+    il::Array<il::int_t> perm = cluster.permutation;
+//    std::cout << "permuation vector, size =  " << perm.size() << "\n";
+//
+//    std::cout << "the vector ... " << "\n";
+//    for (int i = 0; i < perm.size(); i++){
+//        std::cout << perm[i] << "\n";
+//    }
+
+    // permute dd vector
+    il::Array<double> dd_analytical_perm{3*nodes_coor.size(0)};
+    for (int i = 0; i < nodes_coor.size(0); i++){
+        dd_analytical_perm[3*i] = dd_analytical[3*perm[i]];
+        dd_analytical_perm[3*i+1] = dd_analytical[3*perm[i]+1];
+        dd_analytical_perm[3*i+2] = dd_analytical[3*perm[i]+2];
+    }
+
+    il::Array<double> traction_numerical = il::dot(h_,dd_analytical_perm);
+
+    // output tractions
+
+    std::cout << "numerical traction ... " << "\n";
+    for (int i = 0; i < nodes_coor.size(0); i++){
+        std::cout << radius[i] << " (" << traction_numerical[3*i] << ", " << traction_numerical[3*i+1]
+        << ", " << traction_numerical[3*i+2] << ")" << "\n";
+    }
+
+    // average traction - only for component 3
+    double sum = 0;
+    int count_nan = 0;
+
+    for (int i = 0; i < nodes_coor.size(0); i++){
+        if (isnan(traction_numerical[3*i+2]) == 0){
+            sum += traction_numerical[3*i+2];
+        } else {
+            count_nan++;
+        }
+    }
+    double average_traction = sum / (nodes_coor.size(0)-count_nan);
+    std::cout << "average_traction =  " << average_traction << "\n";
+
+
+//    double Ep=1.0/(1.0-0.2*0.2);
+//    double sig = 1.0;
+//    double a=1.0;
+//    double coef = 4.0 * sig / (Ep);
+//    // at collocation points
+//    il::Array<double> wsol_coll{coll_points.size(0), 0.};
+//    for (int i = 0; i < coll_points.size(0); ++i) {
+//        if (std::abs(coll_points(i,0)) < a) {
+//            wsol_coll[i] = coef * sqrt(pow(a, 2) - pow(coll_points(i,0), 2));
+//        }
+//    }
+//    //at corresponding nodes - works here due to simple mesh....
+//    il::Array<double> wsol_nodes{coll_points.size(0), 0.};
+//    double aux_x=0.; int j=0;
+//    for (int i = 0; i < conn.size(0); ++i) {
+//
+//        aux_x=nodes(conn(i,0),0);
+//        if (std::abs(aux_x) < a) {
+//            wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
+//        }
+//        j++;
+//        aux_x=nodes(conn(i,1),0);
+//        if (std::abs(aux_x) < a) {
+//            wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
+//        }
+//        j++;
+//    }
+//
+//    il::Array<double> xx{coll_points.size(0)*2};
+//
+//    for (il::int_t i=0;i<xx.size()/2;i++){
+//        xx[2*i]=0.0;
+//        xx[2*i+1]=wsol_nodes[i];
+//    }
+//
+//    il::Array< double> y=il::dot(h_,xx);
+//
+//    // now testing the Bigwhamio class...
+//    Bigwhamio testbie;
+//    //Bigwhamio *test = new Bigwhamio();
+//
+//
+//    std::vector<double> f_coor;
+//    f_coor.assign(2*test2.numberOfNodes(),0.);
+//    for (il::int_t i=0;i<test2.numberOfNodes();i++){
+//        f_coor[2*i]=test2.coordinates(i,0);
+//        f_coor[2*i+1]=test2.coordinates(i,1);
+//    }
+//
+//    std::vector<int64_t> f_conn;
+//    f_conn.assign(2*test2.numberOfElts(),0);
+//    for (il::int_t i=0;i<test2.numberOfElts();i++){
+//        f_conn[2*i]=test2.connectivity(i,0);
+//        f_conn[2*i+1]=test2.connectivity(i,1);
+//    }
+//
+//    std::vector<double> f_prop;
+//    f_prop.assign(2,0);
+//    f_prop[0]=elas_aux.getE();
+//    f_prop[1]=elas_aux.getNu();
+//
+//    std::string ker="2DP1";
+//
+//    std::cout << " now setting things in bigwhamio obj \n";
+//
+//    testbie.set(f_coor,f_conn,ker,f_prop,leaf_size,0.,0.001);
+//
+//
+//    std::cout        <<  " C R :"<< testbie.getCompressionRatio() <<"\n";
+//
+//    std::vector<double> x;
+//    x.assign(xx.size(),0.);
+//    for (il::int_t i=0;i<xx.size();i++){
+//        x[i]=xx[i];
+//    }
+//
+//    std::vector<double> y2=testbie.hdotProduct(x);
+//    std::cout << " elastic dot product solution:: \n";
+//    for (il::int_t i=0;i<coll_points.size(0);i++){
+//        std::cout <<" y " << i  <<" " << y[2*i] << " - with obj - " << y2[2*i]  <<"\n";
+//        std::cout <<" y " << i  <<" " << y[2*i+1] << " - with obj - " << y2[2*i+1] <<"\n";
+//    }
+
+    std::cout << "-------------- End of 3DT0 - Penny-shaped crack test ------------- " << "\n";
+
+    return  0;
 
 }
 
@@ -1205,6 +1797,9 @@ int main() {
 //  test3DT6PennyShaped(vertices_file,connectivity_file);
 
 test3DT0();
+std::string vertices_file = "/Users/alexis/Documents/Work/01 Project - dislocations/verticesE1016.csv";
+std::string connectivity_file = "/Users/alexis/Documents/Work/01 Project - dislocations/connE1016.csv";
+test3DT0_PennyShaped(vertices_file,connectivity_file);
 
   std::cout << "\n End of BigWham - exe " << "\n";
 

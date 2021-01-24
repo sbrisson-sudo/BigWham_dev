@@ -578,7 +578,6 @@ namespace bie {
         // recall:
         // DD1 (shear), DD2 (shear), DD3 (normal) -> for rows
         // Stress components: S11, S22, S33, S12, S13, S23 -> for columns
-        // TODO: check if this is consistent with computation of tractions afterwards
 
         // stress components due to the unit displacement discontinuity component DD1 (shear)
 
