@@ -232,6 +232,7 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DT6.h
         #  - T0 element
         src/elasticity/3d/Elastic3DT0_element.cpp
+        src/elasticity/3d/ElasticHMatrix3DT0.h
         #  - R0 element
 #        src/elasticity/3d/Elastic3DR0_element.h
         src/elasticity/3d/Elastic3DR0_element.cpp
@@ -239,8 +240,7 @@ set(SOURCE_FILES
         # Solver
         src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
-        src/BigWham.h
-        )
+        src/BigWham.h)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 add_library(BigWham STATIC ${SOURCE_FILES} )
