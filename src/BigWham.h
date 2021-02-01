@@ -228,14 +228,25 @@ class Bigwhamio
                             }
                           }
 
+                          int min = 1000 ;
                           index = 0;
                           for (il::int_t i = 0; i < Conn.size(0); i++) {
                             for (il::int_t j = 0; j < Conn.size(1); j++) {
                               Conn(i, j) = conn[index];
+//                              std::cout << "min "<< min << " and  "<< conn[index] << " is:  ";
+                                min = MIN(min,conn[index]);
+//                              std::cout << min << "\n";
+
                               index++;
                             }
                           }
 
+                          if (!(min == 0)) {
+                              std::cout << "\n"<< "\n"<< "\n";
+                              std::cout << "ERROR: the connectivity is not starting from 0"<< "\n";
+                              std::cout << "it starts fromL: "<< min << "\n";
+                              il::abort();
+                          }
                           bie::Mesh3D mesh3d(Coor, Conn, p);
                           std::cout << "... mesh done"<< "\n";
                           std::cout << " Number elts " << mesh3d.numberOfElts() <<"\n";
@@ -283,19 +294,16 @@ class Bigwhamio
                             std::cout << "Kernel Isotropic ELasticity 3D R0 (constant) rectangle \n";
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
 
+                            int I_want_DD_to_traction_kernel = 999;
                             if ( kernel_ == "3DR0_traction"){
                                 // DD to traction HMAT
-                                const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0,1};
-                                h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
-                                std::cout << "DD to traction HMAT --> built \n";
-                            }
-
-                            if (kernel_ == "3DR0_displ" ){
+                                I_want_DD_to_traction_kernel = 1;}
+                            else if (kernel_ == "3DR0_displ" ){
                                 // DD to displacement HMAT
-                                const bie::ElasticHMatrix3DR0<double> Mdispl{collocationPoints_, permutation_, mesh3d, elas, 0, 0,0};
-                                h_ = il::toHMatrix(Mdispl, hmatrix_tree, epsilon_aca_);
-                                std::cout << "DD to displacement HMAT --> built \n";
-                            }
+                                I_want_DD_to_traction_kernel = 0;}
+                            const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0,I_want_DD_to_traction_kernel};
+                            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+                            std::cout << "HMAT --> built \n";
 
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
                             std::cout << "H mat set : CR = " << il::compressionRatio(h_)
@@ -638,7 +646,8 @@ class Bigwhamio
                                             int npts,
                                             const std::vector<double>& properties,
                                             const std::vector<double>& coor,
-                                            const std::vector<int64_t>& conn) {
+                                            const std::vector<int64_t>& conn,
+                                            bool are_dd_global) {
 
                  /* BE CAREFUL 2D CASES NEVER TESTED! */
 
@@ -714,7 +723,7 @@ class Bigwhamio
                         il::abort();
                     } else if (kernel_ == "3DR0_traction") {
                         bie::Mesh3D mesh3d(Coor, Conn, p, false);
-                        stress = bie::computeStresses3D(pts, mesh3d, elas, solu, bie::point_stress_3DR0);
+                        stress = bie::computeStresses3D(pts, mesh3d, elas, solu, bie::point_stress_3DR0, are_dd_global);
                     }
                     break;
                 }
@@ -740,7 +749,8 @@ class Bigwhamio
                                                 int npts,
                                                 const std::vector<double>& properties,
                                                 const std::vector<double>& coor,
-                                                const std::vector<int64_t>& conn) {
+                                                const std::vector<int64_t>& conn,
+                                                bool are_dd_global) {
 
 
             // PURPOSE: compute displacements at list of points (of size npts )
@@ -815,7 +825,7 @@ class Bigwhamio
                         il::abort();
                     } else if (kernel_ == "3DR0_displ") {
                         bie::Mesh3D mesh3d(Coor, Conn, p, false);
-                        displacements = bie::computeDisplacements3D(pts, mesh3d, elas, solu, bie::point_displacement_3DR0);
+                        displacements = bie::computeDisplacements3D(pts, mesh3d, elas, solu, bie::point_displacement_3DR0, are_dd_global);
                     }
                     break;
                 }

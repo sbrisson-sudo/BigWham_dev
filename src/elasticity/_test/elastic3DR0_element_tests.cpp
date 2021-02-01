@@ -264,34 +264,34 @@ TEST_F(Test3DR0Stress, stress_expressions_at_zero_z_and_y_to_b) {
 }
 
 TEST(R0, singular_stress){
-    double x, y, a, b;
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = 2., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = 2., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = -2., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = -2., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = 1., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = 1., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = -1., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = -1., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 1., y = 10., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -1., y = 10., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -1., y = -10., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 1., y = -10., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.5, y = 2., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -0.5, y = 2., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -0.5, y = -2., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.5, y = -2., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = 2., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = 2., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = -2., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = -2., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 0., y = 0., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = 10., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = 10., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = -10., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = -10., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 0.9999, y = -1.99999, a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.999999999999999999999, y = -1.999999999999999999999, a = 1., b = 2., false));
+    double x, y, z, a, b;
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = 2., z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = -2.,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = -2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = 1., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = 1., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = -1., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = -1., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 1., y = 10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -1., y = 10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -1., y = -10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 1., y = -10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.5, y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -0.5, y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -0.5, y = -2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.5, y = -2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = -2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = -2.,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 0., y = 0.,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = 10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = 10.,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = -10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = -10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 0.9999, y = -1.99999, z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.999999999999999999999, y = -1.999999999999999999999,z = 0., a = 1., b = 2., false));
 };
 
 TEST(R0, displacement_expressions) {
@@ -340,5 +340,142 @@ TEST(R0, displacement_expressions) {
     ASSERT_NEAR(ReferenceDisplacement(2, 0), Displacement(2, 0), 1.e-5);
     ASSERT_NEAR(ReferenceDisplacement(2, 1), Displacement(2, 1), 1.e-5);
     ASSERT_NEAR(ReferenceDisplacement(2, 2), Displacement(2, 2), 1.e-5);
+
+    x = 0.00;
+    y = 0.00;
+    z = 1.00;
+    a = 1.;
+    b = 2.;
+    nu = 0.3;
+    Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
+    // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
+    //   0      -> |       Ux,            Ux,             Ux            |
+    //   1      -> |       Uy,            Uy,             Uy            |
+    //   2      -> |       Uz,            Uz,             Uz            |
+
+    // Reference values from Mathematica with 18 decimals
+    // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
+
+    // stress due to displacement discontinuity DDx (shear)
+    ReferenceDisplacement(0, 0) = -0.1251318438095986;    // ux
+    ReferenceDisplacement(1, 0) = 0.;    // uy
+    ReferenceDisplacement(2, 0) = 0.;     // uz
+
+    // stress due to displacement discontinuity  DDy (shear)
+    ReferenceDisplacement(0, 1) = 0.;     // ux
+    ReferenceDisplacement(1, 1) = -0.180824472469147;     // uy
+    ReferenceDisplacement(2, 1) = 0.;     // uz
+
+    // stress due to displacement discontinuity DDz (normal)
+    ReferenceDisplacement(0, 2) = 0.;     // ux
+    ReferenceDisplacement(1, 2) = 0.;     // uy
+    ReferenceDisplacement(2, 2) = -0.347902358447792;      // uz
+
+
+    ASSERT_NEAR(ReferenceDisplacement(0, 0), Displacement(0, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(0, 1), Displacement(0, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(0, 2), Displacement(0, 2), 1.e-5);
+
+    ASSERT_NEAR(ReferenceDisplacement(1, 0), Displacement(1, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(1, 1), Displacement(1, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(1, 2), Displacement(1, 2), 1.e-5);
+
+    ASSERT_NEAR(ReferenceDisplacement(2, 0), Displacement(2, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(2, 1), Displacement(2, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(2, 2), Displacement(2, 2), 1.e-5);
+
+
+}
+
+TEST(R0, displacement_expressions_on_the_elem_plane) {
+    il::Array2D<double> Displacement;
+    il::Array2D<double> ReferenceDisplacement{3, 3, 0.};
+    double x, y, z, a, b, nu;
+    x = 1.5;
+    y = 2.5;
+    z = 0.;
+    a = 1.;
+    b = 2.;
+    nu = 0.3;
+    Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
+    // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
+    //   0      -> |       Ux,            Ux,             Ux            |
+    //   1      -> |       Uy,            Uy,             Uy            |
+    //   2      -> |       Uz,            Uz,             Uz            |
+
+    // Reference values from Mathematica with 18 decimals
+    // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
+
+    // stress due to displacement discontinuity DDx (shear)
+    ReferenceDisplacement(0, 0) = 0.;                       // ux
+    ReferenceDisplacement(1, 0) = 0.;                       // uy
+    ReferenceDisplacement(2, 0) = -0.01956059198093905;     // uz
+
+    // stress due to displacement discontinuity  DDy (shear)
+    ReferenceDisplacement(0, 1) = 0.;                       // ux
+    ReferenceDisplacement(1, 1) = 0.;                       // uy
+    ReferenceDisplacement(2, 1) = -0.02300029715436082;     // uz
+
+    // stress due to displacement discontinuity DDz (normal)
+    ReferenceDisplacement(0, 2) = 0.019560591980939054;     // ux
+    ReferenceDisplacement(1, 2) = 0.02300029715436082;      // uy
+    ReferenceDisplacement(2, 2) = 0.;                       // uz
+
+
+    ASSERT_NEAR(ReferenceDisplacement(0, 0), Displacement(0, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(0, 1), Displacement(0, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(0, 2), Displacement(0, 2), 1.e-5);
+
+    ASSERT_NEAR(ReferenceDisplacement(1, 0), Displacement(1, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(1, 1), Displacement(1, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(1, 2), Displacement(1, 2), 1.e-5);
+
+    ASSERT_NEAR(ReferenceDisplacement(2, 0), Displacement(2, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(2, 1), Displacement(2, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(2, 2), Displacement(2, 2), 1.e-5);
+
+    x = 0.25;
+    y = 1.10;
+    z = 0.00;
+    a = 1.;
+    b = 2.;
+    nu = 0.3;
+    Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
+    // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
+    //   0      -> |       Ux,            Ux,             Ux            |
+    //   1      -> |       Uy,            Uy,             Uy            |
+    //   2      -> |       Uz,            Uz,             Uz            |
+
+    // Reference values from Mathematica with 18 decimals
+    // Stress row is dof (DDx,DDy,DDx), columns are sxx,syy,szz,sxy,sxz,syz
+
+    // stress due to displacement discontinuity DDx (shear)
+    ReferenceDisplacement(0, 0) = -0.5;    // ux
+    ReferenceDisplacement(1, 0) = 0.;    // uy
+    ReferenceDisplacement(2, 0) = -0.01895705258167849;     // uz
+
+    // stress due to displacement discontinuity  DDy (shear)
+    ReferenceDisplacement(0, 1) = 0.;     // ux
+    ReferenceDisplacement(1, 1) = -0.5;     // uy
+    ReferenceDisplacement(2, 1) = -0.028587157479065407;     // uz
+
+    // stress due to displacement discontinuity DDz (normal)
+    ReferenceDisplacement(0, 2) = 0.01895705258167849;     // ux
+    ReferenceDisplacement(1, 2) = 0.0285871574790654;     // uy
+    ReferenceDisplacement(2, 2) = -0.5;      // uz
+
+
+    ASSERT_NEAR(ReferenceDisplacement(0, 0), Displacement(0, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(0, 1), Displacement(0, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(0, 2), Displacement(0, 2), 1.e-5);
+
+    ASSERT_NEAR(ReferenceDisplacement(1, 0), Displacement(1, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(1, 1), Displacement(1, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(1, 2), Displacement(1, 2), 1.e-5);
+
+    ASSERT_NEAR(ReferenceDisplacement(2, 0), Displacement(2, 0), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(2, 1), Displacement(2, 1), 1.e-5);
+    ASSERT_NEAR(ReferenceDisplacement(2, 2), Displacement(2, 2), 1.e-5);
+
 
 }

@@ -32,13 +32,15 @@ namespace bie {
                                             bie::Mesh3D &mesh,
                                             bie::ElasticProperties &elas,
                                             il::Array<double> solution,
-                                            vPPrCall3D PPrCall);
+                                            vPPrCall3D PPrCall,
+                                            bool are_dd_global);
 
     il::Array2D<double> computeDisplacements3D(   il::Array2D<double> &observ_pts,
                                                   bie::Mesh3D &mesh,
                                                   bie::ElasticProperties &elas,
                                                   il::Array<double> solution,
-                                                  vPPrCall3D PPrCall);
+                                                  vPPrCall3D PPrCall,
+                                                  bool are_dd_global);
 
 }
 

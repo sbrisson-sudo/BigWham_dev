@@ -97,8 +97,8 @@ namespace bie {
          *  Dictionary:
          *  b1 := is the (block)-column number of the top left 3x3 submatrix of M in the numeration of the HMatrix
          *  b0 := is the (block)-row number of the top left 3x3 submatrix of M in the numeration of the HMatrix
-         *  j1 := iterator going from 0 to the number of 3x3 submatricies of M in a row - it represents the source node number - it is local
-         *  j0 := iterator going from 0 to the number of 3x3 submatricies of M in a column - it represents the receiver node number - it is local
+         *  j1 := iterator going from 0 to the number of 3x3 submatricies of M in a column - it represents the source node number - it is local
+         *  j0 := iterator going from 0 to the number of 3x3 submatricies of M in a row - it represents the receiver node number - it is local
          *  k1 := b1 + j1, is the (block)-column number of the "current" source node expressed in the numeration of the HMatrix
          *  k0 := b1 + j1, is the (block)-column number of the "current" receiver node expressed in the numeration of the HMatrix
          *  e_k1 := taking the floor of k1/(nodes per element) you obtain the element ID
@@ -166,7 +166,6 @@ namespace bie {
                     }
                     default: { std::cout << "ERROR: bad options given for switch in routine: ElasticHMatrix3DR0 = " << I_want_DD_to_traction_kernel << "\n";}
                 }
-
                 for (il::int_t j = 0; j < 3; j++)
                 {
                     for (il::int_t i = 0; i < 3; i++)

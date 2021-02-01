@@ -82,7 +82,10 @@ namespace bie {
             vec02[k]=vec02[k]/vec02norm;}
 
         double dotvec12 = il::dot(vec01, vec02);
-        if (dotvec12 > 0.5 && dotvec12 < 1.05) {std::cout << "FaceData - ERROR! The 2nd point of the face and the last point are collinear with the 1st point.\n Implement a way to select a different vertex to define the plane of the element\n";}
+        if (dotvec12 > 0.95 && dotvec12 < 1.05)
+        {
+            std::cout << "FaceData - ERROR! The 2nd point of the face and the last point are collinear with the 1st point.\n Implement a way to select a different vertex to define the plane of the element\n";
+        }
 
         // cross product to get normal vector
         il::StaticArray<double, 3> n;
@@ -421,9 +424,9 @@ namespace bie {
         if (Transposed){
             // loop over spatial coordinates
             for (il::int_t i = 0; i < 3; i++) {
-                rotM(0,i) = this->s_[i]; // 1st column equal to s unit vector
-                rotM(1,i) = this->t_[i]; // 2nd column equal to t unit vector
-                rotM(2,i) = this->n_[i]; // 3rd column equal to n unit vector
+                rotM(0,i) = this->s_[i]; // 1st row equal to s unit vector
+                rotM(1,i) = this->t_[i]; // 2nd row equal to t unit vector
+                rotM(2,i) = this->n_[i]; // 3rd row equal to n unit vector
             }
         }
         else{
@@ -477,8 +480,8 @@ namespace bie {
 
         double EPSILON;
         EPSILON = std::numeric_limits<double>::epsilon();
-        if (abs(D42[k] * alpha - D31[k] * beta - D12[k]) > EPSILON){
-            std::cout << "FaceData - ERROR! The coordinates of the element do not lie on a plane\n";
+        if (abs(D42[k] * alpha - D31[k] * beta - D12[k]) > 50 * EPSILON){
+            std::cout << "FaceData - ERROR! The coordinates of the element do not lie on a plane, "<<abs(D42[k] * alpha - D31[k] * beta - D12[k]) << " is > "<<  50 * EPSILON <<" \n";
         }
         return intersectingPoint;
     }

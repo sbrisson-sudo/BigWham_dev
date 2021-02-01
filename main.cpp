@@ -32,7 +32,7 @@
 #include <elasticity/2d/FullMatrixAssembly2D.h>
 #include <src/core/ElasticProperties.h>
 //#include <src/solvers/HIterativeSolverUtilities.h>
-
+#include <src/_test/elastic3DR0_element_benchmark.h>
 
 int test2DP1(){
 
@@ -219,9 +219,7 @@ int testS3DP0(){
 //  std::cout << " in set h mat 2 " << cluster.permutation.size() << " e aca " << test->epsilon_aca <<"\n";
 
   std::cout << " create h mat " << M.size(0) <<"\n";
-    std::cout << "heree";
   h_= il::toHMatrix(M, hmatrix_tree, 0.001);
-    std::cout << "here";
   std::cout << " create h mat ended " << h_.isBuilt() <<"\n";
   std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
 
@@ -651,7 +649,7 @@ int test3DR0() {
                                        3,2,5,4};
 
     const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
-    const int max_leaf_size = 1;
+    const int max_leaf_size = 1000;
     const double eta = 0.;
     const double eps_aca = 0.001;
 
@@ -682,7 +680,7 @@ int test3DR0() {
     std::vector<double> coorobsp={-10.,-10.,0.,
                                    20.,-20.,0.};
     std::vector<double> mysol = {1.,1.,1.,1.,1.,1.};
-    std::vector<double> bb = tractionHMAT.computeStresses(mysol, coorobsp, 2, properties, coor, conn);
+    std::vector<double> bb = tractionHMAT.computeStresses(mysol, coorobsp, 2, properties, coor, conn, true);
 
     for(int i=0; i<bb.size()/6; ++i) {
         std::cout << "\n stress at point #" << i << "\n ";
@@ -693,7 +691,7 @@ int test3DR0() {
 
     // compute displacements at a set of observation points
 
-    std::vector<double> cc = displacementHMAT.computeDisplacements(mysol, coorobsp, 2, properties, coor, conn);
+    std::vector<double> cc = displacementHMAT.computeDisplacements(mysol, coorobsp, 2, properties, coor, conn, true);
 
     for(int i=0; i<cc.size()/3; ++i) {
         std::cout << "\n displacement at point #" << i << "\n ";
@@ -702,7 +700,7 @@ int test3DR0() {
         }
     }
 
-        std::cout << "\n----------end of test 3DR0  ---------------------\n";
+    std::cout << "\n----------end of test 3DR0  ---------------------\n";
     return 0;
 }
 

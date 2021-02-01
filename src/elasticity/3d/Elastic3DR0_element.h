@@ -19,7 +19,7 @@ il::StaticArray2D<double, 3, 6> StressesKernelR0(
     double& x, double& y, double& z, double& a, double& b, double& G,
     double& nu) ;
 
-bool is_stress_singular_at_given_location(double&x, double& y, double& a, double& b, bool verbose = true) ;
+bool is_stress_singular_at_given_location(double&x, double& y, double& z, double& a, double& b, bool verbose = true) ;
 
 
 il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(

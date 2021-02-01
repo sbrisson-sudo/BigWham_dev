@@ -15,6 +15,7 @@
 //#include <elasticity/2d/ElasticS3DP0_element.h>
 
 #include <iostream>
+#include <il/linearAlgebra.h>
 #include <src/elasticity/PostProcessDDM_3d.h>
 #ifndef NUMBEROFTHREADS
 #define NUMBEROFTHREADS 4
@@ -26,7 +27,8 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
                                     bie::Mesh3D& mesh,
                                     bie::ElasticProperties& elas,
                                     il::Array<double> solution,
-                                    vPPrCall3D PPrCall)
+                                    vPPrCall3D PPrCall,
+                                    bool are_dd_global)
   {
       // Function to get stresses (sig_xx, sig_yy, sig_zz, sig_xy, sig_xz, sig_yz) at given points
       // due to DDs of solution
@@ -57,8 +59,8 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
       for (il::int_t e = 0; e < mesh.numberOfElts(); ++e)
       {
             // declarations are here because of the parallelization
-            il::Array<double> elt_DD{numberUnknownsElt};
-            il::Array<double> observ_pt{3};
+            il::Array<double> elt_DD(numberUnknownsElt);
+            il::Array<double> observ_pt(3);
 
             // get characteristic of element # e
             bie::FaceData mysege = mesh.getElementData(e);
@@ -68,6 +70,11 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
               elt_DD[i] = solution[e * numberUnknownsElt + i];
             }
 
+            // if the given DDs are global we need to get them to local
+            if (are_dd_global){
+                elt_DD = il::dot(mysege.rotationMatrix(0),elt_DD);
+            }
+
             // loop on all observation points to compute the stresses
             for (il::int_t j = 0; j < observ_pts.size(0); ++j)
             {
@@ -75,15 +82,14 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
                   for (il::int_t i = 0; i < 3; ++i) {observ_pt[i] = observ_pts(j, i);}
 
                   //   get stresses at point # j due to DD over the element e
-                  stress_at_pt = PPrCall(observ_pt, mysege, elt_DD, elas);
+                  stress_at_pt = PPrCall(observ_pt, mysege, elt_DD, elas); //elt_DD are supposed to be local
 
-                  stress_out(j, 0) += stress_at_pt[0];
-                  stress_out(j, 1) += stress_at_pt[1];
-                  stress_out(j, 2) += stress_at_pt[2];
-                  stress_out(j, 3) += stress_at_pt[3];
-                  stress_out(j, 4) += stress_at_pt[4];
-                  stress_out(j, 5) += stress_at_pt[5];
-
+                  stress_out(j, 0) += stress_at_pt[0]; // sxx
+                  stress_out(j, 1) += stress_at_pt[1]; // syy
+                  stress_out(j, 2) += stress_at_pt[2]; // szz
+                  stress_out(j, 3) += stress_at_pt[3]; // sxy
+                  stress_out(j, 4) += stress_at_pt[4]; // sxz
+                  stress_out(j, 5) += stress_at_pt[5]; // syz
             } // loop ovr the observation points
       } // loop over the elements
 
@@ -95,7 +101,8 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
                                           bie::Mesh3D& mesh,
                                           bie::ElasticProperties& elas,
                                           il::Array<double> solution,
-                                          vPPrCall3D PPrCall)
+                                          vPPrCall3D PPrCall,
+                                          bool are_dd_global)
     {
         // Function to get displacements (u_x, u_y, u_z) at given points
         // due to DDs of solution
@@ -115,7 +122,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
 
         il::Array2D<double> displacement_out{observ_pts.size(0), 3, 0.0};
 
-        il::Array<double> displacement_at_pt{6, 0.0};
+        il::Array<double> displacement_at_pt{3, 0.0};
         il::int_t numberCollPtsElt = mesh.numberCollPtsElt();
         il::int_t numberUnknownsElt = 3 * numberCollPtsElt;
 
@@ -137,13 +144,18 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
                 elt_DD[i] = solution[e * numberUnknownsElt + i];
             }
 
+            // if the given DDs are global we need to get them to local
+            if (are_dd_global){
+                elt_DD = il::dot(mysege.rotationMatrix(0),elt_DD);
+            }
+
             // loop on all observation points to compute the stresses
             for (il::int_t j = 0; j < observ_pts.size(0); ++j)
             {
-                //   get stresses at point # j
+                //   get displacements at point # j
                 for (il::int_t i = 0; i < 3; ++i) {observ_pt[i] = observ_pts(j, i);}
 
-                //   get stresses at point # j due to DD over the element e
+                //   get displacement at point # j due to DD over the element e
                 displacement_at_pt = PPrCall(observ_pt, mysege, elt_DD, elas);
 
                 displacement_out(j, 0) += displacement_at_pt[0];

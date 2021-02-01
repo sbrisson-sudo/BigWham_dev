@@ -8,10 +8,12 @@
 
 
 #include <cmath>
+#include <limits>
+#include <iostream>
 #include <il/linearAlgebra.h>
 #include <il/blas.h>
-#include "Elastic3DR0_element.h"
-#include <iostream>
+#include <src/elasticity/3d/Elastic3DR0_element.h>
+
 
 namespace bie{
     // RONGVED SOLUTION FOR A P0 Rectangular dislocation in a full space
@@ -24,7 +26,7 @@ namespace bie{
     //  i.e. when the point where we ask for the coordinates lies on the plane of the element z == 0    //
     //                                                                                                  //
     //  PLEASE: do note that any stress is theoretically singular when evaluated at the edges of an     //
-    //  element or its prolongation.                                                                    //
+    //  element.                                                                                        //
     //                                                                                                  //
     //--------------------------------------------------------------------------------------------------//
 
@@ -284,24 +286,27 @@ namespace bie{
     }
 
     // Fundamental stress kernel
-    bool is_stress_singular_at_given_location(double& x, double& y, double& a, double& b, bool verbose)
+    bool is_stress_singular_at_given_location(double& x, double& y, double& z, double& a, double& b, bool verbose)
     {   double EPSILON;
         EPSILON = std::numeric_limits<double>::epsilon();
-        if (
-                ( abs(abs(x)/a - 1.) <= EPSILON && (abs(y) <= b) )  ||
-                ( abs(abs(y)/b - 1.) <= EPSILON && (abs(x) <= a ))
-                )
-        {   if (verbose){
-                std::cout << "WARNING: \n " \
-                      << " you are computing the stress along the edge of a 3DR0 element. \n" \
-                      << " At that location some components of the stress tensor are theoretically infinite. \n" \
-                      << " Suggestions: \n" \
-                      << "    1) check that your collocation points do not lie on the edge of another element \n" \
-                      << "    2) check that you are not computing the stress on the edge of an element \n";
-                }
-            return true ;
+        if (abs(z) <= EPSILON ){
+            if (
+                    ( abs(abs(x)/a - 1.) <= EPSILON && (abs(y) <= b) )  ||
+                    ( abs(abs(y)/b - 1.) <= EPSILON && (abs(x) <= a ))
+                    )
+            {   if (verbose){
+                    std::cout << "WARNING: \n " \
+                          << " you are computing the stress along the edge of a 3DR0 element. \n" \
+                          << " At that location some components of the stress tensor are theoretically infinite. \n" \
+                          << " Suggestions: \n" \
+                          << "    1) check that your collocation points do not lie on the edge of another element \n" \
+                          << "    2) check that you are not computing the stress on the edge of an element \n";
+                    }
+                return true ;
+            }
+            else return false;
         }
-        else return false;
+        else return false; // meaning that z !=0
     }
 
 
@@ -318,7 +323,7 @@ namespace bie{
         double EPSILON;
         EPSILON = std::numeric_limits<double>::epsilon();
 
-        if (!is_stress_singular_at_given_location(x, y, a, b))
+        if (!is_stress_singular_at_given_location(x, y, z ,a, b))
         {
 
             double Ce = G / (4 * il::pi * (1. - nu));
@@ -474,6 +479,7 @@ namespace bie{
         double Ce = -1 / (8 * il::pi * (1. - nu));
 
         il::Array2D<double> Displacement{3,3,0.};
+
         // compute the Is function derivatives....
         Ip1 = rectangular_integration(x, y, z, a, b, ip1);
         Ip2 = rectangular_integration(x, y, z, a, b, ip2);
@@ -496,7 +502,7 @@ namespace bie{
         Displacement(2, 0) = Ce * (z * Ip13 - (1 - 2 * nu) * Ip1);  // Uz
 
         // displacement due to displacement discontinuity  DDy (shear)
-        Displacement(0, 1) = Ce * (z * Ip12);                       // Ux  -> if z=0. it will be 0. (unchanged expresssion)
+        Displacement(0, 1) = Displacement(1, 0);             // Ux  -> if z=0. it will be 0. (unchanged expresssion)
         Displacement(1, 1) = Ce * (z * Ip22 - 2 * (1 - nu) * Ip3);  // Uy
         Displacement(2, 1) = Ce * (z * Ip23 - (1 - 2 * nu) * Ip2);  // Uz
 
@@ -513,6 +519,7 @@ namespace bie{
     }
 
     il::Array2D<double> transpose(il::Array2D<double> M){
+        // this function returns the transposed matrix
         il::Array2D<double> MT{3,3,0.};
         for (il::int_t i = 0; i < 3; i++) {
             for (il::int_t j = 0; j < 3; j++) {
@@ -638,14 +645,11 @@ namespace bie{
         // dsr contains the component of the distance between the source and the receiver
         dsr = il::dot(R, dsr);
 
-        // computing the values for positive z:
-        double abs_z = abs(dsr[2]);
-
         il::StaticArray2D<double, 3, 6> Stress;
 
         Stress = StressesKernelR0(dsr[0],
                                   dsr[1],
-                                  abs_z,
+                                  dsr[2],
                                   a, b,
                                   G,nu);
 
@@ -654,31 +658,6 @@ namespace bie{
         // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
         // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
         // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
-
-        if (dsr[2] < 0.){
-            /*
-             * DDx (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
-             * f(-z) = -f(z)
-             * DDy (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
-             * f(-z) = -f(z)
-             * DDz (normal) is an Even action with respect to the plane z=0, thus the field will be symmetric with respect to that plane
-             * f(-z) = f(z)
-             *
-             */
-            Stress(0,0) = - Stress(0,0);
-            Stress(0,1) = - Stress(0,1);
-            Stress(0,2) = - Stress(0,2);
-            Stress(0,3) = - Stress(0,3);
-            Stress(0,4) = - Stress(0,4);
-            Stress(0,5) = - Stress(0,5);
-
-            Stress(1,0) = - Stress(1,0);
-            Stress(1,1) = - Stress(1,1);
-            Stress(1,2) = - Stress(1,2);
-            Stress(1,3) = - Stress(1,3);
-            Stress(1,4) = - Stress(1,4);
-            Stress(1,5) = - Stress(1,5);
-        }
 
         // normal vector at the receiver location in the reference system of the source element
         il::Array<double> nr = elem_data_r.getNormal();
@@ -747,36 +726,17 @@ namespace bie{
         // in the reference system of the source element
         dsr = il::dot(R, dsr);
 
-        // computing the values for positive z:
-        double abs_z = abs(dsr[2]);
-
         // displacement in the referece system local to the source element
         il::Array2D<double> DDs_to_Displacement_local_local =DisplacementKernelR0(dsr[0],
                                                                                dsr[1],
-                                                                               abs_z,
+                                                                               dsr[2],
                                                                                a, b,
                                                                                nu);
         // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
         //   0      -> |       Ux,            Ux,             Ux            |
         //   1      -> |       Uy,            Uy,             Uy            |
         //   2      -> |       Uz,            Uz,             Uz            |
-        if (dsr[2] < 0.){
-            /*
-             * DDx (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
-             * f(-z) = -f(z)
-             * DDy (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
-             * f(-z) = -f(z)
-             * DDz (normal) is an Even action with respect to the plane z=0, thus the field will be symmetric with respect to that plane
-             * f(-z) = f(z)
-             *
-             */
-            DDs_to_Displacement_local_local(0,0) = - DDs_to_Displacement_local_local(0,0);
-            DDs_to_Displacement_local_local(1,0) = - DDs_to_Displacement_local_local(1,0);
-            DDs_to_Displacement_local_local(2,0) = - DDs_to_Displacement_local_local(2,0);
-            DDs_to_Displacement_local_local(0,1) = - DDs_to_Displacement_local_local(0,1);
-            DDs_to_Displacement_local_local(1,1) = - DDs_to_Displacement_local_local(1,1);
-            DDs_to_Displacement_local_local(2,1) = - DDs_to_Displacement_local_local(2,1);
-        }
+
         return change_ref_system(DDs_to_Displacement_local_local, I_want_global_DD, I_want_global_displacement, R, elem_data_r.rotationMatrix());
 
         // | U1/Dshear1   U1/Dshear2  U1/Dnormal |
@@ -806,52 +766,25 @@ namespace bie{
         il::Array2D<double> el_cp_s;
         el_cp_s = elem_data_s.getCollocationPoints();
 
-        il::Array2D<double> R = elem_data_s.rotationMatrix();
+        il::Array2D<double> R = elem_data_s.rotationMatrix(false); // R(g->l)
 
         il::Array<double> dsr{3};
-        for (int i = 0; i < 3; ++i) { dsr[i] = observ_pt[i] - el_cp_s(0,i); }
+        for (int i = 0; i < 3; ++i) { dsr[i] = observ_pt[i] - el_cp_s(0,i);}
 
         // dsr contains the component of the distance between the source and the receiver
         dsr = il::dot(R, dsr);
 
-        // computing the values for positive z:
-        double abs_z = abs(dsr[2]);
-
         il::StaticArray2D<double, 3, 6> Stress = StressesKernelR0(dsr[0],
                                                                   dsr[1],
-                                                                  abs_z,
+                                                                  dsr[2],
                                                                   a, b,
                                                                   G,nu);
-        // in the reference system of the source element both in the domain and in the codomain
+        // Attention!
+        // It is in the reference system of the source element both in the domain and in the codomain
         // index        ->    0    1    2    3    4    5
         // DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
         // DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  |
         // DDz (normal) -> | sxx, syy, szz, sxy, sxz, syz  |
-
-        if (dsr[2] < 0.){
-            /*
-             * DDx (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
-             * f(-z) = -f(z)
-             * DDy (shear) is an Odd action with respect to the plane z=0, thus the field will be antisymmetric with respect to that plane
-             * f(-z) = -f(z)
-             * DDz (normal) is an Even action with respect to the plane z=0, thus the field will be symmetric with respect to that plane
-             * f(-z) = f(z)
-             *
-             */
-            Stress(0,0) = - Stress(0,0);
-            Stress(0,1) = - Stress(0,1);
-            Stress(0,2) = - Stress(0,2);
-            Stress(0,3) = - Stress(0,3);
-            Stress(0,4) = - Stress(0,4);
-            Stress(0,5) = - Stress(0,5);
-
-            Stress(1,0) = - Stress(1,0);
-            Stress(1,1) = - Stress(1,1);
-            Stress(1,2) = - Stress(1,2);
-            Stress(1,3) = - Stress(1,3);
-            Stress(1,4) = - Stress(1,4);
-            Stress(1,5) = - Stress(1,5);
-        }
 
         il::Array2D<double> stress_local_2_local{3,3};
         stress_local_2_local(0,0) = Stress(0,0) * dd[0] + Stress(1,0) * dd[1] + Stress(2,0) * dd[2] ; // sxx
@@ -860,22 +793,22 @@ namespace bie{
         stress_local_2_local(1,0) = stress_local_2_local(0,1); // syx = sxy
         stress_local_2_local(1,1) = Stress(0,1) * dd[0] + Stress(1,1) * dd[1] + Stress(2,1) * dd[2] ; // syy
         stress_local_2_local(1,2) = Stress(0,5) * dd[0] + Stress(1,5) * dd[1] + Stress(2,5) * dd[2] ; // syz
-        stress_local_2_local(2,0) = stress_local_2_local(0,2); // szxy = sxz
+        stress_local_2_local(2,0) = stress_local_2_local(0,2); // szx = sxz
         stress_local_2_local(2,1) = stress_local_2_local(1,2); // szy = syz
         stress_local_2_local(2,2) = Stress(0,2) * dd[0] + Stress(1,2) * dd[1] + Stress(2,2) * dd[2] ; // szz
 
-        il::Array2D<double> RT = elem_data_s.rotationMatrix(true);
+        il::Array2D<double> RT = transpose(R); // R(l->g)
         // the matrix RT will rotate any vector from the local coordinate system to the global one
 
-        il::Array2D<double> stress_local_2_global = il::dot(RT, stress_local_2_local);
+        il::Array2D<double> stress_global_2_global = il::dot(RT, il::dot(stress_local_2_local, R));
 
         il::Array<double> stress_at_point{6};
-        stress_at_point[0] = stress_local_2_global(0,0) ; // sxx
-        stress_at_point[1] = stress_local_2_global(1,1) ; // syy
-        stress_at_point[2] = stress_local_2_global(2,2) ; // szz
-        stress_at_point[3] = stress_local_2_global(0,1) ; // sxy
-        stress_at_point[4] = stress_local_2_global(0,2) ; // sxz
-        stress_at_point[5] = stress_local_2_global(1,2) ; // syz
+        stress_at_point[0] = stress_global_2_global(0,0) ; // sxx
+        stress_at_point[1] = stress_global_2_global(1,1) ; // syy
+        stress_at_point[2] = stress_global_2_global(2,2) ; // szz
+        stress_at_point[3] = stress_global_2_global(0,1) ; // sxy
+        stress_at_point[4] = stress_global_2_global(0,2) ; // sxz
+        stress_at_point[5] = stress_global_2_global(1,2) ; // syz
 
         return stress_at_point;
     }
@@ -901,15 +834,16 @@ namespace bie{
         il::Array2D<double> el_cp_s;
         el_cp_s = elem_data_s.getCollocationPoints();
 
-        il::Array2D<double> R;
-        R = elem_data_s.rotationMatrix();
+        il::Array2D<double> R = elem_data_s.rotationMatrix(false); // R(g->l)
 
         il::Array<double> dsr{3};
         for (int i = 0; i < 3; ++i) { dsr[i] = observ_pt[i] - el_cp_s(0,i); }
 
-        // dsr contains the component of the distance between the source and the receiver
-        // in the reference system of the source element
+
         dsr = il::dot(R, dsr);
+        // after being rotated dsr contains the component of the distance between the source and the receiver
+        // in the reference system of the source element
+
 
         // displacement in the referece system local to the source element
         il::Array2D<double> DDs_to_Displacement_local_local =DisplacementKernelR0(dsr[0],
@@ -917,18 +851,20 @@ namespace bie{
                                                                                   dsr[2],
                                                                                   a, b,
                                                                                   nu);
+        // Attention!
+        // It is in the reference system of the source element both in the domain and in the codomain
         // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
         //   0      -> |       Ux,            Ux,             Ux            |
         //   1      -> |       Uy,            Uy,             Uy            |
         //   2      -> |       Uz,            Uz,             Uz            |
 
-        //
-        il::Array2D<double> RT = transpose(R), DDs_to_Displacement_local_global;
-        DDs_to_Displacement_local_global = il::dot(RT,DDs_to_Displacement_local_local);
+        // Apply immediately the DD in order to get a displacement vector in the reference system local to the source element
+        il::Array<double> displacement_at_point_local = il::dot(DDs_to_Displacement_local_local,dd);
 
-        il::Array<double> displacement_at_point = il::dot(DDs_to_Displacement_local_global,dd);
+        il::Array2D<double> RT = transpose(R);
+        // Get the displacements in the global reference system
+        il::Array<double> displacement_at_point = il::dot(RT,displacement_at_point_local);
 
         return displacement_at_point;
     }
-
 }

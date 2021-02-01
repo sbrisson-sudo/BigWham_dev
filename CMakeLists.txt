@@ -1,13 +1,32 @@
-cmake_minimum_required(VERSION 3.15)
-project(BigWham CXX)
-project(BigWham_exe CXX)
-project(pyparty)
-project(BigWhamElastUnitTest)
+cmake_minimum_required(VERSION 3.7...3.19)
+
+if(${CMAKE_VERSION} VERSION_LESS 3.12)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+endif()
+
+
+project(BigWham VERSION 1.0
+        DESCRIPTION "This is the library containing the weels"
+        LANGUAGES CXX)
+
+project(BigWham_exe VERSION 1.0
+        DESCRIPTION "This is the executable of BigWham"
+        LANGUAGES CXX)
+
+project(pyparty VERSION 1.0
+        DESCRIPTION "This will create a shared library to be imported and used in Python"
+        LANGUAGES CXX)
+
+project(BigWhamElastUnitTest VERSION 1.0
+        DESCRIPTION "This is for testing the weels in BigWham"
+        LANGUAGES CXX)
+
 set(CMAKE_CXX_STANDARD 11)
 
 #####################################
 # set options: False = 0, True = 1  #
 #####################################
+set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
@@ -40,9 +59,15 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 if(APPLE)
+    #MESSAGE("-- located at /usr/bin/")
+    #set(CMAKE_C_COMPILER /usr/bin/clang)
+    #set(CMAKE_CXX_COMPILER /usr/bin/clang++)
     MESSAGE("-- located at /usr/bin/")
-    set(CMAKE_C_COMPILER /usr/bin/clang)
-    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+#    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
+#    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
+#    MESSAGE("-- located at /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/")
+    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c)
+    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
 elseif(UNIX)
     if(USE_INTEL)
         set(CMAKE_C_COMPILER /opt/intel/compilers_and_libraries/linux/bin/intel64/icc)
@@ -175,7 +200,7 @@ endif()
 
 set(SOURCE_FILES_DIR ${PROJECT_SOURCE_DIR}/src)
 
-include_directories(il $ENV{TBBROOT}/include/tbb  src  Hmat-lib .)
+include_directories(il $ENV{TBBROOT}/include/tbb   src  Hmat-lib .)
 
 MESSAGE("Using TBB:")
 MESSAGE("-- The TBB is found at: " $ENV{TBBROOT})
@@ -209,7 +234,6 @@ set(SOURCE_FILES
 #        src/elasticity/3d/Elastic3DR0_element.h
         src/elasticity/3d/Elastic3DR0_element.cpp
         src/elasticity/3d/ElasticHMatrix3DR0.h
-
         # Solver
         src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
@@ -228,10 +252,10 @@ target_link_libraries(BigWham_exe   BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
 
 if(IL_MKL)
     if(APPLE)
-        target_link_libraries(BigWham_exe   ${CMAKE_MKL_LIBRARIES}  -lpthread -lm -ldl)
+        target_link_libraries(BigWham_exe   ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
 
         target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include $ENV{TBBROOT}/lib)
     elseif(UNIX)
         target_link_libraries(BigWham_exe "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
 
@@ -250,41 +274,7 @@ endif()
 ################################################################
 # Pybind
 ################################################################
-add_library(party SHARED
-        Hmat-lib/cluster/cluster.h
-        Hmat-lib/cluster/cluster.cpp
-        # 2D source code
-        src/core/Mesh2D.cpp src/core/Mesh2D.h
-        src/core/SegmentData.h
-        src/elasticity/2d/ElasticS3DP0_element.cpp
-        src/elasticity/2d/Elastic2DP1_element.cpp
-        src/elasticity/2d/ElasticHMatrix2DP0.h
-        src/elasticity/2d/ElasticHMatrix2DP1.h
-        src/elasticity/jacobi_prec_assembly.cpp
-        src/elasticity/PostProcessDDM_2d.cpp
-        src/elasticity/PostProcessDDM_3d.cpp
-        src/elasticity/2d/FullMatrixAssembly2D.cpp
-        src/elasticity/2d/FullMatrixAssembly2D.h
-        # 3D source code
-        Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
-        src/core/Mesh3D.cpp src/core/Mesh3D.h
-        src/core/FaceData.cpp
-        #  - T6 element
-        src/core/element_utilities.cpp
-        src/elasticity/3d/Elastic3DT6_element.cpp
-        src/elasticity/3d/h_potential.cpp
-        src/elasticity/3d/tensor_utilities.cpp
-        src/elasticity/3d/ElasticHMatrix3DT6.h
-        #  - R0 element
-        #        src/elasticity/3d/Elastic3DR0_element.h
-        src/elasticity/3d/Elastic3DR0_element.cpp
-        src/elasticity/3d/ElasticHMatrix3DR0.h
-
-        # Solver
-        src/solvers/HIterativeSolverUtilities.h
-        # BigWham Interface
-        src/BigWham.h
-        )
+add_library(party SHARED  ${SOURCE_FILES})
 
 target_link_libraries(party  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
 if(IL_MKL)
@@ -312,14 +302,10 @@ include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
 add_library(pyparty MODULE ${PROJECT_SOURCE_DIR}/src/pyparty.cpp)
 target_link_libraries(pyparty PRIVATE pybind11::module party)
 
-#add_custom_command(TARGET pyparty POST_BUILD
-#        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> /Users/carloperuzzo/PyFrac_git/src/pyparty.so
-#        COMMENT "Created  /Users/carloperuzzo/PyFrac_git/src/pyparty.so"
-#        )
+# this command is needed to copy the library pyparty to a specific location
 add_custom_command(TARGET pyparty POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> /Users/carloperuzzo/bigwham/pybind_test/pyparty.so
-        COMMENT "Created  /Users/carloperuzzo/bigwham/pybind_test/pyparty.so"
-        )
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> ${PROJECT_SOURCE_DIR}/pybind_test/pyparty.so
+        COMMENT "Created  ${PROJECT_SOURCE_DIR}/pybind_test/pyparty.so")
 
 ################################################################################
 # For Unit Tests
@@ -327,21 +313,20 @@ add_custom_command(TARGET pyparty POST_BUILD
 set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
-set(TESTED_SOURCE_FILES
-        src/core/FaceData.cpp
-        src/elasticity/3d/Elastic3DR0_element.cpp
-        )
+set(TESTED_SOURCE_FILES ${SOURCE_FILES})
 set(UNIT_TEST_FILES
         il/gtest/src/gtest-all.cc
         #src/elasticity/_test/elasticity_tests.cpp
         src/core/_test/FaceData_tests.cpp
         src/elasticity/_test/elastic3DR0_element_tests.cpp
-
+        src/_test/elastic3DR0_element_benchmark.cpp
         )
+
+
 
 add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 
-target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest)
+target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest ${CMAKE_SOURCE_DIR}/il ${CMAKE_SOURCE_DIR}/Hmat-lib)
 target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
 
 # For unit tests: The precondition of our fonctions are checked with assert
