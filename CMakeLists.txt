@@ -59,15 +59,15 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 if(APPLE)
-    #MESSAGE("-- located at /usr/bin/")
-    #set(CMAKE_C_COMPILER /usr/bin/clang)
-    #set(CMAKE_CXX_COMPILER /usr/bin/clang++)
     MESSAGE("-- located at /usr/bin/")
+    set(CMAKE_C_COMPILER /usr/bin/clang)
+    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+#    MESSAGE("-- located at /usr/bin/")
 #    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
 #    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
 #    MESSAGE("-- located at /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/")
-    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c)
-    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
+#    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c)
+#    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
 elseif(UNIX)
     if(USE_INTEL)
         set(CMAKE_C_COMPILER /opt/intel/compilers_and_libraries/linux/bin/intel64/icc)
@@ -271,67 +271,67 @@ elseif(IL_OPENBLAS)
     target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR})
 endif()
 
-################################################################
-# Pybind
-################################################################
-add_library(party SHARED  ${SOURCE_FILES})
-
-target_link_libraries(party  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
-if(IL_MKL)
-    if(APPLE)
-        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-    elseif(UNIX)
-        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-        # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
-    elseif(WIN32)
-        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
-    endif()
-elseif(IL_OPENBLAS)
-    target_compile_definitions(party PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
-    target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR})
-endif()
-
-# use this
-add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11-master)
-include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
-# or use
-# find_package(pybind11 REQUIRED)
-add_library(pyparty MODULE ${PROJECT_SOURCE_DIR}/src/pyparty.cpp)
-target_link_libraries(pyparty PRIVATE pybind11::module party)
-
-# this command is needed to copy the library pyparty to a specific location
-add_custom_command(TARGET pyparty POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> ${PROJECT_SOURCE_DIR}/pybind_test/pyparty.so
-        COMMENT "Created  ${PROJECT_SOURCE_DIR}/pybind_test/pyparty.so")
-
-################################################################################
-# For Unit Tests
-################################################################################
-set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
-set(TESTED_SOURCE_FILES ${SOURCE_FILES})
-set(UNIT_TEST_FILES
-        il/gtest/src/gtest-all.cc
-        #src/elasticity/_test/elasticity_tests.cpp
-        src/core/_test/FaceData_tests.cpp
-        src/elasticity/_test/elastic3DR0_element_tests.cpp
-        src/_test/elastic3DR0_element_benchmark.cpp
-        src/_test/penny_shaped_crack_sol.h
-        )
-
-
-
-add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
-
-target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest ${CMAKE_SOURCE_DIR}/il ${CMAKE_SOURCE_DIR}/Hmat-lib)
-target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
-
-# For unit tests: The precondition of our fonctions are checked with assert
-# macros that terminate the program in debug mode. In order to test those macros
-# in our unit tests, the flag IL_UNIT_TEST turns them into exceptions that can
-# be caught and checked.
-target_compile_options(BigWhamElastUnitTest PRIVATE "-DIL_UNIT_TEST")
+#################################################################
+## Pybind
+#################################################################
+#add_library(party SHARED  ${SOURCE_FILES})
+#
+#target_link_libraries(party  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
+#if(IL_MKL)
+#    if(APPLE)
+#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+#    elseif(UNIX)
+#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+#        # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
+#    elseif(WIN32)
+#        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+#        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
+#    endif()
+#elseif(IL_OPENBLAS)
+#    target_compile_definitions(party PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
+#    target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR})
+#endif()
+#
+## use this
+#add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11-master)
+#include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
+## or use
+## find_package(pybind11 REQUIRED)
+#add_library(pyparty MODULE ${PROJECT_SOURCE_DIR}/src/pyparty.cpp)
+#target_link_libraries(pyparty PRIVATE pybind11::module party)
+#
+## this command is needed to copy the library pyparty to a specific location
+#add_custom_command(TARGET pyparty POST_BUILD
+#        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> ${PROJECT_SOURCE_DIR}/pybind_test/pyparty.so
+#        COMMENT "Created  ${PROJECT_SOURCE_DIR}/pybind_test/pyparty.so")
+#
+#################################################################################
+## For Unit Tests
+#################################################################################
+#set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
+#
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
+#set(TESTED_SOURCE_FILES ${SOURCE_FILES})
+#set(UNIT_TEST_FILES
+#        il/gtest/src/gtest-all.cc
+#        #src/elasticity/_test/elasticity_tests.cpp
+#        src/core/_test/FaceData_tests.cpp
+#        src/elasticity/_test/elastic3DR0_element_tests.cpp
+#        src/_test/elastic3DR0_element_benchmark.cpp
+#        src/_test/penny_shaped_crack_sol.h
+#        )
+#
+#
+#
+#add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
+#
+#target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest ${CMAKE_SOURCE_DIR}/il ${CMAKE_SOURCE_DIR}/Hmat-lib)
+#target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
+#
+## For unit tests: The precondition of our fonctions are checked with assert
+## macros that terminate the program in debug mode. In order to test those macros
+## in our unit tests, the flag IL_UNIT_TEST turns them into exceptions that can
+## be caught and checked.
+#target_compile_options(BigWhamElastUnitTest PRIVATE "-DIL_UNIT_TEST")
