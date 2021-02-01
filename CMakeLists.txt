@@ -320,6 +320,7 @@ set(UNIT_TEST_FILES
         src/core/_test/FaceData_tests.cpp
         src/elasticity/_test/elastic3DR0_element_tests.cpp
         src/_test/elastic3DR0_element_benchmark.cpp
+        src/_test/penny_shaped_crack_sol.h
         )
 
 
