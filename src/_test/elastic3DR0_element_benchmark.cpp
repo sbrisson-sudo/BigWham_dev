@@ -6,9 +6,10 @@
 // Geo-Energy Laboratory, 2016-2021.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
-#include <il/gtest/gtest/gtest.h>
+
 #include <iostream>
-#include "elastic3DR0_element_benchmark.h"
+#include <il/gtest/gtest/gtest.h>
+#include <src/_test/elastic3DR0_element_benchmark.h>
 #include <BigWham.h>
 
 //--------------------------------------------------------------------------

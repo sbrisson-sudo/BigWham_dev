@@ -59,13 +59,13 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 if(APPLE)
-    #MESSAGE("-- located at /usr/bin/")
-    #set(CMAKE_C_COMPILER /usr/bin/clang)
-    #set(CMAKE_CXX_COMPILER /usr/bin/clang++)
-    MESSAGE("-- located at /usr/bin/")
+#    MESSAGE("-- located at /usr/bin/")
+#    set(CMAKE_C_COMPILER /usr/bin/clang)
+#    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+#    MESSAGE("-- located at /usr/bin/")
 #    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
 #    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
-#    MESSAGE("-- located at /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/")
+    MESSAGE("-- located at /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/")
     set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c)
     set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
 elseif(UNIX)
@@ -238,6 +238,8 @@ set(SOURCE_FILES
         src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
         src/BigWham.h
+        src/_test/penny_shaped_crack_analytical_sol.h
+        src/_test/penny_shaped_crack_analytical_sol.cpp
         )
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
@@ -320,7 +322,7 @@ set(UNIT_TEST_FILES
         src/core/_test/FaceData_tests.cpp
         src/elasticity/_test/elastic3DR0_element_tests.cpp
         src/_test/elastic3DR0_element_benchmark.cpp
-        src/_test/penny_shaped_crack_sol.h
+        src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
         )
 
 
