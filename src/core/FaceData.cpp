@@ -359,9 +359,23 @@ namespace bie {
 
         switch (this->interpolation_order_) {
             case 0: {
-                // loop over coordinates needed because collocation_points is Array2D and xc_ is Array1D
-                for (il::int_t i = 0; i < 3; i++) {
-                    cps(0, i) = this->xc_[i];
+                if (this->NoV_ == 3){ // if 3DT0 kernel, then we "perturbate numerically' the collocation point
+                    // coordinates to get rid of the singularity related to the projection of the triangle edges
+
+                    // loop over coordinates needed because collocation_points is Array2D and xc_ is Array1D
+                    for (il::int_t i = 0; i < 3; i++) {
+                        cps(0, i) = this->xc_[i] + 2.22045e-16; // perturbation by machine epsilon
+                    }
+//                    cps(0, 0) = this->xc_[0] + 2.22045e-16; // perturbation by machine epsilon
+//                    cps(0, 1) = this->xc_[1] + 2.22045e-16; // perturbation by machine epsilon
+//                    cps(0, 2) = this->xc_[2] + 2.22045e-16; // perturbation by machine epsilon
+                }
+                else{ // else is 3DR0, no perturbation
+
+                    // loop over coordinates needed because collocation_points is Array2D and xc_ is Array1D
+                    for (il::int_t i = 0; i < 3; i++) {
+                        cps(0, i) = this->xc_[i];
+                    }
                 }
                 break;
             }
@@ -410,12 +424,12 @@ namespace bie {
 
     il::Array2D<double> FaceData::rotationMatrix(bool Transposed){
         // inputs
-        //   -Transposed; if false the matrix will rotate any vector from the global to local coordinate system
-        //                if true the matrix will rotate any vector from the local coordinate system to the global one
+        //   -Transposed; if true the matrix will rotate any vector from the global to the local coordinate system
+        //                if false the matrix will rotate any vector from the local coordinate system to the global one
         //                The DEFAULT is FALSE
         // output
-        //   -rotation matrix, from global to local, based on the local orthogonal basis (s,t,n).
-        //    the rotation matrix has the following form:
+        //   -rotation matrix based on the local orthogonal basis (s,t,n).
+        //    the rotation matrix has the following form (in the case of Transpose = true, i.e., from global to local):
         //    sx sy sz
         //    tx ty tz
         //    nx ny nz
