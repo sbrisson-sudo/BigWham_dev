@@ -1526,6 +1526,185 @@ il::Array2D<il::int_t> read_conn_CSV(std::string& inputfileCONN){
 
 int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_file){
 
+    // Make sure to use the kernel in local-local
+
+    std::cout << "-------------- test3DT0 Penny-Shaped Crack ---------------------\n";
+
+    il::Array2D<double> nodes = read_coord_CSV(vertices_file);
+    il::Array2D<il::int_t> conn = read_conn_CSV(connectivity_file);
+
+    std::cout << nodes.size(0) << " x " << nodes.size(1) << "\n";
+
+    std::cout << nodes(0,0) << " " << nodes(0,1) << " " << nodes(0,2) <<  "\n";
+    std::cout << nodes(1,0) << " " << nodes(1,1) << " " << nodes(1,2) <<  "\n";
+    std::cout << nodes(2,0) << " " << nodes(2,1) << " " << nodes(2,2) <<  "\n";
+
+    std::cout << conn.size(0) << " x " << conn.size(1) << "\n";
+
+    std::cout << conn(0,0) << " " << conn(0,1) << " " << conn(0,2) <<  "\n";
+    std::cout << conn(1,0) << " " << conn(1,1) << " " << conn(1,2) <<  "\n";
+    std::cout << conn(2,0) << " " << conn(2,1) << " " << conn(2,2) <<  "\n";
+
+    bie::Mesh3D mesh(nodes, conn, 0);
+
+    double nu = 0.25;
+    double G = 1.0;
+    double young = 2.0 * G * (1.0+nu);
+
+    // now we use the BIGWHAM
+
+    // convert to std vectors
+    std::vector<double> nodes_flat;
+    nodes_flat.reserve(3 * nodes.size(0));
+    for (int i = 0; i < nodes.size(0); i++){
+        for (int j = 0; j < nodes.size(1); j++){
+            nodes_flat.push_back(nodes(i,j));
+        }
+    }
+    std::vector<int64_t> conn_flat;
+    conn_flat.reserve(3 * conn.size(0));
+    for (int i = 0; i < conn.size(0); i++){
+        for (int j = 0; j < conn.size(1); j++){
+            conn_flat.push_back(conn(i,j));
+        }
+    }
+
+    std::cout << "Checking conversion of nodes and conn to std vectors ..." << "\n";
+    std::cout << "coor =  " << nodes_flat[0] << " " << nodes_flat[1] << " " << nodes_flat[2] << "\n";
+    std::cout << "conn =  " << conn_flat[0] << " " << conn_flat[1] << " " << conn_flat[2] << "\n";
+
+    const std::vector<double> properties = {young, nu}; // Young Modulus , Poisson's ratio
+    const int max_leaf_size = 25;
+    const double eta_test = 5.;
+    const double eps_aca = 0.0001;
+
+    // create HMAT
+    const std::string kernel_name = "3DT0";
+    Bigwhamio test;
+    test.set(nodes_flat,conn_flat,kernel_name,properties,
+                         max_leaf_size, eta_test, eps_aca);
+
+    // test Hdot product
+
+    // first compute analytical dd
+
+    // compute radius at all nodes ( = collocation points for T0)
+
+    il::Array2D<double> nodes_coor = mesh.getNodes(); // be careful they are transposed!
+
+    il::Array<double> radius{nodes_coor.size(0),0.};
+
+    for (int i = 0; i < nodes_coor.size(0); i++){
+        double sum = 0.0;
+        for (int j = 0; j < 3; j++){
+            sum += pow(nodes_coor(i,j),2.0);
+        }
+        radius[i] = sqrt(sum);
+    }
+
+    std::vector<int> perm = test.getPermutation();
+    std::cout << "permutation ... " << "\n";
+    std::cout << perm[0] << "\n";
+    std::cout << perm[1] << "\n";
+    std::cout << perm[2] << "\n";
+    std::cout << perm[3] << "\n";
+
+    std::cout << "radius ... " << "\n";
+    for (int i = 0; i < 9; i++) {
+        std::cout << radius[i] << "\n";
+    }
+
+    // compute dd at all nodes ( = collocation points for T0)
+
+    // choose the direction to be tested
+    int direction = 2;
+
+    double load = 1.0;
+    double R = 1.0;
+    il::Array<double> dd_analytical{3*nodes_coor.size(0)};
+
+    switch (direction) {
+        case 1: {
+            // For 1 (shear)
+            double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
+            for (int i = 0; i < nodes_coor.size(0); i++){
+                dd_analytical[3*i] = ( (8.0*(lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+                dd_analytical[3*i+1] = 0.0;
+                dd_analytical[3*i+2] = 0.0;
+            }
+            break;
+        }
+        case 2: {
+            // For 2 (shear)
+            double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
+            for (int i = 0; i < nodes_coor.size(0); i++){
+                dd_analytical[3*i] = 0.0;
+                dd_analytical[3*i+1] = ( (8.0*(lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+                dd_analytical[3*i+2] = 0.0;
+            }
+            break;
+        }
+        case 3: {
+            // For 3 (normal)
+            for (int i = 0; i < nodes_coor.size(0); i++){
+                dd_analytical[3*i] = 0.0;
+                dd_analytical[3*i+1] = 0.0;
+                dd_analytical[3*i+2] = ( (8.0*load)/( il::pi * (young/(1.0 - pow(nu,2.0))) ) )
+                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+            }
+        }
+    }
+
+    std::cout << "analytical dd ... " << "\n";
+    for (int i = 0; i < 9; i++){
+        std::cout << dd_analytical[i] << "\n";
+    }
+
+    // convert dd to std vector
+    std::vector<double> dd_analytical_std;
+    dd_analytical_std.reserve(3 * nodes_coor.size(0));
+    for (int i = 0; i < 3 * nodes_coor.size(0); i++){
+        dd_analytical_std.push_back(dd_analytical[i]);
+    }
+
+    std::vector<double> traction_numerical;
+    std::cout << "Doing hmat dot product \n" ;
+
+    traction_numerical = test.hdotProduct(dd_analytical_std);
+
+    // output tractions
+
+    std::cout << "numerical traction ... " << "\n";
+    for (int i = 0; i < nodes_coor.size(0); i++){
+        std::cout << radius[i] << " (" << traction_numerical[3*i] << ", " << traction_numerical[3*i+1]
+        << ", " << traction_numerical[3*i+2] << ")" << "\n";
+    }
+
+    // average traction - only for component 3
+    double sum = 0;
+    int count_nan = 0;
+
+    for (int i = 0; i < nodes_coor.size(0); i++){
+        if (isnan(traction_numerical[3*i+(direction-1)]) == 0){
+            sum += traction_numerical[3*i+(direction-1)];
+        } else {
+            count_nan++;
+        }
+    }
+    double average_traction = sum / (nodes_coor.size(0)-count_nan);
+    std::cout << "average_traction =  " << average_traction << "\n";
+    std::cout << "numer of nan's =  " << count_nan << "\n";
+
+    std::cout << "-------------- End of 3DT0 - Penny-shaped crack test ------------- " << "\n";
+
+    return  0;
+
+}
+
+int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_file){
+
     std::cout << "-------------- test3DT0 Penny-Shaped Crack ---------------------\n";
 
     il::Array2D<double> nodes = read_coord_CSV(vertices_file);
@@ -1547,38 +1726,185 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 
     il::Array2D<double> coll_points = mesh.getCollocationPoints();
 
-    il::int_t leaf_size = 32; // 10
-    il::Timer tt;
-    tt.Start();
-    const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
-
-    double eta=10;
-    const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-            il::hmatrixTree(coll_points, cluster.partition, eta);
-    tt.Stop();
-
-    std::cout << "Time for cluster construction " << tt.time() <<"\n";
-    tt.Reset();
-    std::cout << cluster.partition.depth() <<"\n";
+//    il::int_t leaf_size = 32; // 10
+//    il::Timer tt;
+//    tt.Start();
+//    const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+//
+//    double eta=10;
+//    const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
+//            il::hmatrixTree(coll_points, cluster.partition, eta);
+//    tt.Stop();
+//
+//    std::cout << "Time for cluster construction " << tt.time() <<"\n";
+//    tt.Reset();
+//    std::cout << cluster.partition.depth() <<"\n";
 
     double nu = 0.2;
     double G = 1.0;
     double young = 2.0 * G * (1.0+nu);
-    bie::ElasticProperties elas(young,nu);
 
-    il::HMatrix<double> h_ ;
-    const bie::ElasticHMatrix3DT0<double> M{coll_points,cluster.permutation,mesh,elas,1,1,1};
+//    bie::ElasticProperties elas(young,nu);
+//
+//    il::HMatrix<double> h_ ;
+//    const bie::ElasticHMatrix3DT0<double> M{coll_points,cluster.permutation,mesh,elas,1,1,1};
+//
+//    std::cout << " create h mat " << M.size(0) <<"\n";
+//    tt.Start();
+//    double epsilon_aca = 0.001;
+//    h_= il::toHMatrix(M, hmatrix_tree, epsilon_aca);
+//    tt.Stop();
+//    std::cout << " create h mat ended " << h_.isBuilt() << "time" << tt.time() << "\n";
+//    tt.Reset();
+//    std::cout << " compression ratio " << il::compressionRatio(h_) << "\n";
+//
+//    // Analytical solution
+//
+//    // compute radius at all nodes ( = collocation points for T0)
+//
+//    il::Array2D<double> nodes_coor = mesh.getNodes();
+//    il::Array<double> radius{nodes_coor.size(0)};
+//
+//    for (int i = 0; i < nodes_coor.size(0); i++){
+//        double sum = 0.0;
+//        for (int j = 0; j < 3; j++){
+//            sum += pow(nodes_coor(i,j),2.0);
+//        }
+//        radius[i] = sqrt(sum);
+//    }
+//
+//    std::cout << "radius ... " << "\n";
+//    for (int i = 0; i < 9; i++) {
+//        std::cout << radius[i] << "\n";
+//    }
+//
+//    // compute dd at all nodes ( = collocation points for T0)
+//
+//    // choose the direction to be tested
+//    int direction = 2;
+//
+//    double load = 1.0;
+//    double R = 1.0;
+//    il::Array<double> dd_analytical{3*nodes_coor.size(0)};
+//
+//    switch (direction) {
+//        case 1: {
+//            // For 1 (shear)
+//            double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
+//            for (int i = 0; i < nodes_coor.size(0); i++){
+//                dd_analytical[3*i] = ( ((8.0*lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+//                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+//                dd_analytical[3*i+1] = 0.0;
+//                dd_analytical[3*i+2] = 0.0;
+//            }
+//            break;
+//        }
+//        case 2: {
+//            // For 2 (shear)
+//            double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
+//            for (int i = 0; i < nodes_coor.size(0); i++){
+//                dd_analytical[3*i] = 0.0;
+//                dd_analytical[3*i+1] = ( ((8.0*lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+//                * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+//                dd_analytical[3*i+2] = 0.0;
+//            }
+//            break;
+//        }
+//        case 3: {
+//            // For 3 (normal)
+//            for (int i = 0; i < nodes_coor.size(0); i++){
+//                dd_analytical[3*i] = 0.0;
+//                dd_analytical[3*i+1] = 0.0;
+//                dd_analytical[3*i+2] = ( (8.0*load)/( il::pi * (young/(1.0 - pow(nu,2.0))) ) )
+//                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+//            }
+//        }
+//    }
+//
+//    std::cout << "analytical dd ... " << "\n";
+//    for (int i = 0; i < 9; i++){
+//        std::cout << dd_analytical[i] << "\n";
+//    }
+//
+//    // perform h-dot
+//
+//    // first see permutation
+//    il::Array<il::int_t> perm = cluster.permutation;
+////    std::cout << "permuation vector, size =  " << perm.size() << "\n";
+////
+////    std::cout << "the vector ... " << "\n";
+////    for (int i = 0; i < perm.size(); i++){
+////        std::cout << perm[i] << "\n";
+////    }
+//
+//    // permute dd vector
+//    il::Array<double> dd_analytical_perm{3*nodes_coor.size(0)};
+//    for (int i = 0; i < nodes_coor.size(0); i++){
+//        dd_analytical_perm[3*i] = dd_analytical[3*perm[i]];
+//        dd_analytical_perm[3*i+1] = dd_analytical[3*perm[i]+1];
+//        dd_analytical_perm[3*i+2] = dd_analytical[3*perm[i]+2];
+//    }
+//
+//    il::Array<double> traction_numerical = il::dot(h_,dd_analytical_perm);
+//
+//    // output tractions
+//
+//    std::cout << "numerical traction ... " << "\n";
+//    for (int i = 0; i < nodes_coor.size(0); i++){
+//        std::cout << radius[i] << " (" << traction_numerical[3*i] << ", " << traction_numerical[3*i+1]
+//        << ", " << traction_numerical[3*i+2] << ")" << "\n";
+//    }
+//
+//    // average traction - only for component 3
+//    double sum = 0;
+//    int count_nan = 0;
+//
+//    for (int i = 0; i < nodes_coor.size(0); i++){
+//        if (isnan(traction_numerical[3*i+2]) == 0){
+//            sum += traction_numerical[3*i+2];
+//        } else {
+//            count_nan++;
+//        }
+//    }
+//    double average_traction = sum / (nodes_coor.size(0)-count_nan);
+//    std::cout << "average_traction =  " << average_traction << "\n";
 
-    std::cout << " create h mat " << M.size(0) <<"\n";
-    tt.Start();
-    double epsilon_aca = 0.001;
-    h_= il::toHMatrix(M, hmatrix_tree, epsilon_aca);
-    tt.Stop();
-    std::cout << " create h mat ended " << h_.isBuilt() << "time" << tt.time() << "\n";
-    tt.Reset();
-    std::cout << " compression ratio " << il::compressionRatio(h_) << "\n";
+    // now we use the BIGWHAM
 
-    // Analytical solution
+    // convert to std vectors
+    std::vector<double> nodes_flat;
+    nodes_flat.reserve(3 * nodes.size(0));
+    for (int i = 0; i < nodes.size(0); i++){
+        for (int j = 0; j < nodes.size(1); j++){
+            nodes_flat.push_back(nodes(i,j));
+        }
+    }
+    std::vector<int64_t> conn_flat;
+    conn_flat.reserve(3 * conn.size(0));
+    for (int i = 0; i < conn.size(0); i++){
+        for (int j = 0; j < conn.size(1); j++){
+            conn_flat.push_back(conn(i,j));
+        }
+    }
+
+    std::cout << "Checking conversion of nodes and conn to std vectors ..." << "\n";
+    std::cout << "coor =  " << nodes_flat[0] << " " << nodes_flat[1] << " " << nodes_flat[2] << "\n";
+    std::cout << "conn =  " << conn_flat[0] << " " << conn_flat[1] << " " << conn_flat[2] << "\n";
+
+    const std::vector<double> properties = {young, nu}; // Young Modulus , Poisson's ratio
+    const int max_leaf_size = 25;
+    const double eta_test = 5.;
+    const double eps_aca = 0.0001;
+
+    // create HMAT
+    const std::string kernel_name = "3DT6";
+    Bigwhamio test;
+    test.set(nodes_flat,conn_flat,kernel_name,properties,
+             max_leaf_size, eta_test, eps_aca);
+
+    // test Hdot product
+
+    // first compute analytical dd
 
     // compute radius at all nodes ( = collocation points for T0)
 
@@ -1601,7 +1927,7 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     // compute dd at all nodes ( = collocation points for T0)
 
     // choose the direction to be tested
-    int direction = 2;
+    int direction = 1;
 
     double load = 1.0;
     double R = 1.0;
@@ -1612,8 +1938,8 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
             // For 1 (shear)
             double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
             for (int i = 0; i < nodes_coor.size(0); i++){
-                dd_analytical[3*i] = ( ((8.0*lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
-                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+                dd_analytical[3*i] = ( (8.0*(lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+                                     * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
                 dd_analytical[3*i+1] = 0.0;
                 dd_analytical[3*i+2] = 0.0;
             }
@@ -1624,8 +1950,8 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
             double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
             for (int i = 0; i < nodes_coor.size(0); i++){
                 dd_analytical[3*i] = 0.0;
-                dd_analytical[3*i+1] = ( ((8.0*lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
-                * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+                dd_analytical[3*i+1] = ( (8.0*(lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
                 dd_analytical[3*i+2] = 0.0;
             }
             break;
@@ -1641,21 +1967,8 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
         }
     }
 
-    std::cout << "analytical dd ... " << "\n";
-    for (int i = 0; i < 9; i++){
-        std::cout << dd_analytical[i] << "\n";
-    }
-
-    // perform h-dot
-
-    // first see permutation
-    il::Array<il::int_t> perm = cluster.permutation;
-//    std::cout << "permuation vector, size =  " << perm.size() << "\n";
-//
-//    std::cout << "the vector ... " << "\n";
-//    for (int i = 0; i < perm.size(); i++){
-//        std::cout << perm[i] << "\n";
-//    }
+    // permute dd
+    std::vector<int> perm = test.getPermutation();
 
     // permute dd vector
     il::Array<double> dd_analytical_perm{3*nodes_coor.size(0)};
@@ -1665,14 +1978,29 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
         dd_analytical_perm[3*i+2] = dd_analytical[3*perm[i]+2];
     }
 
-    il::Array<double> traction_numerical = il::dot(h_,dd_analytical_perm);
+    std::cout << "analytical dd ... " << "\n";
+    for (int i = 0; i < 9; i++){
+        std::cout << dd_analytical[i] << "\n";
+    }
+
+    // convert dd to std vector
+    std::vector<double> dd_analytical_std;
+    dd_analytical_std.reserve(3 * nodes_coor.size(0));
+    for (int i = 0; i < 3 * nodes_coor.size(0); i++){
+        dd_analytical_std.push_back(dd_analytical[i]);
+    }
+
+    std::vector<double> traction_numerical;
+    std::cout << "Doing hmat dot product \n" ;
+
+    traction_numerical = test.hdotProduct(dd_analytical_std);
 
     // output tractions
 
     std::cout << "numerical traction ... " << "\n";
     for (int i = 0; i < nodes_coor.size(0); i++){
         std::cout << radius[i] << " (" << traction_numerical[3*i] << ", " << traction_numerical[3*i+1]
-        << ", " << traction_numerical[3*i+2] << ")" << "\n";
+                  << ", " << traction_numerical[3*i+2] << ")" << "\n";
     }
 
     // average traction - only for component 3
@@ -1688,92 +2016,33 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     }
     double average_traction = sum / (nodes_coor.size(0)-count_nan);
     std::cout << "average_traction =  " << average_traction << "\n";
+    std::cout << "numer of nan's =  " << count_nan << "\n";
 
 
-//    double Ep=1.0/(1.0-0.2*0.2);
-//    double sig = 1.0;
-//    double a=1.0;
-//    double coef = 4.0 * sig / (Ep);
-//    // at collocation points
-//    il::Array<double> wsol_coll{coll_points.size(0), 0.};
-//    for (int i = 0; i < coll_points.size(0); ++i) {
-//        if (std::abs(coll_points(i,0)) < a) {
-//            wsol_coll[i] = coef * sqrt(pow(a, 2) - pow(coll_points(i,0), 2));
+//
+//
+//    for(int i=0; i<x.size(); ++i) std::cout << x[i] << " ";
+//    std::cout << "\n" ;
+//    std::cout << "Displacement HMAT dot product \n" ;
+//    x = displacementHMAT.hdotProduct(xx);
+//    for(int i=0; i<x.size(); ++i) std::cout << x[i] << ' ';
+//
+//    // compute stresses at a set of observation points
+//    std::vector<double> coorobsp={-10.,-10.,0.,
+//                                  20.,-20.,0.};
+//    std::vector<double> mysol = {1.,1.,1.,1.,1.,1.};
+//    std::vector<double> bb = tractionHMAT.computeStresses(mysol, coorobsp, 2, properties, coor, conn, true);
+//
+//    for(int i=0; i<bb.size()/6; ++i) {
+//        std::cout << "\n stress at point #" << i << "\n ";
+//        for(int j=0; j<6; ++j){
+//            std::cout << bb[i*6+j] << " ";
 //        }
-//    }
-//    //at corresponding nodes - works here due to simple mesh....
-//    il::Array<double> wsol_nodes{coll_points.size(0), 0.};
-//    double aux_x=0.; int j=0;
-//    for (int i = 0; i < conn.size(0); ++i) {
-//
-//        aux_x=nodes(conn(i,0),0);
-//        if (std::abs(aux_x) < a) {
-//            wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
-//        }
-//        j++;
-//        aux_x=nodes(conn(i,1),0);
-//        if (std::abs(aux_x) < a) {
-//            wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
-//        }
-//        j++;
-//    }
-//
-//    il::Array<double> xx{coll_points.size(0)*2};
-//
-//    for (il::int_t i=0;i<xx.size()/2;i++){
-//        xx[2*i]=0.0;
-//        xx[2*i+1]=wsol_nodes[i];
-//    }
-//
-//    il::Array< double> y=il::dot(h_,xx);
-//
-//    // now testing the Bigwhamio class...
-//    Bigwhamio testbie;
-//    //Bigwhamio *test = new Bigwhamio();
-//
-//
-//    std::vector<double> f_coor;
-//    f_coor.assign(2*test2.numberOfNodes(),0.);
-//    for (il::int_t i=0;i<test2.numberOfNodes();i++){
-//        f_coor[2*i]=test2.coordinates(i,0);
-//        f_coor[2*i+1]=test2.coordinates(i,1);
-//    }
-//
-//    std::vector<int64_t> f_conn;
-//    f_conn.assign(2*test2.numberOfElts(),0);
-//    for (il::int_t i=0;i<test2.numberOfElts();i++){
-//        f_conn[2*i]=test2.connectivity(i,0);
-//        f_conn[2*i+1]=test2.connectivity(i,1);
-//    }
-//
-//    std::vector<double> f_prop;
-//    f_prop.assign(2,0);
-//    f_prop[0]=elas_aux.getE();
-//    f_prop[1]=elas_aux.getNu();
-//
-//    std::string ker="2DP1";
-//
-//    std::cout << " now setting things in bigwhamio obj \n";
-//
-//    testbie.set(f_coor,f_conn,ker,f_prop,leaf_size,0.,0.001);
-//
-//
-//    std::cout        <<  " C R :"<< testbie.getCompressionRatio() <<"\n";
-//
-//    std::vector<double> x;
-//    x.assign(xx.size(),0.);
-//    for (il::int_t i=0;i<xx.size();i++){
-//        x[i]=xx[i];
-//    }
-//
-//    std::vector<double> y2=testbie.hdotProduct(x);
-//    std::cout << " elastic dot product solution:: \n";
-//    for (il::int_t i=0;i<coll_points.size(0);i++){
-//        std::cout <<" y " << i  <<" " << y[2*i] << " - with obj - " << y2[2*i]  <<"\n";
-//        std::cout <<" y " << i  <<" " << y[2*i+1] << " - with obj - " << y2[2*i+1] <<"\n";
 //    }
 
-    std::cout << "-------------- End of 3DT0 - Penny-shaped crack test ------------- " << "\n";
+
+
+    std::cout << "-------------- End of 3DT6 - Penny-shaped crack test ------------- " << "\n";
 
     return  0;
 
@@ -1797,9 +2066,10 @@ int main() {
 //  test3DT6PennyShaped(vertices_file,connectivity_file);
 
 test3DT0();
-std::string vertices_file = "/Users/alexis/Documents/Work/01 Project - dislocations/verticesE1016.csv";
-std::string connectivity_file = "/Users/alexis/Documents/Work/01 Project - dislocations/connE1016.csv";
+std::string vertices_file = "/Users/alexis/BigWhamLink/vertices.csv";
+std::string connectivity_file = "/Users/alexis/BigWhamLink/conn.csv";
 test3DT0_PennyShaped(vertices_file,connectivity_file);
+//test3DT6_PennyShaped(vertices_file,connectivity_file);
 
   std::cout << "\n End of BigWham - exe " << "\n";
 
