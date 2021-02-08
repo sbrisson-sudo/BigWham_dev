@@ -25,15 +25,11 @@ namespace bie {
         const bie::Mesh3D mesh_;
 
     public:
-        il::int_t I_want_global_DD;
-        il::int_t I_want_global_codomain;
-        il::int_t I_want_DD_to_traction_kernel;
+        il::int_t local_global;
         bie::ElasticProperties const elas_;
         ElasticHMatrix3DT0(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
                            bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas,
-                           il::int_t I_want_global_DD, // 0 is local and 1 is global
-                           il::int_t I_want_global_codomain, // 0 is local and 1 is global
-                           il::int_t I_want_DD_to_traction_kernel); // 0 is displacement kernel and 1 is traction kernel
+                           il::int_t local_global); // 0 if local-local, 1 if global-global
 
         il::int_t size(il::int_t d) const override;
         il::int_t blockSize() const override;
@@ -43,16 +39,12 @@ namespace bie {
 
     template <typename T>
     ElasticHMatrix3DT0<T>::ElasticHMatrix3DT0(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
-                                              bie::Mesh3D &i_meshtools,bie::ElasticProperties &elas, il::int_t I_want_global_DD,
-                                              il::int_t I_want_global_codomain,
-                                              il::int_t I_want_DD_to_traction_kernel)
+                                              bie::Mesh3D &i_meshtools,bie::ElasticProperties &elas, il::int_t local_global)
             : point_{point},
               permutation_{permutation},
               mesh_{i_meshtools},
               elas_{elas},
-              I_want_global_DD{I_want_global_DD},
-              I_want_global_codomain{I_want_global_codomain},
-              I_want_DD_to_traction_kernel{I_want_DD_to_traction_kernel}
+              local_global{local_global}
     {
         IL_EXPECT_FAST(point_.size(1) == 3);  // size(1) point==3 in 3D
     };
@@ -144,25 +136,10 @@ namespace bie {
                 xv = mesh_.getVerticesElt(e_k0); // get vertices' coordinates of receiver element
                 bie::FaceData elem_data_r(xv, 0); // 0 = interpolation order
 
-                switch (I_want_DD_to_traction_kernel) {
-                    case 0: { //false
-                        stnl = bie::NodeDDtriplet_to_CPdisplacement_influence_3DT0(elem_data_s, // source element
-                                                                              elem_data_r, // receiver element
-                                                                              elas_, // elastic properties
-                                                                              I_want_global_DD ,
-                                                                              I_want_global_codomain); //https://en.wikipedia.org/wiki/Codomain
-                        break;
-                    }
-                    case 1: { //true
-                        stnl = bie::NodeDDtriplet_to_CPtraction_influence_3DT0(elem_data_s,
-                                                                          elem_data_r,
-                                                                          elas_,
-                                                                          I_want_global_DD,
-                                                                          I_want_global_codomain); //https://en.wikipedia.org/wiki/Codomain
-                        break;
-                    }
-                    default: { std::cout << "ERROR: bad options given for switch in routine: ElasticHMatrix3DT0 = " << I_want_DD_to_traction_kernel << "\n";}
-                }
+                stnl = bie::NodeDDtriplet_to_CPtraction_influence_3DT0(elem_data_s, // source element
+                                                                           elem_data_r, // receiver element
+                                                                           elas_, // elastic properties
+                                                                           local_global); // 0 if local-local, 1 if global-global
 
                 for (il::int_t j = 0; j < 3; j++)
                 {

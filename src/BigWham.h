@@ -33,6 +33,7 @@
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
 #include <elasticity/3d/ElasticHMatrix3DR0.h>
+#include <elasticity/3d/ElasticHMatrix3DT0.h>
 
 //#pragma once
 
@@ -190,7 +191,7 @@ class Bigwhamio
                           std::cout << "H mat set : CR = " << il::compressionRatio(h_)
                                     << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
                           tt.Reset();
-                        } else if (kernel_=="3DT6" || kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction") {
+                        } else if (kernel_=="3DT6" || kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction" || kernel_=="3DT0") {
                           // check this  NOTE 1: the 3D mesh uses points and connectivity matrix that are
                           // transposed w.r. to the 2D mesh
 
@@ -201,6 +202,7 @@ class Bigwhamio
                           il::int_t nnodes_elts = 0; // n of nodes per element
                           int p = 0; // interpolation order
                           if (kernel_=="3DT6") {nnodes_elts = 3; p = 2;}
+                          else if (kernel_=="3DT0") {nnodes_elts = 3; p = 0;}
                           else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction") {nnodes_elts = 4; p = 0;}
                           else {std::cout << "Invalid kernel name ---\n"; il::abort(); };
 
@@ -286,6 +288,15 @@ class Bigwhamio
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
                             const bie::ElasticHMatrix3DT6<double> M{
                                 collocationPoints_, permutation_, mesh3d, elas, 1, 1};
+                            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
+                            std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
+                          }
+                          else if (kernel_ == "3DT0")
+                          {
+                            std::cout << "Kernel Isotropic Elasticity 3D T0 (quadratic) triangle \n";
+                            std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
+                            const bie::ElasticHMatrix3DT0<double> M{
+                                      collocationPoints_, permutation_, mesh3d, elas, 1}; // local_global = 0 if local-local, 1 if global-global
                             h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
                           }

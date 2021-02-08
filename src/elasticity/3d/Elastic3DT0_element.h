@@ -20,15 +20,13 @@ namespace bie{
             bie::FaceData &elem_data_s, // source element
             bie::FaceData &elem_data_r, // receiver element
             bie::ElasticProperties const &elas_, // elastic properties
-            il::int_t I_want_global_DD,
-            il::int_t I_want_global_traction);
+            il::int_t local_global); // 0 if local-local, 1 if global-global
 
     il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence_3DT0(
             bie::FaceData &elem_data_s, // source element
             bie::FaceData &elem_data_r, // receiver element
             bie::ElasticProperties const &elas_, // elastic properties
-            il::int_t I_want_global_DD,
-            il::int_t I_want_global_displacement);
+            il::int_t local_global); // 0 if local-local, 1 if global-global
 
     il::StaticArray2D<double, 3, 6> StressesKernelT0(
             il::StaticArray<double, 3> &x,
@@ -41,6 +39,10 @@ namespace bie{
             il::StaticArray<double, 3> &x,
             il::StaticArray2D<double, 3, 3> &xv,
             double &nu);
+
+    // function that modify the kernel to be expressed either in local-local or in global-global
+    il::Array2D<double> change_local_global(const il::Array2D<double>& A, il::int_t local_global,
+                                            const il::Array2D<double>& R_source, const il::Array2D<double>& R_receiver);
 
     // generic integrals
 
