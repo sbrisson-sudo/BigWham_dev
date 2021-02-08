@@ -29,15 +29,15 @@ namespace bie{
             il::int_t local_global); // 0 if local-local, 1 if global-global
 
     il::StaticArray2D<double, 3, 6> StressesKernelT0(
-            il::StaticArray<double, 3> &x,
-            il::StaticArray2D<double, 3, 3> &xv,
+            il::Array2D<double> &x,
+            il::Array2D<double> &xv,
             double& G,
             double& nu) ;
 
     // Fundamental displacement kernel = displacement influence coefficients
     il::StaticArray2D<double, 3, 3> DisplacementKernelT0(
-            il::StaticArray<double, 3> &x,
-            il::StaticArray2D<double, 3, 3> &xv,
+            il::Array2D<double> &x,
+            il::Array2D<double> &xv,
             double &nu);
 
     // function that modify the kernel to be expressed either in local-local or in global-global

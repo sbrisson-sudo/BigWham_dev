@@ -19,7 +19,6 @@ namespace bie {
             bie::FaceData &elem_data_r, // receiver element
             bie::ElasticProperties const &elas_, // elastic properties
             il::int_t local_global = 0){ // 0 if local-local, 1 if global-global
-        // TODO: change everything with static arrays
 
         // get constitutive parameters
         double G = elas_.getG();
@@ -29,27 +28,13 @@ namespace bie {
         il::Array2D<double> el_cp_r;
         el_cp_r = elem_data_r.getCollocationPoints();
 
-        // convert from dynamic 2D array to static 1D
-        il::StaticArray<double, 3> x;
-        x[0] = el_cp_r(0, 0);
-        x[1] = el_cp_r(0, 1);
-        x[2] = el_cp_r(0, 2);
-
         // get coordinates vertices of triangular source element
         il::Array2D<double> el_vertices_s;
         el_vertices_s = elem_data_s.getVertices();
 
-        // convert from dynamic 2D array to static 2D
-        il::StaticArray2D<double, 3, 3> xv;
-        for (int i = 0; i < 3; i++) {
-            xv(0,i) = el_vertices_s(0,i); // vertex 1
-            xv(1,i) = el_vertices_s(1,i); // vertex 2
-            xv(2,i) = el_vertices_s(2,i); // vertex 3
-        }
-
         // get stress influence coefficients - in the local coordinate system of the source element
         il::StaticArray2D<double, 3, 6> Stress;
-        Stress = StressesKernelT0(x,xv,G,nu);
+        Stress = StressesKernelT0(el_cp_r,el_vertices_s,G,nu);
 
         // index        ->    0    1    2    3    4    5
         // DD1 (shear)  -> | s11, s22, s33, s12, s13, s23  |
@@ -107,7 +92,6 @@ namespace bie {
             ElasticProperties const &elas_, // elastic properties
             il::int_t local_global = 0) // 0 if local-local, 1 if global-global
     {
-        // TODO: change everything with static arrays, also, this function does almost nothing, just change ref. system
 
         // get constitutive parameters - only nu is needed
         double nu = elas_.getNu();
@@ -116,40 +100,26 @@ namespace bie {
         il::Array2D<double> el_cp_r;
         el_cp_r = elem_data_r.getCollocationPoints();
 
-        // convert from dynamic 2D array to static 1D
-        il::StaticArray<double, 3> x;
-        x[0] = el_cp_r(0, 0);
-        x[1] = el_cp_r(0, 1);
-        x[2] = el_cp_r(0, 2);
-
         // get coordinates vertices of triangular source element
         il::Array2D<double> el_vertices_s;
         el_vertices_s = elem_data_s.getVertices();
 
-        // convert from dynamic 2D array to static 2D
-        il::StaticArray2D<double, 3, 3> xv;
-        for (int i = 0; i < 3; i++) {
-            xv(0,i) = el_vertices_s(0,i); // vertex 1
-            xv(1,i) = el_vertices_s(1,i); // vertex 2
-            xv(2,i) = el_vertices_s(2,i); // vertex 3
-        }
-
         // compute displacement components at receiver element cp due to (DD1,DD2,DD3) source element
         // in the reference system of the source element
 
-        il::StaticArray2D<double, 3, 3> DDs_to_Displacement_local_source;
-        DDs_to_Displacement_local_source = DisplacementKernelT0(x,xv,nu);
+        il::StaticArray2D<double, 3, 3> DDs_to_Displacement_local;
+        DDs_to_Displacement_local = DisplacementKernelT0(el_cp_r,el_vertices_s,nu);
         // index        ->    DD1 (shear)    DD2 (shear)     DD3 (normal)
         //   0      -> |       U1,            U1,             U1            |
         //   1      -> |       U2,            U2,             U2            |
         //   2      -> |       U3,            U3,             U3            |
 
-        // convert from static 2D array to dynamic
+        // convert from static 2D array to dynamic, might be inefficient
         il::Array2D<double> X{3,3};
         for (int i = 0; i < 3; i++) {
-            X(0,i) = DDs_to_Displacement_local_source(0,i);
-            X(1,i) = DDs_to_Displacement_local_source(1,i);
-            X(2,i) = DDs_to_Displacement_local_source(2,i);
+            X(0,i) = DDs_to_Displacement_local(0,i);
+            X(1,i) = DDs_to_Displacement_local(1,i);
+            X(2,i) = DDs_to_Displacement_local(2,i);
         }
 
         return change_local_global(X,local_global,elem_data_s.rotationMatrix(true), elem_data_r.rotationMatrix(true));
@@ -160,8 +130,8 @@ namespace bie {
 
 // Fundamental stress kernel = stress influence coefficients
     il::StaticArray2D<double, 3, 6> StressesKernelT0(
-            il::StaticArray<double, 3> &x,
-            il::StaticArray2D<double, 3, 3> &xv,
+            il::Array2D<double> &x,
+            il::Array2D<double> &xv,
             double &G,
             double &nu) {
 
@@ -180,7 +150,7 @@ namespace bie {
         //   DD1 (shear), DD2 (shear), DD3 (normal) -> for rows
         //   S11, S22, S33, S12, S13, S23 -> for columns
 
-        double eps_tol = 1.0e-015; // parameter used for "if conditions" involving inequalities due to numerical precision
+//        double eps_tol = 2.22045e-16; // parameter used for "if conditions" involving inequalities due to numerical precision
 
         // get triangle vertices coordinates separated
         il::StaticArray<double, 3> y1, y2, y3;
@@ -194,7 +164,7 @@ namespace bie {
         for (il::int_t i = 0; i < 3; i++) {
             y31[i] = y3[i] - y1[i];
             y21[i] = y2[i] - y1[i];
-            y1x[i] = y1[i] - x[i];
+            y1x[i] = y1[i] - x(0,i);
         }
         // local reference system (e1,e2,e3)
         il::StaticArray<double, 3> e1, e2, e3;
@@ -610,10 +580,12 @@ namespace bie {
 
         // stress components due to the unit displacement discontinuity component DD3 (normal)
 
-        Stress(2, 0) = prefactor * ( 3.0 * ( I5_Zeta_Zeta_Aux + 5.0 * I7_Xi_Xi_Aux
-                                             - 2.0 * I5_Zeta_Zeta_Aux * nu ) ); // s11 = b113 TODO: it can be factorized
-        Stress(2, 1) = prefactor * ( 3.0 * ( I5_Xi_Xi_Aux + 5.0 * I7_Zeta_Zeta_Aux
-                                             - 2.0 * I5_Xi_Xi_Aux * nu ) ); // s22 = b223 TODO: it can be factorized
+//        Stress(2, 0) = prefactor * ( 3.0 * ( I5_Zeta_Zeta_Aux + 5.0 * I7_Xi_Xi_Aux
+//                                             - 2.0 * I5_Zeta_Zeta_Aux * nu ) ); // s11 = b113 without factorization
+        Stress(2, 0) = prefactor * ( 3.0 * ( (1.0 - 2.0*nu) * I5_Zeta_Zeta_Aux + 5.0 * I7_Xi_Xi_Aux ) ); // s11 = b113
+//        Stress(2, 1) = prefactor * ( 3.0 * ( I5_Xi_Xi_Aux + 5.0 * I7_Zeta_Zeta_Aux
+//                                             - 2.0 * I5_Xi_Xi_Aux * nu ) ); // s22 = b223 without factorization
+        Stress(2, 1) = prefactor * ( 3.0 * ( (1.0 - 2.0*nu) * I5_Xi_Xi_Aux + 5.0 * I7_Zeta_Zeta_Aux ) ); // s22 = b223
         Stress(2, 2) = prefactor * ( -6.0 * I5_Aux + 15.0 * I7_Aux );
         // s33 = b333
         Stress(2, 3) = prefactor * ( 15.0 * I7_Xi_Zeta * pow(eta,2.0)
@@ -912,8 +884,8 @@ namespace bie {
 
     // Fundamental displacement kernel = displacement influence coefficients
     il::StaticArray2D<double, 3, 3> DisplacementKernelT0(
-            il::StaticArray<double, 3> &x,
-            il::StaticArray2D<double, 3, 3> &xv,
+            il::Array2D<double> &x,
+            il::Array2D<double> &xv,
             double &nu) {
 
         // this routine is based on the works of Nintcheu Fata (2009,2011)
@@ -932,7 +904,7 @@ namespace bie {
         //   DD1 (shear), DD2 (shear), DD3 (normal) -> for columns
         // TODO: check this is ok, Carlo used transposed wrt stresses (?)
 
-        double eps_tol = 1.0e-015; // parameter used for "if conditions" involving inequalities due to numerical precision
+        double eps_tol = 2.22045e-16; // parameter used for "if conditions" involving inequalities due to numerical precision
 
         // get triangle vertices coordinates separated
         il::StaticArray<double, 3> y1, y2, y3;
@@ -946,7 +918,7 @@ namespace bie {
         for (il::int_t i = 0; i < 3; i++) {
             y31[i] = y3[i] - y1[i];
             y21[i] = y2[i] - y1[i];
-            y1x[i] = y1[i] - x[i];
+            y1x[i] = y1[i] - x(0,i);
         }
         // local reference system (e1,e2,e3)
         il::StaticArray<double, 3> e1, e2, e3;
@@ -1321,16 +1293,20 @@ namespace bie {
         // U1 = a11
         Displacement(1, 0) = prefactor * ( 3.0 * I5_Xi_Zeta * eta );
         // U2 = a21
-        Displacement(2, 0) = prefactor * ( I3_Xi + 3.0 * I5_Xi * pow(eta,2.0) - 2.0 * I3_Xi * nu );
-        // U3 = a31 TODO: it can be factorized
+//        Displacement(2, 0) = prefactor * ( I3_Xi + 3.0 * I5_Xi * pow(eta,2.0) - 2.0 * I3_Xi * nu );
+//        // U3 = a31 without factorization
+        Displacement(2, 0) = prefactor * ( (1.0 - 2.0*nu) * I3_Xi + 3.0 * I5_Xi * pow(eta,2.0) );
+        // U3 = a31
 
         // displacement components due to the unit displacement discontinuity DD2 (shear)
         Displacement(0, 1) = prefactor * ( 3.0 * I5_Xi_Zeta * eta );
         // U1 = a12
         Displacement(1, 1) = prefactor * ( 3.0 * I5_Zeta_Zeta_Aux * eta - 2.0 * theta * (-1 + nu) );
         // U2 = a22
-        Displacement(2, 1) = prefactor * ( I3_Zeta + 3.0 * I5_Zeta * pow(eta,2.0) - 2.0 * I3_Zeta * nu );
-        // U3 = a32 TODO: it can be factorized
+//        Displacement(2, 1) = prefactor * ( I3_Zeta + 3.0 * I5_Zeta * pow(eta,2.0) - 2.0 * I3_Zeta * nu );
+//        // U3 = a32 without factorization
+        Displacement(2, 1) = prefactor * ( (1.0 - 2.0*nu) * I3_Zeta + 3.0 * I5_Zeta * pow(eta,2.0) );
+        // U3 = a32
 
         // displacement components due to the unit displacement discontinuity DD3 (normal)
         Displacement(0, 2) = prefactor * ( 3.0 * I5_Xi * pow(eta,2.0) + I3_Xi * (-1.0 + 2.0 * nu) );
