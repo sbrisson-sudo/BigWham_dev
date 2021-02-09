@@ -41,10 +41,11 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
       // solution :: Array containing the DD on the mesh
       //
       // OUTPUTS:
-      // stresses in global (reference) coordinates (xx, xy, yy)
+      // stresses in global (reference) coordinates (xx, xy, yy) --> for 3D
       //
       // CONVENTION:
       // positive tension / positive overlap DD;
+      // or positive compression / positive opening DD (t=E*d <=> -t=E*-d)
 
       il::Array2D<double> stress_out{observ_pts.size(0), 6, 0.0};
 
@@ -71,17 +72,20 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
             }
 
             // if the given DDs are global we need to get them to local
+          // TODO: I think this does not work for elements with more than 1 cp (3DT6)
             if (are_dd_global){
-                elt_DD = il::dot(mysege.rotationMatrix(0),elt_DD);
+                elt_DD = il::dot(mysege.rotationMatrix(true),elt_DD); // TODO: be careful here with Carlo when merging, He's using the rotation matrix in a different way
             }
 
             // loop on all observation points to compute the stresses
             for (il::int_t j = 0; j < observ_pts.size(0); ++j)
             {
-                  //   get stresses at point # j
+                  // get stresses at point # j
+
+                  // take observation point as 1D array
                   for (il::int_t i = 0; i < 3; ++i) {observ_pt[i] = observ_pts(j, i);}
 
-                  //   get stresses at point # j due to DD over the element e
+                  //   get stresses at point # j due to DD vector over the element e
                   stress_at_pt = PPrCall(observ_pt, mysege, elt_DD, elas); //elt_DD are supposed to be local
 
                   stress_out(j, 0) += stress_at_pt[0]; // sxx
