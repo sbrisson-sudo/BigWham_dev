@@ -1396,4 +1396,76 @@ namespace bie {
         return A_rotated;
     }
 
+    il::Array<double> point_stress_3DT0(
+            il::Array<double> &observ_pt,
+            FaceData &elem_data_s, // source element
+            il::Array<double> &dd,
+            ElasticProperties const &elas_ // elastic properties
+    )
+    {
+        /*
+         * It returns the stress components:
+         * S11, S22, S33, S12, S13, S23
+         * expressed in the global reference system
+         */
+        double G = elas_.getG(), nu = elas_.getNu();
+
+        // get coordinates vertices of triangular source element
+        il::Array2D<double> el_vertices_s;
+        el_vertices_s = elem_data_s.getVertices();
+
+        // observation point coordinates from 1D array to 2D array
+        il::Array2D<double> x{1,3,0.};
+        for (int i = 0; i < 3; ++i) { x(0,i) = observ_pt[i];}
+
+        // get stress influence coefficients - in the local reference system of the source element
+        il::StaticArray2D<double, 3, 6> stress_influence;
+        stress_influence = StressesKernelT0(x,el_vertices_s,G,nu);
+        // Note:
+        // Stress is in the reference system of the source element
+        // index        ->    0    1    2    3    4    5
+        // DD1 (shear)  -> | s11, s22, s33, s12, s13, s23  |
+        // DD2 (shear)  -> | s11, s22, s33, s12, s13, s23  |
+        // DD3 (normal) -> | s11, s22, s33, s12, s13, s23  |
+
+        // compute the stress tensor at the observation point in the local reference system of the source element
+        il::Array2D<double> stress_tensor_local{3,3,0.};
+        // S11
+        stress_tensor_local(0,0) = stress_influence(0,0) * dd[0] + stress_influence(1,0) * dd[1] + stress_influence(2,0) * dd[2];
+        // s12
+        stress_tensor_local(0,1) = stress_influence(0,3) * dd[0] + stress_influence(1,3) * dd[1] + stress_influence(2,3) * dd[2];
+        // s13
+        stress_tensor_local(0,2) = stress_influence(0,4) * dd[0] + stress_influence(1,4) * dd[1] + stress_influence(2,4) * dd[2];
+        // s21 = s12
+        stress_tensor_local(1,0) = stress_tensor_local(0,1);
+        // s22
+        stress_tensor_local(1,1) = stress_influence(0,1) * dd[0] + stress_influence(1,1) * dd[1] + stress_influence(2,1) * dd[2];
+        // s23
+        stress_tensor_local(1,2) = stress_influence(0,5) * dd[0] + stress_influence(1,5) * dd[1] + stress_influence(2,5) * dd[2] ;
+        // s31 = s13
+        stress_tensor_local(2,0) = stress_tensor_local(0,2);
+        // s32 = s23
+        stress_tensor_local(2,1) = stress_tensor_local(1,2);
+        // s33
+        stress_tensor_local(2,2) = stress_influence(0,2) * dd[0] + stress_influence(1,2) * dd[1] + stress_influence(2,2) * dd[2] ;
+
+        // rotation matrix from local to global
+        il::Array2D<double> R_source = elem_data_s.rotationMatrix(false); // false: R(l->g)
+        il::Array2D<double> R_source_transposed = elem_data_s.rotationMatrix(true); // true: R(g->l)
+
+//        il::Array2D<double> stress_tensor_global = il::dot(R_source_transposed, il::dot(stress_tensor_local, R_source));
+        il::Array2D<double> stress_tensor_global = il::dot(R_source, il::dot(stress_tensor_local, R_source_transposed));
+        // TODO: double check in mma
+
+        il::Array<double> stress_at_point{6,0.};
+        stress_at_point[0] = stress_tensor_global(0,0) ; // s11
+        stress_at_point[1] = stress_tensor_global(1,1) ; // s22
+        stress_at_point[2] = stress_tensor_global(2,2) ; // s33
+        stress_at_point[3] = stress_tensor_global(0,1) ; // s12
+        stress_at_point[4] = stress_tensor_global(0,2) ; // s13
+        stress_at_point[5] = stress_tensor_global(1,2) ; // s23
+
+        return stress_at_point;
+    }
+
 }

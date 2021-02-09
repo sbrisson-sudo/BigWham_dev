@@ -44,6 +44,14 @@ namespace bie{
     il::Array2D<double> change_local_global(const il::Array2D<double>& A, il::int_t local_global,
                                             const il::Array2D<double>& R_source, const il::Array2D<double>& R_receiver);
 
+    // compute the stress tensor in the global reference system for a given source element and dd vector
+    il::Array<double> point_stress_3DT0(
+            il::Array<double> &observ_pt,
+            FaceData &elem_data_s, // source element
+            il::Array<double> &dd,
+            ElasticProperties const &elas_ // elastic properties
+    );
+
     // generic integrals
 
     // By order of appearance in stress influence coefficients due to DD1
