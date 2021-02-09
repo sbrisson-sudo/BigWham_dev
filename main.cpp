@@ -708,14 +708,14 @@ int test3DT0() {
 
     std::cout << "--------------- test3DT0 ---------------------\n";
 
-    il::StaticArray<double, 3> x;
+    il::Array2D<double> x{1,3,0.};
 //    x[0] = 1.0;
 //    x[1] = 0.0;
 //    x[2] = 0.3;
-    x[0] = 0.3;
-    x[1] = 0.3;
-    x[2] = 0.7;
-    il::StaticArray2D<double, 3, 3> xv;
+    x(0,0) = 0.3;
+    x(0,1) = 0.3;
+    x(0,2) = 0.7;
+    il::Array2D<double> xv{3,3,0.};
     xv(0,0) = 0.0;
     xv(0,1) = 0.0;
     xv(0,2) = 0.0;
@@ -738,7 +738,7 @@ int test3DT0() {
     for (il::int_t i = 0; i < 3; i++) {
         y31[i] = y3[i] - y1[i];
         y21[i] = y2[i] - y1[i];
-        y1x[i] = y1[i] - x[i];
+        y1x[i] = y1[i] - x(0,i);
     }
 
     // local reference system (e1,e2,e3)
@@ -1617,11 +1617,11 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     // compute dd at all nodes ( = collocation points for T0)
 
     // choose the direction to be tested
-    int direction = 2;
+    int direction = 1;
 
     double load = 1.0;
     double R = 1.0;
-    il::Array<double> dd_analytical{3*nodes_coor.size(0)};
+    il::Array<double> dd_analytical{3*nodes_coor.size(0),0.0};
 
     switch (direction) {
         case 1: {
@@ -1630,8 +1630,6 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
             for (int i = 0; i < nodes_coor.size(0); i++){
                 dd_analytical[3*i] = ( (8.0*(lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
                                        * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
-                dd_analytical[3*i+1] = 0.0;
-                dd_analytical[3*i+2] = 0.0;
             }
             break;
         }
@@ -1639,23 +1637,50 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
             // For 2 (shear)
             double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
             for (int i = 0; i < nodes_coor.size(0); i++){
-                dd_analytical[3*i] = 0.0;
                 dd_analytical[3*i+1] = ( (8.0*(lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
                                        * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
-                dd_analytical[3*i+2] = 0.0;
             }
             break;
         }
         case 3: {
             // For 3 (normal)
             for (int i = 0; i < nodes_coor.size(0); i++){
-                dd_analytical[3*i] = 0.0;
-                dd_analytical[3*i+1] = 0.0;
                 dd_analytical[3*i+2] = ( (8.0*load)/( il::pi * (young/(1.0 - pow(nu,2.0))) ) )
                                        * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
             }
         }
     }
+
+    // repeating
+//    direction = 2;
+//    load = 0.5;
+//    switch (direction) {
+//        case 1: {
+//            // For 1 (shear)
+//            double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
+//            for (int i = 0; i < nodes_coor.size(0); i++){
+//                dd_analytical[3*i] = ( (8.0*(lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+//                                     * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+//            }
+//            break;
+//        }
+//        case 2: {
+//            // For 2 (shear)
+//            double lame2 = (young*nu)/((1.0+nu)*(1.0-2.0*nu));
+//            for (int i = 0; i < nodes_coor.size(0); i++){
+//                dd_analytical[3*i+1] = ( (8.0*(lame2+2.0*G)*load)/(il::pi*G*(3.0*lame2+4.0*G)) )
+//                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+//            }
+//            break;
+//        }
+//        case 3: {
+//            // For 3 (normal)
+//            for (int i = 0; i < nodes_coor.size(0); i++){
+//                dd_analytical[3*i+2] = ( (8.0*load)/( il::pi * (young/(1.0 - pow(nu,2.0))) ) )
+//                                       * sqrt(abs( pow(R,2.0) - pow(radius[i],2.0) ));
+//            }
+//        }
+//    }
 
     std::cout << "analytical dd ... " << "\n";
     for (int i = 0; i < 9; i++){
@@ -1697,6 +1722,20 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     std::cout << "average_traction =  " << average_traction << "\n";
     std::cout << "numer of nan's =  " << count_nan << "\n";
 
+    std::cout << "Testing compute stress 3D function" << "\n";
+
+    std::vector<double> obsPts{0.0,0.0,1.0}; //+2.22045e-16
+
+    std::vector<double> stress_tensor = test.computeStresses(dd_analytical_std, obsPts, 1, properties, nodes_flat,
+            conn_flat, true);
+
+    std::cout << "s11 = " << stress_tensor[0] << "\n";
+    std::cout << "s22 = " << stress_tensor[1] << "\n";
+    std::cout << "s33 = " << stress_tensor[2] << "\n";
+    std::cout << "s12 = " << stress_tensor[3] << "\n";
+    std::cout << "s13 = " << stress_tensor[4] << "\n";
+    std::cout << "s23 = " << stress_tensor[5] << "\n";
+
     std::cout << "-------------- End of 3DT0 - Penny-shaped crack test ------------- " << "\n";
 
     return  0;
@@ -1705,7 +1744,7 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 
 int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_file){
 
-    std::cout << "-------------- test3DT0 Penny-Shaped Crack ---------------------\n";
+    std::cout << "-------------- test3DT6 Penny-Shaped Crack ---------------------\n";
 
     il::Array2D<double> nodes = read_coord_CSV(vertices_file);
     il::Array2D<il::int_t> conn = read_conn_CSV(connectivity_file);
