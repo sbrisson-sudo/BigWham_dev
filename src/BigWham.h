@@ -296,7 +296,7 @@ class Bigwhamio
                             std::cout << "Kernel Isotropic Elasticity 3D T0 (quadratic) triangle \n";
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
                             const bie::ElasticHMatrix3DT0<double> M{
-                                      collocationPoints_, permutation_, mesh3d, elas, 1}; // local_global = 0 if local-local, 1 if global-global
+                                      collocationPoints_, permutation_, mesh3d, elas, 0}; // local_global = 0 if local-local, 1 if global-global
                             h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
                           }
@@ -603,7 +603,7 @@ class Bigwhamio
 
           int getNodesPerElem()
           {        int nnodes_elts =0;
-                 if (kernel_=="3DT6") {nnodes_elts = 3; }
+                 if (kernel_=="3DT6" || kernel_ == "3DT0") {nnodes_elts = 3; }
                  else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction") {nnodes_elts = 4; }
                  else if (kernel_ == "2DP1") {nnodes_elts = 2;}
                  else if (kernel_ == "S3DP0") {nnodes_elts = 3;}
@@ -614,6 +614,7 @@ class Bigwhamio
           int getInterpOrder()
           {     int p =1000;
                 if (kernel_=="3DT6") {p = 2;}
+                else if (kernel_ == "3DT0") {p = 0;}
                 else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0_traction") {p = 0;}
                 else if (kernel_ == "2DP1") {p = 1;}
                 else if (kernel_ == "S3DP0") {p = 0;}
@@ -652,13 +653,13 @@ class Bigwhamio
           }
 
           //---------------------------------------------------------------------------
-          std::vector<double> computeStresses(std::vector<double>& solution,
-                                            std::vector<double>& obsPts,
-                                            int npts,
+          std::vector<double> computeStresses(const std::vector<double>& solution,
+                                            const std::vector<double>& obsPts,
+                                            const int npts, // do we really need it? we know dimension + size of inputs
                                             const std::vector<double>& properties,
                                             const std::vector<double>& coor,
                                             const std::vector<int64_t>& conn,
-                                            bool are_dd_global) {
+                                            const bool are_dd_global) {
 
                  /* BE CAREFUL 2D CASES NEVER TESTED! */
 
@@ -673,10 +674,11 @@ class Bigwhamio
             //          - properties[0] = YoungModulus
             //          - properties[1] = PoissonRatio
             //          - properties[2] = fracture height (mandatory only for "S3DP0" kernel)
-            //          "coor" are the coordinates of the nodes of the mesh
-            //          "conn" is the connectivity matrix node to elements of the mesh
+            //          "coor" are the coordinates of the vertices of the mesh
+            //          "conn" is the connectivity matrix vertices to elements of the mesh
             // OUTPUT:  a flattened list containing the stress at each required point
 
+            std::cout <<" Computing stress tensor ...\n";
 
             IL_EXPECT_FAST(this->isBuilt_);
             // note solution MUST be of length = number of dofs !
@@ -718,7 +720,7 @@ class Bigwhamio
                 }
                 case 3: {
                     /*
-                        implemented only for constant DD over a rectangular element
+                        not implemented yet for 3DT6
                     */
                     il::int_t index = 0;
                     for (il::int_t i = 0; i < npts; i++) {
@@ -732,6 +734,9 @@ class Bigwhamio
                         bie::Mesh3D mesh3d(Coor, Conn, p);
                         std::cout << "\n WARNING: not implemented !!\n";
                         il::abort();
+                    } else if (kernel_ == "3DT0") {
+                        bie::Mesh3D mesh3d(Coor, Conn, p, false);
+                        stress = bie::computeStresses3D(pts, mesh3d, elas, solu, bie::point_stress_3DT0, are_dd_global);
                     } else if (kernel_ == "3DR0_traction") {
                         bie::Mesh3D mesh3d(Coor, Conn, p, false);
                         stress = bie::computeStresses3D(pts, mesh3d, elas, solu, bie::point_stress_3DR0, are_dd_global);
