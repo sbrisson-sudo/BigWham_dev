@@ -276,7 +276,7 @@ class Bigwhamio
                             std::cout << "Kernel Isotropic ELasticity 3D T6 (quadratic) triangle \n";
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
                             const bie::ElasticHMatrix3DT6<double> M{
-                                collocationPoints_, permutation_, mesh3d, elas, 1, 1};
+                                collocationPoints_, permutation_, mesh3d, elas, 0, 0};
                             h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
                             std::cout << "coll points dim "<< collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
                           }
