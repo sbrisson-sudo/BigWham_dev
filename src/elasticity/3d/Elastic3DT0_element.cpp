@@ -902,7 +902,6 @@ namespace bie {
         //   Displacement = 3 x 3 matrix with the displacement influence coefficients arranged as:
         //   U1, U2, U3 -> for rows
         //   DD1 (shear), DD2 (shear), DD3 (normal) -> for columns
-        // TODO: check this is ok, Carlo used transposed wrt stresses (?)
 
         double eps_tol = 2.22045e-16; // parameter used for "if conditions" involving inequalities due to numerical precision
 
@@ -1286,7 +1285,6 @@ namespace bie {
         il::StaticArray2D<double, 3, 3> Displacement; // output
 
         // Displacement row is dof (DDx,DDy,DDx), columns are Ux,Uy,Uz in the local reference system
-        // TODO: check if this is ok, Carlo's comment above is not what's done
 
         // displacement components due to the unit displacement discontinuity DD1 (shear)
         Displacement(0, 0) = prefactor * ( 3.0 * I5_Xi_Xi_Aux * eta - 2.0 * theta * (-1.0 + nu) );
@@ -1451,11 +1449,11 @@ namespace bie {
 
         // rotation matrix from local to global
         il::Array2D<double> R_source = elem_data_s.rotationMatrix(false); // false: R(l->g)
+        // transpose of rotation matrix, or from global to local
         il::Array2D<double> R_source_transposed = elem_data_s.rotationMatrix(true); // true: R(g->l)
 
 //        il::Array2D<double> stress_tensor_global = il::dot(R_source_transposed, il::dot(stress_tensor_local, R_source));
         il::Array2D<double> stress_tensor_global = il::dot(R_source, il::dot(stress_tensor_local, R_source_transposed));
-        // TODO: double check in mma
 
         il::Array<double> stress_at_point{6,0.};
         stress_at_point[0] = stress_tensor_global(0,0) ; // s11

@@ -361,6 +361,7 @@ namespace bie {
             case 0: {
                 if (this->NoV_ == 3){ // if 3DT0 kernel, then we "perturbate numerically' the collocation point
                     // coordinates to get rid of the singularity related to the projection of the triangle edges
+                    // TODO: compute the limits and add them in the kernel implementation
 
                     // loop over coordinates needed because collocation_points is Array2D and xc_ is Array1D
                     for (il::int_t i = 0; i < 3; i++) {
@@ -370,7 +371,7 @@ namespace bie {
 //                    cps(0, 1) = this->xc_[1] + 2.22045e-16; // perturbation by machine epsilon
 //                    cps(0, 2) = this->xc_[2] + 2.22045e-16; // perturbation by machine epsilon
                 }
-                else{ // else is 3DR0, no perturbation
+                else{ // else is 3DR0 or any other BE of zero interpolation order, thus no perturbation
 
                     // loop over coordinates needed because collocation_points is Array2D and xc_ is Array1D
                     for (il::int_t i = 0; i < 3; i++) {
