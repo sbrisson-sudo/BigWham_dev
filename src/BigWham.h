@@ -230,25 +230,14 @@ class Bigwhamio
                             }
                           }
 
-                          int min = 1000 ;
                           index = 0;
                           for (il::int_t i = 0; i < Conn.size(0); i++) {
                             for (il::int_t j = 0; j < Conn.size(1); j++) {
                               Conn(i, j) = conn[index];
-//                              std::cout << "min "<< min << " and  "<< conn[index] << " is:  ";
-                                min = MIN(min,conn[index]);
-//                              std::cout << min << "\n";
-
                               index++;
                             }
                           }
 
-                          if (!(min == 0)) {
-                              std::cout << "\n"<< "\n"<< "\n";
-                              std::cout << "ERROR: the connectivity is not starting from 0"<< "\n";
-                              std::cout << "it starts fromL: "<< min << "\n";
-                              il::abort();
-                          }
                           bie::Mesh3D mesh3d(Coor, Conn, p);
                           std::cout << "... mesh done"<< "\n";
                           std::cout << " Number elts " << mesh3d.numberOfElts() <<"\n";

@@ -8,6 +8,7 @@
 //
 
 #include <iostream>
+#include <cmath>
 #include <il/Array2D.h>
 #include <src/core/FaceData.cpp>
 #include <src/core/FaceData.h>
@@ -1712,7 +1713,7 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     int count_nan = 0;
 
     for (int i = 0; i < nodes_coor.size(0); i++){
-        if (isnan(traction_numerical[3*i+(direction-1)]) == 0){
+        if (std::isnan(traction_numerical[3*i+(direction-1)]) == 0){
             sum += traction_numerical[3*i+(direction-1)];
         } else {
             count_nan++;
@@ -1899,7 +1900,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 //    int count_nan = 0;
 //
 //    for (int i = 0; i < nodes_coor.size(0); i++){
-//        if (isnan(traction_numerical[3*i+2]) == 0){
+//        if (std::isnan(traction_numerical[3*i+2]) == 0){
 //            sum += traction_numerical[3*i+2];
 //        } else {
 //            count_nan++;
@@ -2047,7 +2048,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     int count_nan = 0;
 
     for (int i = 0; i < nodes_coor.size(0); i++){
-        if (isnan(traction_numerical[3*i+2]) == 0){
+        if (std::isnan(traction_numerical[3*i+2]) == 0){
             sum += traction_numerical[3*i+2];
         } else {
             count_nan++;
@@ -2099,17 +2100,18 @@ int main() {
 //  testFullMat();
 //  testHdot();
 
-//  test3DT6Mesh();
-//    std::string vertices_file = "/home/alexis/bigwham/vertices5000.csv";
-//    std::string connectivity_file = "/home/alexis/bigwham/connectivity5000.csv";
-//  test3DT6PennyShaped(vertices_file,connectivity_file);
+//// tests for 3DT6 not updated since the change of interface
+//test3DT6Mesh();
+//std::string vertices_file = "/home/alexis/bigwham/vertices5000.csv";
+//std::string connectivity_file = "/home/alexis/bigwham/connectivity5000.csv";
+//test3DT6PennyShaped(vertices_file,connectivity_file);
+//test3DT6_PennyShaped(vertices_file,connectivity_file);
 
 test3DT0();
-// note that here you need to pass the csv files for the mesh (vertices and connectivity)
+//// note that here you need to pass the csv files for the mesh (vertices and connectivity)
 //std::string vertices_file = "/Users/alexis/BigWhamLink/vertices.csv";
 //std::string connectivity_file = "/Users/alexis/BigWhamLink/conn.csv";
 //test3DT0_PennyShaped(vertices_file,connectivity_file);
-//test3DT6_PennyShaped(vertices_file,connectivity_file);
 
   std::cout << "\n End of BigWham - exe " << "\n";
 
