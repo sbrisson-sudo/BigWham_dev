@@ -16,24 +16,26 @@
 
 namespace bie{
 il::StaticArray2D<double, 3, 6> StressesKernelR0(
-    double& x, double& y, double& z, double& a, double& b, double& G,
+    double& xx, double& yy, double& zz, double& a, double& b, double& G,
     double& nu) ;
 
 bool is_stress_singular_at_given_location(double&x, double& y, double& z, double& a, double& b, bool verbose = true) ;
 
 
-il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
+il::Array2D<double> traction_influence_3DR0(
             bie::FaceData &elem_data_s, // source element
             bie::FaceData &elem_data_r, // receiver element
             bie::ElasticProperties const &elas_, // elastic properties
             il::int_t I_want_global_DD,
             il::int_t I_want_global_traction) ;
 
+
 il::Array2D<double> DisplacementKernelR0(
-        double& x, double& y, double& z, double& a, double& b,
+        double& xx, double& yy, double& zz, double& a, double& b,
         double& nu) ;
 
-il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence(
+
+il::Array2D<double> displacement_influence_3DR0(
             bie::FaceData &elem_data_s, // source element
             bie::FaceData &elem_data_r, // receiver element
             bie::ElasticProperties const &elas_, // elastic properties

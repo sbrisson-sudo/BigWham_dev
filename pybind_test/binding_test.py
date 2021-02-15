@@ -41,7 +41,7 @@ displacementHMAT.set(coor,
                  eps_aca)
 
 
-tractionKernel = "3DR0_traction"
+tractionKernel = "3DR0"
 tractionHMAT = Bigwhamio()
 # set the object
 tractionHMAT.set(coor,
@@ -70,7 +70,7 @@ mysol = [1.,1.,1.,1.,1.,1.]
 obsPoints = [-10.,-10.,0., #point 1
              20.,-20.,0.]  #point 2
 
-stresses = tractionHMAT.computeStresses(mysol, obsPoints, 2, properties, coor, conn)
+stresses = tractionHMAT.computeStresses(mysol, obsPoints, 2, properties, coor, conn, True)
 print("point 1 ")
 print(stresses[1:6])
 print("point 2 ")
@@ -99,7 +99,7 @@ print(mystress[6:12])
 print(mystress[12:18])
 print(mystress)
 
-mydisplacements = displacementHMAT.computeDisplacements(mysol, obsPoints, 2, properties, coor, conn)
+mydisplacements = displacementHMAT.computeDisplacements(mysol, obsPoints, 2, properties, coor, conn, True)
 print("point 1 ")
 print(mydisplacements[0:3])
 print("point 2 ")

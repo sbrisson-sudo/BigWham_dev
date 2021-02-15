@@ -12,7 +12,7 @@
 #include <il/StaticArray2D.h>
 #include <il/linearAlgebra.h>
 
-#include <elasticity/3d/tensor_utilities.h>
+#include <elasticity/3d/tensor_utilities_3DT6.h>
 
 namespace bie {
 // Vector and triple tensor multiplication

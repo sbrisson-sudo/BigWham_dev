@@ -15,7 +15,7 @@
 #include <complex>
 //#include <il/math.h>
 #include <elasticity/3d/constants.h>
-#include <elasticity/3d/tensor_utilities.h>
+#include <elasticity/3d/tensor_utilities_3DT6.h>
 #include <il/Array2D.h>
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
@@ -25,7 +25,7 @@
 #include <src/core/element_utilities.h>
 
 #include <elasticity/3d/Elastic3DT6_element.h>
-#include <elasticity/3d/h_potential.h>
+#include <elasticity/3d/h_potential_3DT6.h>
 
 namespace bie {
 

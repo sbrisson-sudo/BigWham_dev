@@ -20,7 +20,7 @@
 // combined as S11+S22, S11-S22+2*I*S12, S13+I*S23, S33
 
 #include <elasticity/3d/constants.h>
-#include <elasticity/3d/h_potential.h>
+#include <elasticity/3d/h_potential_3DT6.h>
 #include <il/StaticArray.h>
 #include <il/StaticArray3D.h>
 #include <il/StaticArray4D.h>

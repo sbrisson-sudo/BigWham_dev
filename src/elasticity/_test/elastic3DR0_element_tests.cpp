@@ -294,7 +294,7 @@ TEST(R0, singular_stress){
     ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.999999999999999999999, y = -1.999999999999999999999,z = 0., a = 1., b = 2., false));
 };
 
-TEST(R0, displacement_expressions) {
+TEST(R0, displ_expr) {
     il::Array2D<double> Displacement;
     il::Array2D<double> ReferenceDisplacement{3, 3, 0.};
     double x, y, z, a, b, nu;
@@ -387,7 +387,7 @@ TEST(R0, displacement_expressions) {
 
 }
 
-TEST(R0, displacement_expressions_on_the_elem_plane) {
+TEST(R0, displ_expr_on_the_elem_plane) {
     il::Array2D<double> Displacement;
     il::Array2D<double> ReferenceDisplacement{3, 3, 0.};
     double x, y, z, a, b, nu;

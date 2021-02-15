@@ -149,7 +149,7 @@ namespace bie {
 
                 switch (I_want_DD_to_traction_kernel) {
                     case 0: { //false
-                        stnl = bie::NodeDDtriplet_to_CPdisplacement_influence(elem_data_s, // source element
+                        stnl = bie::displacement_influence_3DR0(elem_data_s, // source element
                                                                             elem_data_r, // receiver element
                                                                             elas_, // elastic properties
                                                                             I_want_global_DD ,
@@ -157,7 +157,7 @@ namespace bie {
                         break;
                     }
                     case 1: { //true
-                        stnl = bie::NodeDDtriplet_to_CPtraction_influence(elem_data_s,
+                        stnl = bie::traction_influence_3DR0(elem_data_s,
                                                                      elem_data_r,
                                                                      elas_,
                                                                      I_want_global_DD,
