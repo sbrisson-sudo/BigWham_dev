@@ -346,12 +346,12 @@ TEST(R0, benchmark3_displ) {
     std::vector<double> stressATpoints = tractionHMAT.computeStresses(dd_solution_l, obsPoints, 2, properties ,mymesh.coor, mymesh.conn, false);
 
     // check that, if properly done, prescribing global DD or local DDs does not matter
-    ASSERT_NEAR(stressATpoints_0[0], stressATpoints[0], 2.e-5);
-    ASSERT_NEAR(stressATpoints_0[1], stressATpoints[1], 2.e-5);
-    ASSERT_NEAR(stressATpoints_0[2], stressATpoints[2], 2.e-5);
-    ASSERT_NEAR(stressATpoints_0[3], stressATpoints[3], 2.e-5);
-    ASSERT_NEAR(stressATpoints_0[4], stressATpoints[4], 2.e-5);
-    ASSERT_NEAR(stressATpoints_0[5], stressATpoints[5], 2.e-5);
+    ASSERT_NEAR(stressATpoints_0[0], stressATpoints[0], 4.e-4);
+    ASSERT_NEAR(stressATpoints_0[1], stressATpoints[1], 4.e-4);
+    ASSERT_NEAR(stressATpoints_0[2], stressATpoints[2], 4.e-4);
+    ASSERT_NEAR(stressATpoints_0[3], stressATpoints[3], 4.e-4);
+    ASSERT_NEAR(stressATpoints_0[4], stressATpoints[4], 4.e-4);
+    ASSERT_NEAR(stressATpoints_0[5], stressATpoints[5], 4.e-4);
 
 
     // solution at point {0,0,0}:
