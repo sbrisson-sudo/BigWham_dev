@@ -234,6 +234,9 @@ set(SOURCE_FILES
         src/elasticity/3d/h_potential_3DT6.cpp
         src/elasticity/3d/tensor_utilities_3DT6.cpp
         src/elasticity/3d/ElasticHMatrix3DT6.h
+        #  - T0 element
+        src/elasticity/3d/Elastic3DT0_element.cpp
+        src/elasticity/3d/ElasticHMatrix3DT0.h
         #  - R0 element
 #        src/elasticity/3d/Elastic3DR0_element.h
         src/elasticity/3d/Elastic3DR0_element.cpp
