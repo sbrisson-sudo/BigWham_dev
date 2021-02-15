@@ -13,7 +13,7 @@ project(BigWham_exe VERSION 1.0
         DESCRIPTION "This is the executable of BigWham"
         LANGUAGES CXX)
 
-project(pyparty VERSION 1.0
+project(pypart VERSION 1.0
         DESCRIPTION "This will create a shared library to be imported and used in Python"
         LANGUAGES CXX)
 
@@ -26,6 +26,10 @@ set(CMAKE_CXX_STANDARD 11)
 #####################################
 # set options: False = 0, True = 1  #
 #####################################
+
+set(BUILD_PYTHON_BINDINGS 0)
+set(BUILD_GOOGLE_TESTS 0)
+
 set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
@@ -227,8 +231,8 @@ set(SOURCE_FILES
         #  - T6 element
         src/core/element_utilities.cpp
         src/elasticity/3d/Elastic3DT6_element.cpp
-        src/elasticity/3d/h_potential.cpp
-        src/elasticity/3d/tensor_utilities.cpp
+        src/elasticity/3d/h_potential_3DT6.cpp
+        src/elasticity/3d/tensor_utilities_3DT6.cpp
         src/elasticity/3d/ElasticHMatrix3DT6.h
         #  - R0 element
 #        src/elasticity/3d/Elastic3DR0_element.h
@@ -276,64 +280,67 @@ endif()
 ################################################################
 # Pybind
 ################################################################
-add_library(party SHARED  ${SOURCE_FILES})
+if(BUILD_PYTHON_BINDINGS)
+    add_library(part SHARED  ${SOURCE_FILES})
 
-target_link_libraries(party  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
-if(IL_MKL)
-    if(APPLE)
-        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-    elseif(UNIX)
-        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-        # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
-    elseif(WIN32)
-        target_compile_definitions(party PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-        target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
+    target_link_libraries(part  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
+    if(IL_MKL)
+        if(APPLE)
+            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+            target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+        elseif(UNIX)
+            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+            target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+            # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
+        elseif(WIN32)
+            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+            target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
+        endif()
+    elseif(IL_OPENBLAS)
+        target_compile_definitions(part PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
+        target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR})
     endif()
-elseif(IL_OPENBLAS)
-    target_compile_definitions(party PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
-    target_include_directories(party PRIVATE ${CMAKE_SOURCE_DIR})
+
+    # use this
+    add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11-master)
+    include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
+    # or use
+    # find_package(pybind11 REQUIRED)
+    add_library(pypart MODULE ${PROJECT_SOURCE_DIR}/src/pypart.cpp)
+    target_link_libraries(pypart PRIVATE pybind11::module part)
+
+    # this command is needed to copy the library pypart to a specific location
+    add_custom_command(TARGET pypart POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PROJECT_SOURCE_DIR}/pybind_test/pypart.so
+            COMMENT "Created  ${PROJECT_SOURCE_DIR}/pybind_test/pypart.so")
 endif()
-
-# use this
-add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11-master)
-include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
-# or use
-# find_package(pybind11 REQUIRED)
-add_library(pyparty MODULE ${PROJECT_SOURCE_DIR}/src/pyparty.cpp)
-target_link_libraries(pyparty PRIVATE pybind11::module party)
-
-# this command is needed to copy the library pyparty to a specific location
-add_custom_command(TARGET pyparty POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pyparty> ${PROJECT_SOURCE_DIR}/pybind_test/pyparty.so
-        COMMENT "Created  ${PROJECT_SOURCE_DIR}/pybind_test/pyparty.so")
-
 ################################################################################
 # For Unit Tests
 ################################################################################
-set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
+if(BUILD_GOOGLE_TESTS)
+    set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
-set(TESTED_SOURCE_FILES ${SOURCE_FILES})
-set(UNIT_TEST_FILES
-        il/gtest/src/gtest-all.cc
-        #src/elasticity/_test/elasticity_tests.cpp
-        src/core/_test/FaceData_tests.cpp
-        src/elasticity/_test/elastic3DR0_element_tests.cpp
-        src/_test/elastic3DR0_element_benchmark.cpp
-        src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-        )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
+    set(TESTED_SOURCE_FILES ${SOURCE_FILES})
+    set(UNIT_TEST_FILES
+            il/gtest/src/gtest-all.cc
+            #src/elasticity/_test/elasticity_tests.cpp
+            src/core/_test/FaceData_tests.cpp
+            src/elasticity/_test/elastic3DR0_element_tests.cpp
+            src/_test/elastic3DR0_element_benchmark.cpp
+            src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
+            )
 
 
 
-add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
+    add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 
-target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest ${CMAKE_SOURCE_DIR}/il ${CMAKE_SOURCE_DIR}/Hmat-lib)
-target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
+    target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest ${CMAKE_SOURCE_DIR}/il ${CMAKE_SOURCE_DIR}/Hmat-lib)
+    target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
 
-# For unit tests: The precondition of our fonctions are checked with assert
-# macros that terminate the program in debug mode. In order to test those macros
-# in our unit tests, the flag IL_UNIT_TEST turns them into exceptions that can
-# be caught and checked.
-target_compile_options(BigWhamElastUnitTest PRIVATE "-DIL_UNIT_TEST")
+    # For unit tests: The precondition of our fonctions are checked with assert
+    # macros that terminate the program in debug mode. In order to test those macros
+    # in our unit tests, the flag IL_UNIT_TEST turns them into exceptions that can
+    # be caught and checked.
+    target_compile_options(BigWhamElastUnitTest PRIVATE "-DIL_UNIT_TEST")
+endif()

@@ -183,29 +183,6 @@ namespace bie{
         return c1 * (c2 * c3 + c4 );
     }
 
-    std::vector<double> symmetry_(double& x, double& y, double& z){
-        std::vector<double> coord = {0.,0.,0.};
-        if (z < 0.){coord[0] = (-1. * x); coord[1] = (-1. * y); coord[2] = (-1. * z);}
-        else {coord[0] = x; coord[1] = y; coord[2] = z; }
-
-        return coord;
-    }
-
-    typedef double (*vFunctionCall_switch_z)(double &x_, double &y_, double &z_, double &a_, double&G_, double&nu_, double&pz_);
-
-    typedef double (*vFunctionCall_switch_xy)(double &x_, double &y_, double &z_, double &a_, double&G_, double&nu_, double&px_, double&py_);
-
-    double Func_call(double& x, double& y, double& z, double& a, double& G, double& nu, double& px, double& py, vFunctionCall_switch_xy Func) {
-        std::vector<double> coord = symmetry_(x, y, z);
-        return Func(coord[0], coord[1], coord[2], a, G, nu, px, py);
-    }
-
-    double Func_call(double& x, double& y, double& z, double& a, double& G, double& nu, double& pz, vFunctionCall_switch_z Func) {
-        std::vector<double> coord = symmetry_(x, y, z);
-        return Func(coord[0], coord[1], coord[2], a, G, nu, pz);
-    }
-    // ------------------------------------------------------------------------------------
-
 
     /*
      *
@@ -460,28 +437,43 @@ namespace bie{
 
     // normal
     double Ux_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, ux_nl_);
+        return ux_nl_(x, y, z, a, G, nu, pz);
     }
 
     double Uy_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, uy_nl_);
+        return uy_nl_(x, y, z, a, G, nu, pz);
     }
 
     double Uz_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, uz_nl_);
+        return uz_nl_(x, y, z, a, G, nu, pz);
     }
 
     // shear
     double Ux_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, ux_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = ux_sl_(x, y, abs_z, a, G, nu, px, py);
+        if (z<0){
+            value = - value;
+        }
+        return value;
     }
 
     double Uy_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, uy_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = uy_sl_(x, y, abs_z, a, G, nu, px, py);
+        if (z<0){
+            value = - value;
+        }
+        return value;
     }
 
     double Uz_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, uz_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = uz_sl_(x, y, abs_z, a, G, nu, px, py);
+        return value;
     }
 
     /*
@@ -494,51 +486,91 @@ namespace bie{
      */
 // Normal
     double Sig_xx_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, sig_xx_nl_);
+        return sig_xx_nl_(x, y, z, a, G, nu, pz);
     }
 
     double Sig_yy_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, sig_yy_nl_);
+        return sig_yy_nl_(x, y, z, a, G, nu, pz);
     }
 
     double Sig_zz_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, sig_zz_nl_);
+        return sig_zz_nl_(x, y, z, a, G, nu, pz);
     }
 
     double Sig_xy_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, sig_xy_nl_);
+        return sig_xy_nl_(x, y, z, a, G, nu, pz);
     }
 
     double Sig_zy_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, sig_zy_nl_);
+        double value;
+        value = sig_zy_nl_(x, y, z, a, G, nu, pz);
+        if (z<0 && !((x>0 && y>0) || (x>0 && y<0))){
+            value = - value;
+        }
+        return value;
     }
 
     double Sig_zx_nl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& pz){
-        return Func_call(x, y, z, a, G, nu, pz, sig_zx_nl_);
+        double value;
+        value = sig_zx_nl_(x, y, z, a, G, nu, pz);
+        if (z<0 && !((x>0 && y>0) || (x>0 && y<0))){
+            value = - value;
+        }
+        return value;
     }
 
 // Shear
     double Sig_xx_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, sig_xx_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = sig_xx_sl_(x, y, abs_z, a, G, nu, px, py);
+        if (z<0 && ((x>0 &&y>0)||(x>0 && y<0))){
+            value = - value;
+        }
+        return value;
     }
 
     double Sig_yy_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, sig_yy_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = sig_yy_sl_(x, y, abs_z, a, G, nu, px, py);
+        if (z<0 && ((x>0 &&y>0)||(x>0 && y<0))){
+            value = - value;
+        }
+        return value;
     }
 
     double Sig_zz_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, sig_zz_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = sig_zz_sl_(x, y, abs_z, a, G, nu, px, py);
+        if (z<0 && ((x>0 &&y>0)||(x>0 && y<0))){
+            value = - value;
+        }
+        return value;
     }
 
     double Sig_xy_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, sig_xy_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = sig_xy_sl_(x, y, abs_z, a, G, nu, px, py);
+        if (z<0 && ((x>0 &&y>0)||(x>0 && y<0))){
+            value = - value;
+        }
+        return value;
     }
 
     double Sig_zy_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, sig_zy_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = sig_zy_sl_(x, y, abs_z, a, G, nu, px, py);
+        return value;
     }
 
     double Sig_zx_sl_(double &x, double &y, double &z, double &a, double& G, double& nu, double& px, double& py){
-        return Func_call(x, y, z, a, G, nu, px, py, sig_zx_sl_);
+        double value, abs_z;
+        abs_z = abs(z);
+        value = sig_zx_sl_(x, y, abs_z, a, G, nu, px, py);
+        return value;
     }
 }

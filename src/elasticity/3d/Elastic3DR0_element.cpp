@@ -326,7 +326,7 @@ namespace bie{
         if (!is_stress_singular_at_given_location(x, y, z ,a, b))
         {
 
-            double Ce = G / (4 * il::pi * (1. - nu));
+            double Ce =  G / (4 * il::pi * (1. - nu));
             //  double sxx, sxy, sxz, syy, syz, szz;
             //
 
@@ -476,7 +476,7 @@ namespace bie{
 
         double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
 
-        double Ce = -1 / (8 * il::pi * (1. - nu));
+        double Ce = (-1 / (8 * il::pi * (1. - nu)));
 
         il::Array2D<double> Displacement{3,3,0.};
 
@@ -551,7 +551,7 @@ namespace bie{
         il::Array2D<double> rotatedLinearApplication{3,3,0.};
 
         if (change_domain == 0 && change_codomain == 0)
-        {   // False - False
+        {   // False - False  <=> local source and local receiver
             // Explanation with regard to the problem at hand:
             //    R(global to local codomain)*R(from local to global domain)*(M_localDD_localTraction_source) = (M_globalDD_localTraction_receiver)
             //    R(global to local codomain)*R(from local to global domain)*(M_localDD_localTraction_source) = (M_globalDD_localDisplacements_receiver)
@@ -560,7 +560,7 @@ namespace bie{
             rotatedLinearApplication = il::dot(RglobalTOlocal_codomain,rotatedLinearApplication);
         }
         else if (change_domain == 0 && change_codomain == 1)
-        {   // False - True
+        {   // False - True  <=> local source and global receiver
             // Explanation with regard to the problem at hand:
             //    R(from local domain to global)*(M_localDD_localTraction) = (M_globalDD_localTraction)
             //    R(from local domain to global)*(M_localDD_localDisplacement) = (M_globalDD_localDisplacement)
@@ -569,7 +569,7 @@ namespace bie{
 
         }
         else if (change_domain == 1 && change_codomain == 1)
-        {   // True - True
+        {   // True - True  <=> global source and global receiver
             // Explanation with regard to the problem at hand:
             //    R(from local domain to global)*(M_localDD_localTraction)*R(from global to local domain) = (M_globalDD_globalTraction)
             //    R(from local domain to global)*(M_localDD_localDisplacement)*R(from global to local domain) = (M_globalDD_globalDisplacement)
@@ -578,7 +578,7 @@ namespace bie{
             rotatedLinearApplication = il::dot(RT,rotatedLinearApplication);
         }
         else if (change_domain == 1 && change_codomain == 0)
-        {   // True - False
+        {   // True - False  <=> global source and local receiver
             // Explanation with regard to the problem at hand:
             //    R(global to local codomain)*R(from local domain to global)*(M_localDD_localTraction)*R(from global to local domain) = (M_globalDD_localTraction)
             //    R(global to local codomain)*R(from local domain to global)*(M_localDD_localDisplacement)*R(from global to local domain) = (M_globalDD_localDisplacement)
@@ -619,7 +619,7 @@ namespace bie{
 
         return a_and_b ;}
 
-    il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
+    il::Array2D<double> traction_influence_3DR0(
         FaceData &elem_data_s, // source element
         FaceData &elem_data_r, // receiver element
         ElasticProperties const &elas_, // elastic properties
@@ -698,7 +698,7 @@ namespace bie{
         // directions 1, 2 or 3
     }
 
-    il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence(
+    il::Array2D<double> displacement_influence_3DR0(
             FaceData &elem_data_s, // source element
             FaceData &elem_data_r, // receiver element
             ElasticProperties const &elas_, // elastic properties

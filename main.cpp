@@ -660,7 +660,7 @@ int test3DR0() {
                          max_leaf_size, eta, eps_aca);
 
 
-    const std::string tractionKernel = "3DR0_traction";
+    const std::string tractionKernel = "3DR0";
     Bigwhamio tractionHMAT;
     tractionHMAT.set(coor,conn,tractionKernel,properties,
                      max_leaf_size, eta, eps_aca);
