@@ -1,7 +1,7 @@
 import numpy as np
-import pyparty
+import pypart
 
-from pyparty import Bigwhamio
+from pypart import Bigwhamio
 
 
 # Defining the variables:

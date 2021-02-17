@@ -151,7 +151,7 @@ void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       bie::FaceData elem_data_r(xv, 2); // 2 = interpolation order
 
       // call to the kernel
-      stnl = NodeDDtriplet_to_CPtraction_influence(
+      stnl = traction_influence_3DT6(
           elem_data_s, elem_data_r, is_l, ir_l, elas_, I_want_global_DD,
           I_want_global_traction);
 
