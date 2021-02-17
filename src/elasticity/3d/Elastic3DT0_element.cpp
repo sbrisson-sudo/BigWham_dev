@@ -14,7 +14,7 @@
 
 namespace bie {
 
-    il::Array2D<double> NodeDDtriplet_to_CPtraction_influence_3DT0(
+    il::Array2D<double> traction_influence_3DT0(
             bie::FaceData &elem_data_s, // source element
             bie::FaceData &elem_data_r, // receiver element
             bie::ElasticProperties const &elas_, // elastic properties
@@ -86,7 +86,7 @@ namespace bie {
         // | t3 due to D1   t3 due to D2  t3 due to D3 |
     }
 
-    il::Array2D<double> NodeDDtriplet_to_CPdisplacement_influence_3DT0(
+    il::Array2D<double> displacement_influence_3DT0(
             FaceData &elem_data_s, // source element
             FaceData &elem_data_r, // receiver element
             ElasticProperties const &elas_, // elastic properties

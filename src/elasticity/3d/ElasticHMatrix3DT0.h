@@ -136,7 +136,7 @@ namespace bie {
                 xv = mesh_.getVerticesElt(e_k0); // get vertices' coordinates of receiver element
                 bie::FaceData elem_data_r(xv, 0); // 0 = interpolation order
 
-                stnl = bie::NodeDDtriplet_to_CPtraction_influence_3DT0(elem_data_s, // source element
+                stnl = bie::traction_influence_3DT0(elem_data_s, // source element
                                                                            elem_data_r, // receiver element
                                                                            elas_, // elastic properties
                                                                            local_global); // 0 if local-local, 1 if global-global
