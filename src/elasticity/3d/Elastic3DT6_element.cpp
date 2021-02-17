@@ -350,7 +350,7 @@ namespace bie {
 
     ///////////////////////////////////////////////////////////////////////////
 
-il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
+il::Array2D<double> traction_influence_3DT6(
         bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
         il::int_t n_s,  // n_s is a node of the "source" element
         il::int_t  n_t,  // n_t is the collocation point of the "target" element

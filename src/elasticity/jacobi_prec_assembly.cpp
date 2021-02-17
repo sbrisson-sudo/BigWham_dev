@@ -101,7 +101,7 @@ il::Array2D<double> xv = i_meshtools.getVerticesElt(e_k1);
 bie::FaceData elem_data_s(xv, 2); // 2 = interpolation order
 
 // call to the kernel
-stnl = NodeDDtriplet_to_CPtraction_influence(elem_data_s, elem_data_s, is_l, is_l, elas, I_want_global_DD,I_want_global_traction);
+stnl = traction_influence_3DT6(elem_data_s, elem_data_s, is_l, is_l, elas, I_want_global_DD,I_want_global_traction);
 
 // stnl is a matrix 3x3 like that:
 // t_dir_x_node(ir_l)_dd1_on_node_(is_l)  t_dir_x_node(ir_l)_dd2_on_node_(is_l)  t_dir_x_node(ir_l)_dd3_on_node_(is_l)
