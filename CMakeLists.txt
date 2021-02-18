@@ -281,17 +281,19 @@ elseif(IL_OPENBLAS)
 endif()
 
 ################################################################
-# Pybind
+# Pybind --->use with PYTHON version >=3.7
 ################################################################
 if(BUILD_PYTHON_BINDINGS)
     add_library(part SHARED  ${SOURCE_FILES})
 
-    target_link_libraries(part  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
+
     if(IL_MKL)
         if(APPLE)
+            target_link_libraries(part  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
             target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         elseif(UNIX)
+            target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
             target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
             # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
@@ -321,6 +323,7 @@ endif()
 # For Unit Tests
 ################################################################################
 if(BUILD_GOOGLE_TESTS)
+
     set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
@@ -338,8 +341,25 @@ if(BUILD_GOOGLE_TESTS)
 
     add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 
-    target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest ${CMAKE_SOURCE_DIR}/il ${CMAKE_SOURCE_DIR}/Hmat-lib)
-    target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
+    target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest ${CMAKE_SOURCE_DIR}/il ${CMAKE_SOURCE_DIR}/Hmat-lib $ENV{MKLROOT}/include )
+
+
+    if(IL_MKL)
+        if(APPLE)
+            target_link_libraries(BigWhamElastUnitTest   ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
+            #target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
+        elseif(UNIX)
+            target_link_libraries(BigWhamElastUnitTest "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
+
+        elseif(WIN32)
+            target_compile_definitions(BigWhamElastUnitTest PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+            target_include_directories(BigWhamElastUnitTest PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
+        endif()
+    elseif(IL_OPENBLAS)
+        target_compile_definitions(BigWhamElastUnitTest PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
+        target_include_directories(BigWhamElastUnitTest PRIVATE ${CMAKE_SOURCE_DIR})
+    endif()
+
 
     # For unit tests: The precondition of our fonctions are checked with assert
     # macros that terminate the program in debug mode. In order to test those macros
