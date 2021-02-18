@@ -73,8 +73,8 @@ namespace bie {
 
         // searching for "degenerate" edges:
         // point x (collocation pt) projects onto an edge line or a vertex
-        bool IsDegen = abs(d[0]) < bie::h_tol || abs(d[1]) < bie::h_tol ||
-                       abs(d[2]) < bie::h_tol; // (d[0]*d[1]*d[2]==0);
+        bool IsDegen = il::abs(d[0]) < bie::h_tol || abs(d[1]) < bie::h_tol || // moved form abs to il::abs() CP2021
+                il::abs(d[2]) < bie::h_tol; // (d[0]*d[1]*d[2]==0); // moved form abs to il::abs() CP2021
         il::StaticArray2D<bool, 2, 3> is_90_ang{false};
 
         // calculating angles (phi, psi, chi)
@@ -118,7 +118,7 @@ namespace bie {
                                 //--> m=1 , n=2
                                 //--> m=2 , n=0
             std::complex<double> dm = d[m];
-            if (abs(dm) >= bie::h_tol && !is_90_ang(0, m) && !is_90_ang(1, m)) {
+            if (il::abs(dm) >= bie::h_tol && !is_90_ang(0, m) && !is_90_ang(1, m)) { // moved form abs to il::abs() CP2021
                 std::complex<double>
                 // exp(I * chi(0, m))
                         eixm = exp(std::complex<double>(0.0, chi(0, m))),
@@ -142,8 +142,8 @@ namespace bie {
                     // il::blas(1.0, s_incr_n, 1.0, il::io, s_ij_infl_mon);
                     // il::blas(-1.0, s_incr_m, 1.0, il::io, s_ij_infl_mon);
                 } else { // out-of-plane case
-                    double an = abs(tz[n] - dm),
-                            am = abs(tz[m] - dm);
+                    double an = il::abs(tz[n] - dm), // moved form abs to il::abs() CP2021
+                            am = il::abs(tz[m] - dm); // moved form abs to il::abs() CP2021
                     an = (chi(1, m) < 0) ? -an : an;
                     am = (chi(0, m) < 0) ? -am : am;
                     // constituing functions of the integrals
@@ -350,7 +350,7 @@ namespace bie {
 
     ///////////////////////////////////////////////////////////////////////////
 
-il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
+il::Array2D<double> traction_influence_3DT6(
         bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
         il::int_t n_s,  // n_s is a node of the "source" element
         il::int_t  n_t,  // n_t is the collocation point of the "target" element

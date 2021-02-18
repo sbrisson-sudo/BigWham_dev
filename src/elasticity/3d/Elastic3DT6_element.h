@@ -81,7 +81,7 @@ namespace bie {
 
 /// Function to assemble by Nodes - required for hmat
 // todo move to StaticArray
-il::Array2D<double> NodeDDtriplet_to_CPtraction_influence(
+il::Array2D<double> traction_influence_3DT6(
             bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
             il::int_t n_s,
             il::int_t  n_t, bie::ElasticProperties const &elas_,
