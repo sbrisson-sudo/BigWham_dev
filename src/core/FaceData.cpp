@@ -507,11 +507,11 @@ namespace bie {
         //   -x array with 3 components
         // output
         //   -location: 0,1,2
-
+        il::Array<double> y{3,0.};
         il::int_t index;
-        for (il::int_t i = 0; i < 3; i++) {x[i] = abs(x[i]);}
-        if (x[0] > x[1] ) {index = 0;} else {index = 1;}
-        if (x[index] > x[2] ) {} else {index = 2;}
+        for (il::int_t i = 0; i < 3; i++) {y[i] = il::abs(x[i]);}
+        if (y[0] > y[1] ) {index = 0;} else {index = 1;}
+        if (y[index] > y[2] ) {} else {index = 2;}
         return index;
     }
 }

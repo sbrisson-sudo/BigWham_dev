@@ -2091,7 +2091,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
-//  test3DR0();
+  test3DR0();
 
   //test2DP1();
 
@@ -2107,7 +2107,7 @@ int main() {
 //test3DT6PennyShaped(vertices_file,connectivity_file);
 //test3DT6_PennyShaped(vertices_file,connectivity_file);
 
-test3DT0();
+//test3DT0();
 //// note that here you need to pass the csv files for the mesh (vertices and connectivity)
 //std::string vertices_file = "/Users/alexis/BigWhamLink/vertices.csv";
 //std::string connectivity_file = "/Users/alexis/BigWhamLink/conn.csv";
