@@ -289,10 +289,10 @@ namespace bie{
     bool is_stress_singular_at_given_location(double& x, double& y, double& z, double& a, double& b, bool verbose)
     {   double EPSILON;
         EPSILON = std::numeric_limits<double>::epsilon();
-        if (abs(z) <= EPSILON ){
+        if (il::abs(z) <= EPSILON ){
             if (
-                    ( abs(abs(x)/a - 1.) <= EPSILON && (abs(y) <= b) )  ||
-                    ( abs(abs(y)/b - 1.) <= EPSILON && (abs(x) <= a ))
+                    ( il::abs(il::abs(x)/a - 1.) <= EPSILON && (il::abs(y) <= b) )  ||
+                    ( il::abs(il::abs(y)/b - 1.) <= EPSILON && (il::abs(x) <= a ))
                     )
             {   if (verbose){
                     std::cout << "WARNING: \n " \
@@ -356,14 +356,14 @@ namespace bie{
 
             double Ip33_lim_z_to_0, z_times_Ip333;
 
-            if (abs(z) <= EPSILON )
+            if (il::abs(z) <= EPSILON )
                 z_times_Ip333 = 0.;
             else{ Ip333 = rectangular_integration(x, y, z, a, b, ip333);
                   z_times_Ip333 = z * Ip333;}
 
-            if (abs(abs(x) / a - 1.) <= EPSILON && (abs(y) > b) && abs(z) <= EPSILON)
+            if (il::abs(il::abs(x) / a - 1.) <= EPSILON && (il::abs(y) > b) && il::abs(z) <= EPSILON)
                 Ip33_lim_z_to_0 = Ip33_lim_z_to_0_and_x_to_a(x, y, a, b);
-            else if (abs(abs(y) / b - 1.) <= EPSILON && (abs(x) > a) && abs(z) <= EPSILON)
+            else if (il::abs(il::abs(y) / b - 1.) <= EPSILON && (il::abs(x) > a) && il::abs(z) <= EPSILON)
                 Ip33_lim_z_to_0 = Ip33_lim_z_to_0_and_y_to_b(x, y, a, b);
             else
                 Ip33_lim_z_to_0 = Ip33;
@@ -436,15 +436,15 @@ namespace bie{
      */
         double EPSILON;
         EPSILON = std::numeric_limits<double>::epsilon();
-        if (abs(z) > EPSILON) { // NOT on the plane z==0
+        if (il::abs(z) > EPSILON) { // NOT on the plane z==0
              return Ip3_out_plane_z_EQ_0;
         }
         else
-        {   if (abs(abs(x) / a - 1.) <= EPSILON && (abs(y) / b - 1 < (-EPSILON )))   // internal vertical edges
+        {   if (il::abs(il::abs(x) / a - 1.) <= EPSILON && (il::abs(y) / b - 1 < (-EPSILON )))   // internal vertical edges
                 return -il::pi;
-            else if (abs(abs(y) / b - 1.) <= EPSILON && (abs(x) / a - 1 < (- EPSILON) ))   // internal horizontal edges
+            else if (il::abs(il::abs(y) / b - 1.) <= EPSILON && (il::abs(x) / a - 1 < (- EPSILON) ))   // internal horizontal edges
                 return -il::pi;
-            else if ((abs(abs(x) / a - 1.) <= EPSILON) && (abs(abs(y) / b - 1.) <= EPSILON)) // corners
+            else if ((il::abs(il::abs(x) / a - 1.) <= EPSILON) && (il::abs(il::abs(y) / b - 1.) <= EPSILON)) // corners
                 {   if (verbose){
                         std::cout << "WARNING: \n " \
                           << " you are computing the displacement at the corner of a 3DR0 element. \n" \
@@ -453,7 +453,7 @@ namespace bie{
                           << "    - check that your collocation points do not lie on the corner of another element \n" ;
                     }
                     return -il::pi/2.;}
-            else if  (((abs(x) / a - 1.) <= (-EPSILON)) && ((abs(y) / b - 1.) <= (-EPSILON)))// inside the rectangular element
+            else if  (((il::abs(x) / a - 1.) <= (-EPSILON)) && ((il::abs(y) / b - 1.) <= (-EPSILON)))// inside the rectangular element
                 return -2.*il::pi;
 
             else // on the plane and outside the rectangle
