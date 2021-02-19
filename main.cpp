@@ -2098,7 +2098,7 @@ int main() {
   //testS3DP0();
 
 //  testFullMat();
-//  testHdot();
+  testHdot();
 
 //// tests for 3DT6 not updated since the change of interface
 //test3DT6Mesh();
