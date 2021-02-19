@@ -705,6 +705,33 @@ int test3DR0() {
     return 0;
 }
 
+int perf3DR0() {
+    std::cout << "-------------- perf3DR0 ---------------------\n";
+
+    Box_mesh_1 mymesh;
+
+    const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
+    const int max_leaf_size = 900;
+    const double eta = 10.;
+    const double eps_aca = 0.001;
+
+    // create displacement HMAT
+    const std::string displacementKernel = "3DR0_displ";
+    Bigwhamio displacementHMAT;
+    displacementHMAT.set(mymesh.coor,mymesh.conn,displacementKernel,properties,
+                         max_leaf_size, eta, eps_aca);
+
+    // create traction HMAT
+    const std::string tractionKernel = "3DR0";
+    Bigwhamio tractionHMAT;
+    tractionHMAT.set(mymesh.coor,mymesh.conn,tractionKernel,properties,
+                     max_leaf_size, eta, eps_aca);
+
+    std::cout << "\n----------end of test 3DR0 perf ---------------------\n";
+    return 0;
+}
+
+
 int test3DT0() {
 
     std::cout << "--------------- test3DT0 ---------------------\n";
@@ -2091,8 +2118,8 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
-  test3DR0();
-
+  //test3DR0();
+  perf3DR0();
   //test2DP1();
 
   //testS3DP0();
