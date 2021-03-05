@@ -335,26 +335,46 @@ namespace bie{
             double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
 
             double Ip111, Ip122, Ip133, Ip112, Ip113, Ip123, Ip222, Ip223, Ip233, Ip333 = 0.;
-            if ((il::abs(z)<0.1)&&((il::abs(x)/a)<10.))
-            {   double abs_y = il::abs(y);
-                Ip11 = rectangular_integration(x, abs_y, z, a, b, ip11);
-                Ip33 = rectangular_integration(x, abs_y, z, a, b, ip33);
+            if (il::abs(z)<0.01)
+            {
+                if ((il::abs(x)/a)<10.){
+                    double abs_y = il::abs(y);
+                    Ip11 = rectangular_integration(x, abs_y, z, a, b, ip11);
+                    Ip33 = rectangular_integration(x, abs_y, z, a, b, ip33);
 
-                if (y < 0.){Ip12 = - rectangular_integration(x, abs_y, z, a, b, ip12);} else { Ip12 = rectangular_integration(x, abs_y, z, a, b, ip12);}
+                    if (y < 0.){Ip12 = - rectangular_integration(x, abs_y, z, a, b, ip12);} else { Ip12 = rectangular_integration(x, abs_y, z, a, b, ip12);}
 
-                Ip13 = rectangular_integration(x, abs_y, z, a, b, ip13);
+                    Ip13 = rectangular_integration(x, abs_y, z, a, b, ip13);
 
-                Ip111 = rectangular_integration(x, abs_y, z, a, b, ip111);
-                Ip122 = rectangular_integration(x, abs_y, z, a, b, ip122);
-                Ip133 = rectangular_integration(x, abs_y, z, a, b, ip133);
+                    Ip111 = rectangular_integration(x, abs_y, z, a, b, ip111);
+                    Ip122 = rectangular_integration(x, abs_y, z, a, b, ip122);
+                    Ip133 = rectangular_integration(x, abs_y, z, a, b, ip133);
 
-                if (y < 0.){Ip112 = -rectangular_integration(x, abs_y, z, a, b, ip112);} else { Ip112 = rectangular_integration(x, abs_y, z, a, b, ip112);}
+                    if (y < 0.){Ip112 = -rectangular_integration(x, abs_y, z, a, b, ip112);} else { Ip112 = rectangular_integration(x, abs_y, z, a, b, ip112);}
 
-                Ip113 = rectangular_integration(x, abs_y, z, a, b, ip113);
+                    Ip113 = rectangular_integration(x, abs_y, z, a, b, ip113);
 
-                if (y < 0.){Ip123 = -rectangular_integration(x, abs_y, z, a, b, ip123);} else { Ip123 = rectangular_integration(x, abs_y, z, a, b, ip123);}
+                    if (y < 0.){Ip123 = -rectangular_integration(x, abs_y, z, a, b, ip123);} else { Ip123 = rectangular_integration(x, abs_y, z, a, b, ip123);}
 
-                // Ip333 <--- this is non trivial that it goes to 0 when z->0 i.e. limit to be taken
+                    // Ip333 <--- this is non trivial that it goes to 0 when z->0 i.e. limit to be taken
+                } else{
+
+                    Ip11 = rectangular_integration(x, y, z, a, b, ip11);
+                    Ip33 = rectangular_integration(x, y, z, a, b, ip33);
+                    Ip12 = rectangular_integration(x, y, z, a, b, ip12);
+                    Ip13 = rectangular_integration(x, y, z, a, b, ip13);
+
+                    Ip111 = rectangular_integration(x, y, z, a, b, ip111);
+                    Ip122 = rectangular_integration(x, y, z, a, b, ip122);
+                    Ip133 = rectangular_integration(x, y, z, a, b, ip133);
+
+                    Ip112 = rectangular_integration(x, y, z, a, b, ip112);
+                    Ip113 = rectangular_integration(x, y, z, a, b, ip113);
+                    Ip123 = rectangular_integration(x, y, z, a, b, ip123);
+
+                    // Ip333 <--- this is non trivial that it goes to 0 when z->0 i.e. limit to be taken
+                }
+
 
                 if ((il::abs(y)/b)<10.){
                     double abs_x = il::abs(x);
@@ -539,24 +559,34 @@ namespace bie{
         Ip3_out_plane_z_EQ_0 = rectangular_integration(x, y, z, a, b, ip3);
 
 
-        if ((il::abs(z)<0.1)&&((il::abs(x)/a)<10.))
-        {   double abs_y = il::abs(y);
-            Ip1 = rectangular_integration(x, abs_y, z, a, b, ip1);
-            Ip11 = rectangular_integration(x, abs_y, z, a, b, ip11);
-            Ip33 = rectangular_integration(x, abs_y, z, a, b, ip33);
-            if (y < 0.){Ip12 = - rectangular_integration(x, abs_y, z, a, b, ip12);} else { Ip12 = rectangular_integration(x, abs_y, z, a, b, ip12);}
-            Ip13 = rectangular_integration(x, abs_y, z, a, b, ip13);
+        if (il::abs(z)<0.01)
+        {
+            if ((il::abs(x)/a)<10.){
+                double abs_y = il::abs(y);
+                Ip1 = rectangular_integration(x, abs_y, z, a, b, ip1);
+                Ip11 = rectangular_integration(x, abs_y, z, a, b, ip11);
+                Ip33 = rectangular_integration(x, abs_y, z, a, b, ip33);
+                if (y < 0.){Ip12 = - rectangular_integration(x, abs_y, z, a, b, ip12);} else { Ip12 = rectangular_integration(x, abs_y, z, a, b, ip12);}
+                Ip13 = rectangular_integration(x, abs_y, z, a, b, ip13);
+            }else{
+                Ip1 = rectangular_integration(x, y, z, a, b, ip1);
+                Ip11 = rectangular_integration(x, y, z, a, b, ip11);
+                Ip33 = rectangular_integration(x, y, z, a, b, ip33);
+                Ip12 = rectangular_integration(x, y, z, a, b, ip12);
+                Ip13 = rectangular_integration(x, y, z, a, b, ip13);
+            }
+
             if ((il::abs(y)/b)<10.){
                 double abs_x = il::abs(x);
                 Ip2 = rectangular_integration(abs_x , y, z, a, b, ip2);
                 Ip22 = rectangular_integration(abs_x , y, z, a, b, ip22);
                 Ip23 = rectangular_integration(abs_x , y, z, a, b, ip23);
-            }
-            else{
+            }else{
                 Ip2 = rectangular_integration(x, y, z, a, b, ip2);
                 Ip22 = rectangular_integration(x, y, z, a, b, ip22);
                 Ip23 = rectangular_integration(x, y, z, a, b, ip23);
             }
+
         }
         else{
             Ip1 = rectangular_integration(x, y, z, a, b, ip1);
