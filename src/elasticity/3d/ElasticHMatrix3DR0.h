@@ -118,7 +118,8 @@ namespace bie {
           //    il::Array2D<double> stnl{3,3,0.0};
 
         #ifndef NUMBEROFTHREADS
-        #define NUMBEROFTHREADS 4
+        #define NUMBEROFTHREADS 20
+        #define OMP_NUM_THREADS 20
         #endif
         #pragma omp parallel for num_threads(NUMBEROFTHREADS)
         for (il::int_t j1 = 0; j1 < M.size(1) / blockSize(); ++j1)  { // Loop over a subset of source nodes

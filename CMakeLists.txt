@@ -34,7 +34,7 @@ set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
-set(IL_OPENMP 0)
+set(IL_OPENMP 1)
 
 set(USE_INTEL 0)  # compiler option
 set(USE_STATIC 0) # to add static option to CMAKE_CXX_FLAGS
