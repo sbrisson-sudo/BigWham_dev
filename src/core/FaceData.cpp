@@ -96,9 +96,9 @@ namespace bie {
         // normalize normal vector
         double norm;
         norm = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-        n[0] = n[0] / norm;
-        n[1] = n[1] / norm;
-        n[2] = n[2] / norm;
+        n[0] = - n[0] / norm;
+        n[1] = - n[1] / norm;
+        n[2] = - n[2] / norm;
         this->n_ = n;
 
         // compute unit tangent vector s_ that goes from vertex 0 to vertex 1

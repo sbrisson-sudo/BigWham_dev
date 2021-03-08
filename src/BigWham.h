@@ -9,6 +9,8 @@
 // last modifications :: Nov. 12 2020
 
 #include <iostream>
+#include <fstream>
+
 
 #include <il/Array.h>
 #include <il/Array2D.h>
@@ -325,8 +327,9 @@ class Bigwhamio {
           // DD to displacement HMAT
           I_want_DD_to_traction_kernel = 0;
         }
-        const bie::ElasticHMatrix3DR0<double> M{
-            collocationPoints_,          permutation_, mesh3d, elas, 0, 0,
+          std::cout << "\n Kernel: "<< kernel_ << " " <<  I_want_DD_to_traction_kernel<< "\n  ";
+
+          const bie::ElasticHMatrix3DR0<double> M{collocationPoints_,          permutation_, mesh3d, elas, 0, 0,
             I_want_DD_to_traction_kernel};
         h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         std::cout << "HMAT --> built \n";

@@ -28,7 +28,7 @@ set(CMAKE_CXX_STANDARD 11)
 #####################################
 
 set(BUILD_PYTHON_BINDINGS 0)
-set(BUILD_GOOGLE_TESTS 0)
+set(BUILD_GOOGLE_TESTS 1)
 
 set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
@@ -40,7 +40,8 @@ set(USE_INTEL 0)  # compiler option
 set(USE_STATIC 0) # to add static option to CMAKE_CXX_FLAGS
 
 set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG}   -std=c++11")
-set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++11 -O3 -mavx2")
+set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++11 -O3  -mavx2")
+#set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++11 -Ofast -march=native -mtune=intel  -mavx2")
 
 if(USE_STATIC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
@@ -111,7 +112,7 @@ if(IL_OPENMP)
             # link_directories(/opt/clang-3.9.0/lib)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             MESSAGE("-- OPENMP ENABLED")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread -fopenmp")
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
             MESSAGE("-- OPENMP ENABLED")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -qopenmp")
@@ -137,6 +138,7 @@ endif()
 # For Intel MKL
 if(IL_MKL)
     MESSAGE("Detecting MKL")
+    MESSAGE(${CMAKE_CXX_COMPILER_ID})
     if(APPLE)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
             MESSAGE("-- The MKL is found at: " $ENV{MKLROOT}/lib/)
@@ -148,7 +150,7 @@ if(IL_MKL)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -DIL_MKL -DIL_BLAS")
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed")
-            set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/libmkl_core.a $ENV{MKLROOT}/lib/libmkl_sequential.a  tbb dl  pthread  m) #mkl_intel_thread mkl_sequential  iomp5
+            set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/intel64/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/intel64/libmkl_core.a $ENV{MKLROOT}/lib/intel64/libmkl_sequential.a  tbb dl  pthread  m) #mkl_intel_thread mkl_sequential  iomp5
             link_directories($ENV{MKLROOT}/lib/intel64_lin)
             link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib )
             # link_directories(/opt/intel/mkl/lib/intel64/opt/intel/compilers_and_libraries/linux/lib/intel64)
@@ -163,10 +165,10 @@ if(IL_MKL)
             link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib )
             # link_directories(/opt/intel/mkl/lib/intel64 /opt/intel/compilers_and_libraries/linux/lib/intel64)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -m64 -lmkl_sequential -DIL_MKL -DIL_BLAS") #-m64
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -m64 -lmkl_sequential -DIL_MKL -DIL_BLAS")
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed")
             set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/intel64/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/intel64/libmkl_core.a $ENV{MKLROOT}/lib/intel64/libmkl_sequential.a tbb dl pthread m)
-            link_directories($ENV{MKLROOT}/lib/intel64 $ENV{MKLROOT}/../compilers_and_libraries/linux/lib/intel64 $ENV{TBBROOT}/lib/intel64/gcc4.8)
+            link_directories($ENV{MKLROOT}/lib/intel64 $ENV{TBBROOT}/lib/intel64/gcc4.8)
             #link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib )
             # link_directories(/opt/intel/mkl/lib/intel64 /opt/intel/compilers_and_libraries/linux/lib/intel64)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")

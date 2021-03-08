@@ -55,7 +55,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
 
       IL_EXPECT_FAST( (mesh.numberCollPts()*3)==solution.size() );
 
-      #pragma omp parallel for num_threads(NUMBEROFTHREADS)
+      //#pragma omp parallel for num_threads(NUMBEROFTHREADS)
       // loop on all elements
       for (il::int_t e = 0; e < mesh.numberOfElts(); ++e)
       {
@@ -132,7 +132,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
 
         IL_EXPECT_FAST( (mesh.numberCollPts()*3)==solution.size() );
 
-        #pragma omp parallel for num_threads(NUMBEROFTHREADS)
+        //#pragma omp parallel for num_threads(NUMBEROFTHREADS)
         // loop on all elements
         for (il::int_t e = 0; e < mesh.numberOfElts(); ++e)
         {

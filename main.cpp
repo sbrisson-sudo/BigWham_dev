@@ -34,6 +34,7 @@
 #include <src/core/ElasticProperties.h>
 //#include <src/solvers/HIterativeSolverUtilities.h>
 #include <src/_test/elastic3DR0_element_benchmark.h>
+#include <chrono>
 
 int test2DP1(){
 
@@ -711,9 +712,21 @@ int perf3DR0() {
     Box_mesh_1 mymesh;
 
     const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
-    const int max_leaf_size = 900;
-    const double eta = 10.;
-    const double eps_aca = 0.001;
+    const int max_leaf_size = 100;
+    const double eta = 0.;
+    const double eps_aca = 0.0001;
+
+    auto t1 = std::chrono::high_resolution_clock::now();
+    // create traction HMAT
+    const std::string tractionKernel = "3DR0_displ";
+    Bigwhamio tractionHMAT;
+    tractionHMAT.set(mymesh.coor,mymesh.conn,tractionKernel,properties,
+                     max_leaf_size, eta, eps_aca);
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 -t1).count();
+    std::cout<<duration;
+
 
     // create displacement HMAT
     const std::string displacementKernel = "3DR0_displ";
@@ -721,11 +734,7 @@ int perf3DR0() {
     displacementHMAT.set(mymesh.coor,mymesh.conn,displacementKernel,properties,
                          max_leaf_size, eta, eps_aca);
 
-    // create traction HMAT
-    const std::string tractionKernel = "3DR0";
-    Bigwhamio tractionHMAT;
-    tractionHMAT.set(mymesh.coor,mymesh.conn,tractionKernel,properties,
-                     max_leaf_size, eta, eps_aca);
+
 
     std::cout << "\n----------end of test 3DR0 perf ---------------------\n";
     return 0;
@@ -2115,17 +2124,101 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 
 }
 
+
+int check3DR0(std::string& vertices_file, std::string& connectivity_file) {
+
+
+    std::cout << "-------------- test3DR0 ---------------------\n";
+
+    il::Array2D<double> nodes = read_coord_CSV(vertices_file);
+    il::Array2D<il::int_t> conn = read_conn_CSV(connectivity_file);
+
+    std::cout << nodes.size(0) << " x " << nodes.size(1) << "\n";
+
+    std::cout << nodes(0,0) << " " << nodes(0,1) << " " << nodes(0,2) <<  "\n";
+    std::cout << nodes(1,0) << " " << nodes(1,1) << " " << nodes(1,2) <<  "\n";
+    std::cout << nodes(2,0) << " " << nodes(2,1) << " " << nodes(2,2) <<  "\n";
+
+    std::cout << conn.size(0) << " x " << conn.size(1) << "\n";
+
+    std::cout << conn(0,0) << " " << conn(0,1) << " " << conn(0,2) <<  "\n";
+    std::cout << conn(1,0) << " " << conn(1,1) << " " << conn(1,2) <<  "\n";
+    std::cout << conn(2,0) << " " << conn(2,1) << " " << conn(2,2) <<  "\n";
+
+    bie::Mesh3D mesh(nodes, conn, 0);
+
+    double nu = 0.25;
+    double G = 1.0;
+    double young = 2.0 * G * (1.0+nu);
+
+    // now we use the BIGWHAM
+
+    // convert to std vectors
+    std::vector<double> nodes_flat;
+    nodes_flat.reserve(3 * nodes.size(0));
+    for (int i = 0; i < nodes.size(0); i++){
+        for (int j = 0; j < nodes.size(1); j++){
+            nodes_flat.push_back(nodes(i,j));
+        }
+    }
+    std::vector<int64_t> conn_flat;
+    conn_flat.reserve(3 * conn.size(0));
+    for (int i = 0; i < conn.size(0); i++){
+        for (int j = 0; j < conn.size(1); j++){
+            conn_flat.push_back(conn(i,j));
+        }
+    }
+
+    std::cout << "Checking conversion of nodes and conn to std vectors ..." << "\n";
+    std::cout << "coor =  " << nodes_flat[0] << " " << nodes_flat[1] << " " << nodes_flat[2] << "\n";
+    std::cout << "conn =  " << conn_flat[0] << " " << conn_flat[1] << " " << conn_flat[2] << "\n";
+
+    const std::vector<double> properties = {young, nu}; // Young Modulus , Poisson's ratio
+    const int max_leaf_size = 100;
+    const double eta_test = 5.;
+    const double eps_aca = 0.0001;
+
+    // create HMAT
+    const std::string kernel_name = "3DR0_displ";
+    Bigwhamio test;
+    test.set(nodes_flat,conn_flat,kernel_name,properties,
+             max_leaf_size, eta_test, eps_aca);
+
+    std::cout << test.matrixSize(0);
+    std::cout << "  \n";
+    std::cout << test.matrixSize(1);
+    // use the Hdot product
+    std::cout<<"\n NoE: " << conn_flat.size()/4;
+    std::vector<double>  xx(3*conn_flat.size()/4);
+    for(int i=0; i<xx.size(); ++i) xx[i]=1.;
+    std::vector<double> res = test.hdotProduct(xx);
+
+    std::cout << "Traction HMAT dot product \n" ;
+    for(int i=0; i<xx.size(); ++i) std::cout << res[i] << " ";
+    std::cout << "\n" ;
+
+    return 0;
+
+}
+
+
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
-  //test3DR0();
-  perf3DR0();
+//    std::string vertices_file ="/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/vertices.csv";
+//    std::string connectivity_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/conn.csv";
+//    int a = check3DR0(vertices_file,connectivity_file);
+
+
+  test3DR0();
+  //perf3DR0();
+
   //test2DP1();
 
   //testS3DP0();
 
 //  testFullMat();
-//  testHdot();
+  testHdot();
 
 //// tests for 3DT6 not updated since the change of interface
 //test3DT6Mesh();

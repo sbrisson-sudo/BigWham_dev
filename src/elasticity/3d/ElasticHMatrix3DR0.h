@@ -15,7 +15,7 @@
 #include <src/core/ElasticProperties.h>
 #include <src/core/FaceData.h>
 #include <string>
-
+//#include <math.h> //to check if some value is nan
 namespace bie {
 
     template <typename T>
@@ -118,10 +118,9 @@ namespace bie {
           //    il::Array2D<double> stnl{3,3,0.0};
 
         #ifndef NUMBEROFTHREADS
-        #define NUMBEROFTHREADS 20
-        #define OMP_NUM_THREADS 20
+            #define NUMBEROFTHREADS 12
         #endif
-        #pragma omp parallel for num_threads(NUMBEROFTHREADS)
+        #pragma omp  parallel for num_threads(NUMBEROFTHREADS)
         for (il::int_t j1 = 0; j1 < M.size(1) / blockSize(); ++j1)  { // Loop over a subset of source nodes
 
             il::int_t old_k1;
