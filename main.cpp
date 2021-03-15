@@ -2118,8 +2118,8 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
-  //test3DR0();
-  perf3DR0();
+  test3DR0();
+ // perf3DR0();
   //test2DP1();
 
   //testS3DP0();
