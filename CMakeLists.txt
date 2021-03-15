@@ -18,7 +18,7 @@ project(pypart VERSION 1.0
         LANGUAGES CXX)
 
 project(BigWhamElastUnitTest VERSION 1.0
-        DESCRIPTION "This is for testing the weels in BigWham"
+        DESCRIPTION "This is for testing the wheels in BigWham"
         LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -34,7 +34,8 @@ set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
-set(IL_OPENMP 1)
+set(IL_OPENMP 0)
+set(IL_TBB 1)
 
 set(USE_INTEL 0)  # compiler option
 set(USE_STATIC 0) # to add static option to CMAKE_CXX_FLAGS
@@ -140,13 +141,13 @@ if(IL_MKL)
     if(APPLE)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
             MESSAGE("-- The MKL is found at: " $ENV{MKLROOT}/lib/)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -DIL_MKL -DIL_BLAS")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -DIL_MKL") # -DIL_BLAS
             #           set(CMAKE_MKL_LIBRARIES mkl_intel_lp64 mkl_core mkl_sequential tbb dl pthread m) #iomp5
             set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/libmkl_core.a $ENV{MKLROOT}/lib/libmkl_sequential.a  tbb dl  pthread  m) #mkl_intel_thread mkl_sequential  iomp5
             #            link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib $ENV{TBBROOT}/lib)
 
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -DIL_MKL -DIL_BLAS")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -DIL_MKL") # -DIL_BLAS
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed")
             set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/libmkl_core.a $ENV{MKLROOT}/lib/libmkl_sequential.a  tbb dl  pthread  m) #mkl_intel_thread mkl_sequential  iomp5
             link_directories($ENV{MKLROOT}/lib/intel64_lin)
@@ -158,12 +159,12 @@ if(IL_MKL)
         endif()
     elseif(UNIX)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64  -DIL_MKL -DIL_BLAS")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64  -DIL_MKL ") #-DIL_BLAS
             set(CMAKE_MKL_LIBRARIES mkl_intel_lp64 mkl_core mkl_intel_thread iomp5 dl pthread m)
             link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib )
             # link_directories(/opt/intel/mkl/lib/intel64 /opt/intel/compilers_and_libraries/linux/lib/intel64)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -m64 -lmkl_sequential -DIL_MKL -DIL_BLAS") #-m64
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -m64 -lmkl_sequential -DIL_MKL ") #-m64 -DIL_BLAS
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed")
             set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/intel64/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/intel64/libmkl_core.a $ENV{MKLROOT}/lib/intel64/libmkl_sequential.a tbb dl pthread m)
             link_directories($ENV{MKLROOT}/lib/intel64 $ENV{MKLROOT}/../compilers_and_libraries/linux/lib/intel64 $ENV{TBBROOT}/lib/intel64/gcc4.8)
@@ -263,20 +264,20 @@ if(IL_MKL)
     if(APPLE)
         target_link_libraries(BigWham_exe   ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
 
-        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
         target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include $ENV{TBBROOT}/lib)
     elseif(UNIX)
         target_link_libraries(BigWham_exe "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
 
-        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
         target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
     elseif(WIN32)
-        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
         target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
     endif()
 elseif(IL_OPENBLAS)
-    target_compile_definitions(BigWham PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
+    target_compile_definitions(BigWham PRIVATE IL_OPENBLAS=1 IL_BLAS=0 IL_OPENMP=1)
     target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR})
 endif()
 
@@ -285,7 +286,6 @@ endif()
 ################################################################
 if(BUILD_PYTHON_BINDINGS)
     add_library(part SHARED  ${SOURCE_FILES})
-
 
     if(IL_MKL)
         if(APPLE)
@@ -337,12 +337,9 @@ if(BUILD_GOOGLE_TESTS)
             src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
             )
 
-
-
     add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 
     target_include_directories(BigWhamElastUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/il/gtest ${CMAKE_SOURCE_DIR}/il ${CMAKE_SOURCE_DIR}/Hmat-lib $ENV{MKLROOT}/include )
-
 
     if(IL_MKL)
         if(APPLE)
@@ -359,7 +356,6 @@ if(BUILD_GOOGLE_TESTS)
         target_compile_definitions(BigWhamElastUnitTest PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
         target_include_directories(BigWhamElastUnitTest PRIVATE ${CMAKE_SOURCE_DIR})
     endif()
-
 
     # For unit tests: The precondition of our fonctions are checked with assert
     # macros that terminate the program in debug mode. In order to test those macros
