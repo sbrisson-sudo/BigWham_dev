@@ -288,7 +288,7 @@ namespace bie{
     // Fundamental stress kernel
     bool is_stress_singular_at_given_location(double& x, double& y, double& z, double& a, double& b, bool verbose)
     {   double EPSILON;
-        EPSILON = std::numeric_limits<double>::epsilon();
+        EPSILON = 100000 * std::numeric_limits<double>::epsilon();
         if (il::abs(z) <= EPSILON ){
             if (
                     ( il::abs(il::abs(x)/a - 1.) <= EPSILON && (il::abs(y) <= b) )  ||
@@ -321,12 +321,12 @@ namespace bie{
 
         il::StaticArray2D<double, 3, 6> Stress;
         double EPSILON;
-        EPSILON = std::numeric_limits<double>::epsilon();
+        EPSILON = 100000 * std::numeric_limits<double>::epsilon();
 
         if (!is_stress_singular_at_given_location(x, y, z ,a, b))
         {
 
-            double Ce =  G / (4 * il::pi * (1. - nu));
+            double Ce = G / (4. * il::pi * (1. - nu));
             //  double sxx, sxy, sxz, syy, syz, szz;
             //
 
@@ -469,6 +469,15 @@ namespace bie{
             Stress(2, 3) = Ce * ((-1 + 2 * nu) * Ip12 - z * Ip123);                  // sxy if z=0. (unchanged expresssion)
             Stress(2, 4) = Ce * (-z * Ip133);                                        // sxz -> if z=0. it will be 0. (unchanged expresssion)
             Stress(2, 5) = Ce * (-z * Ip233);                                        // syz -> if z=0. it will be 0. (unchanged expresssion)
+
+            for (il::int_t i = 0; i < 3; i++) {
+                for (il::int_t j = 0; j < 6; j++) {
+                    if (std::isnan(Stress(i,j))){
+                        printf("found NAN");
+                    }
+                }
+            }
+
         }
         else {  for (il::int_t i = 0; i < 3; i++) {
                     for (il::int_t j = 0; j < 6; j++) {
@@ -510,7 +519,7 @@ namespace bie{
      *
      */
         double EPSILON;
-        EPSILON = std::numeric_limits<double>::epsilon();
+        EPSILON = 100000 * std::numeric_limits<double>::epsilon();
         if (il::abs(z) > EPSILON) { // NOT on the plane z==0
              return Ip3_out_plane_z_EQ_0;
         }
@@ -551,7 +560,7 @@ namespace bie{
 
         double Ip11, Ip22, Ip33, Ip23, Ip12, Ip13;
 
-        double Ce = (-1 / (8 * il::pi * (1. - nu)));
+        double Ce = (-1. / (8. * il::pi * (1. - nu)));
 
         il::Array2D<double> Displacement{3,3,0.};
 
@@ -627,6 +636,14 @@ namespace bie{
         Displacement(1, 2) = Ce * (z * Ip23 + (1 - 2 * nu) * Ip2);  // Uy
         Displacement(2, 2) = Ce * (z * Ip33 - 2 * (1 - nu) * Ip3);  // Uz
 
+//        Uncomment to check nan
+//        for (il::int_t i = 0; i < 3; i++) {
+//            for (il::int_t j = 0; j < 3; j++) {
+//                if (std::isnan(Displacement(i,j))){
+//                    printf("found NAN");
+//                }
+//            }
+//        }
         return Displacement; // expressed in the reference system of the DD element
         // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
         //   0      -> |       Ux,            Ux,             Ux            |
