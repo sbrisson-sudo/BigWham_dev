@@ -329,7 +329,7 @@ class Bigwhamio {
         }
           std::cout << "\n Kernel: "<< kernel_ << " " <<  I_want_DD_to_traction_kernel<< "\n  ";
 
-          const bie::ElasticHMatrix3DR0<double> M{collocationPoints_,          permutation_, mesh3d, elas, 0, 0,
+          const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0,
             I_want_DD_to_traction_kernel};
         h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         std::cout << "HMAT --> built \n";
@@ -457,6 +457,8 @@ class Bigwhamio {
 
   int getSpatialDimension() const { return dimension_; }
 
+  int getProblemDimension() const {return dof_dimension_;}
+
   int matrixSize(int k) { return h_.size(k); };
 
   //---------------------------------------------------------------------------
@@ -567,7 +569,7 @@ class Bigwhamio {
 
     std::cout << "done Full Block: nval " << val_list.size() << " / " << pos_list.size()/2
               << " n^2 " << (h_.size(0)) * h_.size(1) << "\n";
-
+    std::cout << " End of Bigwhamio getFullBlocks \n";
   }
 
   // ---------------------------------------------------------------------------
