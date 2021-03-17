@@ -527,10 +527,8 @@ class Bigwhamio {
     IL_EXPECT_FAST(isBuilt_);
 
     int numberofblocks = fr_pattern_.size(1);
-    int len = 6 * numberofblocks;
-    std::cout << "number of blocks " << numberofblocks << "\n";
 
-    std::vector<int> patternlist(len, 0);
+    std::cout << "number of blocks " << numberofblocks << "\n";
 
     //  compute the number of full rank entries
     long nbfentry=0;
@@ -538,16 +536,16 @@ class Bigwhamio {
       il::spot_t s(fr_pattern_(0, j));
       // check is low rank or not
       il::Array2DView<double> A = h_.asFullRank(s);
-      nbfentry=nbfentry+ (A.size(0)*A.size(1));
+      nbfentry=nbfentry+(A.size(0)*A.size(1));
     }
 
     // prepare outputs
-    il::Array2D<long> pos{nbfentry,2,0};
     pos_list.resize(nbfentry * 2);
     val_list.resize(nbfentry);
 
     // loop on full rank and get i,j and val
-    long nr=0;
+    int nr=0; int npos=0;
+
     for (il::int_t k = 0;k < numberofblocks; k++) {
       il::spot_t s(fr_pattern_(0, k));
       il::int_t i0 = fr_pattern_(1, k) - 1;
@@ -557,28 +555,18 @@ class Bigwhamio {
       il::int_t index=0;
       for (il::int_t j=0;j<A.size(1);j++){
         for (il::int_t i=0;i<A.size(0);i++){
-          pos(nr+index,0)=i+i0;
-          pos(nr+index,1)=j+j0;
+          pos_list[npos+2*index]=i+i0;
+          pos_list[npos+2*index+1]=j+j0;
           val_list[nr+index]=A(i,j);
           index++;
         }
       }
       nr=nr+ (A.size(0)*A.size(1));
+      npos=npos+2*(A.size(0)*A.size(1));
     }
 
-    std::cout << "done Full Block: nval " << val_list.size() << " / " << pos.size(0)
+    std::cout << "done Full Block: nval " << val_list.size() << " / " << pos_list.size()/2
               << " n^2 " << (h_.size(0)) * h_.size(1) << "\n";
-
-    IL_EXPECT_FAST((val_list.size()) == (pos.size(0)));
-    IL_EXPECT_FAST(pos.size(1) == 2);
-
-    // outputs pos_list as a flat array
-
-    int index = 0;
-    for (il::int_t i = 0; i < pos.size(0); i++) {
-      pos_list[index++] = pos(i, 0);
-      pos_list[index++] = pos(i, 1);
-    }
 
   }
 
