@@ -13,7 +13,7 @@
 #include <il/linearAlgebra.h>
 #include <il/blas.h>
 #include <src/elasticity/3d/Elastic3DR0_common.h>
-#include <src/elasticity/3d/Elastic3DR0opening_element.h>
+#include <src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian_element.h>
 
 
 namespace bie{

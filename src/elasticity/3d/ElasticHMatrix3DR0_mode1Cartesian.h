@@ -12,7 +12,7 @@
 #include <string>
 
 #include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
-#include <elasticity/3d/Elastic3DR0opening_element.h>
+#include <elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian_element.h>
 #include <src/core/ElasticProperties.h>
 #include <src/core/FaceData.h>
 #include <src/core/Mesh3D.h>
@@ -20,7 +20,7 @@
 namespace bie {
 
     template <typename T>
-    class ElasticHMatrix3DR0opening : public il::MatrixGenerator<T> {
+    class ElasticHMatrix3DR0_mode1Cartesian : public il::MatrixGenerator<T> {
      private:
       il::Array2D<double> point_;
 
@@ -30,8 +30,8 @@ namespace bie {
 
      public:
       bie::ElasticProperties const elas_;
-      ElasticHMatrix3DR0opening(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
-                         bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas);
+      ElasticHMatrix3DR0_mode1Cartesian(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+                                        bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas);
 
       il::int_t size(il::int_t d) const override;
       il::int_t blockSize() const override;
@@ -40,8 +40,8 @@ namespace bie {
     };
 
     template <typename T>
-    ElasticHMatrix3DR0opening<T>::ElasticHMatrix3DR0opening(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
-      bie::Mesh3D &i_meshtools,bie::ElasticProperties &elas)  // il::Array2D<il::int_t> // &binary_ind_pts_at_front
+    ElasticHMatrix3DR0_mode1Cartesian<T>::ElasticHMatrix3DR0_mode1Cartesian(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+                                                                            bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas)  // il::Array2D<il::int_t> // &binary_ind_pts_at_front
       : point_{point}, //std::move(point) never fucking do that !
         permutation_{permutation},
         mesh_{i_meshtools},
@@ -51,29 +51,29 @@ namespace bie {
     };
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0opening<T>::size(il::int_t d) const {
+    il::int_t ElasticHMatrix3DR0_mode1Cartesian<T>::size(il::int_t d) const {
       IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
       return mesh_.numberCollPts();  // num of nodes * (# of degree of freedom per node)
     }
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0opening<T>::blockSize() const {
+    il::int_t ElasticHMatrix3DR0_mode1Cartesian<T>::blockSize() const {
       return 1;  // # of degree of freedom per node
     }
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0opening<T>::sizeAsBlocks(il::int_t d) const {
+    il::int_t ElasticHMatrix3DR0_mode1Cartesian<T>::sizeAsBlocks(il::int_t d) const {
       IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
       return (mesh_.numberCollPts());
     }
 
     template <typename T>
-    void ElasticHMatrix3DR0opening<T>::set(il::int_t b0,
-                                    il::int_t b1,
-                                    il::io_t,
-                                    il::Array2DEdit<T> M) const
+    void ElasticHMatrix3DR0_mode1Cartesian<T>::set(il::int_t b0,
+                                                   il::int_t b1,
+                                                   il::io_t,
+                                                   il::Array2DEdit<T> M) const
                                     {
         /*  Preliminaries:
          *  Divide the full Hmat in blocks of 3x3 units. 3 is the # of DD for each node of the mesh.
@@ -116,7 +116,6 @@ namespace bie {
             il::int_t old_k1;
             il::int_t old_k0;
             il::int_t e_k1, e_k0;
-            il::Array2D<double> stnl{3, 3, 0.0};
 
             il::int_t k1 = b1 + j1;
             old_k1 = permutation_[k1];

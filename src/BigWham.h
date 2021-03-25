@@ -35,7 +35,7 @@
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/3d/ElasticHMatrix3DR0.h>
 #include <elasticity/3d/ElasticHMatrix3DR0displ.h>
-#include <elasticity/3d/ElasticHMatrix3DR0opening.h>
+#include <elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h>
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
 
@@ -340,7 +340,7 @@ class Bigwhamio {
         } else if (kernel_ == "3DR0opening") {
             // DD to displacement HMAT
             std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
-            const bie::ElasticHMatrix3DR0opening<double> M{collocationPoints_, permutation_, mesh3d, elas};
+            const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{collocationPoints_, permutation_, mesh3d, elas};
             h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         } else {
             std::cout << "\n ERROR! unknown Kernel name: " << kernel_ << "\n  ";
