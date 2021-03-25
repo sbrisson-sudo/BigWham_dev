@@ -96,9 +96,9 @@ namespace bie {
         // normalize normal vector
         double norm;
         norm = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-        n[0] = - n[0] / norm;
-        n[1] = - n[1] / norm;
-        n[2] = - n[2] / norm;
+        n[0] = n[0] / norm;
+        n[1] = n[1] / norm;
+        n[2] = n[2] / norm;
         this->n_ = n;
 
         // compute unit tangent vector s_ that goes from vertex 0 to vertex 1
@@ -170,6 +170,18 @@ namespace bie {
         il::Array<double> n{3};
         for (int i = 0; i < 3; ++i) { n[i] = n_[i]; }
         return n;
+    }
+
+    il::Array<double> FaceData::getS1(){
+        il::Array<double> s1{3};
+        for (int i = 0; i < 3; ++i) { s1[i] = s_[i]; }
+        return s1;
+    }
+
+    il::Array<double> FaceData::getS2(){
+        il::Array<double> s2{3};
+        for (int i = 0; i < 3; ++i) { s2[i] = t_[i]; }
+        return s2;
     }
     //////////////////////////////////////////////////////////////////////////
     //   Methods

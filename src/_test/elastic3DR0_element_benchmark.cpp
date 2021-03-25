@@ -613,7 +613,7 @@ TEST(R0, benchmark_penny_shaped_crack) {
     for(int i = 0; i < mymesh.nelts * 3; i= i + 3)
     {
         bie::FaceData face = mesh3d.getElementData(elem);
-        il::Array2D<double> R = face.rotationMatrix(); // g->l rotation matrix
+        il::Array2D<double> R = face.rotationMatrix(true); // g->l rotation matrix
         load_l = il::dot(R,load_g); // get the local load
 
         ff[i] =   load_l[0];
@@ -729,7 +729,7 @@ TEST(R0, benchmark_penny_shaped_crack) {
     for(int i = 0; i < mymesh.nelts * 3; i= i + 3)
     {
         bie::FaceData face = mesh3d.getElementData(elem);
-        il::Array2D<double> R = face.rotationMatrix(); // g->l rotation matrix
+        il::Array2D<double> R = face.rotationMatrix(true); // g->l rotation matrix
         load_l = il::dot(R,load_g); // get the local load
 
         ff[i] =   load_l[0];

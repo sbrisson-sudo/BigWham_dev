@@ -8,6 +8,7 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include <il/Array2D.h>
 #include <src/core/FaceData.cpp>
@@ -2125,10 +2126,13 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 }
 
 
-int check3DR0(std::string& vertices_file, std::string& connectivity_file) {
+int check3DR0() {
 
 
     std::cout << "-------------- test3DR0 ---------------------\n";
+
+    std::string vertices_file ="/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/vertices.csv";
+    std::string connectivity_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/conn.csv";
 
     il::Array2D<double> nodes = read_coord_CSV(vertices_file);
     il::Array2D<il::int_t> conn = read_conn_CSV(connectivity_file);
@@ -2147,9 +2151,7 @@ int check3DR0(std::string& vertices_file, std::string& connectivity_file) {
 
     bie::Mesh3D mesh(nodes, conn, 0);
 
-    double nu = 0.25;
-    double G = 1.0;
-    double young = 2.0 * G * (1.0+nu);
+
 
     // now we use the BIGWHAM
 
@@ -2173,29 +2175,100 @@ int check3DR0(std::string& vertices_file, std::string& connectivity_file) {
     std::cout << "coor =  " << nodes_flat[0] << " " << nodes_flat[1] << " " << nodes_flat[2] << "\n";
     std::cout << "conn =  " << conn_flat[0] << " " << conn_flat[1] << " " << conn_flat[2] << "\n";
 
+
+
+    il::int_t nnodes_elts=4, p=0, dimension_=3;
+    il::int_t nelts = conn_flat.size() / nnodes_elts;
+    il::int_t nvertex = nodes_flat.size() / dimension_;
+
+    il::Array2D<double> Coor{nvertex, dimension_, 0.};  // columm major order
+    il::Array2D<il::int_t> Conn{nelts, nnodes_elts, 0};
+
+    // populate mesh (loops could be optimized - passage row-major to
+    // col-major)
+    int index = 0;
+    for (il::int_t i = 0; i < Coor.size(0); i++) {
+        for (il::int_t j = 0; j < Coor.size(1); j++) {
+            Coor(i, j) = nodes_flat[index];
+            index++;
+        }
+    }
+
+    index = 0;
+    for (il::int_t i = 0; i < Conn.size(0); i++) {
+        for (il::int_t j = 0; j < Conn.size(1); j++) {
+            Conn(i, j) = conn_flat[index];
+            index++;
+        }
+    }
+
+    bie::Mesh3D mesh3d(Coor, Conn, p);
+
+    // Create and open a text file
+    std::string normal_out_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/normalout.csv";
+    std::string s1_out_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/s1out.csv";
+    std::string s2_out_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/s2out.csv";
+    std::string cp_out_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/cpout.csv";
+    std::ofstream normalFile(normal_out_file);
+    std::ofstream s1File(s1_out_file);
+    std::ofstream s2File(s2_out_file);
+    std::ofstream cpFile(cp_out_file);
+
+
+    // print the normal to file
+    for (il::int_t i = 0; i < nelts; i++) {
+        bie::FaceData myel=mesh3d.getElementData(i);
+        il::Array<double> normal = myel.getNormal();
+        normalFile << normal[0] << "," << normal[1] << "," << normal[2];
+        normalFile << "\n";
+        il::Array2D<double> cp = myel.getCollocationPoints();
+        cpFile << cp(0,0) << "," <<  cp(0,1)<< "," <<  cp(0,2);
+        cpFile << "\n";
+    }
+
+    // print the s1 and s2 to file
+    for (il::int_t i = 0; i < nelts; i++) {
+        bie::FaceData myel=mesh3d.getElementData(i);
+        il::Array<double> s1 = myel.getS1();
+        s1File << s1[0] << "," << s1[1] << "," << s1[2];
+        s1File << "\n";
+        il::Array<double> s2 = myel.getS2();
+        s2File << s2[0] << "," << s2[1] << "," << s2[2];
+        s2File << "\n";
+    }
+
+    // Close the file
+    normalFile.close();\
+    cpFile.close();
+    std::cout << "DONE! " << "\n";
+
+    double nu = 0.48;
+    //double G = 1.0;
+    //double young = 2.0 * G * (1.0+nu);
+    double young = 97000;
     const std::vector<double> properties = {young, nu}; // Young Modulus , Poisson's ratio
     const int max_leaf_size = 100;
-    const double eta_test = 5.;
+    const double eta_test = 0.;
     const double eps_aca = 0.0001;
 
     // create HMAT
-    const std::string kernel_name = "3DR0_displ";
+    const std::string kernel_name = "3DR0";
     Bigwhamio test;
     test.set(nodes_flat,conn_flat,kernel_name,properties,
              max_leaf_size, eta_test, eps_aca);
 
-    std::cout << test.matrixSize(0);
-    std::cout << "  \n";
-    std::cout << test.matrixSize(1);
-    // use the Hdot product
-    std::cout<<"\n NoE: " << conn_flat.size()/4;
-    std::vector<double>  xx(3*conn_flat.size()/4);
-    for(int i=0; i<xx.size(); ++i) xx[i]=1.;
-    std::vector<double> res = test.hdotProduct(xx);
-
-    std::cout << "Traction HMAT dot product \n" ;
-    for(int i=0; i<xx.size(); ++i) std::cout << res[i] << " ";
-    std::cout << "\n" ;
+//    std::cout << test.matrixSize(0);
+//    std::cout << "  \n";
+//    std::cout << test.matrixSize(1);
+//    // use the Hdot product
+//    std::cout<<"\n NoE: " << conn_flat.size()/4;
+//    std::vector<double>  xx(3*conn_flat.size()/4);
+//    for(int i=0; i<xx.size(); ++i) xx[i]=1.;
+//    std::vector<double> res = test.hdotProduct(xx);
+//
+//    std::cout << "Traction HMAT dot product \n" ;
+//    for(int i=0; i<xx.size(); ++i) std::cout << res[i] << " ";
+//    std::cout << "\n" ;
 
     return 0;
 
@@ -2205,19 +2278,19 @@ int check3DR0(std::string& vertices_file, std::string& connectivity_file) {
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
- //  test3DR0();
- // perf3DR0();
 
-//    std::string vertices_file ="/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/vertices.csv";
-//    std::string connectivity_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/conn.csv";
-//    int a = check3DR0(vertices_file,connectivity_file);
+  int a = check3DR0();
+
+
+  //test3DR0();
+  //perf3DR0();
 
   //test2DP1();
 
   //testS3DP0();
 
 //  testFullMat();
-  testHdot();
+  //testHdot();
 
 //// tests for 3DT6 not updated since the change of interface
 //test3DT6Mesh();

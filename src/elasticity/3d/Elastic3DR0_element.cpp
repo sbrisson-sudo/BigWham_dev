@@ -470,13 +470,13 @@ namespace bie{
             Stress(2, 4) = Ce * (-z * Ip133);                                        // sxz -> if z=0. it will be 0. (unchanged expresssion)
             Stress(2, 5) = Ce * (-z * Ip233);                                        // syz -> if z=0. it will be 0. (unchanged expresssion)
 
-            for (il::int_t i = 0; i < 3; i++) {
-                for (il::int_t j = 0; j < 6; j++) {
-                    if (std::isnan(Stress(i,j))){
-                        printf("found NAN");
-                    }
-                }
-            }
+//            for (il::int_t i = 0; i < 3; i++) {
+//                for (il::int_t j = 0; j < 6; j++) {
+//                    if (std::isnan(Stress(i,j))){
+//                        printf("found NAN");
+//                    }
+//                }
+//            }
 
         }
         else {  for (il::int_t i = 0; i < 3; i++) {
@@ -770,10 +770,10 @@ namespace bie{
         il::Array2D<double> el_cp_r;
         el_cp_r = elem_data_r.getCollocationPoints();
 
-        il::Array2D<double> R = elem_data_s.rotationMatrix();
+        il::Array2D<double> R = elem_data_s.rotationMatrix(true); // from global to local
 
         il::Array<double> dsr{3};
-        for (int i = 0; i < 3; ++i) { dsr[i] = el_cp_r(0,i) - el_cp_s(0,i); }
+        for (int i = 0; i < 3; ++i) { dsr[i] = el_cp_r(0,i) - el_cp_s(0,i);}
 
         // dsr contains the component of the distance between the source and the receiver
         dsr = il::dot(R, dsr);
@@ -822,7 +822,7 @@ namespace bie{
                 }
         }
 
-        return change_ref_system(DDs_to_traction_local_local, I_want_global_DD, I_want_global_traction, R, elem_data_r.rotationMatrix());
+        return change_ref_system(DDs_to_traction_local_local, I_want_global_DD, I_want_global_traction, R, elem_data_r.rotationMatrix(true));
 
         // | t1/Dshear1   t1/Dshear2  t1/Dnormal |
         // | t2/Dshear1   t2/Dshear2  t2/Dnormal |
@@ -850,7 +850,7 @@ namespace bie{
         el_cp_r = elem_data_r.getCollocationPoints();
 
         il::Array2D<double> R;
-        R = elem_data_s.rotationMatrix();
+        R = elem_data_s.rotationMatrix(true);
 
         il::Array<double> dsr{3};
         for (int i = 0; i < 3; ++i) { dsr[i] = el_cp_r(0,i) - el_cp_s(0,i); }
@@ -870,7 +870,7 @@ namespace bie{
         //   1      -> |       Uy,            Uy,             Uy            |
         //   2      -> |       Uz,            Uz,             Uz            |
 
-        return change_ref_system(DDs_to_Displacement_local_local, I_want_global_DD, I_want_global_displacement, R, elem_data_r.rotationMatrix());
+        return change_ref_system(DDs_to_Displacement_local_local, I_want_global_DD, I_want_global_displacement, R, elem_data_r.rotationMatrix(true));
 
         // | U1/Dshear1   U1/Dshear2  U1/Dnormal |
         // | U2/Dshear1   U2/Dshear2  U2/Dnormal |
@@ -899,7 +899,7 @@ namespace bie{
         il::Array2D<double> el_cp_s;
         el_cp_s = elem_data_s.getCollocationPoints();
 
-        il::Array2D<double> R = elem_data_s.rotationMatrix(false); // R(g->l)
+        il::Array2D<double> R = elem_data_s.rotationMatrix(true); // R(g->l)
 
         il::Array<double> dsr{3};
         for (int i = 0; i < 3; ++i) { dsr[i] = observ_pt[i] - el_cp_s(0,i);}
@@ -967,7 +967,7 @@ namespace bie{
         il::Array2D<double> el_cp_s;
         el_cp_s = elem_data_s.getCollocationPoints();
 
-        il::Array2D<double> R = elem_data_s.rotationMatrix(false); // R(g->l)
+        il::Array2D<double> R = elem_data_s.rotationMatrix(true); // R(g->l)
 
         il::Array<double> dsr{3};
         for (int i = 0; i < 3; ++i) { dsr[i] = observ_pt[i] - el_cp_s(0,i); }
