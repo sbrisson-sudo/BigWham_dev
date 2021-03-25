@@ -34,6 +34,7 @@
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/3d/ElasticHMatrix3DR0.h>
+#include <elasticity/3d/ElasticHMatrix3DR0_displ.h>
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
 
@@ -318,20 +319,21 @@ class Bigwhamio {
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
                   << collocationPoints_.size(1) << "\n";
 
-        int I_want_DD_to_traction_kernel = 999;
-
         if (kernel_ == "3DR0") {
           // DD to traction HMAT
-          I_want_DD_to_traction_kernel = 1;
+            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
+            const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
+            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         } else if (kernel_ == "3DR0_displ") {
           // DD to displacement HMAT
-          I_want_DD_to_traction_kernel = 0;
+            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
+            const bie::ElasticHMatrix3DR0displ<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
+            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+        } else {
+            std::cout << "\n ERROR! unknown Kernel name: " << kernel_ << "\n  ";
+            il::abort();
         }
-          std::cout << "\n Kernel: "<< kernel_ << " " <<  I_want_DD_to_traction_kernel<< "\n  ";
 
-          const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0,
-            I_want_DD_to_traction_kernel};
-        h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         std::cout << "HMAT --> built \n";
 
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "

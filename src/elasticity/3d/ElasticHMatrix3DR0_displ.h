@@ -20,7 +20,7 @@
 namespace bie {
 
     template <typename T>
-    class ElasticHMatrix3DR0 : public il::MatrixGenerator<T> {
+    class ElasticHMatrix3DR0displ : public il::MatrixGenerator<T> {
      private:
       il::Array2D<double> point_;
 
@@ -32,7 +32,7 @@ namespace bie {
       il::int_t I_want_global_DD;
       il::int_t I_want_global_codomain;
       bie::ElasticProperties const elas_;
-      ElasticHMatrix3DR0(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+      ElasticHMatrix3DR0displ(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
                          bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas,
                          il::int_t I_want_global_DD,
                          il::int_t I_want_global_codomain);
@@ -44,7 +44,7 @@ namespace bie {
     };
 
     template <typename T>
-    ElasticHMatrix3DR0<T>::ElasticHMatrix3DR0(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+    ElasticHMatrix3DR0displ<T>::ElasticHMatrix3DR0displ(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
       bie::Mesh3D &i_meshtools,bie::ElasticProperties &elas, il::int_t I_want_global_DD,
       il::int_t I_want_global_codomain)  // il::Array2D<il::int_t> // &binary_ind_pts_at_front
       : point_{point}, //std::move(point) never fucking do that !
@@ -58,26 +58,26 @@ namespace bie {
     };
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0<T>::size(il::int_t d) const {
+    il::int_t ElasticHMatrix3DR0displ<T>::size(il::int_t d) const {
       IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
       return mesh_.numberCollPts() * 3;  // num of nodes * (# of degree of freedom per node)
     }
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0<T>::blockSize() const {
+    il::int_t ElasticHMatrix3DR0displ<T>::blockSize() const {
       return 3;  // # of degree of freedom per node
     }
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0<T>::sizeAsBlocks(il::int_t d) const {
+    il::int_t ElasticHMatrix3DR0displ<T>::sizeAsBlocks(il::int_t d) const {
       IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
       return (mesh_.numberCollPts());
     }
 
     template <typename T>
-    void ElasticHMatrix3DR0<T>::set(il::int_t b0,
+    void ElasticHMatrix3DR0displ<T>::set(il::int_t b0,
                                     il::int_t b1,
                                     il::io_t,
                                     il::Array2DEdit<T> M) const
@@ -143,11 +143,11 @@ namespace bie {
                 xv = mesh_.getVerticesElt(e_k0); // get vertices' coordinates of receiver element
                 bie::FaceData elem_data_r(xv, 0); // 0 = interpolation order
 
-                stnl = bie::traction_influence_3DR0(elem_data_s,
-                                                             elem_data_r,
-                                                             elas_,
-                                                             I_want_global_DD,
-                                                             I_want_global_codomain); //https://en.wikipedia.org/wiki/Codomain
+                stnl = bie::displacement_influence_3DR0(elem_data_s, // source element
+                                                                    elem_data_r, // receiver element
+                                                                    elas_, // elastic properties
+                                                                    I_want_global_DD ,
+                                                                    I_want_global_codomain); //https://en.wikipedia.org/wiki/Codomain
 
                 for (il::int_t j = 0; j < 3; j++)
                 {
