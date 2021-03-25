@@ -20,7 +20,7 @@
 namespace bie {
 
     template <typename T>
-    class ElasticHMatrix3DR0 : public il::MatrixGenerator<T> {
+    class ElasticHMatrix3DR0opening : public il::MatrixGenerator<T> {
      private:
       il::Array2D<double> point_;
 
@@ -30,7 +30,7 @@ namespace bie {
 
      public:
       bie::ElasticProperties const elas_;
-      ElasticHMatrix3DR0(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+      ElasticHMatrix3DR0opening(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
                          bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas);
 
       il::int_t size(il::int_t d) const override;
@@ -40,7 +40,7 @@ namespace bie {
     };
 
     template <typename T>
-    ElasticHMatrix3DR0<T>::ElasticHMatrix3DR0(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+    ElasticHMatrix3DR0opening<T>::ElasticHMatrix3DR0opening(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
       bie::Mesh3D &i_meshtools,bie::ElasticProperties &elas)  // il::Array2D<il::int_t> // &binary_ind_pts_at_front
       : point_{point}, //std::move(point) never fucking do that !
         permutation_{permutation},
@@ -51,26 +51,26 @@ namespace bie {
     };
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0<T>::size(il::int_t d) const {
+    il::int_t ElasticHMatrix3DR0opening<T>::size(il::int_t d) const {
       IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
       return mesh_.numberCollPts();  // num of nodes * (# of degree of freedom per node)
     }
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0<T>::blockSize() const {
+    il::int_t ElasticHMatrix3DR0opening<T>::blockSize() const {
       return 1;  // # of degree of freedom per node
     }
 
     template <typename T>
-    il::int_t ElasticHMatrix3DR0<T>::sizeAsBlocks(il::int_t d) const {
+    il::int_t ElasticHMatrix3DR0opening<T>::sizeAsBlocks(il::int_t d) const {
       IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
       return (mesh_.numberCollPts());
     }
 
     template <typename T>
-    void ElasticHMatrix3DR0<T>::set(il::int_t b0,
+    void ElasticHMatrix3DR0opening<T>::set(il::int_t b0,
                                     il::int_t b1,
                                     il::io_t,
                                     il::Array2DEdit<T> M) const
