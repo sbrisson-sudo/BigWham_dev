@@ -34,6 +34,8 @@
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/3d/ElasticHMatrix3DR0.h>
+#include <elasticity/3d/ElasticHMatrix3DR0displ.h>
+#include <elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h>
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
 
@@ -196,26 +198,33 @@ class Bigwhamio {
                 << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
       tt.Reset();
     } else if (kernel_ == "3DT6" || kernel_ == "3DR0_displ" ||
-               kernel_ == "3DR0" || kernel_ == "3DT0") {
+               kernel_ == "3DR0" || kernel_ == "3DT0" || kernel_ == "3DR0opening" ) {
       // check this  NOTE 1: the 3D mesh uses points and connectivity matrix
       // that are transposed w.r. to the 2D mesh
 
       // step 1 - create the mesh object
       dimension_ = 3;
-      dof_dimension_ = 3;
 
       il::int_t nnodes_elts = 0;  // n of nodes per element
       int p = 0;                  // interpolation order
       if (kernel_ == "3DT6") {
+        dof_dimension_ = 3;
         nnodes_elts = 3;
         p = 2;
       } else if (kernel_ == "3DT0") {
+        dof_dimension_ = 3;
         nnodes_elts = 3;
         p = 0;
       } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0") {
+        dof_dimension_ = 3;
         nnodes_elts = 4;
         p = 0;
-      } else {
+      } else if (kernel_ == "3DR0opening") {
+          dof_dimension_ = 1;
+          nnodes_elts = 4;
+          p = 0;
+      }
+      else {
         std::cout << "Invalid kernel name ---\n";
         il::abort();
       };
@@ -312,26 +321,32 @@ class Bigwhamio {
         h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
                   << collocationPoints_.size(1) << "\n";
-      } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0") {
+      } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" || kernel_ == "3DR0opening") {
         std::cout
             << "Kernel Isotropic ELasticity 3D R0 (constant) rectangle \n";
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
                   << collocationPoints_.size(1) << "\n";
 
-        int I_want_DD_to_traction_kernel = 999;
-
         if (kernel_ == "3DR0") {
           // DD to traction HMAT
-          I_want_DD_to_traction_kernel = 1;
+            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
+            const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
+            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         } else if (kernel_ == "3DR0_displ") {
           // DD to displacement HMAT
-          I_want_DD_to_traction_kernel = 0;
+            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
+            const bie::ElasticHMatrix3DR0displ<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
+            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+        } else if (kernel_ == "3DR0opening") {
+            // DD to displacement HMAT
+            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
+            const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{collocationPoints_, permutation_, mesh3d, elas};
+            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+        } else {
+            std::cout << "\n ERROR! unknown Kernel name: " << kernel_ << "\n  ";
+            il::abort();
         }
-          std::cout << "\n Kernel: "<< kernel_ << " " <<  I_want_DD_to_traction_kernel<< "\n  ";
 
-          const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0,
-            I_want_DD_to_traction_kernel};
-        h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         std::cout << "HMAT --> built \n";
 
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "

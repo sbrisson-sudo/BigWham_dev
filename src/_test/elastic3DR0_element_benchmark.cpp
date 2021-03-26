@@ -294,7 +294,7 @@ TEST(R0, benchmark3_displ) {
      * This benchmark tests the kernel 3DR0.
      * Consider a rectangular crack initially lying on a plane xy
      * The edges of such crack are 2a (a=2 )and 2b (b=4) respectively initially parallel to the axes x and y.
-     * Then we apply a rotation to te plane according to the following matrix:
+     * Then we apply a rotation to te plane according to the following matrix: (local to global matrix)
      *
      *  |-0.690578, 0.597022, -0.408248|
      *  |0.568711, 0.0995037, -0.816497|
@@ -329,9 +329,9 @@ TEST(R0, benchmark3_displ) {
     std::vector<double>  dd_solution_g(mymesh.nelts * 3), obsPoints = {0.,0.,0., 100., 100., 100.};
 
     for(int x = 0; x < mymesh.nelts * 3; x=x+3)
-    { dd_solution_g[x] = -0.5687111245916712;
-      dd_solution_g[x+1] = -0.09950371902099886;
-      dd_solution_g[x+2] = -1.6329931618554523;}
+    { dd_solution_g[x] = -0.5018039999999999;
+      dd_solution_g[x+1] = -0.1482823;
+      dd_solution_g[x+2] = -1.651122;}
 
     std::vector<double> stressATpoints_0 = tractionHMAT.computeStresses(dd_solution_g, obsPoints, 2, properties ,mymesh.coor, mymesh.conn, true);
 
@@ -357,15 +357,15 @@ TEST(R0, benchmark3_displ) {
     // solution at point {0,0,0}:
 
     // Rotation matricies:
-    il::Array2D<double> R{3,3,0.}; // global to local ...R(g->l)
-    R(0,0) = -0.690578; R(0,1) = 0.597022; R(0,2) = -0.408248;
-    R(1,0) = 0.568711;  R(1,1) = 0.0995037; R(1,2) = -0.816497;
-    R(2,0) = -0.446844; R(2,1) = -0.79603; R(2,2) = -0.408248;
+    il::Array2D<double> RT{3,3,0.}; // global to local ...R(g->l)
+    RT(0,0) = -0.690578; RT(0,1) = 0.597022; RT(0,2) = -0.408248;
+    RT(1,0) = 0.568711;  RT(1,1) = 0.0995037; RT(1,2) = -0.816497;
+    RT(2,0) = -0.446844; RT(2,1) = -0.79603; RT(2,2) = -0.408248;
 
-    il::Array2D<double> RT{3,3,0.}; // local to global ...R(l->g)
-    RT(0,0) = -0.690578; RT(0,1) = 0.568711;  RT(0,2) = -0.446844;
-    RT(1,0) =  0.597022; RT(1,1) = 0.0995037; RT(1,2) = -0.79603;
-    RT(2,0) =  -0.408248; RT(2,1) = -0.816497;  RT(2,2) =  -0.408248;
+    il::Array2D<double> R{3,3,0.}; // local to global ...R(l->g)
+    R(0,0) = -0.690578; R(0,1) = 0.568711;  R(0,2) = -0.446844;
+    R(1,0) =  0.597022; R(1,1) = 0.0995037; R(1,2) = -0.79603;
+    R(2,0) =  -0.408248; R(2,1) = -0.816497;  R(2,2) =  -0.408248;
 
     double x, y, z, a, b, G, nu;
     il::Array<double> center_translation ={il::value,{10,20,30}};
@@ -503,8 +503,8 @@ TEST(R0, benchmark3_displ) {
 
     // check that, if properly done, prescribing global DD or local DDs does not matter
     ASSERT_NEAR(displATpoints_0[0], displATpoints[0], 2.e-5);
-    ASSERT_NEAR(displATpoints_0[1], displATpoints[1], 2.e-5);
-    ASSERT_NEAR(displATpoints_0[2], displATpoints[2], 2.e-5);
+    ASSERT_NEAR(displATpoints_0[1], displATpoints[1], 8.e-5);
+    ASSERT_NEAR(displATpoints_0[2], displATpoints[2], 6.e-5);
     ASSERT_NEAR(displATpoints_0[3], displATpoints[3], 2.e-5);
     ASSERT_NEAR(displATpoints_0[4], displATpoints[4], 2.e-5);
     ASSERT_NEAR(displATpoints_0[5], displATpoints[5], 2.e-5);
@@ -613,7 +613,7 @@ TEST(R0, benchmark_penny_shaped_crack) {
     for(int i = 0; i < mymesh.nelts * 3; i= i + 3)
     {
         bie::FaceData face = mesh3d.getElementData(elem);
-        il::Array2D<double> R = face.rotationMatrix(); // g->l rotation matrix
+        il::Array2D<double> R = face.rotationMatrix(true); // g->l rotation matrix
         load_l = il::dot(R,load_g); // get the local load
 
         ff[i] =   load_l[0];
@@ -729,7 +729,7 @@ TEST(R0, benchmark_penny_shaped_crack) {
     for(int i = 0; i < mymesh.nelts * 3; i= i + 3)
     {
         bie::FaceData face = mesh3d.getElementData(elem);
-        il::Array2D<double> R = face.rotationMatrix(); // g->l rotation matrix
+        il::Array2D<double> R = face.rotationMatrix(true); // g->l rotation matrix
         load_l = il::dot(R,load_g); // get the local load
 
         ff[i] =   load_l[0];

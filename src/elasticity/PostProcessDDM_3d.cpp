@@ -74,7 +74,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
             // if the given DDs are global we need to get them to local
           // TODO: I think this does not work for elements with more than 1 cp (3DT6)
             if (are_dd_global){
-                elt_DD = il::dot(mysege.rotationMatrix(true),elt_DD); // TODO: be careful here with Carlo when merging, He's using the rotation matrix in a different way
+                elt_DD = il::dot(mysege.rotationMatrix(true),elt_DD);
             }
 
             // loop on all observation points to compute the stresses
@@ -150,7 +150,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
 
             // if the given DDs are global we need to get them to local
             if (are_dd_global){
-                elt_DD = il::dot(mysege.rotationMatrix(0),elt_DD);
+                elt_DD = il::dot(mysege.rotationMatrix(true),elt_DD);
             }
 
             // loop on all observation points to compute the stresses

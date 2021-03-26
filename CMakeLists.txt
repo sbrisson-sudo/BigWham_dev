@@ -244,8 +244,12 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DT0.h
         #  - R0 element
 #        src/elasticity/3d/Elastic3DR0_element.h
+        src/elasticity/3d/Elastic3DR0_common.cpp
         src/elasticity/3d/Elastic3DR0_element.cpp
+        src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian_element.cpp
         src/elasticity/3d/ElasticHMatrix3DR0.h
+        src/elasticity/3d/ElasticHMatrix3DR0displ.h
+        src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
         # Solver
         src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
