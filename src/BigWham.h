@@ -557,7 +557,7 @@ class Bigwhamio {
       il::int_t index=0;
       for (il::int_t j=0;j<A.size(1);j++){
         for (il::int_t i=0;i<A.size(0);i++){
-          pos_list[npos+2*index]=i+i0;
+          pos_list[npos+2*index]=i+i0; // returning the permutted state here
           pos_list[npos+2*index+1]=j+j0;
           val_list[nr+index]=A(i,j);
           index++;
@@ -586,7 +586,7 @@ class Bigwhamio {
 
     for (il::int_t i = 0; i < numberofcollocationpoints; i++) {
       for (int j = 0; j < dof_dimension_; j++) {
-        z[dof_dimension_ * i + j] = x[dof_dimension_ * (permutation_[i]) + j];
+        z[dof_dimension_ * i + j] = x[dof_dimension_ * permutation_[i] + j];
       }
     }
 
@@ -598,7 +598,7 @@ class Bigwhamio {
     // permut back
     for (il::int_t i = 0; i < numberofcollocationpoints; i++) {
       for (int j = 0; j < dof_dimension_; j++) {
-        y[dof_dimension_ * (this->permutation_[i]) + j] =
+        y[dof_dimension_ * permutation_[i] + j] =
             z[dof_dimension_ * i + j];
       }
     }
