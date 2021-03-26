@@ -2279,7 +2279,7 @@ int main() {
 
   std::cout << "++++++++++++++++++++\n";
 
-  int a = check3DR0();
+ // int a = check3DR0();   // this gives an error - Can't open the file - make sure that test in the main are short and can be run when pushed.
 
 
   //test3DR0();
@@ -2290,7 +2290,7 @@ int main() {
   //testS3DP0();
 
 //  testFullMat();
-  //testHdot();
+  testHdot();
 
 //// tests for 3DT6 not updated since the change of interface
 //test3DT6Mesh();
