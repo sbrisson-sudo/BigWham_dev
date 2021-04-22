@@ -334,7 +334,7 @@ class Bigwhamio {
             h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         } else if (kernel_ == "3DR0_displ") {
           // DD to displacement HMAT
-            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
+            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< displacement kernel >"<< "\n  ";
             const bie::ElasticHMatrix3DR0displ<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
             h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         } else if (kernel_ == "3DR0opening") {
