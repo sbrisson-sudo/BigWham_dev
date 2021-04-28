@@ -64,10 +64,10 @@ public:
     // the object is indeed constructed by the vertices as input, however is needed due to the way the
     // construction of the elasticity matrix is coded up for quadratic (p=2) elements. This function
     // should be deleted in the future
-    const double getBeta1(); // this function is needed because in the construction of the
+    double getBeta1() const; // this function is needed because in the construction of the
     // elasticity matrix the computation of the collocation points is duplicated (done by a previous
     // function of Dmitry). This function should be deleted in the future
-    const double getBeta2(); // same as before
+    double getBeta2() const; // same as before
 
     // uncomment the following if needed ...
 //    il::StaticArray<double, 3> getCentroid() { return xc_;};

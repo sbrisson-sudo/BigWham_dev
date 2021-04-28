@@ -158,11 +158,11 @@ namespace bie {
         return vertices_;
     }
 
-    const double FaceData::getBeta1() {
+    double FaceData::getBeta1() const {
         return beta1_;
     }
 
-    const double FaceData::getBeta2() {
+    double FaceData::getBeta2() const {
         return beta2_;
     }
 
