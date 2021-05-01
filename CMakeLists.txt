@@ -209,14 +209,14 @@ endif()
 
 set(SOURCE_FILES_DIR ${PROJECT_SOURCE_DIR}/src)
 
-include_directories(il $ENV{TBBROOT}/include/tbb   src  Hmat-lib .)
+include_directories(il $ENV{TBBROOT}/include/tbb   src src/hmat .)
 
 MESSAGE("Using TBB:")
 MESSAGE("-- The TBB is found at: " $ENV{TBBROOT})
 
 set(SOURCE_FILES
-        Hmat-lib/cluster/cluster.h
-        Hmat-lib/cluster/cluster.cpp
+        src/hmat/cluster/cluster.h
+        src/hmat/cluster/cluster.cpp
         # 2D source code
         src/core/Mesh2D.cpp src/core/Mesh2D.h
         src/core/SegmentData.h
@@ -230,7 +230,7 @@ set(SOURCE_FILES
         src/elasticity/2d/FullMatrixAssembly2D.cpp
         src/elasticity/2d/FullMatrixAssembly2D.h
         # 3D source code
-        Hmat-lib/linearAlgebra/factorization/lowRankApproximation.cpp
+        src/hmat/linearAlgebra/factorization/lowRankApproximation.cpp
         src/core/Mesh3D.cpp src/core/Mesh3D.h
         src/core/FaceData.cpp
         #  - T6 element

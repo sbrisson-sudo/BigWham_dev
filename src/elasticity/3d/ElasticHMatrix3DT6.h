@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
+#include <hmat/arrayFunctor/MatrixGenerator.h>
 #include <elasticity/3d/Elastic3DT6_element.h>
 #include <src/core/ElasticProperties.h>
 #include <src/core/FaceData.h>

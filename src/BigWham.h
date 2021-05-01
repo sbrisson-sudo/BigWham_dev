@@ -18,11 +18,11 @@
 #include <il/Map.h>
 #include <il/SparseMatrixCSR.h>
 
-#include <Hmat-lib/cluster/cluster.h>
-#include <Hmat-lib/compression/toHMatrix.h>
-#include <Hmat-lib/hmatrix/HMatrix.h>
-#include <Hmat-lib/hmatrix/HMatrixUtils.h>
-#include <Hmat-lib/linearAlgebra/blas/hdot.h>
+#include <hmat/cluster/cluster.h>
+#include <hmat/compression/toHMatrix.h>
+#include <hmat/hmatrix/HMatrix.h>
+#include <hmat/hmatrix/HMatrixUtils.h>
+#include <hmat/linearAlgebra/blas/hdot.h>
 
 #include <src/core/ElasticProperties.h>
 #include <src/core/Mesh2D.h>
@@ -41,7 +41,7 @@
 
 #pragma once
 
-#include <Hmat-lib/linearAlgebra/factorization/luDecomposition.h>
+#include <hmat/linearAlgebra/factorization/luDecomposition.h>
 #include <il/Gmres.h>
 #include <src/elasticity/jacobi_prec_assembly.h>  // for diagonal
 #include <src/solvers/HIterativeSolverUtilities.h>

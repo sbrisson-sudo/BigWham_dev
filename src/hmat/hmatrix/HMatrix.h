@@ -5,8 +5,8 @@
 #include <il/Array2D.h>
 #include <il/Map.h>
 
-#include <Hmat-lib/hmatrix/HMatrixNode.h>
-#include <Hmat-lib/hmatrix/HMatrixType.h>
+#include <hmat/hmatrix/HMatrixNode.h>
+#include <hmat/hmatrix/HMatrixType.h>
 
 namespace il {
 

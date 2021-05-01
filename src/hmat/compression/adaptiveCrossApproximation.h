@@ -4,8 +4,8 @@
 #include <il/linearAlgebra/dense/blas/blas_static.h>
 #include <il/math.h>
 
-#include <Hmat-lib/compression/routines.h>
-#include <Hmat-lib/hmatrix/LowRank.h>
+#include <hmat/compression/routines.h>
+#include <hmat/hmatrix/LowRank.h>
 
 namespace il {
 

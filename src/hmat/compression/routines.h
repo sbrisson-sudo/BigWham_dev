@@ -8,7 +8,7 @@
 #include <il/linearAlgebra/dense/factorization/LU.h>
 #include <il/linearAlgebra/dense/factorization/Singular.h>
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
+#include <hmat/arrayFunctor/MatrixGenerator.h>
 
 namespace il {
 

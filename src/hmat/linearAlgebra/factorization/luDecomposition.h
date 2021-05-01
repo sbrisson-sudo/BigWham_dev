@@ -4,8 +4,8 @@
 
 #include <il/linearAlgebra/dense/factorization/luDecomposition.h>
 
-#include <Hmat-lib/hmatrix/HMatrix.h>
-#include <Hmat-lib/linearAlgebra/blas/hsolve.h>
+#include <hmat/hmatrix/HMatrix.h>
+#include <hmat/linearAlgebra/blas/hsolve.h>
 
 #ifdef IL_PARALLEL
 #include <tbb/tbb.h>

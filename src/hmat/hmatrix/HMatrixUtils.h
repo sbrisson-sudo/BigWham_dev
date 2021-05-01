@@ -3,8 +3,9 @@
 #include <fstream>
 #include <iostream>
 
-#include <Hmat-lib/hmatrix/HMatrix.h>
 #include <il/linearAlgebra.h>
+#include <hmat/hmatrix/HMatrix.h>
+
 
 namespace il {
 

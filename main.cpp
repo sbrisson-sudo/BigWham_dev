@@ -10,32 +10,33 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <il/Array2D.h>
-#include <src/core/FaceData.cpp>
-#include <src/core/FaceData.h>
-#include <BigWham.h>
-#include <src/elasticity/3d/Elastic3DT0_element.h>
 
 #include <string>
 #include <random>
+#include <chrono>
 
+#include <il/Array2D.h>
 
+#include <BigWham.h>
 
-#include <Hmat-lib/cluster/cluster.h>
-#include <Hmat-lib/compression/toHMatrix.h>
-#include <Hmat-lib/hmatrix/HMatrix.h>
-#include <Hmat-lib/hmatrix/HMatrixUtils.h>
-#include <Hmat-lib/linearAlgebra/blas/hdot.h>
-#include <Hmat-lib/linearAlgebra/factorization/luDecomposition.h>
+#include <hmat/cluster/cluster.h>
+#include <hmat/compression/toHMatrix.h>
+#include <hmat/hmatrix/HMatrix.h>
+#include <hmat/hmatrix/HMatrixUtils.h>
+#include <hmat/linearAlgebra/blas/hdot.h>
+#include <hmat/linearAlgebra/factorization/luDecomposition.h>
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
 #include <elasticity/PostProcessDDM_2d.h>
 #include <elasticity/2d/FullMatrixAssembly2D.h>
-#include <src/core/ElasticProperties.h>
+#include <elasticity/3d/Elastic3DT0_element.h>
+#include <core/ElasticProperties.h>
+#include <core/FaceData.cpp>
+#include <core/FaceData.h>
 //#include <src/solvers/HIterativeSolverUtilities.h>
-#include <src/_test/elastic3DR0_element_benchmark.h>
-#include <chrono>
+#include <_test/elastic3DR0_element_benchmark.h>
+
 
 int test2DP1(){
 

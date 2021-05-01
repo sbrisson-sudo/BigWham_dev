@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Hmat-lib/hmatrix/HMatrix.h>
-#include <Hmat-lib/hmatrix/LowRank.h>
+#include <hmat/hmatrix/HMatrix.h>
+#include <hmat/hmatrix/LowRank.h>
 #include <complex>
 
 namespace il {

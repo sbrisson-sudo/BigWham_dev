@@ -6,7 +6,7 @@
 #include <il/Array.h>
 #include <il/linearAlgebra.h>
 
-#include <Hmat-lib/hmatrix/HMatrix.h>
+#include <hmat/hmatrix/HMatrix.h>
 
 namespace il {
 
