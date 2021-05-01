@@ -93,63 +93,9 @@ il::Array<T> dot(const il::HMatrix<T>& A, const il::Array<T>& x) {
   return y;
 }
 
-// template <typename T>
-struct HdotBody {
-  const il::Array2D<il::int_t> pattern_;
-  const il::HMatrix<double> A_;
-  il::ArrayView<double> x_;
-  il::Array<double> y_;
-
-  // standard and splitting constructor
-  HdotBody(const il::HMatrix<double>& A,
-           const il::Array2D<il::int_t>& h_pattern, il::ArrayView<double> x)
-      : A_{A}, pattern_{h_pattern}, x_{x}, y_{A.size(0), 0.0} {};
-
-  HdotBody(HdotBody& body, tbb::split)
-      : A_{body.A_},
-        pattern_{body.pattern_},
-        x_{body.x_},
-        y_{body.A_.size(0), 0.0} {};
-
-  void operator()(const tbb::blocked_range<il::int_t>& r) {
-    for (il::int_t i = r.begin(); i < r.end(); i++) {
-      il::spot_t s(pattern_(0, i));
-      il::int_t i0 = pattern_(1, i) - 1;
-      il::int_t j0 = pattern_(2, i) - 1;
-
-      if (A_.isFullRank(s)) {
-        il::Array2DView<double> a = A_.asFullRank(s);
-        il::int_t i1 = i0 + a.size(0);
-        il::int_t j1 = j0 + a.size(1);
-        il::ArrayView<double> xs = x_.view(il::Range{j0, j1});
-        il::ArrayEdit<double> ys = y_.Edit(il::Range{i0, i1});
-        il::blas(1.0, a, xs, 1.0, il::io, ys);
-
-      } else if (A_.isLowRank(s)) {
-        il::Array2DView<double> a = A_.asLowRankA(s);
-        il::Array2DView<double> b = A_.asLowRankB(s);
-        il::int_t i1 = i0 + a.size(0);
-        il::int_t j1 = j0 + b.size(0);
-        il::ArrayView<double> xs = x_.view(il::Range{j0, j1});
-        il::ArrayEdit<double> ys = y_.Edit(il::Range{i0, i1});
-        // il::Array<double> ys{i1-i0,0.0};
-        const il::int_t r = a.size(1);
-        il::Array<double> tmp{r, 0.0};
-        il::blas(1.0, b, il::Dot::Transpose, xs, 0.0, il::io, tmp.Edit());
-        il::blas(1.0, a, tmp.view(), 1.0, il::io, ys);
-      }
-    }
-  }
-
-  void join(HdotBody& rhs) {
-    for (il::int_t i = 0; i < rhs.y_.size(); i++) {
-      y_[i] += rhs.y_[i];
-    }
-  }
-};
 
 
-//
+// full-rank dot product
 static void dotfullrank(const il::HMatrix<double>& A_,
                         const il::Array2D<il::int_t>& fullRank_pattern,
                         ArrayView<double> x_, il::io_t, il::Array<double>& y_) {
@@ -173,6 +119,7 @@ static void dotfullrank(const il::HMatrix<double>& A_,
   }
 }
 
+// low-rank block dot product
 static void dotlowrank(const il::HMatrix<double>& A_,
                        const il::Array2D<il::int_t>& lowRank_pattern,
                        ArrayView<double> x_, il::io_t, il::Array<double>& y_) {
@@ -198,6 +145,7 @@ static void dotlowrank(const il::HMatrix<double>& A_,
   }
 }
 
+// dot product with pattern using tbb parallel_invoke
 inline il::Array<double> dotwithpattern(
     const il::HMatrix<double>& A_, const il::Array2D<il::int_t>& FR_pattern,
     const il::Array2D<il::int_t>& LR_pattern,const Array<double>& x_) {
@@ -218,8 +166,8 @@ inline il::Array<double> dotwithpattern(
   return y_FR;
 }
 
-//
 
+//  serial dot product with the stored pattern
 static il::Array<double> dotwithpattern_serial(
     const il::HMatrix<double>& A_, const il::Array2D<il::int_t>& h_pattern,
     const il::Array<double>& x_) {
@@ -258,14 +206,6 @@ static il::Array<double> dotwithpattern_serial(
   }
   return y_;
 
-  // h dot knowing the h_pattern ...
-  //  std::cout << " dot with pattern \n";
-  //    HdotBody hdotbody(A_,h_pattern,x_.view());
-  ////////
-  //   tbb::parallel_reduce(tbb::blocked_range<il::int_t>(0,
-  //   h_pattern.size(1),10000),hdotbody);
-  ////
-  //   return  hdotbody.y_;
 }
 
 }  // namespace il

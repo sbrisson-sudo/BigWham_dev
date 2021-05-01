@@ -1,5 +1,8 @@
 #pragma once
 
+// This an example of a Matrix Generator needed to code for the implementation of a
+// BIE kernel
+
 #include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
 
 namespace il {

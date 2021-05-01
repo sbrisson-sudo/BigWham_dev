@@ -72,7 +72,6 @@ class Bigwhamio {
 
  public:
   //---------------------------------------------------------------------------
-
   Bigwhamio() {
     dimension_ = 0;
     dof_dimension_ = 0;
@@ -82,7 +81,9 @@ class Bigwhamio {
     max_leaf_size_ = 1;
     kernel_ = "none";
   };
+
   ~Bigwhamio() = default;
+
   void set(const std::vector<double>& coor, const std::vector<int64_t>& conn,
            const std::string& kernel, const std::vector<double>& properties,
            const int max_leaf_size, const double eta, const double eps_aca) {
@@ -139,10 +140,8 @@ class Bigwhamio {
           index++;
         }
       }
-
       bie::Mesh mesh2d(Coor, Conn, p);
-      std::cout << "... mesh done"
-                << "\n";
+      std::cout << "... mesh done"  << "\n";
       std::cout << "Number elts " << mesh2d.numberOfElts() << "\n";
 
       collocationPoints_ = mesh2d.getCollocationPoints();
@@ -155,7 +154,6 @@ class Bigwhamio {
       tt.Stop();
       std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
       tt.Reset();
-
       permutation_ = cluster.permutation;
       tt.Start();
       std::cout << "Creating hmatrix  Tree - \n";
@@ -262,8 +260,7 @@ class Bigwhamio {
       }
 
       bie::Mesh3D mesh3d(Coor, Conn, p);
-      std::cout << "... mesh done"
-                << "\n";
+      std::cout << "... mesh done" << "\n";
       std::cout << " Number elts " << mesh3d.numberOfElts() << "\n";
 
       collocationPoints_ = mesh3d.getCollocationPoints();
@@ -366,7 +363,7 @@ class Bigwhamio {
     };
 
     tt.Start();
-    std::cout << "now saving the H-mat patterns...  ";
+    std::cout << "now getting the H-mat pattern...  ";
     setHpattern();  // set Hpattern
     tt.Stop();
     std::cout << " in " << tt.time() << "\n";
@@ -386,11 +383,13 @@ class Bigwhamio {
 
     IL_EXPECT_FAST(h_.isBuilt());
     il::Array2D<il::int_t> pattern = il::output_hmatPattern(h_);
+    il::int_t  nblocks = il::numberofBlocks(h_);
+
     //  separate full rank and low rank blocks to speed up the hdot
     il::Array2D<il::int_t> lr_patt{pattern.size(0), 0};
     il::Array2D<il::int_t> fr_patt{pattern.size(0), 0};
-    lr_patt.Reserve(3, pattern.size(1));
-    fr_patt.Reserve(3, pattern.size(1));
+    lr_patt.Reserve(3, nblocks);
+    fr_patt.Reserve(3, nblocks);
     il::int_t nfb = 0;
     il::int_t nlb = 0;
     for (il::int_t i = 0; i < pattern.size(1); i++) {
@@ -508,7 +507,6 @@ class Bigwhamio {
       il::spot_t s(fr_pattern_(0, j));
       // check is low rank or not
       il::Array2DView<double> A = h_.asFullRank(s);
-
       patternlist[index++] = fr_pattern_(1, j);
       patternlist[index++] = fr_pattern_(2, j);
       patternlist[index++] = fr_pattern_(1, j) + A.size(0) - 1;
@@ -516,7 +514,6 @@ class Bigwhamio {
       patternlist[index++] = 0;
       patternlist[index++] = A.size(0) * A.size(1);
     }
-
     // then low ranks
     for (il::int_t j = 0; j < lowRankPatternSize1; j++) {
       il::spot_t s(lr_pattern_(0, j));
