@@ -76,8 +76,11 @@ if(APPLE)
 #    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
 elseif(UNIX)
     if(USE_INTEL)
-        set(CMAKE_C_COMPILER /opt/intel/compilers_and_libraries/linux/bin/intel64/icc)
-        set(CMAKE_CXX_COMPILER /opt/intel/compilers_and_libraries/linux/bin/intel64/icpc)
+        #set(CMAKE_C_COMPILER /opt/intel/compilers_and_libraries/linux/bin/intel64/icc)
+        #set(CMAKE_CXX_COMPILER /opt/intel/compilers_and_libraries/linux/bin/intel64/icpc)
+        set(CMAKE_C_COMPILER /opt/intel/bin/icc)
+        set(CMAKE_CXX_COMPILER /opt/intel/bin/icpc)
+
     else()
         set(CMAKE_C_COMPILER /usr/bin/gcc)
         set(CMAKE_CXX_COMPILER /usr/bin/g++)
@@ -149,12 +152,13 @@ if(IL_MKL)
             #            link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib $ENV{TBBROOT}/lib)
 
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -DIL_MKL") # -DIL_BLAS
+            MESSAGE("-- The MKL is found at: " $ENV{MKLROOT}/lib/)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -m64 -lmkl_sequential -DIL_MKL ") #-m64 -DIL_BLAS
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed")
-            set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/intel64/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/intel64/libmkl_core.a $ENV{MKLROOT}/lib/intel64/libmkl_sequential.a  tbb dl  pthread  m) #mkl_intel_thread mkl_sequential  iomp5
-            link_directories($ENV{MKLROOT}/lib/intel64_lin)
-            link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib )
-            # link_directories(/opt/intel/mkl/lib/intel64/opt/intel/compilers_and_libraries/linux/lib/intel64)
+            set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/intel64/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/intel64/libmkl_core.a $ENV{MKLROOT}/lib/intel64/libmkl_sequential.a tbb dl pthread m)
+            link_directories($ENV{MKLROOT}/lib/intel64 $ENV{MKLROOT}/../compilers_and_libraries/linux/lib/intel64 $ENV{TBBROOT}/lib/intel64/gcc4.7)
+            #link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib )
+            # link_directories(/opt/intel/mkl/lib/intel64 /opt/intel/compilers_and_libraries/linux/lib/intel64)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mkl=sequential -DIL_MKL -DIL_BLAS")
             set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/libmkl_core.a $ENV{MKLROOT}/lib/libmkl_sequential.a  tbb dl  pthread  m) #mkl_intel_thread mkl_sequential  iomp5
@@ -326,6 +330,12 @@ if(BUILD_PYTHON_BINDINGS)
     add_custom_command(TARGET pypart POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PROJECT_SOURCE_DIR}/pybind_test/pypart.so
             COMMENT "Created  ${PROJECT_SOURCE_DIR}/pybind_test/pypart.so")
+
+    # this command is needed to copy the library pypart to a specific location
+    set(PYFRAC_DIR /home/peruzzo/PycharmProjects/PyFrac/src)
+    add_custom_command(TARGET pypart POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PYFRAC_DIR}/pypart.so
+            COMMENT "Created  ${PYFRAC_DIR}/pypart.so")
 endif()
 ################################################################################
 # For Unit Tests
