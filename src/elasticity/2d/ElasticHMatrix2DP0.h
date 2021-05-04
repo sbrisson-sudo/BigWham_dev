@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
+#include <hmat/arrayFunctor/MatrixGenerator.h>
 
 #include <src/core/Mesh2D.h>
 #include <src/core/ElasticProperties.h>

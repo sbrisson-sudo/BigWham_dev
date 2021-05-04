@@ -2,9 +2,9 @@
 
 #include <il/Tree.h>
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
-#include <Hmat-lib/compression/adaptiveCrossApproximation.h>
-#include <Hmat-lib/hmatrix/HMatrix.h>
+#include <hmat/arrayFunctor/MatrixGenerator.h>
+#include <hmat/compression/adaptiveCrossApproximation.h>
+#include <hmat/hmatrix/HMatrix.h>
 
 #ifdef IL_PARALLEL
 #include <tbb/tbb.h>
@@ -49,7 +49,6 @@ void hmatrix_rec(const il::MatrixGenerator<T>& matrix,
     } break;
     case il::HMatrixType::Hierarchical: {
       hm.SetHierarchical(shm);
-
 //#ifdef IL_PARALLEL
 // This cannot be done for the time being because allocating new nodes
 // is not thread-safe

@@ -2,10 +2,10 @@
 
 #include <il/blas.h>
 
-#include <Hmat-lib/hmatrix/HMatrix.h>
-#include <Hmat-lib/hmatrix/LowRank.h>
-#include <Hmat-lib/linearAlgebra/blas/hblas.h>
-#include <Hmat-lib/linearAlgebra/factorization/lowRankApproximation.h>
+#include <hmat/hmatrix/HMatrix.h>
+#include <hmat/hmatrix/LowRank.h>
+#include <hmat/linearAlgebra/blas/hblas.h>
+#include <hmat/linearAlgebra/factorization/lowRankApproximation.h>
 
 namespace il {
 

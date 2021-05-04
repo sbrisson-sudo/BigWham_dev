@@ -4,7 +4,7 @@
 #include <il/linearAlgebra/Matrix.h>
 #include <il/linearAlgebra/dense/factorization/qrDecomposition.h>
 
-#include <Hmat-lib/linearAlgebra/factorization/lowRankApproximation.h>
+#include <hmat/linearAlgebra/factorization/lowRankApproximation.h>
 
 #ifdef IL_MKL
 #include <mkl_lapacke.h>

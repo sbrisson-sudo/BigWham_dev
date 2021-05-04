@@ -10,7 +10,7 @@
 #include <il/Tree.h>
 #include <il/algorithmArray2D.h>
 
-#include <Hmat-lib/hmatrix/HMatrixType.h>
+#include <hmat/hmatrix/HMatrixType.h>
 
 namespace il {
 

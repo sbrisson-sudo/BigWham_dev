@@ -12,7 +12,7 @@
 #include <tbb/tbb.h>
 #include <string>
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
+#include <hmat/arrayFunctor/MatrixGenerator.h>
 
 #include <elasticity/2d/Elastic2DP1_element.h>
 #include <elasticity/2d/FullMatrixAssembly2D.h>

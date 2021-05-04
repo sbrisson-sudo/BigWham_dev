@@ -16,7 +16,7 @@
 #include <il/Array.h>
 #include <il/Gmres.h>
 
-#include <Hmat-lib/linearAlgebra/blas/hdot.h>
+#include <hmat/linearAlgebra/blas/hdot.h>
 
 namespace bie {
 

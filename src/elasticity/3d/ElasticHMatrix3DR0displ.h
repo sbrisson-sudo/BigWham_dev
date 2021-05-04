@@ -11,7 +11,7 @@
 #pragma once
 #include <string>
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
+#include <hmat/arrayFunctor/MatrixGenerator.h>
 #include <elasticity/3d/Elastic3DR0_element.h>
 #include <src/core/ElasticProperties.h>
 #include <src/core/FaceData.h>

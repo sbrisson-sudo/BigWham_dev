@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Hmat-lib/hmatrix/HMatrixType.h>
+#include <hmat/hmatrix/HMatrixType.h>
 #include <il/Array2D.h>
 #include <il/linearAlgebra/Matrix.h>
 

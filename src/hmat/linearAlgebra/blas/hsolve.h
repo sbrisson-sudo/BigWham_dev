@@ -14,16 +14,15 @@
 
 //#include <Matrix.h>
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
-
 #include <il/Array2DView.h>
 #include <il/ArrayView.h>
 #include <il/linearAlgebra/Matrix.h>
 #include <il/linearAlgebra/dense/blas/solve.h>
-#include <Hmat-lib/linearAlgebra/blas/hblas.h>
-#include <Hmat-lib/linearAlgebra/blas/hsolve.h>
 
-#include <Hmat-lib/hmatrix/HMatrix.h>
+#include <hmat/arrayFunctor/MatrixGenerator.h>
+#include <hmat/linearAlgebra/blas/hblas.h>
+#include <hmat/linearAlgebra/blas/hsolve.h>
+#include <hmat/hmatrix/HMatrix.h>
 
 #ifdef IL_PARALLEL
 #include <tbb/tbb.h>

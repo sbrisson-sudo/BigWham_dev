@@ -10,32 +10,33 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-#include <il/Array2D.h>
-#include <src/core/FaceData.cpp>
-#include <src/core/FaceData.h>
-#include <BigWham.h>
-#include <src/elasticity/3d/Elastic3DT0_element.h>
 
 #include <string>
 #include <random>
+#include <chrono>
 
+#include <il/Array2D.h>
 
+#include <BigWham.h>
 
-#include <Hmat-lib/cluster/cluster.h>
-#include <Hmat-lib/compression/toHMatrix.h>
-#include <Hmat-lib/hmatrix/HMatrix.h>
-#include <Hmat-lib/hmatrix/HMatrixUtils.h>
-#include <Hmat-lib/linearAlgebra/blas/hdot.h>
-#include <Hmat-lib/linearAlgebra/factorization/luDecomposition.h>
+#include <hmat/cluster/cluster.h>
+#include <hmat/compression/toHMatrix.h>
+#include <hmat/hmatrix/HMatrix.h>
+#include <hmat/hmatrix/HMatrixUtils.h>
+#include <hmat/linearAlgebra/blas/hdot.h>
+#include <hmat/linearAlgebra/factorization/luDecomposition.h>
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
 #include <elasticity/PostProcessDDM_2d.h>
 #include <elasticity/2d/FullMatrixAssembly2D.h>
-#include <src/core/ElasticProperties.h>
+#include <elasticity/3d/Elastic3DT0_element.h>
+#include <core/ElasticProperties.h>
+#include <core/FaceData.cpp>
+#include <core/FaceData.h>
 //#include <src/solvers/HIterativeSolverUtilities.h>
-#include <src/_test/elastic3DR0_element_benchmark.h>
-#include <chrono>
+#include <_test/elastic3DR0_element_benchmark.h>
+
 
 int test2DP1(){
 
@@ -303,11 +304,11 @@ int testS3DP0(){
             <<  " CR :"<< testbie.getCompressionRatio() << " CR   " <<"\n";
 
 
-  std::cout << " TEst h - pattern \n";
+//  std::cout << " Test h - pattern \n";
+//
+//  std::string hpatfilename = "/Users/bricelecampion/ClionProjects/BigWham/cmake-build-debug/Hpat.csv";
 
-  std::string hpatfilename = "/Users/bricelecampion/ClionProjects/BigWham/cmake-build-debug/Hpat.csv";
-
-  il::output_hmatPatternF(h_,hpatfilename);
+ // il::output_hmatPatternF(h_,hpatfilename);
 
   il::Array2D<il::int_t> pat_SPOT = il::output_hmatPattern(h_);
 
@@ -458,8 +459,8 @@ int testHdot() {
   std::cout << "--------------- testHdot ---------------------\n";
 
   // star cracks mesh - crack length unity
-  il::int_t nfracs=6;
-  il::int_t ne_per_frac=800;
+  il::int_t nfracs=8;
+  il::int_t ne_per_frac=4000;
   il::Array<double> rad{ne_per_frac+1,0.};
   il::Array<double> angle{nfracs,0.};
 //
@@ -525,7 +526,6 @@ int testHdot() {
  // std::cout << " press enter to continue ...\n";
   //std::cin.ignore(); // pause while user do not enter return
 
-
   il::HMatrix<double> h_ ;
   const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
                                           mesh, elas};
@@ -539,7 +539,8 @@ int testHdot() {
   std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
   std::cout << " Compressed memory " << (il::compressionRatio(h_)*8*(4*ne*4*ne)) <<"\n";
   std::cout << " dense case memory " << 8*(4*ne*4*ne) << "\n";
-
+  std::cout <<  "number of blocks " << il::numberofBlocks(h_) << "\n";
+  std::cout << "number of full blocks " << il::numberofFullBlocks(h_) <<"\n";
  // std::cout << " press enter to continue ...\n";
   //std::cin.ignore(); // pause while user do not enter return
   tt.Reset();
@@ -591,7 +592,7 @@ int testHdot() {
   tt.Start();
   il::Array< double> y2= il::dotwithpattern_serial(h_, pattern, xx);
   tt.Stop();
-  std::cout << " time for Non-recursive hdot " << tt.time() <<"\n";
+  std::cout << " time for Non-recursive hdot serial " << tt.time() <<"\n";
 
   il::Array2D<il::int_t> lr_patt{pattern.size(0),0};
   il::Array2D<il::int_t> fr_patt{pattern.size(0),0};
@@ -625,7 +626,7 @@ int testHdot() {
 
   il::Array< double> y3= il::dotwithpattern(h_, fr_patt, lr_patt, xx);
   tt.Stop();
-  std::cout << " time for Non-recursive hdot v2 " << tt.time() <<"\n";
+  std::cout << " time for Non-recursive hdot (parallel_invoke) " << tt.time() <<"\n";
   std::cout << " norm y1 " << il::norm(y1,il::Norm::L2) << " y2 " << il::norm(y2,il::Norm::L2)
   <<" y3 " << il::norm(y3,il::Norm::L2) << "\n";
 
@@ -2128,7 +2129,6 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 
 int check3DR0() {
 
-
     std::cout << "-------------- test3DR0 ---------------------\n";
 
     std::string vertices_file ="/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/vertices.csv";
@@ -2175,8 +2175,6 @@ int check3DR0() {
     std::cout << "coor =  " << nodes_flat[0] << " " << nodes_flat[1] << " " << nodes_flat[2] << "\n";
     std::cout << "conn =  " << conn_flat[0] << " " << conn_flat[1] << " " << conn_flat[2] << "\n";
 
-
-
     il::int_t nnodes_elts=4, p=0, dimension_=3;
     il::int_t nelts = conn_flat.size() / nnodes_elts;
     il::int_t nvertex = nodes_flat.size() / dimension_;
@@ -2204,7 +2202,7 @@ int check3DR0() {
 
     bie::Mesh3D mesh3d(Coor, Conn, p);
 
-    // Create and open a text file
+    // Create and open a text file    --- TODO this is machine dependent - needs to be fixed
     std::string normal_out_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/normalout.csv";
     std::string s1_out_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/s1out.csv";
     std::string s2_out_file = "/home/carlo/BigWhamLink/BigWhamLink/Examples/StaticCrackBenchmarks/s2out.csv";
@@ -2213,7 +2211,6 @@ int check3DR0() {
     std::ofstream s1File(s1_out_file);
     std::ofstream s2File(s2_out_file);
     std::ofstream cpFile(cp_out_file);
-
 
     // print the normal to file
     for (il::int_t i = 0; i < nelts; i++) {

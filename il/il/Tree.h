@@ -30,6 +30,7 @@
 
 #include <il/Array.h>
 #include <il/SmallArray.h>
+#include "StaticArray.h"
 
 #define NEWTREE
 
