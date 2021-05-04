@@ -326,8 +326,8 @@ set(UNIT_TEST_FILES
     il/io/toml/_test/toml_valid_test.cpp
     gtest/src/gtest-all.cc
     il/core/_test/Status_test.cpp
-    il/MapArray.h
-    il/container/string/_test/StringView_test.cpp il/container/tree/_test/Tree_test.cpp)
+    il/MapArray.h)
+    #il/container/string/_test/StringView_test.cpp il/container/tree/_test/Tree_test.cpp)
 
 add_executable(InsideLoopUnitTest ${SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp)
 
