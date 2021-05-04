@@ -14,19 +14,19 @@
 
 namespace il {
 inline il::SVD svdDecomposition(il::io_t, il::Array2DEdit<double>& A ) {
+
+    // NOTE: ASSUMING COLUM MAJOR STORAGE!
+    //
+    // Documentation:
     //https://software.intel.com/content/www/us/en/develop/documentation/onemkl-developer-reference-c/top/lapack-routines/lapack-least-squares-and-eigenvalue-problem-routines/lapack-least-squares-and-eigenvalue-problem-driver-routines/singular-value-decomposition-lapack-driver-routines/gesvd.html
 
-
-    const int layout = LAPACK_COL_MAJOR;
-
-    /* the leading dimension of a 2D matrix is an increment that is used to find
-    *  the starting point for the matrix elements in each successive column
-    *  of the array */
-
-
+  const int layout = LAPACK_COL_MAJOR;
     const lapack_int m = static_cast<lapack_int>(A.size(0));
     const lapack_int n = static_cast<lapack_int>(A.size(1));
-    const lapack_int lda = static_cast<lapack_int>(A.stride(1));
+    const lapack_int lda = m;
+  /* the leading dimension of a 2D matrix is an increment that is used to find
+    *  the starting point for the matrix elements in each successive column
+    *  of the array */
 
     const char jobu = 'A';
     const char jobvt = 'A';
@@ -43,7 +43,7 @@ inline il::SVD svdDecomposition(il::io_t, il::Array2DEdit<double>& A ) {
     /* Compute SVD */
     const lapack_int lapack_error = LAPACKE_dgesvd( layout, jobu, jobvt, m, n,
                          reinterpret_cast<double*>(A.Data()),
-                         m,
+                         lda,
                          reinterpret_cast<double*>(svd.s_edit.Data()),
                          reinterpret_cast<double*>(svd.u_edit.Data()), ldu,
                          reinterpret_cast<double*>(svd.vt_edit.Data()), ldvt, superb );

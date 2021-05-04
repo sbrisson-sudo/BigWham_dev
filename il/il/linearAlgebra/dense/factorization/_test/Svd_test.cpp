@@ -15,9 +15,11 @@ extern double get_L2_norm( const  double* a, il::Array<double> sol, il::int_t si
 
 TEST(Svd, test1) {
 /*
- * https://software.intel.com/sites/products/documentation/doclib/mkl_sa/11/mkl_lapack_examples/lapacke_dgesvd_row.c.htm
+
    LAPACKE_dgesvd Example.
    =======================
+   test taken from:
+   https://software.intel.com/sites/products/documentation/doclib/mkl_sa/11/mkl_lapack_examples/lapacke_dgesvd_row.c.htm
 
    Program computes the singular value decomposition of a general
    rectangular matrix A:
@@ -92,6 +94,8 @@ TEST(Svd, test1) {
   /* Compute SVD */
   il::SVD svd = svdDecomposition(il::io, A );
 
+
+  /* THE FOLLOWING CHECKS ARE SPECIFIC FOR A MATRIX with m > n */
   /* Print singular values */
   //print_matrix( "Singular values", 1, n, reinterpret_cast<const double*>(svd.s_edit.data()), 1 );
 
@@ -185,6 +189,78 @@ TEST(Svd, test1) {
   ASSERT_TRUE(err_u <= epsilon);
   ASSERT_TRUE(err_vt <= epsilon);
   ASSERT_TRUE(err_mat <= epsilon);
+}
+
+
+
+TEST(Svd, test2) {
+/*
+   Program computes the singular value decomposition of a general
+   rectangular matrix A:
+
+     8.79   9.93   9.83
+     6.11   6.91   5.04
+
+   Example Program Results.
+   ========================
+
+   Singular values
+    27.47  22.64   8.56   5.99   2.01
+
+   Left singular vectors (stored columnwise)
+    -0.59   0.26   0.36   0.31   0.23   0.55
+    -0.40   0.24  -0.22  -0.75  -0.36   0.18
+    -0.03  -0.60  -0.45   0.23  -0.31   0.54
+    -0.43   0.24  -0.69   0.33   0.16  -0.39
+    -0.47  -0.35   0.39   0.16  -0.52  -0.46
+     0.29   0.58  -0.02   0.38  -0.65   0.11
+
+   Right singular vectors (stored rowwise)
+    -0.25  -0.40  -0.69  -0.37  -0.41
+     0.81   0.36  -0.25  -0.37  -0.10
+    -0.26   0.70  -0.22   0.39  -0.49
+     0.40  -0.45   0.25   0.43  -0.62
+    -0.22   0.14   0.59  -0.63  -0.44
+*/
+
+  /* Locals */
+  MKL_INT m = 6, n = 5;
+
+  il::Array2D<double> A_temp{ il::value,{{8.79,6.11 },
+                                         { 9.93, 6.91},
+                                         { 9.83, 5.04}}};
+
+  il::Array2D<double> A_null{ il::value,{{0.,0. },
+                                         {0.,0. },
+                                         {0.,0. }}};
+
+  il::Array2DEdit<double> A = A_temp.Edit();
+
+  /* Compute SVD */
+  il::SVD svd = svdDecomposition(il::io, A );
+
+  il::Array<double> left_sing_vec_sol { il::value,
+                                        {-0.844499,  -0.535558,
+                                              0.535558,  -0.844499}};
+
+  double err_u = get_L2_norm( svd.u_edit.data(), left_sing_vec_sol, left_sing_vec_sol.size());
+
+  il::Array<double> right_sing_vec_sol { il::value,
+                                         {  -0.547589, -0.370705, -0.750149,
+                                                -0.618816, -0.424027,  0.661263,
+                                                -0.563217,  0.826304,  0.00279448}};
+
+  double err_vt = get_L2_norm( svd.vt_edit.data(), right_sing_vec_sol, right_sing_vec_sol.size());
+
+
+/*
+  Right singular vectors (stored rowwise)
+  */
+  const double epsilon = 0.00001;
+  ASSERT_TRUE(il::abs(svd.s_edit.data()[0] - 19.5318)/19.5318 <= epsilon &&
+              il::abs(svd.s_edit.data()[1] - 1.2202)/1.2202 <= epsilon );
+  ASSERT_TRUE(err_u <= epsilon);
+  ASSERT_TRUE(err_vt <= epsilon);
 }
 
 #endif  // IL_BLAS
