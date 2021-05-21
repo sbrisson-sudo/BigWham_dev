@@ -47,7 +47,7 @@ namespace bie {
     ElasticHMatrix3DR0<T>::ElasticHMatrix3DR0(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
       bie::Mesh3D &i_meshtools,bie::ElasticProperties &elas, il::int_t I_want_global_DD,
       il::int_t I_want_global_codomain)  // il::Array2D<il::int_t> // &binary_ind_pts_at_front
-      : point_{point}, //std::move(point) never fucking do that !
+      : point_{point}, //std::move(point)
         permutation_{permutation},
         mesh_{i_meshtools},
         elas_{elas},

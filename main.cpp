@@ -460,7 +460,7 @@ int testHdot() {
 
   // star cracks mesh - crack length unity
   il::int_t nfracs=8;
-  il::int_t ne_per_frac=4000;
+  il::int_t ne_per_frac=10000;
   il::Array<double> rad{ne_per_frac+1,0.};
   il::Array<double> angle{nfracs,0.};
 //
@@ -521,15 +521,33 @@ int testHdot() {
   std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
   std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
   std::cout << " root - " << hmatrix_tree.root().index << "\n";
-
   tt.Reset();
- // std::cout << " press enter to continue ...\n";
+
+  il::int_t nb=nbBlocks(hmatrix_tree);
+  std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
   //std::cin.ignore(); // pause while user do not enter return
+  il::int_t n_fullb=nbFullBlocks(hmatrix_tree);
+  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
+
+  tt.Start();
+  il::HPattern my_patt=createPattern(hmatrix_tree);
+  std::cout << "Time for pattern construction " << tt.time() <<"\n";
+  std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
+  std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
+  std::cout  << " n lrb " <<  my_patt.LRB_pattern.size(1) <<"\n";
+  for (il::int_t i=0;i<5;i++) {
+    std::cout << " FRB : " << my_patt.FRB_pattern(0, i) << "-"
+              << my_patt.FRB_pattern(1, i) << "-" << my_patt.FRB_pattern(5, i)
+              << " \n";
+    std::cout << " LRB : " << my_patt.LRB_pattern(0, i) << "-"
+              << my_patt.LRB_pattern(1, i) << "-" << my_patt.LRB_pattern(5, i)
+              << " \n";
+  }tt.Reset();
+
 
   il::HMatrix<double> h_ ;
   const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
                                           mesh, elas};
-
   std::cout << " create h mat - size " << M.size(0) << " * " << M.size(1) <<"\n";
   tt.Start();
   h_= il::toHMatrix(M, hmatrix_tree, 0.0001);
@@ -548,6 +566,8 @@ int testHdot() {
   il::Array2D<il::int_t> pattern=output_hmatPattern(h_);
   tt.Stop();
   std::cout << " time for getting pattern "  << tt.time() <<  " number of blocks "  << pattern.size(1) << "\n";
+  std::cout << " first block "  << pattern(0,0) << "-" << pattern(5,0) << "\n";
+
   tt.Reset();
   /// dot-product of linear system and checks
   double Ep=1.0/(1.0-0.2*0.2);

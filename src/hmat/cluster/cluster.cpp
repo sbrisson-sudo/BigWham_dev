@@ -163,6 +163,9 @@ void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
   cluster_rec(s1, leaf_size, il::io, tree, node, permutation);
 }
 
+
+
+//// ---- below   un-used.
 void aux_clustering(il::int_t k, il::int_t leaf_size, il::io_t,
                     Clustering &reordering, il::Array2D<double> &node) {
   const il::int_t i_begin = reordering.partition.begin(k);

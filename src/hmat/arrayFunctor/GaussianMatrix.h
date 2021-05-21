@@ -4,6 +4,9 @@
 
 #include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
 
+// This an example of a Matrix Generator needed to code for the implementation of a
+// BIE kernel
+
 namespace il {
 
 template <typename T>
