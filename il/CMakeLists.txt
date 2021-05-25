@@ -264,6 +264,7 @@ set(SOURCE_FILES
     il/linearAlgebra/dense/factorization/Householder.h
     il/linearAlgebra/dense/factorization/Eigen.h
     il/linearAlgebra/dense/factorization/Singular.h
+    il/linearAlgebra/dense/factorization/svdDecomposition.h
     il/linearAlgebra/sparse/blas/_code/conjugate_gradient_blaze.h
     il/linearAlgebra/sparse/blas/sparseBlas.h
     il/linearAlgebra/sparse/blas/sparseDot.h
@@ -318,14 +319,15 @@ set(UNIT_TEST_FILES
     il/linearAlgebra/dense/blas/_test/cross_test.cpp
     il/linearAlgebra/dense/factorization/_test/Eigen_test.cpp
     il/linearAlgebra/dense/factorization/_test/Singular_test.cpp
+    il/linearAlgebra/dense/factorization/_test/Svd_test.cpp
     il/linearAlgebra/sparse/factorization/_test/Pardiso_test.cpp
     il/linearAlgebra/sparse/factorization/_test/GmresIlu0_test.cpp
     il/io/_test/numpy_test.cpp
     il/io/toml/_test/toml_valid_test.cpp
     gtest/src/gtest-all.cc
     il/core/_test/Status_test.cpp
-    il/MapArray.h
-    il/container/string/_test/StringView_test.cpp il/container/tree/_test/Tree_test.cpp)
+    il/MapArray.h)
+    #il/container/string/_test/StringView_test.cpp il/container/tree/_test/Tree_test.cpp)
 
 add_executable(InsideLoopUnitTest ${SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp)
 
