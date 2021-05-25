@@ -460,7 +460,7 @@ int testHdot() {
 
   // star cracks mesh - crack length unity
   il::int_t nfracs=8;
-  il::int_t ne_per_frac=10000;
+  il::int_t ne_per_frac=100;
   il::Array<double> rad{ne_per_frac+1,0.};
   il::Array<double> angle{nfracs,0.};
 //
@@ -542,8 +542,8 @@ int testHdot() {
     std::cout << " LRB : " << my_patt.LRB_pattern(0, i) << "-"
               << my_patt.LRB_pattern(1, i) << "-" << my_patt.LRB_pattern(5, i)
               << " \n";
-  }tt.Reset();
-
+  }
+  tt.Reset();
 
   il::HMatrix<double> h_ ;
   const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
@@ -566,7 +566,7 @@ int testHdot() {
   il::Array2D<il::int_t> pattern=output_hmatPattern(h_);
   tt.Stop();
   std::cout << " time for getting pattern "  << tt.time() <<  " number of blocks "  << pattern.size(1) << "\n";
-  std::cout << " first block "  << pattern(0,0) << "-" << pattern(5,0) << "\n";
+  std::cout << " first block "  << pattern(0,0) << "-" << pattern(2,0) << "\n";
 
   tt.Reset();
   /// dot-product of linear system and checks
