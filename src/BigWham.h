@@ -421,7 +421,9 @@ class Bigwhamio {
   //---------------------------------------------------------------------------
   void setHpattern2() {
     // store the h pattern in a il::Array2D<double> for future use
-
+    // much faster routine - creating the H-pattern BEFORE Hmat assembly
+    // un-used for now.
+    // note these pattern are storing st,i0,j0,i1,j1,flag
     IL_EXPECT_FAST(h_.isBuilt());
     il::HPattern pattern = il::createPattern(hmatrix_tree);
 
@@ -601,6 +603,8 @@ class Bigwhamio {
     // flattened lists
     // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
 
+    // modification to output the permutted dof.
+
     IL_EXPECT_FAST(isBuilt_);
 
     int numberofblocks = fr_pattern_.size(1);
@@ -620,6 +624,13 @@ class Bigwhamio {
     pos_list.resize(nbfentry * 2);
     val_list.resize(nbfentry);
 
+    int p=dof_dimension_;
+    il::Array<int> permutDOF{p*permutation_.size()};
+    for (il::int_t i=0;i<permutation_.size();i++){
+      for (il::int_t j=0;j<p;j++){
+        permutDOF[i*p+j]=permutation_[i]*p+j;
+      }
+    }
     // loop on full rank and get i,j and val
     int nr=0; int npos=0;
 
@@ -632,8 +643,8 @@ class Bigwhamio {
       il::int_t index=0;
       for (il::int_t j=0;j<A.size(1);j++){
         for (il::int_t i=0;i<A.size(0);i++){
-          pos_list[npos+2*index]=i+i0; // returning the permutted state here
-          pos_list[npos+2*index+1]=j+j0;
+          pos_list[npos+2*index]=permutDOF[(i+i0)];
+          pos_list[npos+2*index+1]=permutDOF[(j+j0)];
           val_list[nr+index]=A(i,j);
           index++;
         }
