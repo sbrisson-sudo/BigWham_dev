@@ -1,8 +1,19 @@
-##########################
-# IMPORTANT:
-# to compile the binding use python >= 3.7
-# the interpreter for the .py script should be the same as compile time
-##########################
+"""
+ This file is part of BigWham.
+
+ Created by Carlo Peruzzo on 12.05.21.
+ Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+ Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+ file for more details.
+
+ last modifications :: May. 12 2021
+
+#######################################################################################
+#       IMPORTANT:                                                                    #
+#       to compile the binding use python >= 3.7                                      #
+#       the interpreter for the .py script should be the same as compile time         #
+#######################################################################################
+"""
 
 import numpy as np
 import bigwham4py
