@@ -91,7 +91,7 @@ class Hdot(LinearOperator):
                            eps_aca)
         print(" --------------------------------------- ")
         print("  ")
-        print("   -> KERNEL compr. ratio = " + str(self.HMATtract.getCompressionRatio()))
+        print("   -> KERNEL compr. ratio = " + str(self.HMAT.getCompressionRatio()))
 
 
     def _matvec(self, v):

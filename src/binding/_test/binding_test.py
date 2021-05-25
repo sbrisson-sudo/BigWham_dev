@@ -16,10 +16,49 @@
 """
 
 import numpy as np
-import bigwham4py
+import src.binding.bigwham4py
 
-from bigwham4py import Bigwhamio
+################################
+# TESTING THE LINEAR OPERATOR  #
+################################
+print(" \n")
+print(" \n")
+print("TESTING THE LINEAR OPERATOR CLASS \n")
+print(" \n")
+print(" \n")
 
+kernel = "3DR0_displ"
+
+coor =np.asarray([[-1., -1., 0.],
+       [1., -1., 0.],
+       [1., 1., 0.],
+       [-1., 1., 0.],
+       [-1., 2., 0.],
+       [1., 2., 0.]])
+
+conn =np.asarray([[0, 1, 2, 3], [3, 2, 5, 4]])
+
+Young = 100
+PoissonRatio = 0.2
+max_leaf_size = 1
+eta = 0.
+eps_aca = 0.001
+
+data = [kernel, coor, conn, Young, PoissonRatio, max_leaf_size, eta, eps_aca]
+
+#create an Hdot instance
+displHMAT = src.binding.bigwham4py.Hdot()
+displHMAT.set(data)
+
+print("Testing the Hdot product for the displacement HMAT \n")
+res = displHMAT._matvec([1.,2.,3.,4.,5.,6.])
+print(res)
+print(" \n")
+print(" \n")
+
+##########################
+# DIRECT USE OF BIGWHAM  #
+##########################
 
 # Defining the variables:
 
@@ -31,6 +70,9 @@ from bigwham4py import Bigwhamio
 # eta           - const double
 # eps_aca       - const double
 
+print("TESTING THE DIRECT USE OF BIGWHAM \n")
+print(" \n")
+print(" \n")
 coor =[-1., -1., 0.,
        1., -1., 0.,
        1., 1., 0.,
@@ -47,6 +89,9 @@ eta = 0.
 eps_aca = 0.001
 
 displacementKernel = "3DR0_displ"
+
+from src.binding._test.bigwham4py import Bigwhamio
+
 displacementHMAT = Bigwhamio()
 # set the object
 displacementHMAT.set(coor,
