@@ -13,7 +13,7 @@ project(BigWham_exe VERSION 1.0
         DESCRIPTION "This is the executable of BigWham"
         LANGUAGES CXX)
 
-project(pypart VERSION 1.0
+project(bigwham4py VERSION 1.0
         DESCRIPTION "This will create a shared library to be imported and used in Python"
         LANGUAGES CXX)
 
@@ -27,7 +27,7 @@ set(CMAKE_CXX_STANDARD 11)
 # set options: False = 0, True = 1  #
 #####################################
 
-set(BUILD_PYTHON_BINDINGS 0)
+set(BUILD_PYTHON_BINDINGS 1)
 set(BUILD_GOOGLE_TESTS 1)
 
 set(LLDB_ENABLE_PYTHON 1)
@@ -323,19 +323,19 @@ if(BUILD_PYTHON_BINDINGS)
     include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
     # or use
     # find_package(pybind11 REQUIRED)
-    add_library(pypart MODULE ${PROJECT_SOURCE_DIR}/src/pypart.cpp)
-    target_link_libraries(pypart PRIVATE pybind11::module part)
+    add_library(bigwham4py MODULE src/binding/bigwham4py.cpp)
+    target_link_libraries(bigwham4py PRIVATE pybind11::module part)
 
     # this command is needed to copy the library pypart to a specific location
-    add_custom_command(TARGET pypart POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PROJECT_SOURCE_DIR}/pybind_test/pypart.so
-            COMMENT "Created  ${PROJECT_SOURCE_DIR}/pybind_test/pypart.so")
+    add_custom_command(TARGET bigwham4py POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwham4py> ${PROJECT_SOURCE_DIR}/src/binding/_test/bigwham4py.so
+            COMMENT "Created ${PROJECT_SOURCE_DIR}/src/binding/_test/bigwham4py.so")
 
     # this command is needed to copy the library pypart to a specific location
-    set(PYFRAC_DIR /home/peruzzo/PycharmProjects/PyFrac/src)
-    add_custom_command(TARGET pypart POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PYFRAC_DIR}/pypart.so
-            COMMENT "Created  ${PYFRAC_DIR}/pypart.so")
+#    set(PYFRAC_DIR /home/peruzzo/PycharmProjects/PyFrac/src)
+#    add_custom_command(TARGET pypart POST_BUILD
+#            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PYFRAC_DIR}/bigwham4py.so
+#            COMMENT "Created  ${PYFRAC_DIR}/bigwham4py.so")
 endif()
 ################################################################################
 # For Unit Tests

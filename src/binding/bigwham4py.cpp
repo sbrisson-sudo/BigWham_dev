@@ -84,7 +84,7 @@ public:
 
 
 
-PYBIND11_MODULE(pypart, m) {
+PYBIND11_MODULE(bigwham4py, m) {
 
 //    // Binding the mother class Bigwhamio
 //    // option py::dynamic_attr() added to allow new members to be created dynamically);

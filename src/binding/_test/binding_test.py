@@ -1,7 +1,13 @@
-import numpy as np
-import pypart
+##########################
+# IMPORTANT:
+# to compile the binding use python >= 3.7
+# the interpreter for the .py script should be the same as compile time
+##########################
 
-from pypart import Bigwhamio
+import numpy as np
+import bigwham4py
+
+from bigwham4py import Bigwhamio
 
 
 # Defining the variables:
