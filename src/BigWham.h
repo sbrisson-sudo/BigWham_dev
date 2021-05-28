@@ -552,6 +552,9 @@ class Bigwhamio {
 
   //---------------------------------------------------------------------------
   std::vector<int> getHpattern2() {
+
+    // to be finalised as a new version!
+
     // API function to output the hmatrix pattern
     //  as flattened list via a pointer
     //  the numberofblocks is also returned (by reference)

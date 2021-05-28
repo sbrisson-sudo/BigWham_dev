@@ -4,21 +4,20 @@ if(${CMAKE_VERSION} VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif()
 
-
-project(BigWham VERSION 1.0
-        DESCRIPTION "This is the library containing the weels"
+project(BigWhamElastUnitTest VERSION 1.0
+        DESCRIPTION "This is for testing the wheels in BigWham"
         LANGUAGES CXX)
 
 project(BigWham_exe VERSION 1.0
         DESCRIPTION "This is the executable of BigWham"
         LANGUAGES CXX)
 
-project(bigwham4py VERSION 1.0
+project(bigwhamPybind VERSION 1.0
         DESCRIPTION "This will create a shared library to be imported and used in Python"
         LANGUAGES CXX)
 
-project(BigWhamElastUnitTest VERSION 1.0
-        DESCRIPTION "This is for testing the wheels in BigWham"
+project(BigWham VERSION 1.0
+        DESCRIPTION "This is the library containing the weels"
         LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -65,12 +64,12 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 if(APPLE)
-#    MESSAGE("-- located at /usr/bin/")
-#    set(CMAKE_C_COMPILER /usr/bin/clang)
-#    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
     MESSAGE("-- located at /usr/bin/")
-    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
-    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
+    set(CMAKE_C_COMPILER /usr/bin/clang)
+    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+#    MESSAGE("-- located at /usr/bin/")
+#    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
+#    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
 #    MESSAGE("-- located at /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/")
 #    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c)
 #    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
@@ -319,17 +318,17 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     # use this
-    add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11-master)
-    include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
+    add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/bigwham4py/pybind11-master)
+    include_directories(${PROJECT_SOURCE_DIR}/interfaces/bigwham4py/pybind11-master/include/  )
     # or use
-    # find_package(pybind11 REQUIRED)
-    add_library(bigwham4py MODULE src/binding/bigwham4py.cpp)
-    target_link_libraries(bigwham4py PRIVATE pybind11::module part)
+    #find_package(pybind11 REQUIRED)
+    add_library(bigwhamPybind MODULE interfaces/bigwham4py/src/bigwhamPybind.cpp)
+    target_link_libraries(bigwhamPybind PRIVATE pybind11::module part)
 
-    # this command is needed to copy the library pypart to a specific location
-    add_custom_command(TARGET bigwham4py POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwham4py> ${PROJECT_SOURCE_DIR}/src/binding/_test/bigwham4py.so
-            COMMENT "Created ${PROJECT_SOURCE_DIR}/src/binding/_test/bigwham4py.so")
+    # this command is needed to copy the library bigwham4py to a specific location
+    add_custom_command(TARGET bigwhamPybind POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> ${PROJECT_SOURCE_DIR}/interfaces/bigwham4py/lib/bigwhamPybind.so
+            COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/bigwham4py/lib/bigwhamPybind.so")
 
     # this command is needed to copy the library pypart to a specific location
 #    set(PYFRAC_DIR /home/peruzzo/PycharmProjects/PyFrac/src)
