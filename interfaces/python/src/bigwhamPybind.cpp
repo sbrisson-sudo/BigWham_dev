@@ -8,12 +8,12 @@
 //
 // last modifications :: Jan. 12 2021
 
-#include <interfaces/bigwham4py/pybind11-master/include/pybind11/pybind11.h>
-#include <interfaces/bigwham4py/pybind11-master/include/pybind11/numpy.h>
-#include <interfaces/bigwham4py/pybind11-master/include/pybind11/stl.h>
-#include <interfaces/bigwham4py/pybind11-master/include/pybind11/complex.h>
-#include <interfaces/bigwham4py/pybind11-master/include/pybind11/functional.h>
-#include <interfaces/bigwham4py/pybind11-master/include/pybind11/chrono.h>
+#include <interfaces/python/pybind11-master/include/pybind11/pybind11.h>
+#include <interfaces/python/pybind11-master/include/pybind11/numpy.h>
+#include <interfaces/python/pybind11-master/include/pybind11/stl.h>
+#include <interfaces/python/pybind11-master/include/pybind11/complex.h>
+#include <interfaces/python/pybind11-master/include/pybind11/functional.h>
+#include <interfaces/python/pybind11-master/include/pybind11/chrono.h>
 
 #include "BigWham.h"
 

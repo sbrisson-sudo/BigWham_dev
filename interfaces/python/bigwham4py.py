@@ -44,7 +44,6 @@ class Hmatrix(LinearOperator):
 
         self.H_ = Bigwhamio()
         self.H_.set(coor.flatten(),conn.flatten(),kernel,properties.flatten(),max_leaf_size,eta,eps_aca)
-#        self.HMAT_size_ = self.H_.matrixSize(0)  # redundant not needed
         self.matvec_size_ = self.H_.matrixSize(0)
         self.dtype_ = float
 
@@ -59,11 +58,6 @@ class Hmatrix(LinearOperator):
         :return: HMAT.v
         """
         return self.H_.hdotProduct(v)
-
-    def _changeShape(self, shape_):
-        # hummm be careful - we can not reshape a Hmatrix !
-        self.shape_ = (shape_,shape_)
-        super().__init__(self.dtype_, self.shape_)
 
     @property
     def _init_shape(self):

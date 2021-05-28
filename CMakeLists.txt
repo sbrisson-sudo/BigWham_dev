@@ -318,17 +318,17 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     # use this
-    add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/bigwham4py/pybind11-master)
-    include_directories(${PROJECT_SOURCE_DIR}/interfaces/bigwham4py/pybind11-master/include/  )
+    add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master)
+    include_directories(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master/include/  )
     # or use
     #find_package(pybind11 REQUIRED)
-    add_library(bigwhamPybind MODULE interfaces/bigwham4py/src/bigwhamPybind.cpp)
+    add_library(bigwhamPybind MODULE interfaces/python/src/bigwhamPybind.cpp)
     target_link_libraries(bigwhamPybind PRIVATE pybind11::module part)
 
     # this command is needed to copy the library bigwham4py to a specific location
     add_custom_command(TARGET bigwhamPybind POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> ${PROJECT_SOURCE_DIR}/interfaces/bigwham4py/lib/bigwhamPybind.so
-            COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/bigwham4py/lib/bigwhamPybind.so")
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so
+            COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so")
 
     # this command is needed to copy the library pypart to a specific location
 #    set(PYFRAC_DIR /home/peruzzo/PycharmProjects/PyFrac/src)
