@@ -11,6 +11,12 @@ Current capabilities:
 - Fracture problems in elasto-statics (2d,3d) using hyper-singular kernels (displacement discontinuities elements)
 - Collocation BEM
 
+Interfaces
+<python>
+ -  to compile the binding use python >= 3.7                                      
+ -  the interpreter for the .py script should be the same as compile time
+ -  add to PYTHONPATH  "/path/to/bigwham/" 
+
 Contributors:
 - Brice Lecampion (2D and Simplified 3D kernels, 2D Mesh,  
 wolfram API, etc.)  2015-
