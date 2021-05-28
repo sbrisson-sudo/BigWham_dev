@@ -23,7 +23,7 @@ from scipy.sparse.linalg import LinearOperator
 ##############################
 # Hdot operator for GMRES    #
 ##############################
-class Hdot(LinearOperator):
+class Hmat(LinearOperator):
     def __init__(self):
         from src.binding._test.bigwham4py import Bigwhamio
         self.HMAT_size_ = None

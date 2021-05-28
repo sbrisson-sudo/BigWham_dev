@@ -47,7 +47,7 @@ eps_aca = 0.001
 data = [kernel, coor, conn, Young, PoissonRatio, max_leaf_size, eta, eps_aca]
 
 #create an Hdot instance
-displHMAT = src.binding.bigwham4py.Hdot()
+displHMAT = src.binding.bigwham4py.Hmat()
 displHMAT.set(data)
 
 print("Testing the Hdot product for the displacement HMAT \n")
