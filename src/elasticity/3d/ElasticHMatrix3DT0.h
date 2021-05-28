@@ -117,7 +117,6 @@ namespace bie {
             il::int_t e_k1, e_k0;
             il::Array2D<double> stnl{3, 3, 0.0};
 
-
             il::int_t k1 = b1 + j1;
             old_k1 = permutation_[k1];
             e_k1 = old_k1; // il::floor(old_k1 / number of nodes per element);

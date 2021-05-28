@@ -49,6 +49,7 @@
 class Bigwhamio {
  private:
   il::HMatrix<double> h_;  // dd to traction
+  il::Tree<il::SubHMatrix, 4> hmatrix_tree ;
   //   arrays storing the pattern (to speed up the hdot ...).
   il::Array2D<il::int_t> lr_pattern_;  // low rank block pattern
   il::Array2D<il::int_t> fr_pattern_;  // full rank block pattern
@@ -157,7 +158,8 @@ class Bigwhamio {
       permutation_ = cluster.permutation;
       tt.Start();
       std::cout << "Creating hmatrix  Tree - \n";
-      il::Tree<il::SubHMatrix, 4> hmatrix_tree =
+      //il::Tree<il::SubHMatrix, 4>
+          hmatrix_tree =
           il::hmatrixTree(collocationPoints_, cluster.partition, eta_);
       tt.Stop();
       std::cout << "hmatrix  tree creation time :  " << tt.time() << "\n";
@@ -280,7 +282,8 @@ class Bigwhamio {
       permutation_ = cluster.permutation;
       tt.Start();
       std::cout << "Creating hmatrix  Tree - \n";
-      il::Tree<il::SubHMatrix, 4> hmatrix_tree =
+      //il::Tree<il::SubHMatrix, 4>
+          hmatrix_tree =
           il::hmatrixTree(collocationPoints_, cluster.partition, eta_);
       tt.Stop();
       std::cout << "hmatrix  tree creation time :  " << tt.time() << "\n";
@@ -415,6 +418,22 @@ class Bigwhamio {
     fr_pattern_ = fr_patt;
   }
 
+  //---------------------------------------------------------------------------
+  void setHpattern2() {
+    // store the h pattern in a il::Array2D<double> for future use
+    // much faster routine - creating the H-pattern BEFORE Hmat assembly
+    // un-used for now.
+    // note these pattern are storing st,i0,j0,i1,j1,flag
+    IL_EXPECT_FAST(h_.isBuilt());
+    il::HPattern pattern = il::createPattern(hmatrix_tree);
+
+    il::int_t  nblocks = il::numberofBlocks(h_);
+
+    lr_pattern_ = pattern.LRB_pattern;
+    fr_pattern_ = pattern.FRB_pattern;
+  }
+
+
   bool isBuilt() { return isBuilt_; };
 
   //---------------------------------------------------------------------------
@@ -532,11 +551,59 @@ class Bigwhamio {
   }
 
   //---------------------------------------------------------------------------
+  std::vector<int> getHpattern2() {
+    // API function to output the hmatrix pattern
+    //  as flattened list via a pointer
+    //  the numberofblocks is also returned (by reference)
+    //
+    //  the pattern matrix is formatted as
+    // row = 1 block : i_begin,j_begin, i_end,j_end,FLAG,entry_size
+    // with FLAG=0 for full rank and FLAG=1 for low rank
+    //
+    // we output a flatten row-major order std::vector
+
+    IL_EXPECT_FAST(isBuilt_);
+
+    il::HPattern pattern = il::createPattern(hmatrix_tree);
+
+    int numberofblocks = pattern.n_B;
+    int len = 6 * numberofblocks;
+    std::cout << "number of blocks " << numberofblocks << "\n";
+
+    std::vector<int> patternlist(len, 0);
+
+    int index = 0;
+    //  starts with full rank
+
+    for (il::int_t j = 0; j < pattern.n_FRB; j++) {
+      patternlist[index++] = pattern.FRB_pattern(1, j);
+      patternlist[index++] = pattern.FRB_pattern(2, j);
+      patternlist[index++] = pattern.FRB_pattern(3, j);
+      patternlist[index++] = pattern.FRB_pattern(4, j);
+      patternlist[index++] = 0;
+      patternlist[index++] = (pattern.FRB_pattern(2, j)-pattern.FRB_pattern(1, j)) * (pattern.FRB_pattern(4, j)-pattern.FRB_pattern(3, j));
+    }
+    // then low ranks
+    for (il::int_t j = 0; j < pattern.n_LRB; j++) {
+      patternlist[index++] = pattern.LRB_pattern(1, j);
+      patternlist[index++] = pattern.LRB_pattern(2, j);
+      patternlist[index++] = pattern.LRB_pattern(3, j)  ;
+      patternlist[index++] = pattern.LRB_pattern(4, j) ;
+      patternlist[index++] = 1;
+      patternlist[index++] = (pattern.LRB_pattern(2, j)-pattern.LRB_pattern(1, j)) * (pattern.LRB_pattern(4, j)-pattern.LRB_pattern(3, j));
+    }
+    // return a row major flatten vector
+    return patternlist;
+  }
+
+  //---------------------------------------------------------------------------
   void getFullBlocks(std::vector<double>& val_list,
                      std::vector<int>& pos_list) {
     // return the full dense block entries of the hmat as
     // flattened lists
     // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
+
+    // modification to output the permutted dof.
 
     IL_EXPECT_FAST(isBuilt_);
 
@@ -557,6 +624,13 @@ class Bigwhamio {
     pos_list.resize(nbfentry * 2);
     val_list.resize(nbfentry);
 
+    int p=dof_dimension_;
+    il::Array<int> permutDOF{p*permutation_.size()};
+    for (il::int_t i=0;i<permutation_.size();i++){
+      for (il::int_t j=0;j<p;j++){
+        permutDOF[i*p+j]=permutation_[i]*p+j;
+      }
+    }
     // loop on full rank and get i,j and val
     int nr=0; int npos=0;
 
@@ -569,8 +643,8 @@ class Bigwhamio {
       il::int_t index=0;
       for (il::int_t j=0;j<A.size(1);j++){
         for (il::int_t i=0;i<A.size(0);i++){
-          pos_list[npos+2*index]=i+i0; // returning the permutted state here
-          pos_list[npos+2*index+1]=j+j0;
+          pos_list[npos+2*index]=permutDOF[(i+i0)];
+          pos_list[npos+2*index+1]=permutDOF[(j+j0)];
           val_list[nr+index]=A(i,j);
           index++;
         }

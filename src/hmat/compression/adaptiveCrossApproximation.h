@@ -18,6 +18,8 @@ LowRank<T> adaptiveCrossApproximation(const il::MatrixGenerator<T>& M,
 
   il::Array2D<T> A{n0 * p, 0};
   il::Array2D<T> B{0, n1 * p};
+  A.Reserve(n0*p,20);
+  B.Reserve(20,n1 * p);
 
   il::Array<il::int_t> i0_used{};
   il::Array<il::int_t> i1_used{};

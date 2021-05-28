@@ -1,4 +1,4 @@
-Modified Jan 5 2021
+Modified May 25 2021
 
 
 
@@ -7,15 +7,62 @@ Important points:
 
 TODO:
 
+Hmat-Lib:
+- 2D sort of the pattern for pre-assembly (thread/mpi) allocation
+- develop a new HMatrix class including the pattern, code up a new Hmat creation (paving way to MPI), code up a new Hdot (parallel)
+- develop binary cluster tree for separate meshes (rectangular h-matrix)
+-
 - compute Stress and displacement methods in the bigwhamio class
 - tidy up the 3D mesh object
 - tidy up the 3DT6 implementation
 - code up HLU solve on the C++ side [currently a problem with duplicate ludecomposition at link time - not solved with inline or static]
-- modify preconditioner -> put it bigwham instance ?
+
 - re-write google tests for basic operations of the C++ code, leave more intrincate benchmarks and physics verification on the mma side.
   ---> #include <src/elasticity/AssemblyDDM.h> the file does not exist anymore
-- the google test package is embedded in the il library. One should take it out and make it available to other parts of the code.
 
-Hmat-Lib:
-- mpi of the h-dot product ? in a memory ??
 
+
+
+- OPEN MP
+
+This code uses openMP to parallelize some parts.
+If we are using mac OS, now (2019), Clang and Clang++ (*1) doesn't have openMP.
+You need to install llvm compiler with openMP. We use Homebrew to get the packages.
+Open a terminal and type:
+
+  brew update
+  brew install llvm libomp
+
+  You will obtain the following message at the end:
+  ___________________________________________________________________
+  To use the bundled libc++ please add the following LDFLAGS:
+    LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
+
+  llvm is keg-only, which means it was not symlinked into /usr/local,
+  because macOS already provides this software and installing another version in
+  parallel can cause all kinds of trouble.
+
+  If you need to have llvm first in your PATH run:
+    echo 'export PATH="/usr/local/opt/llvm/bin:$PATH"' >> ~/.bash_profile
+
+  For compilers to find llvm you may need to set:
+    export LDFLAGS="-L/usr/local/opt/llvm/lib"
+    export CPPFLAGS="-I/usr/local/opt/llvm/include"
+  ___________________________________________________________________
+
+So, you need to add those lines at the end of your .bash_profile (*2)
+
+ LDFLAGS="-L/usr/local/opt/llvm/lib"
+ CPPFLAGS="-I/usr/local/opt/llvm/include"
+ PATH="/usr/local/opt/llvm/bin:$PATH"
+
+After your .bash_profile has been modified you need to source it.
+Type in your terminal:
+
+ source .bash_profile
+
+
+(*1) Usually Clang and Clang++ are located in /usr/bin/
+(*2) To locate your .bash_profile open a terminal and type:
+      cd
+      ls -la
