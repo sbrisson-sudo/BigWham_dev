@@ -21,6 +21,10 @@
 
 #include <hmat/cluster/cluster.h>
 #include <hmat/compression/toHMatrix.h>
+
+#include <hmat/hmatrix/toHPattern.h>
+#include <hmat/hmatrix/Hmat.h>
+
 #include <hmat/hmatrix/HMatrix.h>
 #include <hmat/hmatrix/HMatrixUtils.h>
 #include <hmat/linearAlgebra/blas/hdot.h>
@@ -454,7 +458,6 @@ int testFullMat()
 
 }
 ///////////////////////////////////////////////////////////////////////////////
-
 int testHdot() {
   std::cout << "--------------- testHdot ---------------------\n";
 
@@ -523,14 +526,14 @@ int testHdot() {
   std::cout << " root - " << hmatrix_tree.root().index << "\n";
   tt.Reset();
 
-  il::int_t nb=nbBlocks(hmatrix_tree);
+  il::int_t nb=bie::nbBlocks(hmatrix_tree);
   std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
   //std::cin.ignore(); // pause while user do not enter return
-  il::int_t n_fullb=nbFullBlocks(hmatrix_tree);
+  il::int_t n_fullb=bie::nbFullBlocks(hmatrix_tree);
   std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
 
   tt.Start();
-  il::HPattern my_patt=createPattern(hmatrix_tree);
+  bie::HPattern my_patt=bie::createPattern(hmatrix_tree);
   std::cout << "Time for pattern construction " << tt.time() <<"\n";
   std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
   std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
@@ -2292,12 +2295,225 @@ int check3DR0() {
 }
 
 
+
+
+///////////////////////////////////////////////////////////////////////////////
+int testNewHmat() {
+  std::cout << "--------------- testHdot ---------------------\n";
+
+  // star cracks mesh - crack length unity
+  il::int_t nfracs=8;
+  il::int_t ne_per_frac=100;
+  il::Array<double> rad{ne_per_frac+1,0.};
+  il::Array<double> angle{nfracs,0.};
+//
+  for (il::int_t i=0;i<=ne_per_frac;i++){
+    rad[i]=1.*i/ne_per_frac;
+  }
+  for (il::int_t i=0;i<nfracs;i++){
+    angle[i]=2*(il::pi)*i/nfracs;
+  }
+//
+  il::int_t ne=ne_per_frac*nfracs;
+  il::Array2D<double> nodes{ne+1,2,0.};
+  il::Array2D<il::int_t> conn{ne,2};
+  il::int_t index=0;
+  nodes(index,0)=0.;
+  nodes(index,1)=0.;
+  for (il::int_t i=0;i<nfracs;i++){
+    for (il::int_t j=1;j<ne_per_frac+1;j++){
+      index++;
+      nodes(index,0)=rad[j]*cos(angle[i]);
+      nodes(index,1)=rad[j]*sin(angle[i]);
+    }
+  }
+
+  for (il::int_t i=0;i<ne;i++){
+    conn(i,0)=i;
+    conn(i,1)=i+1;
+  }
+  for (il::int_t j=0;j<nfracs;j++){
+    // first node of each fract is the first nod of the mesh.
+    conn(j*ne_per_frac,0)=0;
+  }
+
+  std::cout << " N unknowns: " << 4*ne <<"\n";
+  bie::Mesh mesh(nodes,conn,1);
+
+  bie::ElasticProperties elas(1.0,0.2);
+  il::Array2D<double> coll_points = mesh.getCollocationPoints();
+
+  il::int_t leaf_size=32;
+  il::Timer tt;
+  tt.Start();
+  const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+
+  tt.Stop();
+  std::cout << "Time for  cluster tree construction " << tt.time() <<"\n";
+  std::cout << " cluster depth ..." <<  cluster.partition.depth() <<"\n";
+  std::cout << " cluster - part " << cluster.permutation.size() << "\n";
+
+  tt.Reset();
+//  std::cout << " press enter to continue ...\n";
+//  std::cin.ignore(); // pause while user do not enter return
+
+  tt.Start();
+  const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
+      il::hmatrixTree(coll_points, cluster.partition, 3.0);
+  tt.Stop();
+  std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
+  std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
+  std::cout << " root - " << hmatrix_tree.root().index << "\n";
+  tt.Reset();
+
+  il::int_t nb=bie::nbBlocks(hmatrix_tree);
+  std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
+  //std::cin.ignore(); // pause while user do not enter return
+  il::int_t n_fullb=bie::nbFullBlocks(hmatrix_tree);
+  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
+
+  tt.Start();
+  bie::HPattern my_patt=bie::createPattern(hmatrix_tree);
+  std::cout << "Time for pattern construction " << tt.time() <<"\n";
+  std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
+  std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
+  std::cout  << " n lrb " <<  my_patt.LRB_pattern.size(1) <<"\n";
+  for (il::int_t i=0;i<5;i++) {
+    std::cout << " FRB : " << my_patt.FRB_pattern(0, i) << "-"
+              << my_patt.FRB_pattern(1, i) << "-" << my_patt.FRB_pattern(5, i)
+              << " \n";
+    std::cout << " LRB : " << my_patt.LRB_pattern(0, i) << "-"
+              << my_patt.LRB_pattern(1, i) << "-" << my_patt.LRB_pattern(5, i)
+              << " \n";
+  }
+  tt.Reset();
+
+  // creation of the Hmatrix the old way.....
+  il::HMatrix<double> h_ ;
+  const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
+                                          mesh, elas};
+  std::cout << " create h mat - size " << M.size(0) << " * " << M.size(1) <<"\n";
+  tt.Start();
+  h_= il::toHMatrix(M, hmatrix_tree, 0.0001);
+  tt.Stop();
+
+  std::cout << " create h mat ended " << h_.isBuilt() <<  " in " << tt.time() <<  "\n";
+  std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
+  std::cout << " Compressed memory " << (il::compressionRatio(h_)*8*(4*ne*4*ne)) <<"\n";
+  std::cout << " dense case memory " << 8*(4*ne*4*ne) << "\n";
+  std::cout <<  "number of blocks " << il::numberofBlocks(h_) << "\n";
+  std::cout << "number of full blocks " << il::numberofFullBlocks(h_) <<"\n";
+  // std::cout << " press enter to continue ...\n";
+  //std::cin.ignore(); // pause while user do not enter return
+  tt.Reset();
+  tt.Start();
+  il::Array2D<il::int_t> pattern=output_hmatPattern(h_);
+  tt.Stop();
+  std::cout << " time for getting pattern "  << tt.time() <<  " number of blocks "  << pattern.size(1) << "\n";
+  std::cout << " first block "  << pattern(0,0) << "-" << pattern(2,0) << "\n";
+  tt.Reset();
+  //
+
+  bie::Hmat<double> h2_(my_patt);
+  tt.Start();
+  h2_.buildFR(M);
+  tt.Stop();
+  std::cout << "creation full block "  << tt.time() <<"\n";
+
+  /// dot-product of linear system and checks
+  double Ep=1.0/(1.0-0.2*0.2);
+  double sig = 1.0;
+  double a=1.0;
+  double coef = 4.0 * sig / (Ep);
+  // at collocation points
+  il::Array<double> wsol_coll{mesh.numberCollocationPoints(), 0.};
+  for (int i = 0; i < coll_points.size(0); ++i) {
+    if (std::abs(coll_points(i,0)) < a) {
+      wsol_coll[i] = coef * sqrt(pow(a, 2) - pow(coll_points(i,0), 2));
+    }
+  }
+  //at corresponding nodes - works here due to simple mesh....
+  il::Array<double> wsol_nodes{coll_points.size(0), 0.};
+  double aux_x=0.; int j=0;
+  for (int i = 0; i < conn.size(0); ++i) {
+    aux_x=nodes(conn(i,0),0);
+    if (std::abs(aux_x) < a) {
+      wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
+    }
+    j++;
+    aux_x=nodes(conn(i,1),0);
+    if (std::abs(aux_x) < a) {
+      wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
+    }
+    j++;
+  }
+
+  il::Array<double> xx{coll_points.size(0)*2};
+
+  for (il::int_t i=0;i<xx.size()/2;i++){
+    xx[2*i]=0.0;
+    xx[2*i+1]=wsol_nodes[i];
+  }
+
+  tt.Start();
+  il::Array< double> y1=il::dot(h_,xx);
+  tt.Stop();
+  std::cout << " time for recursive hdot " << tt.time() <<"\n";
+  tt.Reset();
+  tt.Start();
+  il::Array< double> y2= il::dotwithpattern_serial(h_, pattern, xx);
+  tt.Stop();
+  std::cout << " time for Non-recursive hdot serial " << tt.time() <<"\n";
+
+  il::Array2D<il::int_t> lr_patt{pattern.size(0),0};
+  il::Array2D<il::int_t> fr_patt{pattern.size(0),0};
+  lr_patt.Reserve(3,pattern.size(1));
+  fr_patt.Reserve(3,pattern.size(1));
+  il::int_t nfb=0;il::int_t nlb=0;
+  for (il::int_t i=0;i<pattern.size(1);i++){
+    il::spot_t s(pattern(0,i));
+    if (h_.isFullRank(s)){
+
+      fr_patt.Resize(3,nfb+1);
+      fr_patt(0,nfb)=pattern(0,i);
+      fr_patt(1,nfb)=pattern(1,i);
+      fr_patt(2,nfb)=pattern(2,i);
+      nfb++;
+    } else if (h_.isLowRank(s)){
+
+      lr_patt.Resize(3,nlb+1);
+      lr_patt(0,nlb)=pattern(0,i);
+      lr_patt(1,nlb)=pattern(1,i);
+      lr_patt(2,nlb)=pattern(2,i);
+      nlb++;
+    } else {
+      std::cout <<"error in pattern !\n" ;
+      il::abort();
+    }
+  }
+
+  tt.Reset();
+  tt.Start();
+
+  il::Array< double> y3= il::dotwithpattern(h_, fr_patt, lr_patt, xx);
+  tt.Stop();
+  std::cout << " time for Non-recursive hdot (parallel_invoke) " << tt.time() <<"\n";
+  std::cout << " norm y1 " << il::norm(y1,il::Norm::L2) << " y2 " << il::norm(y2,il::Norm::L2)
+            <<" y3 " << il::norm(y3,il::Norm::L2) << "\n";
+
+  std::cout << " n FR blocks " << fr_patt.size(1) << "  n LR block " << lr_patt.size(1) <<"\n";
+
+  std::cout << "----------end of test hdot  ---------------------\n";
+
+  return 0;
+
+}
+
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
 
  // int a = check3DR0();   // this gives an error - Can't open the file - make sure that test in the main are short and can be run when pushed.
-
 
   //test3DR0();
   //perf3DR0();
@@ -2307,7 +2523,7 @@ int main() {
   //testS3DP0();
 
 //  testFullMat();
-  testHdot();
+  testNewHmat();
 
 //// tests for 3DT6 not updated since the change of interface
 //test3DT6Mesh();

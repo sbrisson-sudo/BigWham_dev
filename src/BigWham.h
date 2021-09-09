@@ -23,6 +23,7 @@
 #include <hmat/hmatrix/HMatrix.h>
 #include <hmat/hmatrix/HMatrixUtils.h>
 #include <hmat/linearAlgebra/blas/hdot.h>
+#include <hmat/hmatrix/toHPattern.h>
 
 #include <src/core/ElasticProperties.h>
 #include <src/core/Mesh2D.h>
@@ -425,7 +426,7 @@ class Bigwhamio {
     // un-used for now.
     // note these pattern are storing st,i0,j0,i1,j1,flag
     IL_EXPECT_FAST(h_.isBuilt());
-    il::HPattern pattern = il::createPattern(hmatrix_tree);
+    bie::HPattern pattern = bie::createPattern(hmatrix_tree);
 
     il::int_t  nblocks = il::numberofBlocks(h_);
 
@@ -567,7 +568,7 @@ class Bigwhamio {
 
     IL_EXPECT_FAST(isBuilt_);
 
-    il::HPattern pattern = il::createPattern(hmatrix_tree);
+    bie::HPattern pattern = bie::createPattern(hmatrix_tree);
 
     int numberofblocks = pattern.n_B;
     int len = 6 * numberofblocks;

@@ -167,7 +167,7 @@ il::Array2DView<T> HMatrix<T>::asFullRank(il::spot_t s) const {
 
 template <typename T>
 il::Array2DEdit<T> HMatrix<T>::AsFullRank(il::spot_t s) {
-  return tree_[s.index].value.AsFullRank().Edit();
+    return tree_[s.index].value.AsFullRank().Edit();
 }
 
 template <typename T>
