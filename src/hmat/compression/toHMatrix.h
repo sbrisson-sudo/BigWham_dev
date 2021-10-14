@@ -25,7 +25,7 @@ void hmatrix_rec(const il::MatrixGenerator<T>& matrix,
       il::Array2DEdit<T> sub = hm.AsFullRank(shm);
       matrix.set(info.range0.begin, info.range1.begin, il::io, sub);
       return;
-    } break;
+    } break ;
     case il::HMatrixType::LowRank: {
       const il::int_t n0 = p*(info.range0.end - info.range0.begin);
       const il::int_t n1 = p*(info.range1.end - info.range1.begin);

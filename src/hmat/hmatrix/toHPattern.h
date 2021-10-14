@@ -14,13 +14,11 @@
 
 #include <il/Tree.h>
 
-#include <hmat/arrayFunctor/MatrixGenerator.h>
-#include <hmat/compression/adaptiveCrossApproximation.h>
+//#include <hmat/arrayFunctor/MatrixGenerator.h>
 #include <hmat/hmatrix/HMatrix.h>
 
 
 namespace bie{
-
 
 // construct pattern
 //
@@ -69,14 +67,14 @@ il::int_t nfullblocks_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st
     default:
       IL_UNREACHABLE;
   }
-}  // namespace il
+}
 
 il::int_t nbFullBlocks(const il::Tree<il::SubHMatrix, 4>& tree) {
   return nfullblocks_rec(tree,tree.root());
 }
 
 
-// function to get the pattern now to avoid the recursion and pave the way to a parallel construction
+// function to get the pattern
 void pattern_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st,
                  il::io_t,il::Array2D<il::int_t>& fr_pattern, il::int_t& nc_fr,il::Array2D<il::int_t>& lr_pattern, il::int_t& nc_lr) {
   const il::SubHMatrix info = tree.value(st);
@@ -87,10 +85,10 @@ void pattern_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st,
       fr_pattern(2,nc_fr)=info.range1.begin;
       fr_pattern(3,nc_fr)=info.range0.end;
       fr_pattern(4,nc_fr)=info.range1.end;
-      fr_pattern(5,nc_fr)=0;
+      fr_pattern(5,nc_fr)=0; //for full block - store the size
       nc_fr=nc_fr+1;
       return;
-    } break;
+    }
     case il::HMatrixType::LowRank: {
       lr_pattern(0,nc_lr)=st.index;
       lr_pattern(1,nc_lr)=info.range0.begin;
@@ -100,7 +98,7 @@ void pattern_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st,
       lr_pattern(5,nc_lr)=1;
       nc_lr=nc_lr+1;
       return;
-    } break;
+    }
     case il::HMatrixType::Hierarchical: {
       const il::spot_t st00 = tree.child(st, 0);
       pattern_rec( tree, st00,  il::io, fr_pattern,nc_fr,lr_pattern,nc_lr);
@@ -126,6 +124,10 @@ struct HPattern {
   il::int_t n_B;   // number of blocks
   il::int_t n_FRB; // number of full rank blocks
   il::int_t n_LRB; // number of low rank blocks
+
+  il::int_t nr;  // total number of rows in the matrix
+  il::int_t nc;
+
 };
 
 // function to get the matrix pattern from the binary cluster tree

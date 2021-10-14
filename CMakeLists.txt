@@ -9,7 +9,7 @@ project(BigWham_exe VERSION 1.0
         DESCRIPTION "This is the executable of BigWham"
         LANGUAGES CXX)
 
-project(bigwham4py VERSION 1.0
+project(bigwhamPybind VERSION 1.0
         DESCRIPTION "This will create a shared library to be imported and used in Python"
         LANGUAGES CXX)
 
@@ -104,7 +104,7 @@ if(IL_OPENMP)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
             MESSAGE("-- OPENMP ENABLED")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libomp")
-            #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNUMBEROFTHREADS=4")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNUMBEROFTHREADS=8")
             #             link_directories(/opt/clang-3.9.0/lib)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             MESSAGE("-- OPENMP ENABLED")
@@ -151,7 +151,6 @@ if(IL_MKL)
             #           set(CMAKE_MKL_LIBRARIES mkl_intel_lp64 mkl_core mkl_sequential tbb dl pthread m) #iomp5
             set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/libmkl_core.a $ENV{MKLROOT}/lib/libmkl_sequential.a  tbb dl  pthread  m) #mkl_intel_thread mkl_sequential  iomp5
             #            link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib $ENV{TBBROOT}/lib)
-
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             MESSAGE("-- The MKL is found at: " $ENV{MKLROOT}/lib/)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -m64 -lmkl_sequential -DIL_MKL ") #-m64 -DIL_BLAS
@@ -303,7 +302,7 @@ if(BUILD_PYTHON_BINDINGS)
     if(IL_MKL)
         if(APPLE)
             target_link_libraries(part  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
-            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         elseif(UNIX)
             target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
@@ -320,23 +319,23 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     # use this
-    add_subdirectory(${PROJECT_SOURCE_DIR}/pybind11-master)
-    include_directories(${PROJECT_SOURCE_DIR}/pybind11-master/include/  )
+    add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master)
+    include_directories(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master/include/  )
     # or use
     # find_package(pybind11 REQUIRED)
-    add_library(bigwham4py MODULE src/binding/bigwham4py.cpp)
-    target_link_libraries(bigwham4py PRIVATE pybind11::module part)
+    add_library(bigwhamPybind MODULE interfaces/python/src/bigwhamPybind.cpp)
+    target_link_libraries(bigwhamPybind PRIVATE pybind11::module part)
 
-    # this command is needed to copy the library pypart to a specific location
-    add_custom_command(TARGET bigwham4py POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwham4py> ${PROJECT_SOURCE_DIR}/src/binding/_test/bigwham4py.so
-            COMMENT "Created ${PROJECT_SOURCE_DIR}/src/binding/_test/bigwham4py.so")
+    # this command is needed to copy the library bigwhamPybind to a specific location
+    add_custom_command(TARGET bigwhamPybind POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so
+            COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so")
 
     # this command is needed to copy the library pypart to a specific location
 #    set(PYFRAC_DIR /home/peruzzo/PycharmProjects/PyFrac/src)
 #    add_custom_command(TARGET pypart POST_BUILD
-#            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PYFRAC_DIR}/bigwham4py.so
-#            COMMENT "Created  ${PYFRAC_DIR}/bigwham4py.so")
+#            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PYFRAC_DIR}/bigwhamPybind.so
+#            COMMENT "Created  ${PYFRAC_DIR}/bigwhamPybind.so")
 endif()
 ################################################################################
 # For Unit Tests

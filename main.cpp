@@ -71,7 +71,7 @@ int test2DP1(){
   const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
 
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTree(coll_points, cluster.partition, 0.0);
+      il::hmatrixTreeIxI(coll_points, cluster.partition, 0.0);
   tt.Stop();
 
   std::cout << "Time for cluster construction " << tt.time() <<"\n";
@@ -212,7 +212,7 @@ int testS3DP0(){
   const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
 
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTree(coll_points, cluster.partition, 10.0);
+      il::hmatrixTreeIxI(coll_points, cluster.partition, 10.0);
   tt.Stop();
   std::cout << "Time for cluster construction " << tt.time() <<"\n";
   tt.Reset();
@@ -519,7 +519,7 @@ int testHdot() {
 
   tt.Start();
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTree(coll_points, cluster.partition, 3.0);
+      il::hmatrixTreeIxI(coll_points, cluster.partition, 3.0);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
   std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
@@ -1834,7 +1834,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 //
 //    double eta=10;
 //    const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-//            il::hmatrixTree(coll_points, cluster.partition, eta);
+//            il::hmatrixTreeIxI(coll_points, cluster.partition, eta);
 //    tt.Stop();
 //
 //    std::cout << "Time for cluster construction " << tt.time() <<"\n";
@@ -2295,15 +2295,13 @@ int check3DR0() {
 }
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 int testNewHmat() {
   std::cout << "--------------- testHdot ---------------------\n";
 
   // star cracks mesh - crack length unity
-  il::int_t nfracs=8;
-  il::int_t ne_per_frac=100;
+  il::int_t nfracs=20;
+  il::int_t ne_per_frac=1000;
   il::Array<double> rad{ne_per_frac+1,0.};
   il::Array<double> angle{nfracs,0.};
 //
@@ -2359,11 +2357,33 @@ int testNewHmat() {
 
   tt.Start();
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTree(coll_points, cluster.partition, 3.0);
+      il::hmatrixTreeIxI(coll_points, cluster.partition, 3.0);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
   std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
   std::cout << " root - " << hmatrix_tree.root().index << "\n";
+  tt.Reset();
+
+
+  tt.Start();
+  const il::Tree<il::SubHMatrix, 4> hmatrix_tree2 =
+      il::hmatrixTreeIxJ(coll_points, cluster.partition, coll_points, cluster.partition,3.0);
+  tt.Stop();
+  std::cout << "Time for binary cluster tree construction 2 " << tt.time() <<"\n";
+  std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
+  std::cout << " root - " << hmatrix_tree.root().index << "\n";
+  tt.Reset();
+
+  // creation of the Hmatrix the old way.....
+  il::HMatrix<double> h_ ;
+  const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
+                                          mesh, elas};
+  std::cout << " create h mat - size ... old way" << M.size(0) << " * " << M.size(1) <<"\n";
+  tt.Start();
+  double epsilon_aca=1.e-4;
+  h_= il::toHMatrix(M, hmatrix_tree, epsilon_aca);
+  tt.Stop();
+  std::cout << " create h mat - size ... old way in " << tt.time() <<"\n";
   tt.Reset();
 
   il::int_t nb=bie::nbBlocks(hmatrix_tree);
@@ -2378,24 +2398,7 @@ int testNewHmat() {
   std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
   std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
   std::cout  << " n lrb " <<  my_patt.LRB_pattern.size(1) <<"\n";
-  for (il::int_t i=0;i<5;i++) {
-    std::cout << " FRB : " << my_patt.FRB_pattern(0, i) << "-"
-              << my_patt.FRB_pattern(1, i) << "-" << my_patt.FRB_pattern(5, i)
-              << " \n";
-    std::cout << " LRB : " << my_patt.LRB_pattern(0, i) << "-"
-              << my_patt.LRB_pattern(1, i) << "-" << my_patt.LRB_pattern(5, i)
-              << " \n";
-  }
   tt.Reset();
-
-  // creation of the Hmatrix the old way.....
-  il::HMatrix<double> h_ ;
-  const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
-                                          mesh, elas};
-  std::cout << " create h mat - size " << M.size(0) << " * " << M.size(1) <<"\n";
-  tt.Start();
-  h_= il::toHMatrix(M, hmatrix_tree, 0.0001);
-  tt.Stop();
 
   std::cout << " create h mat ended " << h_.isBuilt() <<  " in " << tt.time() <<  "\n";
   std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
@@ -2409,17 +2412,17 @@ int testNewHmat() {
   tt.Start();
   il::Array2D<il::int_t> pattern=output_hmatPattern(h_);
   tt.Stop();
-  std::cout << " time for getting pattern "  << tt.time() <<  " number of blocks "  << pattern.size(1) << "\n";
-  std::cout << " first block "  << pattern(0,0) << "-" << pattern(2,0) << "\n";
+  std::cout << " time for getting pattern (old way)"  << tt.time() <<  " number of blocks "  << pattern.size(1) << "\n";
   tt.Reset();
   //
 
-  bie::Hmat<double> h2_(my_patt);
+  //
+  bie::Hmat<2,double> h2_(my_patt);
   tt.Start();
-  h2_.buildFR(M);
+  h2_.build(M,epsilon_aca);
   tt.Stop();
-  std::cout << "creation full block "  << tt.time() <<"\n";
-
+  std::cout << "creation hmat ... new in "  << tt.time() <<"\n";
+  tt.Reset();
   /// dot-product of linear system and checks
   double Ep=1.0/(1.0-0.2*0.2);
   double sig = 1.0;
@@ -2467,8 +2470,12 @@ int testNewHmat() {
 
   il::Array2D<il::int_t> lr_patt{pattern.size(0),0};
   il::Array2D<il::int_t> fr_patt{pattern.size(0),0};
+  il::Array2D<il::int_t> fr_patt2{pattern.size(0)+2,0};
+
   lr_patt.Reserve(3,pattern.size(1));
   fr_patt.Reserve(3,pattern.size(1));
+  fr_patt2.Reserve(5,pattern.size(1));
+
   il::int_t nfb=0;il::int_t nlb=0;
   for (il::int_t i=0;i<pattern.size(1);i++){
     il::spot_t s(pattern(0,i));
@@ -2478,6 +2485,15 @@ int testNewHmat() {
       fr_patt(0,nfb)=pattern(0,i);
       fr_patt(1,nfb)=pattern(1,i);
       fr_patt(2,nfb)=pattern(2,i);
+
+      fr_patt2.Resize(5,nfb+1);
+      fr_patt2(0,nfb)=pattern(0,i);
+      fr_patt2(1,nfb)=pattern(1,i);
+      fr_patt2(2,nfb)=pattern(2,i);
+      const il::SubHMatrix info = hmatrix_tree.value(s);
+      fr_patt2(3,nfb)=info.range0.end;
+      fr_patt2(4,nfb)=info.range1.end;
+
       nfb++;
     } else if (h_.isLowRank(s)){
 
@@ -2491,18 +2507,40 @@ int testNewHmat() {
       il::abort();
     }
   }
-
   tt.Reset();
-  tt.Start();
 
+
+//  for (il::int_t i=0;i<my_patt.FRB_pattern.size(1);i++) {
+//    std::cout << " FRB : " << i <<"-" << my_patt.FRB_pattern(0, i)<< "-" << my_patt.FRB_pattern(1, i) << "-"
+//              << my_patt.FRB_pattern(3, i) << "-" << my_patt.FRB_pattern(2, i) << "-"<< my_patt.FRB_pattern(4, i) << "-"
+//              << " \n";
+//      std::cout << " Patt : " << i <<"-" << (fr_patt2(0, i)) <<"-"  << (fr_patt2(1, i)-1)/2 << "-"
+//                << (fr_patt2(3, i) )  << "-" << (fr_patt2(2, i)-1)/2 << "-"<< (fr_patt2(4, i) )
+//                << " \n";
+//    }
+//    std::cout << " LRB : " << my_patt.LRB_pattern(0, i) << "-"
+//              << my_patt.LRB_pattern(1, i) << "-" << my_patt.LRB_pattern(5, i)
+//              << " \n";
+
+  tt.Start();
   il::Array< double> y3= il::dotwithpattern(h_, fr_patt, lr_patt, xx);
   tt.Stop();
   std::cout << " time for Non-recursive hdot (parallel_invoke) " << tt.time() <<"\n";
+
+  tt.Reset();
+
+
+  il::Array<double> y4= h2_.matvec(xx);
+  tt.Start();
+  int np = 100;
+  for (int i=0;i<np;i++){
+    y4= h2_.matvec(xx);
+  }
+  tt.Stop();
+  std::cout << " time for Non-recursive hdot .. new way " << tt.time()/np <<"\n";
   std::cout << " norm y1 " << il::norm(y1,il::Norm::L2) << " y2 " << il::norm(y2,il::Norm::L2)
-            <<" y3 " << il::norm(y3,il::Norm::L2) << "\n";
-
-  std::cout << " n FR blocks " << fr_patt.size(1) << "  n LR block " << lr_patt.size(1) <<"\n";
-
+            <<" y3 " << il::norm(y3,il::Norm::L2)
+          <<" y4 " << il::norm(y4,il::Norm::L2) << "\n";
   std::cout << "----------end of test hdot  ---------------------\n";
 
   return 0;

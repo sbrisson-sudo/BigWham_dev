@@ -6,16 +6,18 @@
 
 namespace il {
 
-il::Tree<il::SubHMatrix, 4> hmatrixTree(
+// Block Cluster Tree Creation - IxI :: square H-matrix
+il::Tree<il::SubHMatrix, 4> hmatrixTreeIxI(
     const il::Array2D<double> &node, const il::Tree<il::Range, 2> &range_tree,
     double eta) {
   il::Tree<il::SubHMatrix, 4> hmatrix_tree{};
-  hmatrixTree_rec(node, range_tree, eta, hmatrix_tree.root(), range_tree.root(),
-                  range_tree.root(), il::io, hmatrix_tree);
+  hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.root(),
+                     range_tree.root(), range_tree.root(), il::io,
+                     hmatrix_tree);
   return hmatrix_tree;
 };
 
-void hmatrixTree_rec(const il::Array2D<double> &node,
+void hmatrixTreeIxI_rec(const il::Array2D<double> &node,
                      const il::Tree<il::Range, 2> &range_tree, double eta,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
                      il::Tree<il::SubHMatrix, 4> &hmatrix_tree) {
@@ -32,21 +34,21 @@ void hmatrixTree_rec(const il::Array2D<double> &node,
           s, il::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
                             il::HMatrixType::Hierarchical});
       hmatrix_tree.AddChild(s, 0);
-      hmatrixTree_rec(node, range_tree, eta, hmatrix_tree.child(s, 0),
-                      range_tree.child(s0, 0), range_tree.child(s1, 0), il::io,
-                      hmatrix_tree);
+      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 0),
+                         range_tree.child(s0, 0), range_tree.child(s1, 0),
+                         il::io, hmatrix_tree);
       hmatrix_tree.AddChild(s, 1);
-      hmatrixTree_rec(node, range_tree, eta, hmatrix_tree.child(s, 1),
-                      range_tree.child(s0, 1), range_tree.child(s1, 0), il::io,
-                      hmatrix_tree);
+      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 1),
+                         range_tree.child(s0, 1), range_tree.child(s1, 0),
+                         il::io, hmatrix_tree);
       hmatrix_tree.AddChild(s, 2);
-      hmatrixTree_rec(node, range_tree, eta, hmatrix_tree.child(s, 2),
-                      range_tree.child(s0, 0), range_tree.child(s1, 1), il::io,
-                      hmatrix_tree);
+      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 2),
+                         range_tree.child(s0, 0), range_tree.child(s1, 1),
+                         il::io, hmatrix_tree);
       hmatrix_tree.AddChild(s, 3);
-      hmatrixTree_rec(node, range_tree, eta, hmatrix_tree.child(s, 3),
-                      range_tree.child(s0, 1), range_tree.child(s1, 1), il::io,
-                      hmatrix_tree);
+      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 3),
+                         range_tree.child(s0, 1), range_tree.child(s1, 1),
+                         il::io, hmatrix_tree);
     } else if ((range_tree.hasChild(s0, 0) && range_tree.hasChild(s0, 1)) ||
                (range_tree.hasChild(s1, 0) && range_tree.hasChild(s1, 1))) {
       hmatrix_tree.Set(
@@ -61,6 +63,70 @@ void hmatrixTree_rec(const il::Array2D<double> &node,
   }
 }
 
+
+// Block Cluster Tree Creation - IxJ :: square H-matrix
+il::Tree<il::SubHMatrix, 4> hmatrixTreeIxJ(
+    const il::Array2D<double> &node0, const il::Tree<il::Range, 2> &range_tree0,
+    const il::Array2D<double> &node1, const il::Tree<il::Range, 2> &range_tree1,    double eta) {
+  il::Tree<il::SubHMatrix, 4> hmatrix_tree{};
+  hmatrixTreeIxJ_rec(node0, range_tree0,node1,range_tree1, eta, hmatrix_tree.root(),
+                     range_tree0.root(), range_tree1.root(), il::io,
+                     hmatrix_tree);
+  return hmatrix_tree;
+};
+
+void hmatrixTreeIxJ_rec(const il::Array2D<double>& node0,
+                        const il::Tree<il::Range, 2>& range_tree0,
+                        const il::Array2D<double>& node1,
+                        const il::Tree<il::Range, 2>& range_tree1, double eta,
+                        il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
+                        il::Tree<il::SubHMatrix, 4>& hmatrix_tree){
+  const bool is_admissible =
+      isAdmissible(node0,node1, eta, range_tree0.value(s0), range_tree1.value(s1));
+
+  if (is_admissible) {
+    hmatrix_tree.Set(s,
+                     il::SubHMatrix{range_tree0.value(s0), range_tree1.value(s1),
+                                    il::HMatrixType::LowRank});
+  } else {
+    if (range_tree0.hasChild(s0, 0) && range_tree0.hasChild(s0, 1) &&
+        range_tree1.hasChild(s1, 0) && range_tree1.hasChild(s1, 1)) {
+      hmatrix_tree.Set(
+          s, il::SubHMatrix{range_tree0.value(s0), range_tree1.value(s1),
+                            il::HMatrixType::Hierarchical});
+      hmatrix_tree.AddChild(s, 0);
+      hmatrixTreeIxJ_rec(node0, range_tree0,node1,range_tree1, eta, hmatrix_tree.child(s, 0),
+                         range_tree0.child(s0, 0), range_tree1.child(s1, 0),
+                         il::io, hmatrix_tree);
+      hmatrix_tree.AddChild(s, 1);
+      hmatrixTreeIxJ_rec(node0, range_tree0, node1,range_tree1,eta, hmatrix_tree.child(s, 1),
+                         range_tree0.child(s0, 1), range_tree1.child(s1, 0),
+                         il::io, hmatrix_tree);
+      hmatrix_tree.AddChild(s, 2);
+      hmatrixTreeIxJ_rec(node0, range_tree0,node1,range_tree1, eta, hmatrix_tree.child(s, 2),
+                         range_tree0.child(s0, 0), range_tree1.child(s1, 1),
+                         il::io, hmatrix_tree);
+      hmatrix_tree.AddChild(s, 3);
+      hmatrixTreeIxJ_rec(node0, range_tree0,node1,range_tree1, eta, hmatrix_tree.child(s, 3),
+                         range_tree0.child(s0, 1), range_tree1.child(s1, 1),
+                         il::io, hmatrix_tree);
+    } else if ((range_tree0.hasChild(s0, 0) && range_tree0.hasChild(s0, 1)) ||
+               (range_tree1.hasChild(s1, 0) && range_tree1.hasChild(s1, 1))) {
+      hmatrix_tree.Set(
+          s, il::SubHMatrix{range_tree0.value(s0), range_tree1.value(s1),
+                            il::HMatrixType::FullRank});
+    } else {
+      // FIXME - why ?
+      hmatrix_tree.Set(
+          s, il::SubHMatrix{range_tree0.value(s0), range_tree1.value(s1),
+                            il::HMatrixType::FullRank});
+    }
+  }
+};
+
+
+
+// Binary Cluster tree creation
 Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double> &node) {
   const il::int_t nb_nodes = node.size(0);
 

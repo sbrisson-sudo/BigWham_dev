@@ -161,7 +161,7 @@ class Bigwhamio {
       std::cout << "Creating hmatrix  Tree - \n";
       //il::Tree<il::SubHMatrix, 4>
           hmatrix_tree =
-          il::hmatrixTree(collocationPoints_, cluster.partition, eta_);
+          il::hmatrixTreeIxI(collocationPoints_, cluster.partition, eta_);
       tt.Stop();
       std::cout << "hmatrix  tree creation time :  " << tt.time() << "\n";
       tt.Reset();
@@ -285,7 +285,7 @@ class Bigwhamio {
       std::cout << "Creating hmatrix  Tree - \n";
       //il::Tree<il::SubHMatrix, 4>
           hmatrix_tree =
-          il::hmatrixTree(collocationPoints_, cluster.partition, eta_);
+          il::hmatrixTreeIxI(collocationPoints_, cluster.partition, eta_);
       tt.Stop();
       std::cout << "hmatrix  tree creation time :  " << tt.time() << "\n";
       tt.Reset();
