@@ -1,5 +1,4 @@
 
-#include <iostream>
 #include <il/Tree.h>
 #include "cluster.h"
 #include <limits>
