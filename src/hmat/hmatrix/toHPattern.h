@@ -42,7 +42,7 @@ il::int_t nblocks_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st) {
     default:
       IL_UNREACHABLE;
   }
-}  // namespace il
+}
 
 il::int_t nbBlocks(const il::Tree<il::SubHMatrix, 4>& tree) {
   return nblocks_rec(tree,tree.root());
@@ -120,13 +120,13 @@ struct HPattern {
   il::Array2D<il::int_t> FRB_pattern;   // full rank block pattern
   il::Array2D<il::int_t> LRB_pattern;  // low rank block pattern
   // pattern are stored as info a block k at pattern(0-5,k)
-  //  spot,i_begin,j_begin,i_end,j_end,flag (0 for full rank, 1 for low rank)
-  il::int_t n_B;   // number of blocks
-  il::int_t n_FRB; // number of full rank blocks
-  il::int_t n_LRB; // number of low rank blocks
+  //  spot,i_begin,j_begin,i_end,j_end,flag (0 for full rank, rank for low rank)
+  il::int_t n_B;   // number of blocks in the matrix pattern
+  il::int_t n_FRB; // number of full rank blocks in the matrix pattern
+  il::int_t n_LRB; // number of low rank blocks in the matrix pattern
 
-  il::int_t nr;  // total number of rows in the matrix
-  il::int_t nc;
+  il::int_t nr;  // total number of rows in the matrix pattern
+  il::int_t nc; // total number of colums in the matrix pattern
 
 };
 

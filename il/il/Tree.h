@@ -53,9 +53,12 @@ class Tree {
   il::int_t depth_;
   il::Array<Node> tree_;
 
+
  public:
   Tree();
-  il::int_t depth() const;
+  il::int_t depth_rec(il::spot_t s) ;
+  il::int_t depth() const ;
+  void setDepth()  ;
   il::spot_t root() const;
   il::spot_t parent(il::spot_t s) const;
   il::spot_t child(il::spot_t s, il::int_t i) const;
@@ -70,8 +73,33 @@ template <typename T, il::int_t n>
 Tree<T, n>::Tree() : depth_{0}, tree_{1} {}
 
 template <typename T, il::int_t n>
-il::int_t Tree<T, n>::depth() const {
+il::int_t Tree<T, n>::depth() const  {
   return depth_;
+}
+
+template <typename T, il::int_t n>
+void Tree<T, n>::setDepth()   {
+  if (depth_ == 0)
+  {
+    depth_=this->depth_rec(il::spot_t{0});
+  }
+}
+
+template <typename T, il::int_t n>
+il::int_t Tree<T, n>::depth_rec(il::spot_t s)  {
+  if (hasChild(s) == false) {
+    return 0;
+  } else {
+    il::int_t max = 0;
+    for (il::int_t i = 0; i < n; i++) {
+      const il::spot_t st = this->child(s, i);
+      il::int_t aux = this->depth_rec(st);
+      if (aux > max) {
+        max = aux;
+      }
+    }
+    return (max+1);
+  }
 }
 
 template <typename T, il::int_t n>

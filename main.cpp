@@ -68,10 +68,10 @@ int test2DP1(){
   il::int_t leaf_size=32; //test->max_leaf_size;
   il::Timer tt;
   tt.Start();
-  const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
 
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTreeIxI(coll_points, cluster.partition, 0.0);
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, 0.0);
   tt.Stop();
 
   std::cout << "Time for cluster construction " << tt.time() <<"\n";
@@ -209,10 +209,10 @@ int testS3DP0(){
   il::int_t leaf_size=12;
   il::Timer tt;
   tt.Start();
-  const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
 
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTreeIxI(coll_points, cluster.partition, 10.0);
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, 10.0);
   tt.Stop();
   std::cout << "Time for cluster construction " << tt.time() <<"\n";
   tt.Reset();
@@ -506,7 +506,7 @@ int testHdot() {
   il::int_t leaf_size=32;
   il::Timer tt;
   tt.Start();
-  const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
 
   tt.Stop();
   std::cout << "Time for  cluster tree construction " << tt.time() <<"\n";
@@ -519,7 +519,7 @@ int testHdot() {
 
   tt.Start();
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTreeIxI(coll_points, cluster.partition, 3.0);
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, 3.0);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
   std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
@@ -2344,7 +2344,7 @@ int testNewHmat() {
   il::int_t leaf_size=32;
   il::Timer tt;
   tt.Start();
-  const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
 
   tt.Stop();
   std::cout << "Time for  cluster tree construction " << tt.time() <<"\n";
@@ -2352,12 +2352,10 @@ int testNewHmat() {
   std::cout << " cluster - part " << cluster.permutation.size() << "\n";
 
   tt.Reset();
-//  std::cout << " press enter to continue ...\n";
-//  std::cin.ignore(); // pause while user do not enter return
 
   tt.Start();
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTreeIxI(coll_points, cluster.partition, 3.0);
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, 3.0);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
   std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
@@ -2367,17 +2365,18 @@ int testNewHmat() {
 
   tt.Start();
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree2 =
-      il::hmatrixTreeIxJ(coll_points, cluster.partition, coll_points, cluster.partition,3.0);
+      bie::hmatrixTreeIxJ(coll_points, cluster.partition, coll_points, cluster.partition,3.0);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction 2 " << tt.time() <<"\n";
   std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
   std::cout << " root - " << hmatrix_tree.root().index << "\n";
   tt.Reset();
 
-  // creation of the Hmatrix the old way.....
+  // the matrix generator
   il::HMatrix<double> h_ ;
   const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
                                           mesh, elas};
+  // creation of the Hmatrix the old way.....
   std::cout << " create h mat - size ... old way" << M.size(0) << " * " << M.size(1) <<"\n";
   tt.Start();
   double epsilon_aca=1.e-4;
@@ -2398,6 +2397,15 @@ int testNewHmat() {
   std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
   std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
   std::cout  << " n lrb " <<  my_patt.LRB_pattern.size(1) <<"\n";
+  my_patt.nr=M.size(0);
+  my_patt.nc=M.size(1);
+  tt.Reset();
+  tt.Start();
+  bie::HPattern my_patt2=bie::createPattern(hmatrix_tree2);
+  std::cout << "Time for pattern construction " << tt.time() <<"\n";
+  std::cout << " Number of sub-matrix full blocks: "  << my_patt2.n_FRB <<  " \n";
+  std::cout  << " n fb " <<  my_patt2.FRB_pattern.size(1) <<"\n";
+  std::cout  << " n lrb " <<  my_patt2.LRB_pattern.size(1) <<"\n";
   tt.Reset();
 
   std::cout << " create h mat ended " << h_.isBuilt() <<  " in " << tt.time() <<  "\n";

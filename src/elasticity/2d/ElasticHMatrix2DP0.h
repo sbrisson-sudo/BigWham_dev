@@ -128,10 +128,6 @@ void ElasticHMatrix2DP0<T>::set(il::int_t b0, il::int_t b1, il::io_t,
     }
   }
 
-//  tbb::parallel_for(tbb::blocked_range<il::int_t>(0,M.size(1)/2),
-//                    bie::BlockMat(normal_shear_stress_kernel_s3d_dp0_dd_nodal,ker_opts_,
-//                                  elas_, mesh_,permutation_, b0, b1, M));
-
 }
 
-}  // namespace il
+}

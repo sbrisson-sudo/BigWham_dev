@@ -151,8 +151,8 @@ class Bigwhamio {
                 << collocationPoints_.size(0) << "\n";
 
       tt.Start();
-      const il::Cluster cluster =
-          il::cluster(max_leaf_size_, il::io, collocationPoints_);
+      const bie::Cluster cluster =
+          bie::cluster(max_leaf_size_, il::io, collocationPoints_);
       tt.Stop();
       std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
       tt.Reset();
@@ -161,7 +161,7 @@ class Bigwhamio {
       std::cout << "Creating hmatrix  Tree - \n";
       //il::Tree<il::SubHMatrix, 4>
           hmatrix_tree =
-          il::hmatrixTreeIxI(collocationPoints_, cluster.partition, eta_);
+          bie::hmatrixTreeIxI(collocationPoints_, cluster.partition, eta_);
       tt.Stop();
       std::cout << "hmatrix  tree creation time :  " << tt.time() << "\n";
       tt.Reset();
@@ -274,8 +274,8 @@ class Bigwhamio {
                 << collocationPoints_.size(0) << "\n";
 
       tt.Start();
-      const il::Cluster cluster =
-          il::cluster(max_leaf_size_, il::io, collocationPoints_);
+      const bie::Cluster cluster =
+          bie::cluster(max_leaf_size_, il::io, collocationPoints_);
       tt.Stop();
       std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
       tt.Reset();
@@ -285,7 +285,7 @@ class Bigwhamio {
       std::cout << "Creating hmatrix  Tree - \n";
       //il::Tree<il::SubHMatrix, 4>
           hmatrix_tree =
-          il::hmatrixTreeIxI(collocationPoints_, cluster.partition, eta_);
+          bie::hmatrixTreeIxI(collocationPoints_, cluster.partition, eta_);
       tt.Stop();
       std::cout << "hmatrix  tree creation time :  " << tt.time() << "\n";
       tt.Reset();

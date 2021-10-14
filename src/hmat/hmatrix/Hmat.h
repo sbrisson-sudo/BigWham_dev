@@ -25,7 +25,6 @@ class Hmat {
   bie::HPattern pattern_;
 
   std::vector<il::LowRank<T>> low_rank_blocks_;
- // std::vector<il::int_t >           lr_ranks_;    // list of ranks of low-rank
   std::vector<il::Array2D<T> > full_rank_blocks_;
 
   bool built_= false;
@@ -99,8 +98,29 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen, const double epsilon){
   void build(const il::MatrixGenerator<T>& matrix_gen, const double epsilon){
     buildFR(matrix_gen);
     buildLR(matrix_gen,epsilon);
-    built_=built_FR_ & built_LR_;
+    built_=built_FR_ && built_LR_;
   }
+//-----------------------------------------------------------------------------
+  // nb of elements
+  il::int_t nbOfEntries(){
+    IL_EXPECT_FAST(built_);
+    il::int_t n=0;
+
+    for (il::int_t i=0;i<pattern_.n_FRB;i++){
+      il::Array2DView<double> a = full_rank_blocks_[i].view();
+      n+=a.size(0)*a.size(1);
+    }
+
+    for (il::int_t i=0;i<pattern_.n_LRB;i++) {
+      il::Array2DView<double> a = low_rank_blocks_[i].A.view();
+      il::Array2DView<double> b = low_rank_blocks_[i].B.view();
+      n+=a.size(0)*a.size(1)+b.size(0)*b.size(1);
+    }
+
+    return n;
+  }
+
+
   //--------------------------------------------------------------------------
   //// MAtrix vector multiplication
   il::Array<T> matvec(const il::Array<T> & x){
