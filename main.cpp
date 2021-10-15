@@ -2350,8 +2350,13 @@ int testNewHmat() {
   std::cout << "Time for  cluster tree construction " << tt.time() <<"\n";
   std::cout << " cluster depth ..." <<  cluster.partition.depth() <<"\n";
   std::cout << " cluster - part " << cluster.permutation.size() << "\n";
-
+  std::cout << " N nodes at level 2:: "<<  cluster.partition.nnodesAtLevel(2) <<"\n";
   tt.Reset();
+  //il::Tree<il::Range,2> myp=cluster.partition;
+  il::Array<il::Range> listnodes=cluster.partition.getNodesAtLevel(2);
+
+  std::cout << " nodes 0 at level 2 " <<  listnodes[0].begin << " / " << listnodes[0].end <<"\n";
+
 
   tt.Start();
   const il::Tree<il::SubHMatrix, 4> hmatrix_tree =

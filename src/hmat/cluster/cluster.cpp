@@ -141,9 +141,7 @@ Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double> &node) {
   }
 
   cluster_rec(s, leaf_size, il::io, ans.partition, node, ans.permutation);
-  std::cout << "set depth \n";
   ans.partition.setDepth();
-//  std::cout << " depth" << ans.partition.depth() <<" \n";
   return ans;
 }
 
