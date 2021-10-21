@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-
+#include <omp.h>
 #include <string>
 #include <random>
 #include <chrono>
@@ -2297,7 +2297,12 @@ int check3DR0() {
 
 ///////////////////////////////////////////////////////////////////////////////
 int testNewHmat() {
-  std::cout << "--------------- testHdot ---------------------\n";
+  std::cout << "--------------- test new Hmat implemntation Hdot ---------------------\n";
+
+#pragma omp parallel num_threads(4)
+  {
+    printf("Hello from thread %d, nthreads %d\n", omp_get_thread_num(), omp_get_num_threads());
+  }
 
   // star cracks mesh - crack length unity
   il::int_t nfracs=20;

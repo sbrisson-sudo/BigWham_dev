@@ -17,9 +17,8 @@ project(BigWhamElastUnitTest VERSION 1.0
         DESCRIPTION "This is for testing the wheels in BigWham"
         LANGUAGES CXX)
 
-
 project(BigWham VERSION 1.0
-        DESCRIPTION "This is the library containing the weels"
+        DESCRIPTION "This is the library containing the wheels"
         LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -54,24 +53,13 @@ endif()
 # choose compiler: clang, gcc, intel ???
 ################################################################################
 #
-MESSAGE("Detecting the compiler:")
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    MESSAGE("-- The compiler is: Clang")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    MESSAGE("-- The compiler is: GNU")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-    MESSAGE("-- The compiler is: Intel")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
-    MESSAGE("-- The compiler is: MSVC")
-endif()
-
 if(APPLE)
-#    MESSAGE("-- located at /usr/bin/")
-#    set(CMAKE_C_COMPILER /usr/bin/clang)
-#    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
     MESSAGE("-- located at /usr/bin/")
-    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
-    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
+    set(CMAKE_C_COMPILER /usr/bin/clang)
+    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+#    MESSAGE("-- located at /usr/local/opt/llvm/bin/clang")
+#    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
+#    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
 #    MESSAGE("-- located at /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/")
 #    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c)
 #    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
@@ -81,7 +69,6 @@ elseif(UNIX)
         #set(CMAKE_CXX_COMPILER /opt/intel/compilers_and_libraries/linux/bin/intel64/icpc)
         set(CMAKE_C_COMPILER /opt/intel/bin/icc)
         set(CMAKE_CXX_COMPILER /opt/intel/bin/icpc)
-
     else()
         set(CMAKE_C_COMPILER /usr/bin/gcc)
         set(CMAKE_CXX_COMPILER /usr/bin/g++)
@@ -93,17 +80,27 @@ elseif(WIN32)
     endif()
 endif()
 
+MESSAGE("Detecting the compiler:")
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    MESSAGE("-- The compiler is:  ${CMAKE_CXX_COMPILER}")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    MESSAGE("-- The compiler is: ${CMAKE_CXX_COMPILER}")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    MESSAGE("-- The compiler is: ${CMAKE_CXX_COMPILER}")
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+    MESSAGE("-- The compiler is: ${CMAKE_CXX_COMPILER}")
+endif()
+
 ################################################################################
 # parallel framework
 ################################################################################
 
 # For OpenMP
 if(IL_OPENMP)
-
     if(APPLE)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
             MESSAGE("-- OPENMP ENABLED")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp=libomp")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp  ") #=libomp
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNUMBEROFTHREADS=8")
             #             link_directories(/opt/clang-3.9.0/lib)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -172,7 +169,6 @@ if(IL_MKL)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -m64 -lmkl_sequential -DIL_MKL ") #-m64 -DIL_BLAS
-
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed")
             set(CMAKE_MKL_LIBRARIES $ENV{MKLROOT}/lib/intel64/libmkl_intel_lp64.a $ENV{MKLROOT}/lib/intel64/libmkl_core.a $ENV{MKLROOT}/lib/intel64/libmkl_sequential.a tbb dl pthread m)
             link_directories($ENV{MKLROOT}/lib/intel64 $ENV{TBBROOT}/lib/intel64/gcc4.8)
@@ -247,7 +243,6 @@ set(SOURCE_FILES
         src/elasticity/3d/Elastic3DT0_element.cpp
         src/elasticity/3d/ElasticHMatrix3DT0.h
         #  - R0 element
-#        src/elasticity/3d/Elastic3DR0_element.h
         src/elasticity/3d/Elastic3DR0_common.cpp
         src/elasticity/3d/Elastic3DR0_element.cpp
         src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian_element.cpp
@@ -264,23 +259,21 @@ set(SOURCE_FILES
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 add_library(BigWham STATIC ${SOURCE_FILES} src/hmat/hmatrix/LatticeHmat.h)
-target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} ) #${CMAKE_OPENBLAS_LIBRARIES}
+target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} ${CMAKE_OPENBLAS_LIBRARIES}) #
 
 set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)
 add_executable(BigWham_exe  main.cpp )
-include_directories(il $ENV{TBBROOT}/include/  )
+include_directories(il $ENV{TBBROOT}/include/ )
 
-target_link_libraries(BigWham_exe   BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
+target_link_libraries(BigWham_exe BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
 
 if(IL_MKL)
     if(APPLE)
         target_link_libraries(BigWham_exe   ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
-
         target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
-        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include $ENV{TBBROOT}/lib)
+        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include $ENV{TBBROOT}/lib  )
     elseif(UNIX)
         target_link_libraries(BigWham_exe "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
-
         target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
         target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         # target_include_directories(HFPx2D PRIVATE ${CMAKE_SOURCE_DIR} /opt/intel/mkl/include)
