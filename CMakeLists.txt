@@ -17,6 +17,9 @@ project(BigWhamElastUnitTest VERSION 1.0
         DESCRIPTION "This is for testing the wheels in BigWham"
         LANGUAGES CXX)
 
+#DYLD_LIBRARY_PATH=/opt/intel/compilers_and_libraries_2020/mac/tbb/lib;LDFLAGS=-L/usr/local/opt/llvm/lib -Wl
+#DYLD_LIBRARY_PATH=/opt/intel/compilers_and_libraries_2020/mac/tbb/lib;CPPFLAGS=-I/usr/local/opt/llvm/include;LDFLAGS=-L/usr/local/opt/llvm/lib -Wl
+
 project(BigWham VERSION 1.0
         DESCRIPTION "This is the library containing the wheels"
         LANGUAGES CXX)
