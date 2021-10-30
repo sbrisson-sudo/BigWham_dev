@@ -34,7 +34,7 @@ set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
-set(IL_OPENMP 0)
+set(IL_OPENMP 1)
 set(IL_TBB 1)
 
 set(USE_INTEL 0)  # compiler option
@@ -54,15 +54,15 @@ endif()
 ################################################################################
 #
 if(APPLE)
-    MESSAGE("-- located at /usr/bin/")
-    set(CMAKE_C_COMPILER /usr/bin/clang)
-    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
-#    MESSAGE("-- located at /usr/local/opt/llvm/bin/clang")
-#    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
-#    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
-#    MESSAGE("-- located at /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/")
-#    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c)
-#    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
+    #    MESSAGE("-- located at /usr/bin/")
+    #    set(CMAKE_C_COMPILER /usr/bin/clang)
+    #    set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+    MESSAGE("-- located at /usr/local/opt/llvm/bin/clang")
+    set(CMAKE_C_COMPILER /usr/local/opt/llvm/bin/clang)
+    set(CMAKE_CXX_COMPILER /usr/local/opt/llvm/bin/clang++)
+    #    MESSAGE("-- located at /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/")
+    #    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c)
+    #    set(CMAKE_CXX_COMPILER /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++)
 elseif(UNIX)
     if(USE_INTEL)
         #set(CMAKE_C_COMPILER /opt/intel/compilers_and_libraries/linux/bin/intel64/icc)
@@ -100,9 +100,11 @@ if(IL_OPENMP)
     if(APPLE)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
             MESSAGE("-- OPENMP ENABLED")
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp  ") #=libomp
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp") #
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNUMBEROFTHREADS=8")
-            #             link_directories(/opt/clang-3.9.0/lib)
+
+            set(OPENMP_LIBRARY /usr/local/opt/libomp/lib/)#libomp.dylib
+            link_directories(/usr/local/opt/libomp/lib/) #
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             MESSAGE("-- OPENMP ENABLED")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
@@ -253,13 +255,12 @@ set(SOURCE_FILES
         src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
         src/BigWham.h
-        src/_test/penny_shaped_crack_analytical_sol.h
-        src/_test/penny_shaped_crack_analytical_sol.cpp
+        src/hmat/hmatrix/LatticeHmat.h
         )
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
-add_library(BigWham STATIC ${SOURCE_FILES} src/hmat/hmatrix/LatticeHmat.h)
-target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} ${CMAKE_OPENBLAS_LIBRARIES}) #
+add_library(BigWham STATIC ${SOURCE_FILES} )
+target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} ) #${CMAKE_OPENBLAS_LIBRARIES}
 
 set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)
 add_executable(BigWham_exe  main.cpp )
@@ -269,9 +270,10 @@ target_link_libraries(BigWham_exe BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
 
 if(IL_MKL)
     if(APPLE)
-        target_link_libraries(BigWham_exe   ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
+        target_link_directories(BigWham_exe PRIVATE ${OPENMP_LIBRARY})
+        target_link_libraries(BigWham_exe  ${CMAKE_MKL_LIBRARIES} ) #-lpthread -lm -ldl /usr/local/opt/libomp/lib/libomp.a
         target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
-        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include $ENV{TBBROOT}/lib  )
+        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include $ENV{TBBROOT}/lib )
     elseif(UNIX)
         target_link_libraries(BigWham_exe "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
         target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
@@ -285,6 +287,7 @@ elseif(IL_OPENBLAS)
     target_compile_definitions(BigWham PRIVATE IL_OPENBLAS=1 IL_BLAS=0 IL_OPENMP=1)
     target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR})
 endif()
+
 
 ################################################################
 # Pybind --->use with PYTHON version >=3.7
@@ -325,10 +328,10 @@ if(BUILD_PYTHON_BINDINGS)
             COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so")
 
     # this command is needed to copy the library pypart to a specific location
-#    set(PYFRAC_DIR /home/peruzzo/PycharmProjects/PyFrac/src)
-#    add_custom_command(TARGET pypart POST_BUILD
-#            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PYFRAC_DIR}/bigwhamPybind.so
-#            COMMENT "Created  ${PYFRAC_DIR}/bigwhamPybind.so")
+    #    set(PYFRAC_DIR /home/peruzzo/PycharmProjects/PyFrac/src)
+    #    add_custom_command(TARGET pypart POST_BUILD
+    #            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:pypart> ${PYFRAC_DIR}/bigwhamPybind.so
+    #            COMMENT "Created  ${PYFRAC_DIR}/bigwhamPybind.so")
 endif()
 ################################################################################
 # For Unit Tests
@@ -342,6 +345,8 @@ if(BUILD_GOOGLE_TESTS)
     set(UNIT_TEST_FILES
             il/gtest/src/gtest-all.cc
             #src/elasticity/_test/elasticity_tests.cpp
+            src/_test/penny_shaped_crack_analytical_sol.h
+            src/_test/penny_shaped_crack_analytical_sol.cpp
             src/core/_test/FaceData_tests.cpp
             src/elasticity/_test/elastic3DR0_element_tests.cpp
             src/_test/elastic3DR0_element_benchmark.cpp

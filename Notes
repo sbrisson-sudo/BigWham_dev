@@ -48,8 +48,9 @@ Open a terminal and type:
   For compilers to find llvm you may need to set:
     export LDFLAGS="-L/usr/local/opt/llvm/lib"
     export CPPFLAGS="-I/usr/local/opt/llvm/include"
-  ___________________________________________________________________
 
+  ___________________________________________________________________
+LDFLAGS=-L/usr/local/opt/llvm/lib -Wl,CPPFLAGS=-I/usr/local/opt/llvm/include
 So, you need to add those lines at the end of your .bash_profile (*2)
 
  LDFLAGS="-L/usr/local/opt/llvm/lib"
