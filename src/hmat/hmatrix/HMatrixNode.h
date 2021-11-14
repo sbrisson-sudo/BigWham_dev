@@ -12,13 +12,13 @@
 #include <il/Array2D.h>
 #include <il/linearAlgebra/Matrix.h>
 
-namespace il {
+namespace bie {
 
 template <typename T>
 class HMatrixNode {
  private:
   bool empty_;
-  il::HMatrixType matrix_type_;
+  bie::HMatrixType matrix_type_;
   il::Array2D<T> A_;
   il::Array2D<T> B_;
   il::Array<int> pivot_;
@@ -33,7 +33,7 @@ class HMatrixNode {
   bool isLowRank() const;
   bool isHierarchical() const;
   bool isFullLu() const;
-  il::HMatrixType type() const;
+  bie::HMatrixType type() const;
   il::int_t rankOfLowRank() const;
   void SetEmpty();
   void SetHierarchical();
@@ -64,32 +64,32 @@ template <typename T>
 HMatrixNode<T>::HMatrixNode(il::Array2D<T> A)
     : A_{std::move(A)}, B_{}, pivot_{} {
   empty_ = false;
-  matrix_type_ = il::HMatrixType::FullRank;
+  matrix_type_ = bie::HMatrixType::FullRank;
 };
 
 template <typename T>
 HMatrixNode<T>::HMatrixNode(il::Array2D<T> A, il::Array2D<T> B)
     : A_{std::move(A)}, B_{std::move(B)}, pivot_{} {
   empty_ = false;
-  matrix_type_ = il::HMatrixType::LowRank;
+  matrix_type_ = bie::HMatrixType::LowRank;
 }
 
 template <typename T>
 il::int_t HMatrixNode<T>::size(il::int_t d) const {
   IL_EXPECT_MEDIUM(!empty_);
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::LowRank ||
-                   matrix_type_ == il::HMatrixType::FullRank ||
-                   matrix_type_ == il::HMatrixType::FullLu);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::LowRank ||
+                   matrix_type_ == bie::HMatrixType::FullRank ||
+                   matrix_type_ == bie::HMatrixType::FullLu);
   IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
-  if (matrix_type_ == il::HMatrixType::LowRank) {
+  if (matrix_type_ == bie::HMatrixType::LowRank) {
     if (d == 0) {
       return A_.size(0);
     } else {
       return B_.size(0);
     }
-  } else if (matrix_type_ == il::HMatrixType::FullRank ||
-             matrix_type_ == il::HMatrixType::FullLu) {
+  } else if (matrix_type_ == bie::HMatrixType::FullRank ||
+             matrix_type_ == bie::HMatrixType::FullLu) {
     return A_.size(d);
   }
   IL_UNREACHABLE;
@@ -103,26 +103,26 @@ bool HMatrixNode<T>::isEmpty() const {
 
 template <typename T>
 bool HMatrixNode<T>::isFullRank() const {
-  return !empty_ && matrix_type_ == il::HMatrixType::FullRank;
+  return !empty_ && matrix_type_ == bie::HMatrixType::FullRank;
 }
 
 template <typename T>
 bool HMatrixNode<T>::isLowRank() const {
-  return !empty_ && matrix_type_ == il::HMatrixType::LowRank;
+  return !empty_ && matrix_type_ == bie::HMatrixType::LowRank;
 }
 
 template <typename T>
 bool HMatrixNode<T>::isHierarchical() const {
-  return !empty_ && matrix_type_ == il::HMatrixType::Hierarchical;
+  return !empty_ && matrix_type_ == bie::HMatrixType::Hierarchical;
 }
 
 template <typename T>
 bool HMatrixNode<T>::isFullLu() const {
-  return !empty_ && matrix_type_ == il::HMatrixType::FullLu;
+  return !empty_ && matrix_type_ == bie::HMatrixType::FullLu;
 }
 
 template <typename T>
-il::HMatrixType HMatrixNode<T>::type() const {
+bie::HMatrixType HMatrixNode<T>::type() const {
   IL_EXPECT_MEDIUM(!empty_);
 
   return matrix_type_;
@@ -130,7 +130,7 @@ il::HMatrixType HMatrixNode<T>::type() const {
 
 template <typename T>
 il::int_t HMatrixNode<T>::rankOfLowRank() const {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::LowRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::LowRank);
   IL_EXPECT_MEDIUM(A_.size(1) == B_.size(1));
 
   return A_.size(1);
@@ -147,7 +147,7 @@ void HMatrixNode<T>::SetEmpty() {
 template <typename T>
 void HMatrixNode<T>::SetHierarchical() {
   empty_ = false;
-  matrix_type_ = il::HMatrixType::Hierarchical;
+  matrix_type_ = bie::HMatrixType::Hierarchical;
   A_ = il::Array2D<T>{};
   B_ = il::Array2D<T>{};
   pivot_ = il::Array<int>{};
@@ -156,14 +156,14 @@ void HMatrixNode<T>::SetHierarchical() {
 template <typename T>
 void HMatrixNode<T>::SetFullRank(il::int_t n0, il::int_t n1) {
   empty_ = false;
-  matrix_type_ = il::HMatrixType::FullRank;
+  matrix_type_ = bie::HMatrixType::FullRank;
   A_.Resize(n0, n1);
 }
 
 template <typename T>
 void HMatrixNode<T>::SetFullRank(il::Array2D<T> A) {
   empty_ = false;
-  matrix_type_ = il::HMatrixType::FullRank;
+  matrix_type_ = bie::HMatrixType::FullRank;
   A_ = std::move(A);
   B_ = il::Array2D<T>{};
   pivot_ = il::Array<int>{};
@@ -172,7 +172,7 @@ void HMatrixNode<T>::SetFullRank(il::Array2D<T> A) {
 template <typename T>
 void HMatrixNode<T>::SetLowRank(il::int_t n0, il::int_t n1, il::int_t r) {
   empty_ = false;
-  matrix_type_ = il::HMatrixType::LowRank;
+  matrix_type_ = bie::HMatrixType::LowRank;
   A_.Resize(n0, r);
   B_.Resize(n1, r);
 }
@@ -180,7 +180,7 @@ void HMatrixNode<T>::SetLowRank(il::int_t n0, il::int_t n1, il::int_t r) {
 template <typename T>
 void HMatrixNode<T>::SetLowRank(il::Array2D<T> A, il::Array2D<T> B) {
   empty_ = false;
-  matrix_type_ = il::HMatrixType::LowRank;
+  matrix_type_ = bie::HMatrixType::LowRank;
   A_ = std::move(A);
   B_ = std::move(B);
   pivot_ = il::Array<int>{};
@@ -188,16 +188,16 @@ void HMatrixNode<T>::SetLowRank(il::Array2D<T> A, il::Array2D<T> B) {
 
 template <typename T>
 void HMatrixNode<T>::ConvertToFullLu() {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::FullRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::FullRank);
   IL_EXPECT_MEDIUM(A_.size(0) == A_.size(1));
 
-  matrix_type_ = il::HMatrixType::FullLu;
+  matrix_type_ = bie::HMatrixType::FullLu;
   pivot_.Resize(A_.size(0));
 }
 
 template <typename T>
 void HMatrixNode<T>::UpdateRank(il::int_t r) {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::LowRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::LowRank);
   IL_EXPECT_MEDIUM(A_.size(1) == B_.size(1));
 
   A_.Resize(A_.size(0), r);
@@ -206,56 +206,56 @@ void HMatrixNode<T>::UpdateRank(il::int_t r) {
 
 template <typename T>
 const il::Array2D<T>& HMatrixNode<T>::asFullRank() const {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::FullRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::FullRank);
 
   return A_;
 }
 
 template <typename T>
 il::Array2D<T>& HMatrixNode<T>::AsFullRank() {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::FullRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::FullRank);
 
   return A_;
 }
 
 template <typename T>
 const il::Array2D<T>& HMatrixNode<T>::asLowRankA() const {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::LowRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::LowRank);
 
   return A_;
 }
 
 template <typename T>
 il::Array2D<T>& HMatrixNode<T>::AsLowRankA() {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::LowRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::LowRank);
 
   return A_;
 }
 
 template <typename T>
 const il::Array2D<T>& HMatrixNode<T>::asLowRankB() const {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::LowRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::LowRank);
 
   return B_;
 }
 
 template <typename T>
 il::Array2D<T>& HMatrixNode<T>::AsLowRankB() {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::LowRank);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::LowRank);
 
   return B_;
 }
 
 template <typename T>
 const il::Array2D<T>& HMatrixNode<T>::asFullLu() const {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::FullLu);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::FullLu);
 
   return A_;
 }
 
 template <typename T>
 il::Array2D<T>& HMatrixNode<T>::AsFullLu() {
-  IL_EXPECT_MEDIUM(matrix_type_ == il::HMatrixType::FullLu);
+  IL_EXPECT_MEDIUM(matrix_type_ == bie::HMatrixType::FullLu);
 
   return A_;
 }
@@ -270,4 +270,4 @@ il::Array<int>& HMatrixNode<T>::AsFullLuPivot() {
   return pivot_;
 }
 
-}  // namespace il
+}  // namespace bie

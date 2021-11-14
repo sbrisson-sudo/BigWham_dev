@@ -18,8 +18,7 @@
 
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 
-namespace il {
-
+namespace bie {
 
 inline double frobeniusNorm(const il::Array2D<double> &A) {
   double ans = 0.0;

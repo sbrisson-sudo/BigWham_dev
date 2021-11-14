@@ -10,52 +10,52 @@
 namespace il {
 
 template <typename T>
-void blas(double epsilon, T alpha, const il::HMatrix<T>& A, il::spot_t sa,
-          const il::HMatrix<T>& B, il::spot_t sb, T beta, il::spot_t sc,
-          il::io_t, il::HMatrix<T>& C);
+void blas(double epsilon, T alpha, const bie::HMatrix<T>& A, il::spot_t sa,
+          const bie::HMatrix<T>& B, il::spot_t sb, T beta, il::spot_t sc,
+          il::io_t, bie::HMatrix<T>& C);
 
 template <typename T>
-void blas(T alpha, const il::HMatrix<T>& A, il::spot_t s, il::Array2DView<T> B,
+void blas(T alpha, const bie::HMatrix<T>& A, il::spot_t s, il::Array2DView<T> B,
           T beta, il::io_t, il::Array2DEdit<T> C);
 
 template <typename T>
-void blas(T alpha, const il::HMatrix<T>& A, il::spot_t s, il::Dot op,
+void blas(T alpha, const bie::HMatrix<T>& A, il::spot_t s, il::Dot op,
           il::Array2DView<T> B, T beta, il::io_t, il::Array2DEdit<T> C);
 
 template <typename T>
-void blas(T alpha, il::Array2DView<T> A, const il::HMatrix<T>& B, il::spot_t s,
+void blas(T alpha, il::Array2DView<T> A, const bie::HMatrix<T>& B, il::spot_t s,
           T beta, il::io_t, il::Array2DEdit<T> C);
 
 // Adds the Low Rank matrix A.B^T to the Hierachical matrix C
 template <typename T>
 void blasLowRank(double epsilon, T alpha, il::Array2DView<T> A,
                  il::Array2DView<T> B, T beta, il::spot_t s, il::io_t,
-                 il::HMatrix<T>& C);
+                 bie::HMatrix<T>& C);
 
 template <typename T>
-void blas_rec(double alpha, const il::HMatrix<double>& A, il::spot_t s,
+void blas_rec(double alpha, const bie::HMatrix<double>& A, il::spot_t s,
               il::MatrixType type, il::ArrayView<double> x, double beta,
               il::io_t, il::ArrayEdit<double> y);
 
 template <typename T>
-void blas(double alpha, const il::HMatrix<double>& lu, il::spot_t s,
+void blas(double alpha, const bie::HMatrix<double>& lu, il::spot_t s,
           il::MatrixType type, il::ArrayView<double> x, double beta, il::io_t,
           il::ArrayEdit<double> y);
 
 template <typename T>
-void blas_rec(double alpha, const il::HMatrix<double>& A, il::spot_t s,
+void blas_rec(double alpha, const bie::HMatrix<double>& A, il::spot_t s,
               il::MatrixType type, il::Array2DView<double> B, double beta,
               il::io_t, il::Array2DEdit<double> C);
 
 template <typename T>
-void blas(double alpha, const il::HMatrix<double>& lu, il::spot_t s,
+void blas(double alpha, const bie::HMatrix<double>& lu, il::spot_t s,
           il::MatrixType type, il::Array2DView<double> A, double beta, il::io_t,
           il::Array2DEdit<double> B);
 
 template <typename T>
-void blas(double epsilon, T alpha, const il::HMatrix<T>& A, il::spot_t sa,
-          const il::HMatrix<T>& B, il::spot_t sb, T beta, il::spot_t sc,
-          il::io_t, il::HMatrix<T>& C) {
+void blas(double epsilon, T alpha, const bie::HMatrix<T>& A, il::spot_t sa,
+          const bie::HMatrix<T>& B, il::spot_t sb, T beta, il::spot_t sc,
+          il::io_t, bie::HMatrix<T>& C) {
   IL_EXPECT_MEDIUM(A.size(0, sa) == C.size(0, sc));
   IL_EXPECT_MEDIUM(B.size(1, sb) == C.size(1, sc));
   IL_EXPECT_MEDIUM(A.size(1, sa) == B.size(0, sb));
@@ -110,7 +110,7 @@ void blas(double epsilon, T alpha, const il::HMatrix<T>& A, il::spot_t sa,
       il::blas(T{1.0}, A, sa, ba, T{0.0}, il::io, tmp.Edit());
       il::blas(alpha, tmp.view(), bb, il::Dot::Transpose, beta, il::io, c);
     } else if (A.isHierarchical(sa) && B.isHierarchical(sb)) {
-      il::LowRank<T> lrb = il::lowRank(epsilon, B, sb);
+      bie::LowRank<T> lrb = il::lowRank(epsilon, B, sb);
       il::Array2D<T> tmp{A.size(0, sa), lrb.A.size(1)};
       il::blas(T{1.0}, A, sa, lrb.A.view(), T{0.0}, il::io, tmp.Edit());
       il::blas(alpha, tmp.view(), lrb.B.view(), il::Dot::Transpose, beta,
@@ -167,13 +167,13 @@ void blas(double epsilon, T alpha, const il::HMatrix<T>& A, il::spot_t sa,
                       il::io, C);
     } else if (A.isFullRank(sa) && B.isHierarchical(sb)) {
       il::Array2DView<T> a = A.asFullRank(sa);
-      il::LowRank<T> lrb = il::lowRank(epsilon, B, sb);
+      bie::LowRank<T> lrb = il::lowRank(epsilon, B, sb);
       il::Array2D<T> tmp{a.size(0), lrb.A.size(1)};
       il::blas(T{1.0}, a, lrb.A.view(), T{0.0}, il::io, tmp.Edit());
       il::blasLowRank(epsilon, alpha, tmp.view(), lrb.B.view(), beta, sc,
                       il::io, C);
     } else if (A.isHierarchical(sa) && B.isFullRank(sb)) {
-      il::LowRank<T> lra = il::lowRank(epsilon, A, sa);
+      bie::LowRank<T> lra = il::lowRank(epsilon, A, sa);
       il::Array2DView<T> b = B.asFullRank(sb);
       il::Array2D<T> tmp{b.size(1), lra.B.size(1)};
       il::blas(T{1.0}, b, il::Dot::Transpose, lra.B.view(), T{0.0}, il::io,
@@ -200,7 +200,7 @@ void blas(double epsilon, T alpha, const il::HMatrix<T>& A, il::spot_t sa,
                  T{1.0}, C.child(sc, 1, 1), il::io, C);
       } else {
         IL_EXPECT_FAST(C.isLowRank(sc));
-        il::LowRank<T> lrb = il::lowRank(epsilon, B, sb);
+        bie::LowRank<T> lrb = il::lowRank(epsilon, B, sb);
         il::Array2D<T> tmp{A.size(0, sa), lrb.A.size(1)};
         il::blas(T{1.0}, A, sa, lrb.A.view(), T{0.0}, il::io, tmp.Edit());
         il::blasLowRank(epsilon, alpha, tmp.view(), lrb.B.view(), beta, sc,
@@ -213,7 +213,7 @@ void blas(double epsilon, T alpha, const il::HMatrix<T>& A, il::spot_t sa,
 }
 
 template <typename T>
-void blas(T alpha, const il::HMatrix<T>& A, il::spot_t s, il::Array2DView<T> B,
+void blas(T alpha, const bie::HMatrix<T>& A, il::spot_t s, il::Array2DView<T> B,
           T beta, il::io_t, il::Array2DEdit<T> C) {
   IL_EXPECT_FAST(A.size(0, s) == C.size(0));
   IL_EXPECT_FAST(A.size(1, s) == B.size(0));
@@ -254,7 +254,7 @@ void blas(T alpha, const il::HMatrix<T>& A, il::spot_t s, il::Array2DView<T> B,
 }
 
 template <typename T>
-void blas(T alpha, const il::HMatrix<T>& A, il::spot_t s, il::Dot op,
+void blas(T alpha, const bie::HMatrix<T>& A, il::spot_t s, il::Dot op,
           il::Array2DView<T> B, T beta, il::io_t, il::Array2DEdit<T> C) {
   IL_EXPECT_FAST(op == il::Dot::Transpose);
   IL_EXPECT_FAST(A.size(1, s) == C.size(0));
@@ -296,7 +296,7 @@ void blas(T alpha, const il::HMatrix<T>& A, il::spot_t s, il::Dot op,
 }
 
 template <typename T>
-void blas(T alpha, il::Array2DView<T> A, const il::HMatrix<T>& B, il::spot_t s,
+void blas(T alpha, il::Array2DView<T> A, const bie::HMatrix<T>& B, il::spot_t s,
           T beta, il::io_t, il::Array2DEdit<T> C) {
   IL_EXPECT_FAST(A.size(0) == C.size(0));
   IL_EXPECT_FAST(A.size(1) == B.size(0, s));
@@ -339,7 +339,7 @@ void blas(T alpha, il::Array2DView<T> A, const il::HMatrix<T>& B, il::spot_t s,
 template <typename T>
 void blasLowRank(double epsilon, T alpha, il::Array2DView<T> A,
                  il::Array2DView<T> B, T beta, il::spot_t s, il::io_t,
-                 il::HMatrix<T>& C) {
+                 bie::HMatrix<T>& C) {
   IL_EXPECT_FAST(A.size(1) == B.size(1));
   IL_EXPECT_FAST(A.size(0) == C.size(0, s));
   IL_EXPECT_FAST(B.size(0) == C.size(1, s));
@@ -373,7 +373,7 @@ void blasLowRank(double epsilon, T alpha, il::Array2DView<T> A,
         }
       }
     } else {
-      il::LowRank<T> ab = il::lowRankAddition(epsilon, alpha, A, B, beta,
+      bie::LowRank<T> ab = il::lowRankAddition(epsilon, alpha, A, B, beta,
                                               C.asLowRankA(s), C.asLowRankB(s));
       C.UpdateRank(s, ab.A.size(1));
       il::Array2DEdit<T> ca = C.AsLowRankA(s);
@@ -410,7 +410,7 @@ void blasLowRank(double epsilon, T alpha, il::Array2DView<T> A,
 }
 
 template <typename T>
-void blas_rec(T alpha, const il::HMatrix<T>& A, il::spot_t s,
+void blas_rec(T alpha, const bie::HMatrix<T>& A, il::spot_t s,
               il::MatrixType type, il::ArrayView<T> x, T beta, il::io_t,
               il::ArrayEdit<T> y) {
   IL_EXPECT_FAST(A.size(0, s) == y.size());
@@ -467,7 +467,7 @@ void blas_rec(T alpha, const il::HMatrix<T>& A, il::spot_t s,
 }
 
 template <typename T>
-void blas(T alpha, const il::HMatrix<T>& lu, il::spot_t s, il::MatrixType type,
+void blas(T alpha, const bie::HMatrix<T>& lu, il::spot_t s, il::MatrixType type,
           il::ArrayView<T> x, T beta, il::io_t, il::ArrayEdit<T> y) {
   IL_EXPECT_MEDIUM(lu.size(0, s) == y.size());
   IL_EXPECT_MEDIUM(lu.size(1, s) == x.size());
@@ -476,7 +476,7 @@ void blas(T alpha, const il::HMatrix<T>& lu, il::spot_t s, il::MatrixType type,
 }
 
 template <typename T>
-void blas_rec(T alpha, const il::HMatrix<T>& A, il::spot_t s,
+void blas_rec(T alpha, const bie::HMatrix<T>& A, il::spot_t s,
               il::MatrixType type, il::Array2DView<T> B, T beta, il::io_t,
               il::Array2DEdit<T> C) {
   IL_EXPECT_FAST(A.size(0, s) == C.size(0));
@@ -545,7 +545,7 @@ void blas_rec(T alpha, const il::HMatrix<T>& A, il::spot_t s,
 }
 
 template <typename T>
-void blas(T alpha, const il::HMatrix<T>& lu, il::spot_t s, il::MatrixType type,
+void blas(T alpha, const bie::HMatrix<T>& lu, il::spot_t s, il::MatrixType type,
           il::Array2DView<T> A, T beta, il::io_t, il::Array2DEdit<T> B) {
   IL_EXPECT_MEDIUM(lu.size(0, s) == B.size(0));
   IL_EXPECT_MEDIUM(lu.size(1, s) == A.size(0));

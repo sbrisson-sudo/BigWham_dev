@@ -17,11 +17,11 @@
 #include <hmat/hmatrix/HMatrix.h>
 
 
-namespace il {
+namespace bie {
 
 // converting the Hmat to a Array2D
 template <typename T>
-void toArray2D(const il::HMatrix<T> &H, il::spot_t s, il::io_t,
+void toArray2D(const bie::HMatrix<T> &H, il::spot_t s, il::io_t,
                il::Array2DEdit<T> E) {
   if (H.isFullRank(s)) {
     il::Array2DView<T> A = H.asFullRank(s);
@@ -66,7 +66,7 @@ void toArray2D(const il::HMatrix<T> &H, il::spot_t s, il::io_t,
 
 // Transfer the Hmat to an array 2D
 template <typename T>
-il::Array2D<double> toArray2D(const il::HMatrix<T> &H) {
+il::Array2D<double> toArray2D(const bie::HMatrix<T> &H) {
   const il::int_t n0 = H.size(0);
   const il::int_t n1 = H.size(1);
   il::Array2D<T> A{n0, n1};
@@ -78,7 +78,7 @@ il::Array2D<double> toArray2D(const il::HMatrix<T> &H) {
 
 // compute the number of elements of the Hmat
 template <typename T>
-il::int_t nbElements(const il::HMatrix<T> &H, il::spot_t s) {
+il::int_t nbElements(const bie::HMatrix<T> &H, il::spot_t s) {
   if (H.isFullRank(s)) {
     il::Array2DView<T> A = H.asFullRank(s);
     return A.size(0) * A.size(1);
@@ -94,7 +94,7 @@ il::int_t nbElements(const il::HMatrix<T> &H, il::spot_t s) {
     const il::spot_t s10 = H.child(s, 1, 0);
     const il::spot_t s01 = H.child(s, 0, 1);
     const il::spot_t s11 = H.child(s, 1, 1);
-    return il::nbElements(H, s00) + nbElements(H, s10) + nbElements(H, s01) +
+    return  nbElements(H, s00) + nbElements(H, s10) + nbElements(H, s01) +
         nbElements(H, s11);
   } else {
     IL_UNREACHABLE;
@@ -105,7 +105,7 @@ il::int_t nbElements(const il::HMatrix<T> &H, il::spot_t s) {
 
 // Compression ratio of the Hmat
 template <typename T>
-double compressionRatio(const il::HMatrix<T> &H) {
+double compressionRatio(const bie::HMatrix<T> &H) {
   const il::int_t n0 = H.size(0);
   const il::int_t n1 = H.size(1);
   return nbElements(H, H.root()) / static_cast<double>(n0 * n1);
@@ -113,7 +113,7 @@ double compressionRatio(const il::HMatrix<T> &H) {
 
 // compute the number of Blocks of the Hmat
 template <typename T>
-il::int_t nbBlocks(const il::HMatrix<T> &H, il::spot_t s) {
+il::int_t nbBlocks(const bie::HMatrix<T> &H, il::spot_t s) {
   if (H.isFullRank(s)) {
     return 1;
   } else if (H.isFullLu(s)) {
@@ -125,7 +125,7 @@ il::int_t nbBlocks(const il::HMatrix<T> &H, il::spot_t s) {
     const il::spot_t s10 = H.child(s, 1, 0);
     const il::spot_t s01 = H.child(s, 0, 1);
     const il::spot_t s11 = H.child(s, 1, 1);
-    return il::nbBlocks(H, s00) + nbBlocks(H, s10) + nbBlocks(H, s01) +
+    return nbBlocks(H, s00) + nbBlocks(H, s10) + nbBlocks(H, s01) +
         nbBlocks(H, s11);
   } else {
     IL_UNREACHABLE;
@@ -135,7 +135,7 @@ il::int_t nbBlocks(const il::HMatrix<T> &H, il::spot_t s) {
 }
 
 template <typename T>
-il::int_t numberofBlocks(const il::HMatrix<T> &H) {
+il::int_t numberofBlocks(const bie::HMatrix<T> &H) {
   const il::int_t n0 = H.size(0);
   const il::int_t n1 = H.size(1);
   return nbBlocks(H, H.root()) ;
@@ -143,7 +143,7 @@ il::int_t numberofBlocks(const il::HMatrix<T> &H) {
 /////
 
 template <typename T>
-il::int_t nbFullBlocks(const il::HMatrix<T> &H, il::spot_t s) {
+il::int_t nbFullBlocks(const bie::HMatrix<T> &H, il::spot_t s) {
   if (H.isFullRank(s)) {
     // il::Array2DView<T> A = H.asFullRank(s);
     return 1;
@@ -169,7 +169,7 @@ il::int_t nbFullBlocks(const il::HMatrix<T> &H, il::spot_t s) {
 }
 
 template <typename T>
-il::int_t numberofFullBlocks(const il::HMatrix<T> &H) {
+il::int_t numberofFullBlocks(const bie::HMatrix<T> &H) {
   const il::int_t n0 = H.size(0);
   const il::int_t n1 = H.size(1);
   return nbFullBlocks(H, H.root()) ;
@@ -177,9 +177,9 @@ il::int_t numberofFullBlocks(const il::HMatrix<T> &H) {
 
 /////////// OUTPUT H-PATTERN - matrix.....
 template <typename T>
-void hmatPattern(const il::HMatrix<T> &H, il::spot_t s,il::ArrayView<int> x,
+void hmatPattern(const bie::HMatrix<T> &H, il::spot_t s,il::ArrayView<int> x,
                       il::ArrayView<int> y, il::io_t,
-                      Array2D<il::int_t> &pattern, il::int_t &nc) {
+                      il::Array2D<il::int_t> &pattern, il::int_t &nc) {
   // write to output filestream a HMatrix block pattern
   // the call of this function should be with x and y as vector containing -
   // 0-Ndof-1
@@ -227,7 +227,7 @@ void hmatPattern(const il::HMatrix<T> &H, il::spot_t s,il::ArrayView<int> x,
 }
 
 template <typename T>
-il::Array2D<il::int_t> output_hmatPattern(const il::HMatrix<T> &H) {
+il::Array2D<il::int_t> output_hmatPattern(const bie::HMatrix<T> &H) {
   // write the Hierarchical matrix A block pattern to a matrix
   // A :: Hierarchical matrix
   // output:
@@ -250,7 +250,7 @@ il::Array2D<il::int_t> output_hmatPattern(const il::HMatrix<T> &H) {
 
 // output full rank entry only
 template <typename T>
-void hmatFullBlocks(const il::HMatrix<T> &H, il::spot_t s,
+void hmatFullBlocks(const bie::HMatrix<T> &H, il::spot_t s,
                       il::ArrayView<int> x, il::ArrayView<int> y, il::io_t,
                       il::Array<double> &val, il::Array2C<il::int_t> &pos) {
   // extract the full blocks entry
@@ -313,7 +313,7 @@ void hmatFullBlocks(const il::HMatrix<T> &H, il::spot_t s,
 
 
 template <typename T>
-void output_hmatFullBlocks(const il::HMatrix<T> &A, il::Array<double>  &val,il::Array2C<il::int_t> &pos) {
+void output_hmatFullBlocks(const bie::HMatrix<T> &A, il::Array<double>  &val,il::Array2C<il::int_t> &pos) {
   // write the Hierarchical matrix A block pattern to a matrix
   // A :: Hierarchical matrix
   // in/output:

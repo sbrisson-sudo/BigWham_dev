@@ -22,15 +22,18 @@ namespace bie {
 
 template <il::int_t p, typename T>
 class Hmat {
+// this is a new Hmat class wich does not conntains the matrix-generator
+// construction from the pattern built from the block cluster tree
+// openmp parallel construction
+// openmp parallel mat_vect dot product (non-permutted way)
  private:
 
   bie::HPattern pattern_; // the Hmat pattern
-//  il::MatrixGenerator<T>& matrix_gen_; // the matrix generator ...
 
   il::int_t size0_; //n_row
   il::int_t size1_; //n_cols
 
-  std::vector<il::LowRank<T>> low_rank_blocks_; // vector of low rank blocks
+  std::vector<bie::LowRank<T>> low_rank_blocks_; // vector of low rank blocks
   std::vector<il::Array2D<T>> full_rank_blocks_; // vector of full rank blocks
 
   bool built_= false;
@@ -43,12 +46,9 @@ class Hmat {
      pattern_=pattern;
    };
 
-   // For simplicity for now, we do not OpenMP the loop on full blocks creation
-   // (note the multithreading is done at the matrix_gen.set level)
    // -----------------------------------------------------------------------------
    void buildFR(const il::MatrixGenerator<T>& matrix_gen){
-
-  // building full rank blocks
+     // constructing the full rank blocks
 
   std::cout << " Loop on full blocks construction  \n";
   std::cout << " N full blocks "<< pattern_.n_FRB << " \n";
@@ -71,11 +71,15 @@ class Hmat {
       private_full_rank_blocks.push_back(sub);
       //full_rank_blocks_.push_back(sub);
     }
+#ifdef _OPENMP
 #pragma omp for schedule(static) ordered
     for(int i=0; i<omp_get_num_threads(); i++) {
 #pragma omp ordered
       full_rank_blocks_.insert(full_rank_blocks_.end(), private_full_rank_blocks.begin(), private_full_rank_blocks.end());
     }
+#else
+    full_rank_blocks_.insert(full_rank_blocks_.end(), private_full_rank_blocks.begin(), private_full_rank_blocks.end());
+#endif
   }
   built_FR_=true;
 
@@ -85,14 +89,14 @@ class Hmat {
 /// \param matrix_gen
 /// \param epsilon
 void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
-    // building low rank
+    // constructing the low rank blocks
 
     std::cout << " Loop on low rank blocks construction  \n";
     std::cout << " N low rank blocks "<< pattern_.n_LRB << " \n";
 
 #pragma omp parallel
     {
-      std::vector<il::LowRank<T>> private_low_rank_blocks;
+      std::vector<bie::LowRank<T>> private_low_rank_blocks;
 #pragma omp for nowait schedule(static)
       for (il::int_t i = 0; i < pattern_.n_LRB; i++) {
         il::int_t i0 = pattern_.LRB_pattern(1, i);
@@ -102,7 +106,7 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
 
         il::Range range0{i0, iend}, range1{j0, jend};
 
-        il::LowRank<T> lra = il::adaptiveCrossApproximation<p>(
+        bie::LowRank<T> lra = bie::adaptiveCrossApproximation<p>(
             matrix_gen, range0, range1,
             epsilon);  // we need a LRA generator similar to the Matrix generator...
 
@@ -110,15 +114,20 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
         // store the rank in the low_rank pattern
         pattern_.LRB_pattern(5, i) = lra.A.size(1);
       }
+#ifdef _OPENMP
 #pragma omp for schedule(static) ordered
       for(int i=0; i<omp_get_num_threads(); i++) {
 #pragma omp ordered
         low_rank_blocks_.insert(low_rank_blocks_.end(), private_low_rank_blocks.begin(), private_low_rank_blocks.end());
       }
+#else
+      low_rank_blocks_.insert(low_rank_blocks_.end(), private_low_rank_blocks.begin(), private_low_rank_blocks.end());
+#endif
     }
     built_LR_=true;
   }
   //-----------------------------------------------------------------------------
+  // filling up the h-matrix sub-blocks
   void build(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
     IL_EXPECT_FAST(matrix_gen.blockSize()==p);
     size0_=matrix_gen.size(0);
@@ -129,7 +138,7 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
     built_=built_FR_ && built_LR_;
   }
 //-----------------------------------------------------------------------------
-  // nb of elements
+  // getting the nb of entries of the hmatrix
   il::int_t nbOfEntries(){
     IL_EXPECT_FAST(built_);
     il::int_t n=0;
@@ -146,20 +155,20 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
     return n;
   }
   //-----------------------------------------------------------------------------
+ // getting the compression ratio of the hmatrix (double which is <=1)
   double compressionRatio(){
     auto nb_elts = static_cast<double>(nbOfEntries());
     return nb_elts / static_cast<double>(size0_*size1_);
   }
 
   //--------------------------------------------------------------------------
-  //// MAtrix vector multiplication without permutation
+  // H-Matrix vector multiplication without permutation
   il::Array<T> matvec(const il::Array<T> & x){
     IL_EXPECT_FAST(x.size()==size1_);
 
     il::Array<T> y{size0_,0.};
 
   // loop on full rank
-
 #pragma omp parallel
     {
     il::Array<T> yprivate{size0_,0.};
@@ -176,14 +185,11 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
 
       il::blas(1.0, a, xs, 1.0, il::io, ys);
   }
-//#pragma omp for schedule(static) ordered
-//  for(int i=0; i<omp_get_num_threads(); i++) {
-//#pragma omp ordered
+  // the reduction below may be improved ?
 #pragma omp critical
     for (il::int_t j=0;j<y.size();j++){
       y[j]+=yprivate[j];
     }
-//  }
   };
 
   /// loop on low rank
@@ -208,16 +214,12 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
       il::blas(1.0, b, il::Dot::None, xs, 0.0, il::io,
                tmp.Edit());  // Note here we have stored b (not b^T)
       il::blas(1.0, a, tmp.view(), 1.0, il::io, ys);
-    };
-
+    }
+      // the reduction below may be improved ?
 #pragma omp critical
-//#pragma omp for schedule(static) ordered
-//    for(int i=0; i<omp_get_num_threads(); i++) {
-//#pragma omp ordered
-      for (il::int_t j=0;j<y.size();j++){
+     for (il::int_t j=0;j<y.size();j++){
         y[j]+=yprivate[j];
       }
-//    }
   }
   return y;
   }
@@ -226,6 +228,6 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
 
 
 }
-#endif  // BIGWHAM_HMAT_H
+#endif
 
 #pragma clang diagnostic pop

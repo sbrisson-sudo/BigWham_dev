@@ -44,13 +44,13 @@
 
 #include <hmat/linearAlgebra/factorization/luDecomposition.h>
 #include <il/Gmres.h>
-#include <src/elasticity/jacobi_prec_assembly.h>  // for diagonal
+//#include <src/elasticity/jacobi_prec_assembly.h>  // for diagonal
 #include <src/solvers/HIterativeSolverUtilities.h>
 
 class Bigwhamio {
  private:
-  il::HMatrix<double> h_;  // dd to traction
-  il::Tree<il::SubHMatrix, 4> hmatrix_tree ;
+  bie::HMatrix<double> h_;  // dd to traction
+  il::Tree<bie::SubHMatrix, 4> hmatrix_tree ;
   //   arrays storing the pattern (to speed up the hdot ...).
   il::Array2D<il::int_t> lr_pattern_;  // low rank block pattern
   il::Array2D<il::int_t> fr_pattern_;  // full rank block pattern
@@ -80,7 +80,7 @@ class Bigwhamio {
     isBuilt_ = false;
     eta_ = 0.;
     epsilon_aca_ = 0.001;
-    max_leaf_size_ = 1;
+    max_leaf_size_ = 100;
     kernel_ = "none";
   };
 
@@ -183,7 +183,7 @@ class Bigwhamio {
         std::cout << "Kernel Isotropic ELasticity 2D P1 segment \n";
         const bie::ElasticHMatrix2DP1<double> M{collocationPoints_,
                                                 permutation_, mesh2d, elas};
-        h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
+        h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
 
       } else if (kernel_ == "S3DP0") {
         std::cout
@@ -191,11 +191,11 @@ class Bigwhamio {
 
         const bie::ElasticHMatrix2DP0<double> M{
             collocationPoints_, permutation_, mesh2d, elas, properties[2]};
-        h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
+        h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
       }
       tt.Stop();
       std::cout << "H-mat time = :  " << tt.time() << "\n";
-      std::cout << "H mat set : CR = " << il::compressionRatio(h_)
+      std::cout << "H mat set : CR = " << bie::compressionRatio(h_)
                 << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
       tt.Reset();
     } else if (kernel_ == "3DT6" || kernel_ == "3DR0_displ" ||
@@ -308,7 +308,7 @@ class Bigwhamio {
                   << collocationPoints_.size(1) << "\n";
         const bie::ElasticHMatrix3DT6<double> M{
             collocationPoints_, permutation_, mesh3d, elas, 0, 0};
-        h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
+        h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
                   << collocationPoints_.size(1) << "\n";
       } else if (kernel_ == "3DT0") {
@@ -319,7 +319,7 @@ class Bigwhamio {
         const bie::ElasticHMatrix3DT0<double> M{
             collocationPoints_, permutation_, mesh3d, elas,
             0};  // local_global = 0 if local-local, 1 if global-global
-        h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
+        h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
                   << collocationPoints_.size(1) << "\n";
       } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" || kernel_ == "3DR0opening") {
@@ -332,17 +332,17 @@ class Bigwhamio {
           // DD to traction HMAT
             std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
             const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
-            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+            h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         } else if (kernel_ == "3DR0_displ") {
           // DD to displacement HMAT
             std::cout << "\n Kernel: "<< kernel_ << " " <<  "< displacement kernel >"<< "\n  ";
             const bie::ElasticHMatrix3DR0displ<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
-            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+            h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         } else if (kernel_ == "3DR0opening") {
             // DD to displacement HMAT
             std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
             const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{collocationPoints_, permutation_, mesh3d, elas};
-            h_ = il::toHMatrix(M, hmatrix_tree, epsilon_aca_);
+            h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);
         } else {
             std::cout << "\n ERROR! unknown Kernel name: " << kernel_ << "\n  ";
             il::abort();
@@ -352,7 +352,7 @@ class Bigwhamio {
 
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
                   << collocationPoints_.size(1) << "\n";
-        std::cout << "H mat set : CR = " << il::compressionRatio(h_)
+        std::cout << "H mat set : CR = " << bie::compressionRatio(h_)
                   << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
       }
       tt.Stop();
@@ -386,8 +386,8 @@ class Bigwhamio {
     // store the h pattern in a il::Array2D<double> for future use
 
     IL_EXPECT_FAST(h_.isBuilt());
-    il::Array2D<il::int_t> pattern = il::output_hmatPattern(h_);
-    il::int_t  nblocks = il::numberofBlocks(h_);
+    il::Array2D<il::int_t> pattern = bie::output_hmatPattern(h_);
+    il::int_t  nblocks = bie::numberofBlocks(h_);
 
     //  separate full rank and low rank blocks to speed up the hdot
     il::Array2D<il::int_t> lr_patt{pattern.size(0), 0};
@@ -428,12 +428,11 @@ class Bigwhamio {
     IL_EXPECT_FAST(h_.isBuilt());
     bie::HPattern pattern = bie::createPattern(hmatrix_tree);
 
-    il::int_t  nblocks = il::numberofBlocks(h_);
+    il::int_t  nblocks = bie::numberofBlocks(h_);
 
     lr_pattern_ = pattern.LRB_pattern;
     fr_pattern_ = pattern.FRB_pattern;
   }
-
 
   bool isBuilt() { return isBuilt_; };
 
@@ -484,7 +483,7 @@ class Bigwhamio {
   //---------------------------------------------------------------------------
   double getCompressionRatio() {
     IL_EXPECT_FAST(isBuilt_);
-    return il::compressionRatio(h_);
+    return bie::compressionRatio(h_);
   }
 
   std::string getKernel() { return kernel_; }
@@ -732,7 +731,6 @@ class Bigwhamio {
     }
 
     z = il::dot(h_,z);
-    ////    z = il::dot(h_,z);
 
     std::vector<double> y;
     y.assign(z.size(), 0.);
@@ -1035,117 +1033,104 @@ class Bigwhamio {
     return the_stress_out;
   }
 
-  //        il::HMatrix<double>* get_h_pointer(){
-  //            /*
-  //             * This function returns a pointer to the HMatrix
-  //             * It is needed for the C++ benchmarks since we do not want to
-  //             link
-  //             * the h_IterativeSolve to mathematica
-  //             *
-  //             */
-  //            il::HMatrix<double>* h_pointer;
-  //            h_pointer = &h_;
-  //                 return h_pointer;
-  //        }
-  //
 
   //---------------------------------------------------------------------------
-  int h_IterativeSolve(double* y, bool permuted, int maxRestart, il::io_t,
-                       int& nIts, double& rel_error, double* x0) {
-    /*
-     *    api function for a GMRES iterative solver h_.x=y
-     *    IMPORTANT: this GMRES  USE the  dot using  dotwithpattern
-     *
-     * inputs:
-     *    - double * y           :: pointer to the RHS
-     *    - bool permuted        :: true or false depending if y is already
-     * permutted
-     *    - il::int_t maxRestart :: maximum number of restart its of the GMRES
-     *    - il::io_t             :: il flag - variables after are modifed by
-     * this function
-     *    - nIts                 :: max number of allowed its of the GMRES,
-     * modified as the actual nb of its
-     *    - rel_error            :: relative error of the GMRES, modifed as the
-     * actual norm of current residuals
-     *    - double* x0           :: pointer to the initial guess, modified as
-     * the actual solution
-     *
-     * output
-     *    int 0 for success, 1 for failure of gmres
-     *
-     */
-
-    const il::int_t rows = h_.size(0);
-    const il::int_t columns = h_.size(1);
-    IL_EXPECT_FAST(columns == rows);
-    IL_EXPECT_FAST(this->isBuilt_);
-
-    il::Array<double> z{columns, 0.}, xini{columns, 0.};
-
-    // permut
-
-    // note we duplicate 2 vectors here....
-    // if x is given as permutted or not
-    il::int_t numberofcollocationpoints = collocationPoints_.size(0);
-    if (!permuted) {
-      for (il::int_t i = 0; i < numberofcollocationpoints; i++) {
-        for (int j = 0; j < this->dof_dimension_; j++) {
-          z[this->dof_dimension_ * i + j] =
-              y[this->dof_dimension_ * (this->permutation_[i]) + j];
-          xini[this->dof_dimension_ * i + j] =
-              x0[this->dof_dimension_ * (this->permutation_[i]) + j];
-        }
-      }
-    } else {
-      for (int j = 0; j < columns; j++) {
-        z[j] = y[j];
-        xini[j] = x0[j];
-      }
-    }
-
-    // prepare call to GMRES
-    // Instantiation of Matrix type object for GMRES
-    bie::Matrix<double> A(this->h_, this->fr_pattern_, this->lr_pattern_);
-    il::Status status{};
-
-    /*
-     * NON PRECONDITIONED VERSION
-     * the Jacoby prec need to be set
-     */
-    // Jacobi preconditioner only so far
-    // bie::DiagPreconditioner<double> Prec(this->diagonal);
-
-    // il::Gmres<double> gmres{A, Prec, maxRestart};
-    il::Gmres<double> gmres{A, maxRestart};
-
-    // solution of the systme via GMRES
-    gmres.Solve(z.view(), rel_error, nIts, il::io, xini.Edit(), status);
-    std::cout << "end of Gmres solve, iteration # " << gmres.nbIterations()
-              << " norm of residuals: " << gmres.normResidual() << "\n";
-    // return norm and nits
-    rel_error = gmres.normResidual();
-    nIts = gmres.nbIterations();
-
-    // return solution in x0
-    if (!permuted) {
-      // permut back
-      for (il::int_t i = 0; i < numberofcollocationpoints; i++) {
-        for (int j = 0; j < this->dof_dimension_; j++) {
-          x0[this->dof_dimension_ * (this->permutation_[i]) + j] =
-              xini[this->dof_dimension_ * i + j];
-        }
-      }
-    } else {
-      for (int j = 0; j < columns; j++) {
-        x0[j] = xini[j];
-      }
-    }
-
-    if (status.Ok()) {
-      return 0;
-    } else {
-      return 1;
-    }
-  }
+//  int h_IterativeSolve(double* y, bool permuted, int maxRestart, il::io_t,
+//                       int& nIts, double& rel_error, double* x0) {
+//    /*
+//     *    api function for a GMRES iterative solver h_.x=y
+//     *    IMPORTANT: this GMRES  USE the  dot using  dotwithpattern
+//     *
+//     * inputs:
+//     *    - double * y           :: pointer to the RHS
+//     *    - bool permuted        :: true or false depending if y is already
+//     * permutted
+//     *    - il::int_t maxRestart :: maximum number of restart its of the GMRES
+//     *    - il::io_t             :: il flag - variables after are modifed by
+//     * this function
+//     *    - nIts                 :: max number of allowed its of the GMRES,
+//     * modified as the actual nb of its
+//     *    - rel_error            :: relative error of the GMRES, modifed as the
+//     * actual norm of current residuals
+//     *    - double* x0           :: pointer to the initial guess, modified as
+//     * the actual solution
+//     *
+//     * output
+//     *    int 0 for success, 1 for failure of gmres
+//     *
+//     */
+//
+//    const il::int_t rows = h_.size(0);
+//    const il::int_t columns = h_.size(1);
+//    IL_EXPECT_FAST(columns == rows);
+//    IL_EXPECT_FAST(this->isBuilt_);
+//
+//    il::Array<double> z{columns, 0.}, xini{columns, 0.};
+//
+//    // permut
+//
+//    // note we duplicate 2 vectors here....
+//    // if x is given as permutted or not
+//    il::int_t numberofcollocationpoints = collocationPoints_.size(0);
+//    if (!permuted) {
+//      for (il::int_t i = 0; i < numberofcollocationpoints; i++) {
+//        for (int j = 0; j < this->dof_dimension_; j++) {
+//          z[this->dof_dimension_ * i + j] =
+//              y[this->dof_dimension_ * (this->permutation_[i]) + j];
+//          xini[this->dof_dimension_ * i + j] =
+//              x0[this->dof_dimension_ * (this->permutation_[i]) + j];
+//        }
+//      }
+//    } else {
+//      for (int j = 0; j < columns; j++) {
+//        z[j] = y[j];
+//        xini[j] = x0[j];
+//      }
+//    }
+//
+//    // prepare call to GMRES
+//    // Instantiation of Matrix type object for GMRES
+//    bie::Matrix<double> A(this->h_, this->fr_pattern_, this->lr_pattern_);
+//    il::Status status{};
+//
+//    /*
+//     * NON PRECONDITIONED VERSION
+//     * the Jacoby prec need to be set
+//     */
+//    // Jacobi preconditioner only so far
+//    // bie::DiagPreconditioner<double> Prec(this->diagonal);
+//
+//    // il::Gmres<double> gmres{A, Prec, maxRestart};
+//    il::Gmres<double> gmres{A, maxRestart};
+//
+//    // solution of the systme via GMRES
+//    gmres.Solve(z.view(), rel_error, nIts, il::io, xini.Edit(), status);
+//    std::cout << "end of Gmres solve, iteration # " << gmres.nbIterations()
+//              << " norm of residuals: " << gmres.normResidual() << "\n";
+//    // return norm and nits
+//    rel_error = gmres.normResidual();
+//    nIts = gmres.nbIterations();
+//
+//    // return solution in x0
+//    if (!permuted) {
+//      // permut back
+//      for (il::int_t i = 0; i < numberofcollocationpoints; i++) {
+//        for (int j = 0; j < this->dof_dimension_; j++) {
+//          x0[this->dof_dimension_ * (this->permutation_[i]) + j] =
+//              xini[this->dof_dimension_ * i + j];
+//        }
+//      }
+//    } else {
+//      for (int j = 0; j < columns; j++) {
+//        x0[j] = xini[j];
+//      }
+//    }
+//
+//    if (status.Ok()) {
+//      return 0;
+//    } else {
+//      return 1;
+//    }
+//  }
 
 };  // end class bigwhamio

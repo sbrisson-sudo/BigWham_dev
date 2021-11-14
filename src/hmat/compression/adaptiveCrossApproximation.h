@@ -15,7 +15,7 @@
 #include <hmat/compression/routines.h>
 #include <hmat/hmatrix/LowRank.h>
 
-namespace il {
+namespace bie {
 
 template <il::int_t p, typename T>
 LowRank<T> adaptiveCrossApproximation(const il::MatrixGenerator<T>& M,
@@ -40,10 +40,10 @@ LowRank<T> adaptiveCrossApproximation(const il::MatrixGenerator<T>& M,
   il::Array2D<T> row{p, n1 * p};
   il::Array2D<T> column{n0 * p, p};
   while (true) {
-    il::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
+    bie::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
                         row.Edit());
     const il::int_t i1_search =
-        il::find_largest_singular_value<p>(row, range1, i1_used);
+        bie::find_largest_singular_value<p>(row, range1, i1_used);
     if (i1_search == -1) {
       break;
     }
@@ -82,7 +82,7 @@ LowRank<T> adaptiveCrossApproximation(const il::MatrixGenerator<T>& M,
 
     // Update the Matrices A and B to take into account the new ranks
     A.Resize(n0 * p, (rank + 1) * p);
-    il::residual_column<p>(M, A, B, range0, range1, i1_search, rank, il::io,
+    bie::residual_column<p>(M, A, B, range0, range1, i1_search, rank, il::io,
                            column.Edit());
     for (il::int_t i0 = range0.begin; i0 < range0.end; ++i0) {
       for (il::int_t j1 = 0; j1 < p; ++j1) {
@@ -93,7 +93,7 @@ LowRank<T> adaptiveCrossApproximation(const il::MatrixGenerator<T>& M,
       }
     }
     B.Resize((rank + 1) * p, n1 * p);
-    il::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
+    bie::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
                         row.Edit());
     for (il::int_t i1 = range1.begin; i1 < range1.end; ++i1) {
       il::StaticArray2D<T, p, p> matrix{};
@@ -161,7 +161,7 @@ LowRank<T> adaptiveCrossApproximation(const il::MatrixGenerator<T>& M,
     frobenius_low_rank +=
         2 * il::real(scalar_product) + il::real(frobenius_norm_ab);
 
-    i0_search = il::searchI0<p>(A, range0, range1, i0_used, i1_search, rank);
+    i0_search = bie::searchI0<p>(A, range0, range1, i0_used, i1_search, rank);
     ++rank;
 
     //    il::Array2D<T> low_rank =
@@ -192,7 +192,7 @@ LowRank<T> adaptiveCrossApproximation(const il::MatrixGenerator<T>& M,
   //  std::cout << "Relative Error: " << frobenius_norm_difference /
   //  frobenius_norm_matrix << std::endl;
 
-  return il::LowRank<T>{std::move(A), std::move(B)};
+  return bie::LowRank<T>{std::move(A), std::move(B)};
 }
 
 }  // namespace il

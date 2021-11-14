@@ -18,15 +18,15 @@
 #include <tbb/tbb.h>
 #endif
 
-namespace il {
+namespace bie {
 
 template <il::int_t p, typename T>
 void hmatrix_rec(const il::MatrixGenerator<T>& matrix,
-                 const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st,
-                 double epsilon, il::spot_t shm, il::io_t, il::HMatrix<T>& hm) {
-  const il::SubHMatrix info = tree.value(st);
+                 const il::Tree<bie::SubHMatrix, 4>& tree, il::spot_t st,
+                 double epsilon, il::spot_t shm, il::io_t, bie::HMatrix<T>& hm) {
+  const bie::SubHMatrix info = tree.value(st);
   switch (info.type) {
-    case il::HMatrixType::FullRank: {
+    case bie::HMatrixType::FullRank: {
       const il::int_t n0 = p*(info.range0.end - info.range0.begin);
       const il::int_t n1 = p*(info.range1.end - info.range1.begin);
       hm.SetFullRank(shm, n0, n1);
@@ -34,10 +34,10 @@ void hmatrix_rec(const il::MatrixGenerator<T>& matrix,
       matrix.set(info.range0.begin, info.range1.begin, il::io, sub);
       return;
     } break ;
-    case il::HMatrixType::LowRank: {
+    case bie::HMatrixType::LowRank: {
       const il::int_t n0 = p*(info.range0.end - info.range0.begin);
       const il::int_t n1 = p*(info.range1.end - info.range1.begin);
-      il::LowRank<T> sr = il::adaptiveCrossApproximation<p>(
+      bie::LowRank<T> sr = bie::adaptiveCrossApproximation<p>(
           matrix, info.range0, info.range1, epsilon);
       const il::int_t r = sr.A.size(1);
       hm.SetLowRank(shm, n0, n1, r);
@@ -55,7 +55,7 @@ void hmatrix_rec(const il::MatrixGenerator<T>& matrix,
       }
       return;
     } break;
-    case il::HMatrixType::Hierarchical: {
+    case bie::HMatrixType::Hierarchical: {
       hm.SetHierarchical(shm);
 //#ifdef IL_PARALLEL
 // This cannot be done for the time being because allocating new nodes
@@ -104,16 +104,16 @@ void hmatrix_rec(const il::MatrixGenerator<T>& matrix,
 }  // namespace il
 
 template <typename T>
-il::HMatrix<T> toHMatrix(const il::MatrixGenerator<T>& matrix,
-                         const il::Tree<il::SubHMatrix, 4>& tree,
+bie::HMatrix<T> toHMatrix(const il::MatrixGenerator<T>& matrix,
+                         const il::Tree<bie::SubHMatrix, 4>& tree,
                          double epsilon) {
-  il::HMatrix<T> ans{};
+  bie::HMatrix<T> ans{};
   if (matrix.blockSize() == 1) {
     hmatrix_rec<1>(matrix, tree, tree.root(), epsilon, ans.root(), il::io, ans);
   } else if (matrix.blockSize() == 2) {
     hmatrix_rec<2>(matrix, tree, tree.root(), epsilon, ans.root(), il::io, ans);
   } else if (matrix.blockSize() == 3) {
-      hmatrix_rec<3>(matrix, tree, tree.root(), epsilon, ans.root(), il::io, ans); // needed for 3D
+      hmatrix_rec<3>(matrix, tree, tree.root(), epsilon, ans.root(), il::io, ans);
   } else {
     IL_UNREACHABLE;
   }
@@ -122,4 +122,4 @@ il::HMatrix<T> toHMatrix(const il::MatrixGenerator<T>& matrix,
 
 
 
-}  // namespace il
+}  // namespace bie

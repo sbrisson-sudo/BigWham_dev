@@ -35,17 +35,17 @@ void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
                  il::Array<il::int_t>& permutation);
 
 // block-cluster Tree I*I
-il::Tree<il::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,
+il::Tree<bie::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,
                                         const il::Tree<il::Range, 2>& tree,
                                         double eta);
 
 void hmatrixTreeIxI_rec(const il::Array2D<double>& node,
                      const il::Tree<il::Range, 2>& range_tree, double eta,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
-                     il::Tree<il::SubHMatrix, 4>& hmatrix_tree);
+                     il::Tree<bie::SubHMatrix, 4>& hmatrix_tree);
 
 // block-cluster Tree I*J
-il::Tree<il::SubHMatrix, 4> hmatrixTreeIxJ(const il::Array2D<double>& node0,
+il::Tree<bie::SubHMatrix, 4> hmatrixTreeIxJ(const il::Array2D<double>& node0,
                                         const il::Tree<il::Range, 2>& tree0,
                                         const il::Array2D<double>& node1,
                                         const il::Tree<il::Range, 2>& tree1,
@@ -56,7 +56,7 @@ void hmatrixTreeIxJ_rec(const il::Array2D<double>& node0,
                      const il::Array2D<double>& node1,
                      const il::Tree<il::Range, 2>& range_tree1, double eta,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
-                     il::Tree<il::SubHMatrix, 4>& hmatrix_tree);
+                     il::Tree<bie::SubHMatrix, 4>& hmatrix_tree);
 
 
 

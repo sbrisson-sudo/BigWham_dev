@@ -13,7 +13,6 @@
 #pragma once
 
 #include <il/Tree.h>
-
 #include <hmat/hmatrix/HMatrix.h>
 
 namespace bie{
@@ -21,16 +20,16 @@ namespace bie{
 // construct pattern
 //
 // functions to get total number of sub-matrix blocks... (independant of dof size)
-il::int_t nblocks_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st) {
-  const il::SubHMatrix info = tree.value(st);
+il::int_t nblocks_rec(const il::Tree<bie::SubHMatrix, 4>& tree, il::spot_t st) {
+  const bie::SubHMatrix info = tree.value(st);
   switch (info.type) {
-    case il::HMatrixType::FullRank: {
+    case bie::HMatrixType::FullRank: {
       return 1;
     } break;
-    case il::HMatrixType::LowRank: {
+    case bie::HMatrixType::LowRank: {
       return 1;
     } break;
-    case il::HMatrixType::Hierarchical: {
+    case bie::HMatrixType::Hierarchical: {
       const il::spot_t st00 = tree.child(st, 0);
       const il::spot_t st10 = tree.child(st, 1);
       const il::spot_t st01 = tree.child(st, 2);
@@ -42,20 +41,21 @@ il::int_t nblocks_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st) {
   }
 }
 
-il::int_t nbBlocks(const il::Tree<il::SubHMatrix, 4>& tree) {
+il::int_t nbBlocks(const il::Tree<bie::SubHMatrix, 4>& tree) {
   return nblocks_rec(tree,tree.root());
 }
+
 // functions to get total number of sub-matrix blocks... (independant of dof size)
-il::int_t nfullblocks_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st) {
-  const il::SubHMatrix info = tree.value(st);
+il::int_t nfullblocks_rec(const il::Tree<bie::SubHMatrix, 4>& tree, il::spot_t st) {
+  const bie::SubHMatrix info = tree.value(st);
   switch (info.type) {
-    case il::HMatrixType::FullRank: {
+    case bie::HMatrixType::FullRank: {
       return 1;
     } break;
-    case il::HMatrixType::LowRank: {
+    case bie::HMatrixType::LowRank: {
       return 0;
     } break;
-    case il::HMatrixType::Hierarchical: {
+    case bie::HMatrixType::Hierarchical: {
       const il::spot_t st00 = tree.child(st, 0);
       const il::spot_t st10 = tree.child(st, 1);
       const il::spot_t st01 = tree.child(st, 2);
@@ -67,17 +67,16 @@ il::int_t nfullblocks_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st
   }
 }
 
-il::int_t nbFullBlocks(const il::Tree<il::SubHMatrix, 4>& tree) {
+il::int_t nbFullBlocks(const il::Tree<bie::SubHMatrix, 4>& tree) {
   return nfullblocks_rec(tree,tree.root());
 }
 
-
 // function to get the pattern
-void pattern_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st,
+void pattern_rec(const il::Tree<bie::SubHMatrix, 4>& tree, il::spot_t st,
                  il::io_t,il::Array2D<il::int_t>& fr_pattern, il::int_t& nc_fr,il::Array2D<il::int_t>& lr_pattern, il::int_t& nc_lr) {
-  const il::SubHMatrix info = tree.value(st);
+  const bie::SubHMatrix info = tree.value(st);
   switch (info.type) {
-    case il::HMatrixType::FullRank: {
+    case bie::HMatrixType::FullRank: {
       fr_pattern(0,nc_fr)=st.index;
       fr_pattern(1,nc_fr)=info.range0.begin;
       fr_pattern(2,nc_fr)=info.range1.begin;
@@ -87,7 +86,7 @@ void pattern_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st,
       nc_fr=nc_fr+1;
       return;
     }
-    case il::HMatrixType::LowRank: {
+    case bie::HMatrixType::LowRank: {
       lr_pattern(0,nc_lr)=st.index;
       lr_pattern(1,nc_lr)=info.range0.begin;
       lr_pattern(2,nc_lr)=info.range1.begin;
@@ -97,7 +96,7 @@ void pattern_rec(const il::Tree<il::SubHMatrix, 4>& tree, il::spot_t st,
       nc_lr=nc_lr+1;
       return;
     }
-    case il::HMatrixType::Hierarchical: {
+    case bie::HMatrixType::Hierarchical: {
       const il::spot_t st00 = tree.child(st, 0);
       pattern_rec( tree, st00,  il::io, fr_pattern,nc_fr,lr_pattern,nc_lr);
       const il::spot_t st10 = tree.child(st, 1);
@@ -129,7 +128,7 @@ struct HPattern {
 };
 
 // function to get the matrix pattern from the binary cluster tree
-HPattern createPattern(const il::Tree<il::SubHMatrix, 4>& tree){
+HPattern createPattern(const il::Tree<bie::SubHMatrix, 4>& tree){
 
   il::int_t nblocks = nbBlocks(tree);
   il::int_t n_full_blocks = nbFullBlocks(tree) ;

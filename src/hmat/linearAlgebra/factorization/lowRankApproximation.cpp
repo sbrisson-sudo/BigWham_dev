@@ -14,7 +14,7 @@
 
 namespace il {
 
-il::LowRank<double> lowRank(double epsilon, il::Array2DView<double> A) {
+bie::LowRank<double> lowRank(double epsilon, il::Array2DView<double> A) {
   const il::int_t n0 = A.size(0);
   const il::int_t n1 = A.size(1);
   il::Array2D<double> M{n0, n1};
@@ -58,14 +58,14 @@ il::LowRank<double> lowRank(double epsilon, il::Array2DView<double> A) {
 
   IL_EXPECT_FAST(a.size(1) > 0);
 
-  il::LowRank<double> ans{};
+  bie::LowRank<double> ans{};
   ans.A = std::move(a);
   ans.B = std::move(b);
 
   return ans;
 }
 
-il::LowRank<std::complex<double>> lowRank(
+bie::LowRank<std::complex<double>> lowRank(
     double epsilon, il::Array2DView<std::complex<double>> A) {
   const il::int_t n0 = A.size(0);
   const il::int_t n1 = A.size(1);
@@ -113,14 +113,14 @@ il::LowRank<std::complex<double>> lowRank(
 
   IL_EXPECT_FAST(a.size(1) > 0);
 
-  il::LowRank<std::complex<double>> ans{};
+  bie::LowRank<std::complex<double>> ans{};
   ans.A = std::move(a);
   ans.B = std::move(b);
 
   return ans;
 }
 
-il::LowRank<double> lowRankAddition(double epsilon, double alpha,
+bie::LowRank<double> lowRankAddition(double epsilon, double alpha,
                                     il::Array2DView<double> aa,
                                     il::Array2DView<double> ab, double beta,
                                     il::Array2DView<double> ba,
@@ -230,14 +230,14 @@ il::LowRank<double> lowRankAddition(double epsilon, double alpha,
     IL_EXPECT_FAST(lapack_error == 0);
   }
 
-  il::LowRank<double> ans{};
+  bie::LowRank<double> ans{};
   ans.A = std::move(a);
   ans.B = std::move(b);
 
   return ans;
 }
 
-il::LowRank<std::complex<double>> lowRankAddition(
+bie::LowRank<std::complex<double>> lowRankAddition(
     double epsilon, std::complex<double> alpha,
     il::Array2DView<std::complex<double>> aa,
     il::Array2DView<std::complex<double>> ab, std::complex<double> beta,
@@ -356,7 +356,7 @@ il::LowRank<std::complex<double>> lowRankAddition(
     IL_EXPECT_FAST(lapack_error == 0);
   }
 
-  il::LowRank<std::complex<double>> ans{};
+  bie::LowRank<std::complex<double>> ans{};
   ans.A = std::move(a);
   ans.B = std::move(b);
 

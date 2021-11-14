@@ -10,7 +10,7 @@
 
 #include <il/Array2D.h>
 
-namespace il {
+namespace bie {
 
 template <typename T>
 struct LowRank {
@@ -18,4 +18,4 @@ struct LowRank {
   il::Array2D<T> B;
 };
 
-}  // namespace il
+}  // namespace bie

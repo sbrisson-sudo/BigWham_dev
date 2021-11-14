@@ -18,12 +18,11 @@
 #include <elasticity/2d/Elastic2DP1_element.h>
 #include <elasticity/2d/ElasticS3DP0_element.h>
 #include <src/core/Mesh2D.h>
-#include <src/elasticity/AssemblyDDM.h>
+#include <src/elasticity/2d/FullMatrixAssembly2D.h>
 
 //--------------------------------------------------------------------------
 // P1 Plane-Strain
 
-// todo - this test must be recoded using Hmat and eta =0 .... or recode basic_assembly....
 
 /// TEST 1
 
@@ -51,8 +50,10 @@ TEST(P1, two_segs_45_a1) {
 
   bie::ElasticProperties myelas(1., 0.);
 
-  il::Array2D<double> K = bie::basic_assembly(
+
+  il::Array2D<double> K = bie::serialFullMatrix2d(
       mesh, myelas, bie::normal_shear_stress_kernel_dp1_dd, 0.);
+
 
   // we compare the results of the assembly w.t the mma code
   il::Array2D<double> Kmma{8, 8, 0.};
@@ -173,7 +174,7 @@ TEST(P1, two_segs_90_45_a1) {
 
   bie::ElasticProperties myelas(1., 0.);
 
-  il::Array2D<double> K45 = bie::basic_assembly(
+  il::Array2D<double> K45 = bie::serialFullMatrix2d(
       mesh45, myelas, bie::normal_shear_stress_kernel_dp1_dd, 0.);
 
   il::Array2D<double> xy90{3, 2, 0.};
@@ -227,7 +228,7 @@ TEST(P1, two_adjacent_segs) {
 
   bie::ElasticProperties myelas(1., 0.);
 
-  il::Array2D<double> K = bie::basic_assembly(
+  il::Array2D<double> K = bie::serialFullMatrix2d(
       mesh, myelas, bie::normal_shear_stress_kernel_dp1_dd, 0.);
 
   // we compare the results of the assembly w.t the mma code
@@ -349,7 +350,7 @@ TEST(P0, two_segs_90_45_a1) {
 
   bie::ElasticProperties myelas(1., 0.);
 
-  il::Array2D<double> K45 = bie::basic_assembly(
+  il::Array2D<double> K45 = bie::serialFullMatrix2d(
       mesh45, myelas, bie::normal_shear_stress_kernel_s3d_dp0_dd, 10.);
 
   il::Array2D<double> xy90{3, 2, 0.};
@@ -362,7 +363,7 @@ TEST(P0, two_segs_90_45_a1) {
 
   bie::Mesh mesh90(xy90, ien, 1);
 
-  il::Array2D<double> K90 = bie::basic_assembly(
+  il::Array2D<double> K90 = bie::serialFullMatrix2d(
       mesh45, myelas, bie::normal_shear_stress_kernel_s3d_dp0_dd, 10.);
 
   double my_sum = 0.;
@@ -404,7 +405,7 @@ TEST(P1_nodal, two_segs_45_a1) {
 
   bie::ElasticProperties myelas(1., 0.);
 
-  il::Array2D<double> K = bie::basic_assembly_nodal(
+  il::Array2D<double> K = bie::serialFullMatrix2d(
       mesh, myelas, bie::normal_shear_stress_kernel_dp1_dd_nodal, 0.);
 
   // we compare the results of the assembly w.t the mma code
@@ -526,7 +527,7 @@ TEST(P1_nodal, two_segs_90_45_a1) {
 
   bie::ElasticProperties myelas(1., 0.);
 
-  il::Array2D<double> K45 = bie::basic_assembly_nodal(
+  il::Array2D<double> K45 = bie::serialFullMatrix2d(
       mesh45, myelas, bie::normal_shear_stress_kernel_dp1_dd_nodal, 0.);
 
   il::Array2D<double> xy90{3, 2, 0.};
@@ -539,7 +540,7 @@ TEST(P1_nodal, two_segs_90_45_a1) {
 
   bie::Mesh mesh90(xy90, ien, 1);
 
-  il::Array2D<double> K90 = bie::basic_assembly_nodal(
+  il::Array2D<double> K90 = bie::serialFullMatrix2d(
       mesh45, myelas, bie::normal_shear_stress_kernel_dp1_dd_nodal, 0.);
 
   double my_sum = 0.;
@@ -580,7 +581,7 @@ TEST(P1_nodal, two_adjacent_segs) {
 
   bie::ElasticProperties myelas(1., 0.);
 
-  il::Array2D<double> K = bie::basic_assembly_nodal(
+  il::Array2D<double> K = bie::serialFullMatrix2d(
       mesh, myelas, bie::normal_shear_stress_kernel_dp1_dd_nodal, 0.);
 
   // we compare the results of the assembly w.t the mma code
@@ -702,7 +703,7 @@ TEST(P0_nodal, two_segs_90_45_a1) {
 
   bie::ElasticProperties myelas(1., 0.);
 
-  il::Array2D<double> K45 = bie::basic_assembly_nodal(
+  il::Array2D<double> K45 = bie::serialFullMatrix2d(
       mesh45, myelas, bie::normal_shear_stress_kernel_s3d_dp0_dd_nodal, 10.);
 
   il::Array2D<double> xy90{3, 2, 0.};
@@ -715,7 +716,7 @@ TEST(P0_nodal, two_segs_90_45_a1) {
 
   bie::Mesh mesh90(xy90, ien, 1);
 
-  il::Array2D<double> K90 = bie::basic_assembly_nodal(
+  il::Array2D<double> K90 = bie::serialFullMatrix2d(
       mesh45, myelas, bie::normal_shear_stress_kernel_s3d_dp0_dd_nodal, 10.);
 
   double my_sum = 0.;

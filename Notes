@@ -8,10 +8,12 @@ Important points:
 TODO:
 
 Hmat-Lib:
-- 2D sort of the pattern for pre-assembly (thread/mpi) allocation
-- develop a new HMatrix class including the pattern, code up a new Hmat creation (paving way to MPI), code up a new Hdot (parallel)
-- develop binary cluster tree for separate meshes (rectangular h-matrix)
--
+
+- remove
+
+
+- Code up atomic test (single elements test) for all kernels ?
+
 - compute Stress and displacement methods in the bigwhamio class
 - tidy up the 3D mesh object
 - tidy up the 3DT6 implementation
