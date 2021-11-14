@@ -18,4 +18,4 @@ struct SubHMatrix {
   bie::HMatrixType type;
 };
 
-}  // namespace il
+}  // namespace bie

@@ -101,7 +101,7 @@ void hmatrix_rec(const bie::MatrixGenerator<T>& matrix,
     default:
       IL_UNREACHABLE;
   }
-}  // namespace il
+}  // namespace bie
 
 template <typename T>
 bie::HMatrix<T> toHMatrix(const bie::MatrixGenerator<T>& matrix,

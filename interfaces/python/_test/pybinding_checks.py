@@ -16,7 +16,7 @@
 """
 
 import numpy as np
-from interfaces.python import bigwhamPybind # linear operator file
+from interfaces.python import bigwham4py # linear operator file
 from interfaces.python.lib.bigwhamPybind import Bigwhamio  #so file
 ################################
 # TESTING THE LINEAR OPERATOR  #

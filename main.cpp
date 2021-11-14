@@ -131,7 +131,6 @@ int test2DP1(){
   Bigwhamio testbie;
   //Bigwhamio *test = new Bigwhamio();
 
-
   std::vector<double> f_coor;
   f_coor.assign(2*test2.numberOfNodes(),0.);
   for (il::int_t i=0;i<test2.numberOfNodes();i++){
@@ -2414,7 +2413,6 @@ int testNewHmat() {
   //
   il::int_t nb=bie::nbBlocks(block_tree);
   std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
-  //std::cin.ignore(); // pause while user do not enter return
   il::int_t n_fullb=bie::nbFullBlocks(block_tree);
   std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
 
@@ -2436,10 +2434,6 @@ int testNewHmat() {
   std::cout  << " n lrb " <<  my_patt2.LRB_pattern.size(1) <<"\n";
   tt.Reset();
 
-  // std::cout << " press enter to continue ...\n";
-  //std::cin.ignore(); // pause while user do not enter return
-//
-
   //
   bie::Hmat<2,double> hmt_(my_patt2);
   tt.Start();
@@ -2447,9 +2441,9 @@ int testNewHmat() {
   tt.Stop();
   std::cout << "Creation hmat new way new in "  << tt.time() <<"\n";
   tt.Reset();
-  std::cout << "Ccompression ratio new way " << hmt_.compressionRatio() <<"\n";
+  std::cout << "Compression ratio new way " << hmt_.compressionRatio() <<"\n";
 
-      /// dot-product of linear system and checks
+  // dot-product of linear system and checks
   double Ep=1.0/(1.0-0.2*0.2);
   double sig = 1.0;
   double a=1.0;
@@ -2577,7 +2571,7 @@ int main() {
   //test3DR0();
   //perf3DR0();
 
-  //test2DP1();
+  test2DP1();
 
   //testS3DP0();
 

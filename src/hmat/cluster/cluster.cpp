@@ -130,8 +130,6 @@ void hmatrixTreeIxJ_rec(const il::Array2D<double>& node0,
   }
 };
 
-
-
 // Binary Cluster tree creation
 Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double> &node) {
   const il::int_t nb_nodes = node.size(0);

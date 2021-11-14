@@ -38,11 +38,6 @@ class Mesh {  // class for   1D segment elements
   // Interpolation order
   il::int_t interpolation_order_;
 
-  // Dof handle matrices
-  // for displacements  Discontinuities - size: number of elements x 2 dofs per
-  // coordinates x (order interpolation + 1)
-//  il::Array2D<il::int_t> dof_handle_dd_; //todo : get rid of this dof_handle
-
  public:
   //////////////////////////////////////////////////////////////////////////
   //        CONSTRUCTORS
@@ -74,15 +69,6 @@ class Mesh {  // class for   1D segment elements
     il::int_t  nelts=connectivity_.size(0);
     il::int_t p=interpolationOrder;
 
-    /// Discontinuous Polynomial DOF handles
-//    il::Array2D<il::int_t> id_dd{nelts, 2 * (p + 1), 0};
-//
-//    for (il::int_t j = 0; j < 2 * (p + 1); j++) {
-//      for (il::int_t i = 0; i < nelts; i++) {
-//        id_dd(i, j) = i * 2 * (p + 1) + j;
-//      }
-//    }
-//    dof_handle_dd_ = id_dd;  /// dof
 
   };
 

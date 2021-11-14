@@ -8,9 +8,10 @@
 //
 // last modifications :: Nov. 12 2020
 
+#pragma once
+
 #include <iostream>
 #include <fstream>
-
 
 #include <il/Array.h>
 #include <il/Array2D.h>
@@ -40,16 +41,15 @@
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
 
-#pragma once
 
 #include <hmat/linearAlgebra/factorization/luDecomposition.h>
 #include <il/Gmres.h>
 //#include <src/elasticity/jacobi_prec_assembly.h>  // for diagonal
-#include <src/solvers/HIterativeSolverUtilities.h>
+//#include <src/solvers/HIterativeSolverUtilities.h>
 
 class Bigwhamio {
  private:
-  bie::HMatrix<double> h_;  // dd to traction
+  bie::HMatrix<double> h_;
   il::Tree<bie::SubHMatrix, 4> hmatrix_tree ;
   //   arrays storing the pattern (to speed up the hdot ...).
   il::Array2D<il::int_t> lr_pattern_;  // low rank block pattern
@@ -119,7 +119,7 @@ class Bigwhamio {
       il::Array2D<double> Coor{nvertex, dimension_, 0.};  // columm major order
       il::Array2D<il::int_t> Conn{nelts, nnodes_elts, 0};
 
-      // interpolation order
+      // set interpolation order
       int p = 0;
       if (kernel_ == "2DP1") {
         p = 1;
@@ -159,8 +159,7 @@ class Bigwhamio {
       permutation_ = cluster.permutation;
       tt.Start();
       std::cout << "Creating hmatrix  Tree - \n";
-      //il::Tree<il::SubHMatrix, 4>
-          hmatrix_tree =
+      hmatrix_tree =
           bie::hmatrixTreeIxI(collocationPoints_, cluster.partition, eta_);
       tt.Stop();
       std::cout << "hmatrix  tree creation time :  " << tt.time() << "\n";
@@ -193,15 +192,9 @@ class Bigwhamio {
             collocationPoints_, permutation_, mesh2d, elas, properties[2]};
         h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);  //
       }
-      tt.Stop();
-      std::cout << "H-mat time = :  " << tt.time() << "\n";
-      std::cout << "H mat set : CR = " << bie::compressionRatio(h_)
-                << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
-      tt.Reset();
+
     } else if (kernel_ == "3DT6" || kernel_ == "3DR0_displ" ||
                kernel_ == "3DR0" || kernel_ == "3DT0" || kernel_ == "3DR0opening" ) {
-      // check this  NOTE 1: the 3D mesh uses points and connectivity matrix
-      // that are transposed w.r. to the 2D mesh
 
       // step 1 - create the mesh object
       dimension_ = 3;
@@ -283,8 +276,7 @@ class Bigwhamio {
       permutation_ = cluster.permutation;
       tt.Start();
       std::cout << "Creating hmatrix  Tree - \n";
-      //il::Tree<il::SubHMatrix, 4>
-          hmatrix_tree =
+      hmatrix_tree =
           bie::hmatrixTreeIxI(collocationPoints_, cluster.partition, eta_);
       tt.Stop();
       std::cout << "hmatrix  tree creation time :  " << tt.time() << "\n";
@@ -343,28 +335,23 @@ class Bigwhamio {
             std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
             const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{collocationPoints_, permutation_, mesh3d, elas};
             h_ = bie::toHMatrix(M, hmatrix_tree, epsilon_aca_);
-        } else {
-            std::cout << "\n ERROR! unknown Kernel name: " << kernel_ << "\n  ";
-            il::abort();
         }
-
-        std::cout << "HMAT --> built \n";
-
-        std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
-                  << collocationPoints_.size(1) << "\n";
-        std::cout << "H mat set : CR = " << bie::compressionRatio(h_)
-                  << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
       }
-      tt.Stop();
-      std::cout << "H-mat time = :  " << tt.time() << "\n";
-      tt.Reset();
-      std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
-                << collocationPoints_.size(1) << "\n";
-
     } else {
       std::cout << "Invalid kernel name ---\n";
       return;
-    };
+    }
+
+    std::cout << "HMAT --> built \n";
+    std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
+              << collocationPoints_.size(1) << "\n";
+    std::cout << "H mat set : CR = " << bie::compressionRatio(h_)
+              << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
+    std::cout << "H-mat time = :  " << tt.time() << "\n";
+    tt.Stop();
+    tt.Reset();
+    std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
+              << collocationPoints_.size(1) << "\n";
 
     tt.Start();
     std::cout << "now getting the H-mat pattern...  ";

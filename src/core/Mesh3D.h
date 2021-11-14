@@ -54,9 +54,6 @@ namespace bie {
         ////////////////////////////////////////////////////////////////////////////////////////////
 
         il::Array2D<double> getVerticesElt(il::int_t ne) const; // vertices' coordinates for element
-        // number/ID 'ne'
-//      The following line has been dismissed since the advent of FaceData
-//      bie::TriangularElementData getElementData(il::int_t ne) const; // build triangular element object for
 
         bie::FaceData getElementData(il::int_t ne) const; // build face element object for the element number/ID 'ne'
         il::Array2D<double> getCollocationPoints(); // get all the collocation points of the mesh
