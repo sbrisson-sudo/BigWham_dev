@@ -19,7 +19,7 @@
 namespace bie {
 
 template <typename T>
-class ElasticHMatrix3DT6 : public il::MatrixGenerator<T> {
+class ElasticHMatrix3DT6 : public bie::MatrixGenerator<T> {
  private:
   il::Array2D<double> point_;
 

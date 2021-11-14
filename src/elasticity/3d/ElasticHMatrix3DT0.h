@@ -22,7 +22,7 @@
 namespace bie {
 
     template <typename T>
-    class ElasticHMatrix3DT0 : public il::MatrixGenerator<T> {
+    class ElasticHMatrix3DT0 : public bie::MatrixGenerator<T> {
     private:
         il::Array2D<double> point_;
         il::Array<il::int_t> permutation_;

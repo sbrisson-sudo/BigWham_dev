@@ -47,7 +47,7 @@ class Hmat {
    };
 
    // -----------------------------------------------------------------------------
-   void buildFR(const il::MatrixGenerator<T>& matrix_gen){
+   void buildFR(const bie::MatrixGenerator<T>& matrix_gen){
      // constructing the full rank blocks
 
   std::cout << " Loop on full blocks construction  \n";
@@ -88,7 +88,7 @@ class Hmat {
 ///
 /// \param matrix_gen
 /// \param epsilon
-void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
+void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     // constructing the low rank blocks
 
     std::cout << " Loop on low rank blocks construction  \n";
@@ -128,7 +128,7 @@ void buildLR(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
   }
   //-----------------------------------------------------------------------------
   // filling up the h-matrix sub-blocks
-  void build(const il::MatrixGenerator<T>& matrix_gen,const double epsilon){
+  void build(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     IL_EXPECT_FAST(matrix_gen.blockSize()==p);
     size0_=matrix_gen.size(0);
     size1_=matrix_gen.size(1);

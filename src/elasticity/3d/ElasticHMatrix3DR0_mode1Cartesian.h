@@ -20,7 +20,7 @@
 namespace bie {
 
     template <typename T>
-    class ElasticHMatrix3DR0_mode1Cartesian : public il::MatrixGenerator<T> {
+    class ElasticHMatrix3DR0_mode1Cartesian : public bie::MatrixGenerator<T> {
      private:
       il::Array2D<double> point_;
 

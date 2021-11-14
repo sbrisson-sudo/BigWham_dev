@@ -21,7 +21,7 @@
 namespace bie {
 
 template <il::int_t p, typename T>
-void hmatrix_rec(const il::MatrixGenerator<T>& matrix,
+void hmatrix_rec(const bie::MatrixGenerator<T>& matrix,
                  const il::Tree<bie::SubHMatrix, 4>& tree, il::spot_t st,
                  double epsilon, il::spot_t shm, il::io_t, bie::HMatrix<T>& hm) {
   const bie::SubHMatrix info = tree.value(st);
@@ -104,7 +104,7 @@ void hmatrix_rec(const il::MatrixGenerator<T>& matrix,
 }  // namespace il
 
 template <typename T>
-bie::HMatrix<T> toHMatrix(const il::MatrixGenerator<T>& matrix,
+bie::HMatrix<T> toHMatrix(const bie::MatrixGenerator<T>& matrix,
                          const il::Tree<bie::SubHMatrix, 4>& tree,
                          double epsilon) {
   bie::HMatrix<T> ans{};

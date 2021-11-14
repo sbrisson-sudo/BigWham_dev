@@ -18,7 +18,7 @@
 namespace il {
 
 template <typename T>
-class GaussianMatrix : public MatrixGenerator<T> {
+class GaussianMatrix : public bie::MatrixGenerator<T> {
  private:
   il::int_t n_;
   il::Range range0_;

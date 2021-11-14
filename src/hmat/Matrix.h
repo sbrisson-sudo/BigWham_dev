@@ -14,7 +14,7 @@
 
 #include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
 
-namespace il {
+namespace bie {
 
 template <typename T>
 class Matrix : public MatrixGenerator<T> {
@@ -79,4 +79,4 @@ void Matrix<T>::set(il::int_t b0, il::int_t b1, il::io_t,
   }
 }
 
-}  // namespace il
+}  // namespace bie

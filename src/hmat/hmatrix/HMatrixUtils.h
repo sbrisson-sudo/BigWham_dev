@@ -45,17 +45,17 @@ void toArray2D(const bie::HMatrix<T> &H, il::spot_t s, il::io_t,
     const il::spot_t s10 = H.child(s, 1, 0);
     const il::spot_t s01 = H.child(s, 0, 1);
     const il::spot_t s11 = H.child(s, 1, 1);
-    il::toArray2D(H, s00, il::io, E.Edit(il::Range{0, H.size(0, s00)},
+    bie::toArray2D(H, s00, il::io, E.Edit(il::Range{0, H.size(0, s00)},
                                          il::Range{0, H.size(1, s00)}));
-    il::toArray2D(
+    bie::toArray2D(
         H, s10, il::io,
         E.Edit(il::Range{H.size(0, s00), H.size(0, s00) + H.size(0, s10)},
                il::Range{0, H.size(1, s00)}));
-    il::toArray2D(
+    bie::toArray2D(
         H, s01, il::io,
         E.Edit(il::Range{0, H.size(0, s00)},
                il::Range{H.size(1, s00), H.size(1, s00) + H.size(1, s01)}));
-    il::toArray2D(
+    bie::toArray2D(
         H, s11, il::io,
         E.Edit(il::Range{H.size(0, s00), H.size(0, s00) + H.size(0, s10)},
                il::Range{H.size(1, s00), H.size(1, s00) + H.size(1, s01)}));

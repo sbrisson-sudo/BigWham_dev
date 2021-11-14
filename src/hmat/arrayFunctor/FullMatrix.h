@@ -16,7 +16,7 @@
 namespace il {
 
 template <typename T>
-class FullMatrix : public MatrixGenerator<T> {
+class FullMatrix : public bie::MatrixGenerator<T> {
  private:
   il::Array2D<T> A_;
 

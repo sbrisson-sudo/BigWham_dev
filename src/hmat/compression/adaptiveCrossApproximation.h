@@ -18,7 +18,7 @@
 namespace bie {
 
 template <il::int_t p, typename T>
-LowRank<T> adaptiveCrossApproximation(const il::MatrixGenerator<T>& M,
+LowRank<T> adaptiveCrossApproximation(const bie::MatrixGenerator<T>& M,
                                       il::Range range0, il::Range range1,
                                       double epsilon) {
   const il::int_t n0 = range0.end - range0.begin;

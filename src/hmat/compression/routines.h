@@ -41,7 +41,7 @@ inline double frobeniusNorm(const il::Array2D<std::complex<double>> &A) {
 }
 
 template <il::int_t p, typename T>
-void residual_row(const il::MatrixGenerator<T> &M,
+void residual_row(const bie::MatrixGenerator<T> &M,
                   const il::Array2D<T> &A, const il::Array2D<T> &B,
                   il::Range range0, il::Range range1, il::int_t i0, il::int_t r,
                   il::io_t, il::Array2DEdit<T> row) {
@@ -61,7 +61,7 @@ void residual_row(const il::MatrixGenerator<T> &M,
 };
 
 template <il::int_t p, typename T>
-void residual_column(const il::MatrixGenerator<T> &M,
+void residual_column(const bie::MatrixGenerator<T> &M,
                      const il::Array2D<T> &A, const il::Array2D<T> &B,
                      il::Range range0, il::Range range1, il::int_t i1,
                      il::int_t r, il::io_t, il::Array2DEdit<T> column) {
@@ -126,7 +126,7 @@ il::int_t find_largest_singular_value(const il::Array2D<T> &row,
 
 template <il::int_t p, typename T>
 il::StaticArray2D<T, p, p> lowRankSubmatrix(
-    const il::MatrixGenerator<T> &M, const il::Array2D<T> &A,
+    const bie::MatrixGenerator<T> &M, const il::Array2D<T> &A,
     const il::Array2D<T> &B, il::int_t i0, il::int_t i1, il::int_t r) {
   il::StaticArray2D<T, p, p> matrix{0.0};
   if (r >= 1) {

@@ -24,7 +24,7 @@
 namespace bie {
 
 template <typename T>
-class ElasticHMatrix2DP1 : public il::MatrixGenerator<T> {
+class ElasticHMatrix2DP1 : public bie::MatrixGenerator<T> {
  private:
   il::Array2D<double> point_;
   // double ker_opts_;
