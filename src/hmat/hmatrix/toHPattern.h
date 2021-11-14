@@ -14,9 +14,7 @@
 
 #include <il/Tree.h>
 
-//#include <hmat/arrayFunctor/MatrixGenerator.h>
 #include <hmat/hmatrix/HMatrix.h>
-
 
 namespace bie{
 
@@ -121,12 +119,12 @@ struct HPattern {
   il::Array2D<il::int_t> LRB_pattern;  // low rank block pattern
   // pattern are stored as info a block k at pattern(0-5,k)
   //  spot,i_begin,j_begin,i_end,j_end,flag (0 for full rank, rank for low rank)
-  il::int_t n_B;   // number of blocks in the matrix pattern
-  il::int_t n_FRB; // number of full rank blocks in the matrix pattern
-  il::int_t n_LRB; // number of low rank blocks in the matrix pattern
+  il::int_t n_B{};   // number of blocks in the matrix pattern
+  il::int_t n_FRB{}; // number of full rank blocks in the matrix pattern
+  il::int_t n_LRB{}; // number of low rank blocks in the matrix pattern
 
-  il::int_t nr;  // total number of rows in the matrix pattern
-  il::int_t nc; // total number of colums in the matrix pattern
+  il::int_t nr{};  // total number of rows in the matrix pattern
+  il::int_t nc{}; // total number of colums in the matrix pattern
 
 };
 

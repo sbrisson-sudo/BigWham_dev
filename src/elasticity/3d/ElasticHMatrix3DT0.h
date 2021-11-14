@@ -1,9 +1,13 @@
 //
-// Created by Alexis Sáez Uribe on 24.01.21.
+// This file  part of BigWham
 //
+// Created by Alexis Sáez Uribe on 24.01.21.
+// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved.
+// See the LICENSE.TXT file for more details.
+//
+// last update - openMP pragma - 14.11.2021 (BL)
 
-#ifndef BIGWHAMELASTUNITTEST_ELASTICHMATRIX3DT0_H
-#define BIGWHAMELASTUNITTEST_ELASTICHMATRIX3DT0_H
 
 #pragma once
 
@@ -106,11 +110,11 @@ namespace bie {
         //    il::int_t e_k1, e_k0;
         //    il::Array2D<double> stnl{3,3,0.0};
 
-#ifndef NUMBEROFTHREADS
-#define NUMBEROFTHREADS 4
-#endif
-#pragma omp parallel for num_threads(NUMBEROFTHREADS)
-        for (il::int_t j1 = 0; j1 < M.size(1) / blockSize(); ++j1)  { // Loop over a subset of source nodes
+#pragma omp parallel if(M.size(1) / blockSize()>200)
+        {
+#pragma omp for
+          for (il::int_t j1 = 0; j1 < M.size(1) / blockSize();
+               ++j1) {  // Loop over a subset of source nodes
 
             il::int_t old_k1;
             il::int_t old_k0;
@@ -119,40 +123,41 @@ namespace bie {
 
             il::int_t k1 = b1 + j1;
             old_k1 = permutation_[k1];
-            e_k1 = old_k1; // il::floor(old_k1 / number of nodes per element);
+            e_k1 = old_k1;  // il::floor(old_k1 / number of nodes per element);
 
-            il::Array2D<double> xv = mesh_.getVerticesElt(e_k1); // get vertices' coordinates of source element
-            bie::FaceData elem_data_s(xv, 0); // 0 = interpolation order
+            il::Array2D<double> xv = mesh_.getVerticesElt(
+                e_k1);  // get vertices' coordinates of source element
+            bie::FaceData elem_data_s(xv, 0);  // 0 = interpolation order
 
             // Loop over a subset of collocation points
 
-            for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0)
-            {
-                il::int_t k0 = b0 + j0;
-                old_k0 = permutation_[k0];
-                e_k0 = old_k0; // il::floor(old_k1 / number of nodes per element);
+            for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
+              il::int_t k0 = b0 + j0;
+              old_k0 = permutation_[k0];
+              e_k0 =
+                  old_k0;  // il::floor(old_k1 / number of nodes per element);
 
-                xv = mesh_.getVerticesElt(e_k0); // get vertices' coordinates of receiver element
-                bie::FaceData elem_data_r(xv, 0); // 0 = interpolation order
+              xv = mesh_.getVerticesElt(
+                  e_k0);  // get vertices' coordinates of receiver element
+              bie::FaceData elem_data_r(xv, 0);  // 0 = interpolation order
 
-                stnl = bie::traction_influence_3DT0(elem_data_s, // source element
-                                                                           elem_data_r, // receiver element
-                                                                           elas_, // elastic properties
-                                                                           local_global); // 0 if local-local, 1 if global-global
+              stnl = bie::traction_influence_3DT0(
+                  elem_data_s,    // source element
+                  elem_data_r,    // receiver element
+                  elas_,          // elastic properties
+                  local_global);  // 0 if local-local, 1 if global-global
 
-                for (il::int_t j = 0; j < 3; j++)
-                {
-                    for (il::int_t i = 0; i < 3; i++)
-                    {
-                        M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j);
-                        // I'm writing on
-                        // M( direction , number of DD )
-                    }
+              for (il::int_t j = 0; j < 3; j++) {
+                for (il::int_t i = 0; i < 3; i++) {
+                  M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j);
+                  // I'm writing on
+                  // M( direction , number of DD )
                 }
+              }
             }
+          }
         }
     }
 
 }
 
-#endif //BIGWHAMELASTUNITTEST_ELASTICHMATRIX3DT0_H

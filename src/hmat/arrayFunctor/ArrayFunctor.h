@@ -1,3 +1,11 @@
+//
+// This file is part of BigWham.
+//
+// Created by Francois Fayard - 2018
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// file for more details.
+//
 #pragma once
 
 #include <il/ArrayView.h>
@@ -41,4 +49,4 @@ void HMatrixGenerator<T>::operator()(il::ArrayView<T> x, il::io_t,
   il::dot_rec(h_, h_.root(), x, il::io, y);
 }
 
-}  // namespace il
+}

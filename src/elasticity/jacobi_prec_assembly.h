@@ -1,5 +1,5 @@
 //
-// HFP project.
+// This file part of BigWham
 //
 // Created by carlo Peruzzo on 2019-09-01.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,

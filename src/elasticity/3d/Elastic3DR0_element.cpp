@@ -1,5 +1,5 @@
 //
-// This file is part of HFPx3D.
+// This file part of BigWham
 //
 // Created by Brice Lecampion on 04.02.19.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2019.  All rights reserved.

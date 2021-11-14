@@ -101,7 +101,6 @@ if(IL_OPENMP)
             MESSAGE("-- OPENMP ENABLED")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp") #
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNUMBEROFTHREADS=8")
-
             set(OPENMP_LIBRARY /usr/local/opt/libomp/lib/)#libomp.dylib
             link_directories(/usr/local/opt/libomp/lib/) #
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -246,7 +245,7 @@ set(SOURCE_FILES
         #  - R0 element
         src/elasticity/3d/Elastic3DR0_common.cpp
         src/elasticity/3d/Elastic3DR0_element.cpp
-        src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian_element.cpp
+        src/elasticity/3d/Elastic3DR0_mode1Cartesian_element.cpp
         src/elasticity/3d/ElasticHMatrix3DR0.h
         src/elasticity/3d/ElasticHMatrix3DR0displ.h
         src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h

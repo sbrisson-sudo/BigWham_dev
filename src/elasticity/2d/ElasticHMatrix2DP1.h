@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "openmp-use-default-none"
 //
 // This file is part of HFP.
 //
@@ -80,57 +82,54 @@ void ElasticHMatrix2DP1<T>::set(il::int_t b0, il::int_t b1, il::io_t,
   IL_EXPECT_MEDIUM(b0 + M.size(0) / blockSize() <= point_.size(0));
   IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= point_.size(0));
 
-#ifndef NUMBEROFTHREADS
-#define NUMBEROFTHREADS 4
-#endif
-#pragma omp parallel for num_threads(NUMBEROFTHREADS)
-  for (il::int_t j1 = 0; j1 < M.size(1) / blockSize(); ++j1) {
-    il::int_t old_k1;
-    il::int_t old_k0;
-    il::int_t e_k1, e_k0, is_l, ir_l;
-    il::StaticArray2D<double, 2, 2> stnl;
 
-    il::int_t k1 = b1 + j1;
-    // j1 source node
-    // from k1 - permute back to original mesh ordering using permutation of the
-    // clusters.
-    old_k1 = permutation_[k1];
-    e_k1 = il::floor(old_k1 / (mesh_.interpolationOrder() + 1));  // element
-    is_l = 1;
-    if (old_k1 % (mesh_.interpolationOrder() + 1) ==
-        0) {  // will not work for quadratic element
-      is_l = 0;
-    }
+#pragma omp parallel if(M.size(1) / blockSize()>200)
+  {
+#pragma omp for
+    for (il::int_t j1 = 0; j1 < M.size(1) / blockSize(); ++j1) {
+      il::int_t old_k1;
+      il::int_t old_k0;
+      il::int_t e_k1, e_k0, is_l, ir_l;
+      il::StaticArray2D<double, 2, 2> stnl;
 
-    bie::SegmentData seg_s = mesh_.getElementData(e_k1);
-
-    for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
-      il::int_t k0 = b0 + j0;
-      old_k0 = permutation_[k0];
-      e_k0 = il::floor(old_k0 / (mesh_.interpolationOrder() + 1));  // element
-      ir_l = 1;
-      if (old_k0 % (mesh_.interpolationOrder() + 1) ==
+      il::int_t k1 = b1 + j1;
+      // j1 source node
+      // from k1 - permute back to original mesh ordering using permutation of the clusters.
+      old_k1 = permutation_[k1];
+      e_k1 = il::floor(old_k1 / (mesh_.interpolationOrder() + 1));  // element
+      is_l = 1;
+      if (old_k1 % (mesh_.interpolationOrder() + 1) ==
           0) {  // will not work for quadratic element
-        ir_l = 0;
+        is_l = 0;
       }
-      bie::SegmentData seg_r = mesh_.getElementData(e_k0);
-      il::int_t const p1 = 1;
 
-      stnl = normal_shear_stress_kernel_dp1_dd_nodal(seg_s, seg_r, is_l, ir_l,
-                                                     elas_, 0.0);
+      bie::SegmentData seg_s = mesh_.getElementData(e_k1);
 
-      for (il::int_t j = 0; j < 2; j++) {
-        for (il::int_t i = 0; i < 2; i++) {
-          M(j0 * 2 + i, j1 * 2 + j) = stnl(i, j);
+      for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
+        il::int_t k0 = b0 + j0;
+        old_k0 = permutation_[k0];
+        e_k0 = il::floor(old_k0 / (mesh_.interpolationOrder() + 1));  // element
+        ir_l = 1;
+        if (old_k0 % (mesh_.interpolationOrder() + 1) == 0) {
+          ir_l = 0;  // will not work for quadratic element
+        }
+        bie::SegmentData seg_r = mesh_.getElementData(e_k0);
+        il::int_t const p1 = 1;
+
+        stnl = normal_shear_stress_kernel_dp1_dd_nodal(seg_s, seg_r, is_l, ir_l,
+                                                       elas_, 0.0);
+
+        for (il::int_t j = 0; j < 2; j++) {
+          for (il::int_t i = 0; i < 2; i++) {
+            M(j0 * 2 + i, j1 * 2 + j) = stnl(i, j);
+          }
         }
       }
     }
   }
-  //
-  //  tbb::parallel_for(tbb::blocked_range<il::int_t>(0,M.size(1)/2,1200),
-  //                    bie::BlockMat(normal_shear_stress_kernel_dp1_dd_nodal,
-  //                    0.0,
-  //                                  elas_, mesh_,permutation_, b0, b1, M));
+
 }
 
 }  // namespace bie
+
+#pragma clang diagnostic pop

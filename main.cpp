@@ -2298,8 +2298,10 @@ int check3DR0() {
 ///////////////////////////////////////////////////////////////////////////////
 int testNewHmat() {
   std::cout << "--------------- test new Hmat implemntation Hdot ---------------------\n";
-
-#pragma omp parallel num_threads(4)
+#ifndef NUMBEROFTHREADS
+#define NUMBEROFTHREADS 4
+#endif
+#pragma omp parallel default(none)  num_threads(NUMBEROFTHREADS)
   {
     printf("Hello from thread %d, nthreads %d\n", omp_get_thread_num(), omp_get_num_threads());
   }
@@ -2330,7 +2332,6 @@ int testNewHmat() {
       nodes(index,1)=rad[j]*sin(angle[i]);
     }
   }
-
   for (il::int_t i=0;i<ne;i++){
     conn(i,0)=i;
     conn(i,1)=i+1;
@@ -2346,40 +2347,42 @@ int testNewHmat() {
   bie::ElasticProperties elas(1.0,0.2);
   il::Array2D<double> coll_points = mesh.getCollocationPoints();
 
+  // hmat parameters
   il::int_t leaf_size=32;
+  double eta =3.0;
+  double epsilon_aca=1.e-4;
+
   il::Timer tt;
+
+// Construction of the binary cluster Tree
   tt.Start();
   const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
-
   tt.Stop();
   std::cout << "Time for  cluster tree construction " << tt.time() <<"\n";
   std::cout << " cluster depth ..." <<  cluster.partition.depth() <<"\n";
   std::cout << " cluster - part " << cluster.permutation.size() << "\n";
   std::cout << " N nodes at level 2:: "<<  cluster.partition.nnodesAtLevel(2) <<"\n";
   tt.Reset();
-  //il::Tree<il::Range,2> myp=cluster.partition;
   il::Array<il::Range> listnodes=cluster.partition.getNodesAtLevel(2);
-
   std::cout << " nodes 0 at level 2 " <<  listnodes[0].begin << " / " << listnodes[0].end <<"\n";
 
-
+//  construction of the block-cluster tree -> the partition of the h-mat
   tt.Start();
-  const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      bie::hmatrixTreeIxI(coll_points, cluster.partition, 3.0);
+  const il::Tree<il::SubHMatrix, 4> block_tree =
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, eta);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
-  std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
-  std::cout << " root - " << hmatrix_tree.root().index << "\n";
+  std::cout << " binary cluster depth ..." << block_tree.depth() << "\n";
+  std::cout << " root - " << block_tree.root().index << "\n";
   tt.Reset();
 
-
   tt.Start();
-  const il::Tree<il::SubHMatrix, 4> hmatrix_tree2 =
-      bie::hmatrixTreeIxJ(coll_points, cluster.partition, coll_points, cluster.partition,3.0);
+  const il::Tree<il::SubHMatrix, 4> block_tree2 =
+      bie::hmatrixTreeIxJ(coll_points, cluster.partition, coll_points, cluster.partition,eta);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction 2 " << tt.time() <<"\n";
-  std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
-  std::cout << " root - " << hmatrix_tree.root().index << "\n";
+  std::cout << " binary cluster depth ..." << block_tree2.depth() << "\n";
+  std::cout << " root - " << block_tree2.root().index << "\n";
   tt.Reset();
 
   // the matrix generator
@@ -2387,22 +2390,35 @@ int testNewHmat() {
   const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
                                           mesh, elas};
   // creation of the Hmatrix the old way.....
-  std::cout << " create h mat - size ... old way" << M.size(0) << " * " << M.size(1) <<"\n";
+  std::cout << " Create h mat - the old way ...  size" << M.size(0) << " * " << M.size(1) <<"\n";
   tt.Start();
-  double epsilon_aca=1.e-4;
-  h_= il::toHMatrix(M, hmatrix_tree, epsilon_aca);
+  h_= il::toHMatrix(M, block_tree, epsilon_aca);
   tt.Stop();
-  std::cout << " create h mat - size ... old way in " << tt.time() <<"\n";
+  std::cout << " create h mat  old way in " << tt.time() <<"\n";
+  tt.Reset();
+  std::cout << " create h mat ended " << h_.isBuilt() <<  " in " << tt.time() <<  "\n";
+  std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
+  std::cout << " Compressed memory " << (il::compressionRatio(h_)*8*(4*ne*4*ne)) <<"\n";
+  std::cout << " dense case memory " << 8*(4*ne*4*ne) << "\n";
+  std::cout <<  "number of blocks " << il::numberofBlocks(h_) << "\n";
+  std::cout << "number of full blocks " << il::numberofFullBlocks(h_) <<"\n";
+  tt.Reset();
+  tt.Start();
+  il::Array2D<il::int_t> pattern=output_hmatPattern(h_);
+  tt.Stop();
+  std::cout << " time for getting pattern (old way)"  << tt.time() <<  " number of blocks "  << pattern.size(1) << "\n";
   tt.Reset();
 
-  il::int_t nb=bie::nbBlocks(hmatrix_tree);
+  //
+  il::int_t nb=bie::nbBlocks(block_tree);
   std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
   //std::cin.ignore(); // pause while user do not enter return
-  il::int_t n_fullb=bie::nbFullBlocks(hmatrix_tree);
+  il::int_t n_fullb=bie::nbFullBlocks(block_tree);
   std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
 
+// creation of the hmatrix the new way....
   tt.Start();
-  bie::HPattern my_patt=bie::createPattern(hmatrix_tree);
+  bie::HPattern my_patt=bie::createPattern(block_tree);
   std::cout << "Time for pattern construction " << tt.time() <<"\n";
   std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
   std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
@@ -2411,37 +2427,27 @@ int testNewHmat() {
   my_patt.nc=M.size(1);
   tt.Reset();
   tt.Start();
-  bie::HPattern my_patt2=bie::createPattern(hmatrix_tree2);
+  bie::HPattern my_patt2=bie::createPattern(block_tree2);
   std::cout << "Time for pattern construction " << tt.time() <<"\n";
   std::cout << " Number of sub-matrix full blocks: "  << my_patt2.n_FRB <<  " \n";
   std::cout  << " n fb " <<  my_patt2.FRB_pattern.size(1) <<"\n";
   std::cout  << " n lrb " <<  my_patt2.LRB_pattern.size(1) <<"\n";
   tt.Reset();
 
-  std::cout << " create h mat ended " << h_.isBuilt() <<  " in " << tt.time() <<  "\n";
-  std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
-  std::cout << " Compressed memory " << (il::compressionRatio(h_)*8*(4*ne*4*ne)) <<"\n";
-  std::cout << " dense case memory " << 8*(4*ne*4*ne) << "\n";
-  std::cout <<  "number of blocks " << il::numberofBlocks(h_) << "\n";
-  std::cout << "number of full blocks " << il::numberofFullBlocks(h_) <<"\n";
   // std::cout << " press enter to continue ...\n";
   //std::cin.ignore(); // pause while user do not enter return
-  tt.Reset();
-  tt.Start();
-  il::Array2D<il::int_t> pattern=output_hmatPattern(h_);
-  tt.Stop();
-  std::cout << " time for getting pattern (old way)"  << tt.time() <<  " number of blocks "  << pattern.size(1) << "\n";
-  tt.Reset();
-  //
+//
 
   //
-  bie::Hmat<2,double> h2_(my_patt);
+  bie::Hmat<2,double> hmt_(my_patt2);
   tt.Start();
-  h2_.build(M,epsilon_aca);
+  hmt_.build(M,epsilon_aca);
   tt.Stop();
-  std::cout << "creation hmat ... new in "  << tt.time() <<"\n";
+  std::cout << "Creation hmat new way new in "  << tt.time() <<"\n";
   tt.Reset();
-  /// dot-product of linear system and checks
+  std::cout << "Ccompression ratio new way " << hmt_.compressionRatio() <<"\n";
+
+      /// dot-product of linear system and checks
   double Ep=1.0/(1.0-0.2*0.2);
   double sig = 1.0;
   double a=1.0;
@@ -2470,21 +2476,28 @@ int testNewHmat() {
   }
 
   il::Array<double> xx{coll_points.size(0)*2};
-
   for (il::int_t i=0;i<xx.size()/2;i++){
     xx[2*i]=0.0;
     xx[2*i+1]=wsol_nodes[i];
   }
 
+  int np = 10;
+
   tt.Start();
   il::Array< double> y1=il::dot(h_,xx);
+  for (int i=0;i<np;i++){
+    y1=il::dot(h_,xx);
+  }
   tt.Stop();
-  std::cout << " time for recursive hdot " << tt.time() <<"\n";
+  std::cout << " time for recursive hdot " << tt.time()/(np+1) <<"\n";
   tt.Reset();
   tt.Start();
   il::Array< double> y2= il::dotwithpattern_serial(h_, pattern, xx);
+  for (int i=0;i<np;i++){
+    y2= il::dotwithpattern_serial(h_, pattern, xx);
+  }
   tt.Stop();
-  std::cout << " time for Non-recursive hdot serial " << tt.time() <<"\n";
+  std::cout << " time for Non-recursive hdot serial " << tt.time()/(np+1) <<"\n";
 
   il::Array2D<il::int_t> lr_patt{pattern.size(0),0};
   il::Array2D<il::int_t> fr_patt{pattern.size(0),0};
@@ -2508,7 +2521,7 @@ int testNewHmat() {
       fr_patt2(0,nfb)=pattern(0,i);
       fr_patt2(1,nfb)=pattern(1,i);
       fr_patt2(2,nfb)=pattern(2,i);
-      const il::SubHMatrix info = hmatrix_tree.value(s);
+      const il::SubHMatrix info = block_tree.value(s);
       fr_patt2(3,nfb)=info.range0.end;
       fr_patt2(4,nfb)=info.range1.end;
 
@@ -2527,35 +2540,23 @@ int testNewHmat() {
   }
   tt.Reset();
 
-
-//  for (il::int_t i=0;i<my_patt.FRB_pattern.size(1);i++) {
-//    std::cout << " FRB : " << i <<"-" << my_patt.FRB_pattern(0, i)<< "-" << my_patt.FRB_pattern(1, i) << "-"
-//              << my_patt.FRB_pattern(3, i) << "-" << my_patt.FRB_pattern(2, i) << "-"<< my_patt.FRB_pattern(4, i) << "-"
-//              << " \n";
-//      std::cout << " Patt : " << i <<"-" << (fr_patt2(0, i)) <<"-"  << (fr_patt2(1, i)-1)/2 << "-"
-//                << (fr_patt2(3, i) )  << "-" << (fr_patt2(2, i)-1)/2 << "-"<< (fr_patt2(4, i) )
-//                << " \n";
-//    }
-//    std::cout << " LRB : " << my_patt.LRB_pattern(0, i) << "-"
-//              << my_patt.LRB_pattern(1, i) << "-" << my_patt.LRB_pattern(5, i)
-//              << " \n";
-
   tt.Start();
   il::Array< double> y3= il::dotwithpattern(h_, fr_patt, lr_patt, xx);
+  for (int i=0;i<np;i++){
+    y3= il::dotwithpattern(h_, fr_patt, lr_patt, xx);
+  }
   tt.Stop();
-  std::cout << " time for Non-recursive hdot (parallel_invoke) " << tt.time() <<"\n";
+  std::cout << " time for Non-recursive hdot (parallel_invoke) " << tt.time()/(np+1) <<"\n";
 
   tt.Reset();
 
-
-  il::Array<double> y4= h2_.matvec(xx);
   tt.Start();
-  int np = 100;
+  il::Array<double> y4= hmt_.matvec(xx);
   for (int i=0;i<np;i++){
-    y4= h2_.matvec(xx);
+    y4= hmt_.matvec(xx);
   }
   tt.Stop();
-  std::cout << " time for Non-recursive hdot .. new way " << tt.time()/np <<"\n";
+  std::cout << " time for Non-recursive hdot .. new way " << tt.time()/(np+1)  <<"\n";
   std::cout << " norm y1 " << il::norm(y1,il::Norm::L2) << " y2 " << il::norm(y2,il::Norm::L2)
             <<" y3 " << il::norm(y3,il::Norm::L2)
           <<" y4 " << il::norm(y4,il::Norm::L2) << "\n";

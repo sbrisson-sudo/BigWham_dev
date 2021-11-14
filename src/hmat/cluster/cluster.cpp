@@ -1,8 +1,15 @@
+//
+// This file is part of BigWham.
+//
+// Created by Brice Lecampion on 08.09.21.
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// file for more details.
+//
 
-#include <il/Tree.h>
-#include "cluster.h"
 #include <limits>
-
+#include <il/Tree.h>
+#include <src/hmat/cluster/cluster.h>
 
 namespace bie {
 
