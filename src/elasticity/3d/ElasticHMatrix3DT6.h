@@ -106,10 +106,10 @@ void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,
  *  -----------
  *  ( the above expression "current" in k1 and k2, refers to the double loop below)
  */
-  IL_EXPECT_MEDIUM(M.size(0) % blockSize() == 0);
-  IL_EXPECT_MEDIUM(M.size(1) % blockSize() == 0);
-  IL_EXPECT_MEDIUM(b0 + M.size(0) / blockSize() <= point_.size(0));
-  IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= point_.size(0));
+  IL_EXPECT_FAST(M.size(0) % blockSize() == 0);
+  IL_EXPECT_FAST(M.size(1) % blockSize() == 0);
+  IL_EXPECT_FAST(b0 + M.size(0) / blockSize() <= point_.size(0));
+  IL_EXPECT_FAST(b1 + M.size(1) / blockSize() <= point_.size(0));
 
 #pragma omp parallel if(M.size(1) / blockSize()>200)
   {

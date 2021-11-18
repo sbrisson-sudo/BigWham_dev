@@ -20,9 +20,9 @@
 
 namespace bie {
 
-template <il::int_t p, typename T>
+template <typename T>
 class Hmat {
-// this is a new Hmat class wich does not conntains the matrix-generator
+// this is a new Hmat class wich does not contains the matrix-generator (neither the mesh etc.)
 // construction from the pattern built from the block cluster tree
 // openmp parallel construction
 // openmp parallel mat_vect dot product (non-permutted way)
@@ -30,8 +30,8 @@ class Hmat {
 
   bie::HPattern pattern_; // the Hmat pattern
 
-  il::int_t size0_; //n_row
-  il::int_t size1_; //n_cols
+  il::int_t dof_dimension_{}; //  dof per collocation points - not really needed to be stored
+  il::StaticArray<il::int_t,2> size_; // size of tot mat (row, ocols)
 
   std::vector<bie::LowRank<T>> low_rank_blocks_; // vector of low rank blocks
   std::vector<il::Array2D<T>> full_rank_blocks_; // vector of full rank blocks
@@ -42,13 +42,46 @@ class Hmat {
 
   public:
 
+   Hmat()= default;
+   ~Hmat()= default;
+
+   // simple constructor from pattern
    Hmat(const bie::HPattern& pattern){
      pattern_=pattern;
    };
 
    // -----------------------------------------------------------------------------
+  void toHmat(const bie::MatrixGenerator<T>& matrix_gen,const bie::Cluster & cluster,const il::Array2D<double> & coll_points, double eta, double epsilon_aca){
+      // construction from all required pieces for a square matrix
+     il::Timer tt;
+     tt.Start();
+     const il::Tree<bie::SubHMatrix, 4> block_tree =
+         bie::hmatrixTreeIxI(coll_points, cluster.partition,eta);
+     tt.Stop();
+     std::cout << "Time for binary cluster tree construction 2 " << tt.time() <<"\n";
+     std::cout << " binary cluster tree depth =" << block_tree.depth() << "\n";
+     tt.Reset();
+     tt.Start();
+     pattern_= bie::createPattern(block_tree);
+     pattern_.nr=matrix_gen.size(0);
+     pattern_.nc=matrix_gen.size(1);
+     dof_dimension_ =matrix_gen.blockSize();
+     tt.Stop();
+     std::cout << "Time for pattern construction " << tt.time() <<"\n";
+     std::cout << " Number of sub-matrix full blocks: "  << pattern_.n_FRB <<  " \n";
+     std::cout << " Number of sub-matrix low rank blocks: "  << pattern_.n_LRB <<  " \n";
+
+     // construction directly
+     tt.Start();
+     this->build(matrix_gen,epsilon_aca);
+     tt.Stop();
+     std::cout << "Creation of hmat done in "  << tt.time() <<"\n";
+     std::cout << "Compression ratio - " << this->compressionRatio() <<"\n";
+     std::cout << "Hmat object - built " << "\n";
+   };
+   // -----------------------------------------------------------------------------
    void buildFR(const bie::MatrixGenerator<T>& matrix_gen){
-     // constructing the full rank blocks
+     // construction of the full rank blocks
 
   std::cout << " Loop on full blocks construction  \n";
   std::cout << " N full blocks "<< pattern_.n_FRB << " \n";
@@ -63,8 +96,8 @@ class Hmat {
       il::int_t iend = pattern_.FRB_pattern(3, i);
       il::int_t jend = pattern_.FRB_pattern(4, i);
 
-      const il::int_t ni = p * (iend - i0);
-      const il::int_t nj = p * (jend - j0);
+      const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
+      const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
 
       il::Array2D<T> sub{ni, nj};
       matrix_gen.set(i0, j0, il::io, sub.Edit());
@@ -90,7 +123,7 @@ class Hmat {
 /// \param epsilon
 void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     // constructing the low rank blocks
-
+    dof_dimension_=matrix_gen.blockSize();
     std::cout << " Loop on low rank blocks construction  \n";
     std::cout << " N low rank blocks "<< pattern_.n_LRB << " \n";
 
@@ -103,14 +136,24 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
         il::int_t j0 = pattern_.LRB_pattern(2, i);
         il::int_t iend = pattern_.LRB_pattern(3, i);
         il::int_t jend = pattern_.LRB_pattern(4, i);
-
         il::Range range0{i0, iend}, range1{j0, jend};
 
-        bie::LowRank<T> lra = bie::adaptiveCrossApproximation<p>(
-            matrix_gen, range0, range1,
-            epsilon);  // we need a LRA generator similar to the Matrix generator...
-
-        private_low_rank_blocks.push_back(lra);  // not thread safe
+        // we need a LRA generator virtual template similar to the Matrix generator...
+        // here we have an if condition for the LRA call dependent on dof_dimension_
+        bie::LowRank<T> lra;
+        if (matrix_gen.blockSize()==1){
+          lra = bie::adaptiveCrossApproximation<1>(matrix_gen, range0, range1,
+            epsilon);
+        } else if (matrix_gen.blockSize()==2){
+           lra = bie::adaptiveCrossApproximation<2>(matrix_gen, range0, range1,
+                                                                   epsilon);
+        } else if (matrix_gen.blockSize()==3){
+          lra = bie::adaptiveCrossApproximation<3>(matrix_gen, range0, range1,
+                                                                 epsilon);
+        } else {
+          IL_UNREACHABLE;
+        }
+        private_low_rank_blocks.push_back(lra);
         // store the rank in the low_rank pattern
         pattern_.LRB_pattern(5, i) = lra.A.size(1);
       }
@@ -129,14 +172,21 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
   //-----------------------------------------------------------------------------
   // filling up the h-matrix sub-blocks
   void build(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
-    IL_EXPECT_FAST(matrix_gen.blockSize()==p);
-    size0_=matrix_gen.size(0);
-    size1_=matrix_gen.size(1);
-
+    dof_dimension_ =matrix_gen.blockSize();
+    size_[0]=matrix_gen.size(0);
+    size_[1]=matrix_gen.size(1);
+    IL_EXPECT_FAST(pattern_.nr==size_[0] && pattern_.nc==size_[1]);
     buildFR(matrix_gen);
     buildLR(matrix_gen,epsilon);
     built_=built_FR_ && built_LR_;
   }
+  //-----------------------------------------------------------------------------
+  bool isBuilt(){return built_;};
+//
+  il::int_t size(int k){return size_[k];};
+//
+  bie::HPattern pattern(){return pattern_;}; //returning the Hmat pattern
+
 //-----------------------------------------------------------------------------
   // getting the nb of entries of the hmatrix
   il::int_t nbOfEntries(){
@@ -158,20 +208,21 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
  // getting the compression ratio of the hmatrix (double which is <=1)
   double compressionRatio(){
     auto nb_elts = static_cast<double>(nbOfEntries());
-    return nb_elts / static_cast<double>(size0_*size1_);
+    return nb_elts / static_cast<double>(size_[0]*size_[1]);
   }
 
   //--------------------------------------------------------------------------
   // H-Matrix vector multiplication without permutation
+  // in - il:Array<T>
+  // out - il:Array<T>
   il::Array<T> matvec(const il::Array<T> & x){
-    IL_EXPECT_FAST(x.size()==size1_);
-
-    il::Array<T> y{size0_,0.};
+    IL_EXPECT_FAST(x.size()==size_[1]);
+    il::Array<T> y{size_[0],0.};
 
   // loop on full rank
 #pragma omp parallel
     {
-    il::Array<T> yprivate{size0_,0.};
+    il::Array<T> yprivate{size_[0],0.};
 #pragma omp for nowait schedule(static)
     for (il::int_t i = 0; i < pattern_.n_FRB; i++) {
       il::int_t i0=pattern_.FRB_pattern(1,i);
@@ -180,8 +231,8 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
       il::int_t jend=pattern_.FRB_pattern(4,i);
 
       il::Array2DView<T> a = full_rank_blocks_[i].view();
-      il::ArrayView<T> xs = x.view(il::Range{j0*p, jend*p});
-      il::ArrayEdit<T> ys = yprivate.Edit(il::Range{i0*p, iend*p});
+      il::ArrayView<T> xs = x.view(il::Range{j0* dof_dimension_, jend* dof_dimension_});
+      il::ArrayEdit<T> ys = yprivate.Edit(il::Range{i0* dof_dimension_, iend* dof_dimension_});
 
       il::blas(1.0, a, xs, 1.0, il::io, ys);
   }
@@ -195,7 +246,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
   /// loop on low rank
 #pragma omp parallel
   {
-    il::Array<T> yprivate{size0_,0.};
+    il::Array<T> yprivate{size_[0],0.};
 #pragma omp for nowait schedule(static)
     for (il::int_t i = 0; i < pattern_.n_LRB; i++) {
       il::int_t i0 = pattern_.LRB_pattern(1, i);
@@ -206,8 +257,8 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
       il::Array2DView<double> a = low_rank_blocks_[i].A.view();
       il::Array2DView<double> b = low_rank_blocks_[i].B.view();
 
-      il::ArrayView<double> xs = x.view(il::Range{j0 * p, jend * p});
-      il::ArrayEdit<double> ys = yprivate.Edit(il::Range{i0 * p, iend * p});
+      il::ArrayView<double> xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
+      il::ArrayEdit<double> ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
       const il::int_t r = a.size(1);
       il::Array<double> tmp{r, 0.0};
 
@@ -223,6 +274,103 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
   }
   return y;
   }
+  //--------------------------------------------------------------------------
+  // H-Matrix vector multiplication with permutation
+  // in & out as std::vector
+  std::vector<T> matvecOriginal(const il::Array<il::int_t> & permutation,const std::vector<T> & x){
+
+    il::Array<T> z{static_cast<il::int_t>(x.size())};
+    // permutation of the dofs according to the re-ordering sue to clustering
+    il::int_t ncolpoints = this->size(1)/dof_dimension_;
+
+    for (il::int_t i = 0; i < ncolpoints; i++) {
+      for (int j = 0; j < dof_dimension_; j++) {
+        z[dof_dimension_ * i + j] = x[dof_dimension_ * permutation[i] + j];
+      }
+    }
+
+    il::Array<T> y = this->matvec(z);
+    std::vector<T> yout;
+    yout.assign(y.size(), 0.);
+    // permut back
+    for (il::int_t i = 0; i < ncolpoints; i++) {
+      for (int j = 0; j < dof_dimension_; j++) {
+        yout[dof_dimension_ * permutation[i] + j] =
+            y[dof_dimension_ * i + j];
+      }
+    }
+    return yout;
+  }
+  ////////////////////////////////////////////////
+  std::vector<T> matvec_stdvect(const std::vector<T> & x){
+
+    il::Array<T> xil{static_cast<il::int_t>(x.size())};
+
+  //
+    for (long i=0;i<xil.size();i++){
+      xil[i]=x[i];
+    }
+    il::Array<T> yil=this->matvec(xil);
+    std::vector<T> y;
+    y.reserve(static_cast<long>(yil.size()));
+    for (long i=0;i<yil.size();i++){
+      y.push_back(yil[i]);
+    }
+    return y;
+  }
+  //--------------------------------------------------------------------------
+  void fullBlocksOriginal(const il::Array<il::int_t> & permutation,il::io_t,std::vector<T>& val_list,
+                  std::vector<int>& pos_list){
+// return the full blocks in the permutted Original dof state
+
+    IL_EXPECT_FAST(built_FR_);
+    //  compute the number of full rank entries
+    long nbfentry=0;
+    for (il::int_t i=0;i<pattern_.n_FRB;i++) {
+      il::int_t i0=pattern_.FRB_pattern(1,i);
+      il::int_t j0=pattern_.FRB_pattern(2,i);
+      il::int_t iend=pattern_.FRB_pattern(3,i);
+      il::int_t jend=pattern_.FRB_pattern(4,i);
+      nbfentry=nbfentry+(iend-i0)*(jend-j0)* dof_dimension_;
+    }
+    // prepare outputs
+    pos_list.resize(nbfentry * 2);
+    val_list.resize(nbfentry);
+
+    il::Array<int> permutDOF{dof_dimension_ *permutation.size()};
+    IL_EXPECT_FAST(permutDOF==size_[0]);
+    for (il::int_t i=0;i<permutation.size();i++){
+      for (il::int_t j=0;j< dof_dimension_;j++){
+        permutDOF[i* dof_dimension_ +j]=permutation[i]* dof_dimension_ +j;
+      }
+    }
+    // loop on full rank and get i,j and val
+    int nr=0; int npos=0;
+
+    for (il::int_t k = 0;k < pattern_.n_FRB; k++) {
+      il::Array2D<double>  aux=full_rank_blocks_[k];
+      il::int_t i0 = pattern_.FRB_pattern(1, k);
+      il::int_t j0 = pattern_.FRB_pattern(2, k);
+      il::int_t index=0;
+
+      for (il::int_t j=0;j<aux.size(1);j++){
+        for (il::int_t i=0;i<aux.size(0);i++){
+          pos_list[npos+2*index]=permutDOF[(i+i0)];
+          pos_list[npos+2*index+1]=permutDOF[(j+j0)];
+          val_list[nr+index]=aux(i,j);
+          index++;
+        }
+      }
+      nr=nr + (aux.size(0)*aux.size(1));
+      npos=npos+2*(aux.size(0)*aux.size(1));
+    }
+
+    std::cout << "done Full Block: nval " << val_list.size() << " / " << pos_list.size()/2
+              << " n^2 " << (this->size_[0]) * (this->size_[1]) << "\n";
+
+
+  }
+
 
 };
 

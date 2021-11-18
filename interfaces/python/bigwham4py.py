@@ -22,7 +22,6 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spilu
 
 from .lib.bigwhamPybind import *
-# note currently the *so module and this python module have the same name - such that the 2 files can't be in the same directory
 
 ##############################
 #  Hmatrix class in python   #

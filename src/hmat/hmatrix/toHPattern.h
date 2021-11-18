@@ -122,8 +122,8 @@ struct HPattern {
   il::int_t n_FRB{}; // number of full rank blocks in the matrix pattern
   il::int_t n_LRB{}; // number of low rank blocks in the matrix pattern
 
-  il::int_t nr{};  // total number of rows in the matrix pattern
-  il::int_t nc{}; // total number of colums in the matrix pattern
+  il::int_t nr{};  // total number of rows in the matrix pattern // be careful this needs to be set-up separately from the creation
+  il::int_t nc{}; // total number of colums in the matrix pattern// be careful this needs to be set-up separately from the creation
 
 };
 
