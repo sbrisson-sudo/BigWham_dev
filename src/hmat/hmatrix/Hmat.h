@@ -322,55 +322,53 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     return y;
   }
   //--------------------------------------------------------------------------
-  void fullBlocksOriginal(const il::Array<il::int_t> & permutation,il::io_t,std::vector<T>& val_list,
-                  std::vector<int>& pos_list){
+  void fullBlocksOriginal(const il::Array<il::int_t> & permutation, il::io_t, il::Array<T> &val_list,
+                          il::Array<int> &pos_list){
 // return the full blocks in the permutted Original dof state
+// in the val_list and pos_list 1D arrays.
 
     IL_EXPECT_FAST(isBuilt_FR_);
-    //  compute the number of full rank entries
+    IL_EXPECT_FAST(permutation.size()*dof_dimension_==size_[1]);
+    //  compute the number of  entries in the whole full rank blocks
     int nbfentry=0;
     for (il::int_t i=0;i<pattern_.n_FRB;i++) {
-      il::int_t i0=pattern_.FRB_pattern(1,i);
-      il::int_t j0=pattern_.FRB_pattern(2,i);
-      il::int_t iend=pattern_.FRB_pattern(3,i);
-      il::int_t jend=pattern_.FRB_pattern(4,i);
-      nbfentry=nbfentry+(iend-i0)*(jend-j0)* dof_dimension_;
+      il::Array2D<double>  aux=full_rank_blocks_[i];
+      nbfentry=nbfentry+static_cast<int>(aux.size(0)*aux.size(1)) ;
     }
-    // prepare outputs
-    pos_list.resize(nbfentry * 2);
-    val_list.resize(nbfentry);
 
-    il::Array<int> permutDOF{dof_dimension_*permutation.size()};
+    // prepare outputs
+    pos_list.Resize(nbfentry * 2);
+    val_list.Resize(nbfentry);
+
+    il::Array<int> permutDOF{dof_dimension_*permutation.size(),0};
     IL_EXPECT_FAST(permutDOF.size()==size_[0]);
     for (il::int_t i=0;i<permutation.size();i++){
       for (il::int_t j=0;j< dof_dimension_;j++){
         permutDOF[i* dof_dimension_ +j]=permutation[i]* dof_dimension_ +j;
       }
     }
-    // loop on full rank and get i,j and val
-    int nr=0; int npos=0;
 
+     // loop on full rank and get i,j and val
+    int nr=0; int npos=0;
     for (il::int_t k = 0;k < pattern_.n_FRB; k++) {
       il::Array2D<double>  aux=full_rank_blocks_[k];
       il::int_t i0 = pattern_.FRB_pattern(1, k);
       il::int_t j0 = pattern_.FRB_pattern(2, k);
       il::int_t index=0;
-
       for (il::int_t j=0;j<aux.size(1);j++){
         for (il::int_t i=0;i<aux.size(0);i++){
-          pos_list[npos+2*index]=permutDOF[(i+i0)];
-          pos_list[npos+2*index+1]=permutDOF[(j+j0)];
+          pos_list[npos+2*index]=permutDOF[(i+dof_dimension_*i0)];
+          pos_list[npos+2*index+1]=permutDOF[(j+dof_dimension_*j0)];
           val_list[nr+index]=aux(i,j);
           index++;
         }
       }
-      nr=nr + (aux.size(0)*aux.size(1));
-      npos=npos+2*(aux.size(0)*aux.size(1));
+      nr=nr + static_cast<int>(aux.size(0)*aux.size(1));
+      npos=npos+static_cast<int>(2*aux.size(0)*aux.size(1));
     }
 
     std::cout << "done Full Block: nval " << val_list.size() << " / " << pos_list.size()/2
               << " n^2 " << (this->size_[0]) * (this->size_[1]) << "\n";
-
   }
 
 

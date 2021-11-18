@@ -37,19 +37,17 @@ public:
         std::cout << " calling getFullBlocks \n";
         BigwhamioObj.getFullBlocks(this->val_list,pos_list);
         std::cout << " n entries: " <<  (this->val_list.size()) << "\n";
-        std::cout << " preparing the tensors \n";
+        std::cout << " Preparing the vectors \n";
 
         nbfentry = this->val_list.size();
         this->rowN.resize(nbfentry);
         this->columN.resize(nbfentry);
 
-        for (int i=0;i<pos_list.size()/2;i++){
+        for (int i=0;i<nbfentry;i++){
             this->rowN[i]=pos_list[2*i];
             this->columN[i]=pos_list[2*i+1];
         }
-
         std::cout << " --- set pyGetFullBlocks completed ---- \n";
-
     };
 
     std::vector<double> & getgetValList(){return this->val_list;};
@@ -80,7 +78,6 @@ public:
     };
 
 };
-
 
 
 PYBIND11_MODULE(bigwhamPybind, m) {

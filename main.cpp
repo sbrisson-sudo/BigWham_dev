@@ -2702,7 +2702,7 @@ int testPl3D(){
     for (il::int_t i=0;i<10;i++){
         std::cout << " val "<< val[i] << "  pos size"<< pos[2*i] << "-"<< pos[2*i+1] << "\n";
     }
-
+    std::cout << " val "<< val[val.size()-1] << "  pos size"<< pos[2*(val.size()-1)] << "-"<< pos[2*(val.size()-1)+1] << "\n";
   return 0;
 }
 

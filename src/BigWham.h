@@ -449,7 +449,23 @@ class Bigwhamio {
 
     IL_EXPECT_FAST(isBuilt_);
 
-    h_.fullBlocksOriginal(permutation_,il::io,val_list,pos_list);
+    il::Array<double> values{};
+    il::Array<int> positions{};
+    h_.fullBlocksOriginal(permutation_,il::io,values,positions);
+//    std::cout << " checking values size" << values.size() <<  "\n";
+
+    val_list.reserve(values.size());
+    for(il::int_t i=0;i<values.size();i++){
+        val_list.push_back(values[i]);
+    }
+    pos_list.reserve(positions.size());
+    for(il::int_t i=0;i<positions.size();i++){
+        pos_list.push_back(positions[i]);
+    }
+
+    std::cout << "number of entries " << val_list.size() << " - "<< pos_list.size() <<  "\n";
+//    std::cout << " end val " << val_list[val_list.size()-1] << " pos" << pos_list[pos_list.size()-2] <<"-" << pos_list[pos_list.size()-1]  <<"\n ";
+//    std::cout << " end val " << values[values.size()-1] << " pos" << positions[positions.size()-2] << "-" <<positions[positions.size()-1] <<"\n ";
     std::cout << " End of Bigwhamio getFullBlocks \n";
   }
 
