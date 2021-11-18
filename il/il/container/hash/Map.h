@@ -201,7 +201,7 @@ Map<K, V, F>::Map(il::int_t n) {
     }
     p_ = p;
 #ifdef IL_DEBUGGER_HELPERS
-    size_ = il::ipow(2, dof_dimension_);
+    size_ = il::ipow(2, p_);
 #endif
   }
   nb_elements_ = 0;
@@ -236,7 +236,7 @@ Map<K, V, F>::Map(il::value_t, std::initializer_list<il::KeyValue<K, V>> list) {
     }
     p_ = p;
 #ifdef IL_DEBUGGER_HELPERS
-    size_ = il::ipow(2, dof_dimension_);
+    size_ = il::ipow(2, p_);
 #endif
     nb_elements_ = 0;
     nb_tombstones_ = 0;
@@ -248,7 +248,7 @@ Map<K, V, F>::Map(il::value_t, std::initializer_list<il::KeyValue<K, V>> list) {
       IL_EXPECT_FAST(!found(i));
       Set((list.begin() + k)->key, (list.begin() + k)->value, il::io, i);
 #ifdef IL_DEBUG_CLASS
-      hash_ += F::hash((list.begin() + k)->key, dof_dimension_);
+      hash_ += F::hash((list.begin() + k)->key, p_);
 #endif
     }
   }
@@ -274,7 +274,7 @@ Map<K, V, F>::Map(const Map<K, V, F>& map) {
     for (il::spot_t i = map.spotBegin(); i != map.spotEnd(); i = map.next(i)) {
       Set(map.key(i), map.value(i));
 #ifdef IL_DEBUG_CLASS
-      hash_ += F::hash(map.key(i), dof_dimension_);
+      hash_ += F::hash(map.key(i), p_);
 #endif
     }
   }
@@ -333,7 +333,7 @@ Map<K, V, F>& Map<K, V, F>::operator=(const Map<K, V, F>& map) {
     }
     p_ = p;
 #ifdef IL_DEBUGGER_HELPERS
-    size_ = il::ipow(2, dof_dimension_);
+    size_ = il::ipow(2, p_);
 #endif
   } else {
     bucket_ = nullptr;
@@ -409,7 +409,7 @@ void Map<K, V, F>::Set(const K& key, const V& value) {
     new (&((bucket_ + i.index)->value)) V(value);
   }
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash(this->key(i), dof_dimension_);
+  hash_ += F::hash(this->key(i), p_);
 #endif
 }
 
@@ -423,7 +423,7 @@ void Map<K, V, F>::Set(const K& key, V&& value) {
     new (&((bucket_ + i.index)->value)) V(std::move(value));
   }
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash(this->key(i), dof_dimension_);
+  hash_ += F::hash(this->key(i), p_);
 #endif
 }
 
@@ -437,7 +437,7 @@ void Map<K, V, F>::Set(K&& key, const V& value) {
     new (&((bucket_ + i.index)->value)) V(std::move(value));
   }
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash(this->key(i), dof_dimension_);
+  hash_ += F::hash(this->key(i), p_);
 #endif
 }
 
@@ -451,7 +451,7 @@ void Map<K, V, F>::Set(K&& key, V&& value) {
     new (&((bucket_ + i.index)->value)) V(std::move(value));
   }
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash(this->key(i), dof_dimension_);
+  hash_ += F::hash(this->key(i), p_);
 #endif
 }
 
@@ -466,7 +466,7 @@ void Map<K, V, F>::SetCString(const char (&key)[m], const V& value) {
     new (&((bucket_ + i.index)->value)) V(value);
   }
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash(this->key(i), dof_dimension_);
+  hash_ += F::hash(this->key(i), p_);
 #endif
 }
 
@@ -481,7 +481,7 @@ void Map<K, V, F>::SetCString(const char (&key)[m], V&& value) {
     new (&((bucket_ + i.index)->value)) V(std::move(value));
   }
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash(this->key(i), dof_dimension_);
+  hash_ += F::hash(this->key(i), p_);
 #endif
 }
 
@@ -640,7 +640,7 @@ void Map<K, V, F>::SetCString(const char* key, const il::int_t n,
 
   i.index = i_local;
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash((bucket_ + i_local)->key, dof_dimension_);
+  hash_ += F::hash((bucket_ + i_local)->key, p_);
   i.signature = hash_;
 #endif
 }
@@ -671,7 +671,7 @@ void Map<K, V, F>::SetCString(const char (&key)[m], const V& value, il::io_t,
   ++nb_elements_;
   i.index = i_local;
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash((bucket_ + i_local)->key, dof_dimension_);
+  hash_ += F::hash((bucket_ + i_local)->key, p_);
   i.signature = hash_;
 #endif
 }
@@ -700,7 +700,7 @@ void Map<K, V, F>::Set(const K& key, const V& value, il::io_t, il::spot_t& i) {
   ++nb_elements_;
   i.index = i_local;
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash((bucket_ + i_local)->key, dof_dimension_);
+  hash_ += F::hash((bucket_ + i_local)->key, p_);
   i.signature = hash_;
 #endif
 }
@@ -729,7 +729,7 @@ void Map<K, V, F>::Set(const K& key, V&& value, il::io_t, il::spot_t& i) {
   ++nb_elements_;
   i.index = i_local;
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash((bucket_ + i_local)->key, dof_dimension_);
+  hash_ += F::hash((bucket_ + i_local)->key, p_);
   i.signature = hash_;
 #endif
 }
@@ -758,7 +758,7 @@ void Map<K, V, F>::Set(K&& key, const V& value, il::io_t, il::spot_t& i) {
   ++nb_elements_;
   i.index = i_local;
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash((bucket_ + i_local)->key, dof_dimension_);
+  hash_ += F::hash((bucket_ + i_local)->key, p_);
   i.signature = hash_;
 #endif
 }
@@ -787,7 +787,7 @@ void Map<K, V, F>::Set(K&& key, V&& value, il::io_t, il::spot_t& i) {
   ++nb_elements_;
   i.index = i_local;
 #ifdef IL_DEBUG_CLASS
-  hash_ += F::hash((bucket_ + i_local)->key, dof_dimension_);
+  hash_ += F::hash((bucket_ + i_local)->key, p_);
   i.signature = hash_;
 #endif
 }
@@ -801,7 +801,7 @@ void Map<K, V, F>::erase(il::spot_t i) {
 
   (&((bucket_ + i.index)->key))->~K();
 #ifdef IL_DEBUG_CLASS
-  hash_ -= F::hash((bucket_ + i.index)->key, dof_dimension_);
+  hash_ -= F::hash((bucket_ + i.index)->key, p_);
 #endif
   F::constructTombstone(il::io, reinterpret_cast<K*>(bucket_ + i.index));
   (&((bucket_ + i.index)->value))->~V();
@@ -1049,7 +1049,7 @@ void Map<K, V, F>::ReserveWithP(int p) {
   }
   p_ = p;
 #ifdef IL_DEBUGGER_HELPERS
-  size_ = il::ipow(2, dof_dimension_);
+  size_ = il::ipow(2, p_);
 #endif
   nb_elements_ = 0;
   nb_tombstones_ = 0;

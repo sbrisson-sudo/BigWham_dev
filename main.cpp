@@ -332,7 +332,7 @@ int testS3DP0(){
   }
 
   std::vector<double> val_list;
-  std::vector<int> pos_list;
+  std::vector<long> pos_list;
 
   testbie.getFullBlocks(val_list, pos_list);
 
@@ -1654,7 +1654,7 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
         radius[i] = sqrt(sum);
     }
 
-    std::vector<int> perm = test.getPermutation();
+    std::vector<long> perm = test.getPermutation();
     std::cout << "permutation ... " << "\n";
     std::cout << perm[0] << "\n";
     std::cout << perm[1] << "\n";
@@ -2059,7 +2059,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     }
 
     // permute dd
-    std::vector<int> perm = test.getPermutation();
+    std::vector<long> perm = test.getPermutation();
 
     // permute dd vector
     il::Array<double> dd_analytical_perm{3*nodes_coor.size(0)};
@@ -2652,9 +2652,9 @@ int testPl3D(){
   std::cout << "Compression ratio new way " << hmt_.compressionRatio() <<"\n";
 
   // some hdot speed
-  il::Array<double> xx{mesh.numberOfElts(),1.};
+  il::Array<double> xx{mesh.numberOfElts(),0.};
   il::Array<double> y{mesh.numberOfElts(),1.};
-
+    xx[0]=1.;
   tt.Start();
   y=hmt_.matvec(xx);
   tt.Stop();
@@ -2664,7 +2664,8 @@ int testPl3D(){
   const std::vector<double> properties = {elas.getE(), elas.getNu()}; // Young Modulus , Poisson's ratio
 
   const std::string kernel_name = "3DR0opening";
-  bie:Bigwhamio2 testb{};
+  bie:
+  Bigwhamio testb{};
     // convert to std vectors
     std::vector<double> nodes_flat;
     nodes_flat.reserve(3 * coor.size(0));
@@ -2688,12 +2689,17 @@ int testPl3D(){
       xs.push_back(xx[i]);
     }
     tt.Start();
-    std::vector<double> y4=testb.hdotProductNonPermutted(xs);
+    std::vector<double> y4=testb.hdotProduct(xs);
     tt.Stop();
     for (int i=0;i<xx.size();i++){
       y[i]=y4[i];
     }
     std::cout << "Hdot new bigwhamio " << tt.time() << " E.x norm " << il::norm(y,il::Norm::L2) <<"\n";
+    std::cout << " val "<< y4[0]<<  "\n";
+    std::vector<double> val;
+    std::vector<long> pos;
+    testb.getFullBlocks(val,pos);
+    std::cout << " val "<< val[0] << " val size" << val.size() << " pos size"<< pos.size() <<  "\n";
   return 0;
 }
 
@@ -2708,10 +2714,10 @@ int main() {
 
  // test2DP1();
 
-  //testS3DP0();
+ // testS3DP0();
 
 //  testFullMat();
-  testNewHmat();
+//  testNewHmat();
 
   testPl3D();
 //// tests for 3DT6 not updated since the change of interface

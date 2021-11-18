@@ -13,9 +13,11 @@
 #define BIGWHAM_HMAT_H
 
 #pragma once
+#include <omp.h>
 
 #include <hmat/hmatrix/LowRank.h>
 #include <hmat/hmatrix/toHPattern.h>
+#include <hmat/compression/adaptiveCrossApproximation.h>
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 
 namespace bie {
@@ -36,9 +38,9 @@ class Hmat {
   std::vector<bie::LowRank<T>> low_rank_blocks_; // vector of low rank blocks
   std::vector<il::Array2D<T>> full_rank_blocks_; // vector of full rank blocks
 
-  bool built_= false;
-  bool built_LR_=false;
-  bool built_FR_=false;
+  bool isBuilt_= false;
+  bool isBuilt_LR_=false;
+  bool isBuilt_FR_=false;
 
   public:
 
@@ -114,7 +116,7 @@ class Hmat {
     full_rank_blocks_.insert(full_rank_blocks_.end(), private_full_rank_blocks.begin(), private_full_rank_blocks.end());
 #endif
   }
-  built_FR_=true;
+       isBuilt_FR_=true;
 
   }
 ////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +169,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
       low_rank_blocks_.insert(low_rank_blocks_.end(), private_low_rank_blocks.begin(), private_low_rank_blocks.end());
 #endif
     }
-    built_LR_=true;
+        isBuilt_LR_=true;
   }
   //-----------------------------------------------------------------------------
   // filling up the h-matrix sub-blocks
@@ -178,10 +180,10 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     IL_EXPECT_FAST(pattern_.nr==size_[0] && pattern_.nc==size_[1]);
     buildFR(matrix_gen);
     buildLR(matrix_gen,epsilon);
-    built_=built_FR_ && built_LR_;
+      isBuilt_= isBuilt_FR_ && isBuilt_LR_;
   }
   //-----------------------------------------------------------------------------
-  bool isBuilt(){return built_;};
+  bool isBuilt(){return isBuilt_;};
 //
   il::int_t size(int k){return size_[k];};
 //
@@ -190,7 +192,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
 //-----------------------------------------------------------------------------
   // getting the nb of entries of the hmatrix
   il::int_t nbOfEntries(){
-    IL_EXPECT_FAST(built_);
+    IL_EXPECT_FAST(isBuilt_);
     il::int_t n=0;
 
     for (il::int_t i=0;i<pattern_.n_FRB;i++){
@@ -302,6 +304,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     return yout;
   }
   ////////////////////////////////////////////////
+  // matvect in and outs as std::vector
   std::vector<T> matvec_stdvect(const std::vector<T> & x){
 
     il::Array<T> xil{static_cast<il::int_t>(x.size())};
@@ -320,10 +323,10 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
   }
   //--------------------------------------------------------------------------
   void fullBlocksOriginal(const il::Array<il::int_t> & permutation,il::io_t,std::vector<T>& val_list,
-                  std::vector<int>& pos_list){
+                  std::vector<long>& pos_list){
 // return the full blocks in the permutted Original dof state
 
-    IL_EXPECT_FAST(built_FR_);
+    IL_EXPECT_FAST(isBuilt_FR_);
     //  compute the number of full rank entries
     long nbfentry=0;
     for (il::int_t i=0;i<pattern_.n_FRB;i++) {
@@ -338,7 +341,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     val_list.resize(nbfentry);
 
     il::Array<int> permutDOF{dof_dimension_ *permutation.size()};
-    IL_EXPECT_FAST(permutDOF==size_[0]);
+    IL_EXPECT_FAST(permutDOF.size()==size_[0]);
     for (il::int_t i=0;i<permutation.size();i++){
       for (il::int_t j=0;j< dof_dimension_;j++){
         permutDOF[i* dof_dimension_ +j]=permutation[i]* dof_dimension_ +j;

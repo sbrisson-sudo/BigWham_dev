@@ -15,7 +15,7 @@
 #include <interfaces/python/pybind11-master/include/pybind11/functional.h>
 #include <interfaces/python/pybind11-master/include/pybind11/chrono.h>
 
-#include "BigWham.h"
+#include <BigWham.h>
 
 namespace py = pybind11;
 
@@ -31,13 +31,13 @@ public:
     ~pyGetFullBlocks() = default;
 
     void set(Bigwhamio & BigwhamioObj) {
-        std::vector<int> pos_list;
+        std::vector<long> pos_list;
         long nbfentry;
 
         std::cout << " calling getFullBlocks \n";
         BigwhamioObj.getFullBlocks(this->val_list,pos_list);
         std::cout << " n entries: " <<  (this->val_list.size()) << "\n";
-        std::cout << " preparing the Mtensors \n";
+        std::cout << " preparing the tensors \n";
 
         nbfentry = this->val_list.size();
         this->rowN.resize(nbfentry);
@@ -62,14 +62,14 @@ public:
     py::array getRowN(){
         auto v = new std::vector<int>(getgetRowN());
         this->rowN = std::vector<int>();
-        auto capsule = py::capsule(v, [](void *v) { delete reinterpret_cast<std::vector<int>*>(v); });
+        auto capsule = py::capsule(v, [](void *v) { delete reinterpret_cast<std::vector<long>*>(v); });
         return py::array(v->size(), v->data(), capsule);
     };
 
     py::array getColumnN(){
         auto v = new std::vector<int>(getgetColumnN());
         this->columN = std::vector<int>();
-        auto capsule = py::capsule(v, [](void *(v)) { delete reinterpret_cast<std::vector<int>*>(v); });
+        auto capsule = py::capsule(v, [](void *(v)) { delete reinterpret_cast<std::vector<long>*>(v); });
         return py::array(v->size(), v->data(), capsule);
     };
 
@@ -101,7 +101,6 @@ PYBIND11_MODULE(bigwhamPybind, m) {
       .def("hdotProductInPermutted", &Bigwhamio::hdotProductInPermutted)
       .def("hdotProduct",            &Bigwhamio::hdotProduct, " dot product between hmat and a vector x",py::arg("x"))
       .def("computeStresses", &Bigwhamio::computeStresses, "function to compute the stress at a given set of points")
-      .def("getInfluenceCoe", &Bigwhamio::getInfluenceCoe)
       .def("computeDisplacements", &Bigwhamio::computeDisplacements);
 
 

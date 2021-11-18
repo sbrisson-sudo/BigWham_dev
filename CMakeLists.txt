@@ -33,7 +33,7 @@ set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
-set(IL_OPENMP 1) # to activate openMP  for bigwham (recommended but should have openmp lib installed)
+set(IL_OPENMP 0) # to activate openMP  for bigwham (recommended but should have openmp lib installed)
 set(IL_TBB 1)
 
 set(USE_INTEL 0)  # compiler option
@@ -102,6 +102,7 @@ if(IL_OPENMP)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp") #
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNUMBEROFTHREADS=8")
             set(OPENMP_LIBRARY /usr/local/opt/libomp/lib/)#libomp.dylib
+            set(OPENMP_LIBRARIES /usr/local/opt/libomp/lib/libomp.dylib)
             link_directories(/usr/local/opt/libomp/lib/) #
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             MESSAGE("-- OPENMP ENABLED")
@@ -130,7 +131,6 @@ endif()
 # For TBB
 if(IL_TBB)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_TBB")
-    # target_link_libraries(InsideLoop tbb)
 endif()
 
 ################################################################################
@@ -161,7 +161,6 @@ if(IL_MKL)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64  -DIL_MKL ") #-DIL_BLAS
             set(CMAKE_MKL_LIBRARIES mkl_intel_lp64 mkl_core mkl_sequential  tbb dl pthread m)
             link_directories($ENV{MKLROOT}/lib $ENV{MKLROOT}/../compiler/lib )
-            # link_directories(/opt/intel/mkl/lib/intel64 /opt/intel/compilers_and_libraries/linux/lib/intel64)
         elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -m64 -lmkl_sequential -DIL_MKL ") #-m64 -DIL_BLAS
             set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--no-as-needed")
@@ -197,7 +196,6 @@ elseif(IL_OPENBLAS)
         endif()
     endif()
 endif()
-
 
 set(SOURCE_FILES_DIR ${PROJECT_SOURCE_DIR}/src)
 
@@ -241,7 +239,7 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DR0displ.h
         src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
         # Solver
-        src/solvers/HIterativeSolverUtilities.h
+      #  src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
         src/BigWham.h
         src/hmat/hmatrix/LatticeHmat.h
@@ -249,7 +247,7 @@ set(SOURCE_FILES
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
 add_library(BigWham STATIC ${SOURCE_FILES} )
-target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} ) #${CMAKE_OPENBLAS_LIBRARIES}
+target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} )
 
 set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)
 add_executable(BigWham_exe  main.cpp )
@@ -276,7 +274,7 @@ elseif(IL_OPENBLAS)
     target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR})
 endif()
 
-
+message(${CMAKE_MKL_LIBRARIES})
 ################################################################
 # Pybind --->use with PYTHON version >=3.7
 ################################################################
@@ -285,11 +283,13 @@ if(BUILD_PYTHON_BINDINGS)
 
     if(IL_MKL)
         if(APPLE)
-            target_link_libraries(part  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl) #${CMAKE_OPENBLAS_LIBRARIES}
-            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=1)
+            target_link_directories(part PRIVATE ${OPENMP_LIBRARY})
+            target_link_libraries(part ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
+            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         elseif(UNIX)
-            target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
+            target_link_directories(part PRIVATE ${OPENMP_LIBRARY})
+            target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES}  ${OPENMP_LIBRARY}"-Wl,--end-group" -lpthread -lm -ldl)
             target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         elseif(WIN32)
@@ -320,8 +320,7 @@ endif()
 ################################################################################
 if(BUILD_GOOGLE_TESTS)
 
-    set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
-
+   # set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
     set(TESTED_SOURCE_FILES ${SOURCE_FILES})
     set(UNIT_TEST_FILES
@@ -341,17 +340,18 @@ if(BUILD_GOOGLE_TESTS)
 
     if(IL_MKL)
         if(APPLE)
-            target_link_libraries(BigWhamElastUnitTest   ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
-            #target_link_libraries(BigWhamElastUnitTest ${CMAKE_MKL_LIBRARIES} pthread)
+            target_link_directories(BigWhamElastUnitTest PRIVATE ${OPENMP_LIBRARY})
+            target_link_libraries(BigWhamElastUnitTest   ${CMAKE_MKL_LIBRARIES}  -lpthread -lm -ldl)
         elseif(UNIX)
+            target_link_directories(BigWhamElastUnitTest PRIVATE ${OPENMP_LIBRARY})
             target_link_libraries(BigWhamElastUnitTest "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
 
-        elseif(WIN32)
-            target_compile_definitions(BigWhamElastUnitTest PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
+        elseif(WIN32) # not tested
+            target_compile_definitions(BigWhamElastUnitTest PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
             target_include_directories(BigWhamElastUnitTest PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
         endif()
     elseif(IL_OPENBLAS)
-        target_compile_definitions(BigWhamElastUnitTest PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
+        target_compile_definitions(BigWhamElastUnitTest PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=0)
         target_include_directories(BigWhamElastUnitTest PRIVATE ${CMAKE_SOURCE_DIR})
     endif()
 
