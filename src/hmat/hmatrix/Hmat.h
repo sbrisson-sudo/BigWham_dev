@@ -323,12 +323,12 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
   }
   //--------------------------------------------------------------------------
   void fullBlocksOriginal(const il::Array<il::int_t> & permutation,il::io_t,std::vector<T>& val_list,
-                  std::vector<long>& pos_list){
+                  std::vector<int>& pos_list){
 // return the full blocks in the permutted Original dof state
 
     IL_EXPECT_FAST(isBuilt_FR_);
     //  compute the number of full rank entries
-    long nbfentry=0;
+    int nbfentry=0;
     for (il::int_t i=0;i<pattern_.n_FRB;i++) {
       il::int_t i0=pattern_.FRB_pattern(1,i);
       il::int_t j0=pattern_.FRB_pattern(2,i);
@@ -340,7 +340,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     pos_list.resize(nbfentry * 2);
     val_list.resize(nbfentry);
 
-    il::Array<int> permutDOF{dof_dimension_ *permutation.size()};
+    il::Array<int> permutDOF{dof_dimension_*permutation.size()};
     IL_EXPECT_FAST(permutDOF.size()==size_[0]);
     for (il::int_t i=0;i<permutation.size();i++){
       for (il::int_t j=0;j< dof_dimension_;j++){
@@ -370,7 +370,6 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
 
     std::cout << "done Full Block: nval " << val_list.size() << " / " << pos_list.size()/2
               << " n^2 " << (this->size_[0]) * (this->size_[1]) << "\n";
-
 
   }
 

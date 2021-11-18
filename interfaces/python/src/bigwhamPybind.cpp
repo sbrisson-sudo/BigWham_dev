@@ -31,8 +31,8 @@ public:
     ~pyGetFullBlocks() = default;
 
     void set(Bigwhamio & BigwhamioObj) {
-        std::vector<long> pos_list;
-        long nbfentry;
+        std::vector<int> pos_list;
+        int nbfentry;
 
         std::cout << " calling getFullBlocks \n";
         BigwhamioObj.getFullBlocks(this->val_list,pos_list);
@@ -43,7 +43,6 @@ public:
         this->rowN.resize(nbfentry);
         this->columN.resize(nbfentry);
 
-        // be careful makeSparseMatrix require 1-indexing for position !
         for (int i=0;i<pos_list.size()/2;i++){
             this->rowN[i]=pos_list[2*i];
             this->columN[i]=pos_list[2*i+1];
@@ -62,14 +61,14 @@ public:
     py::array getRowN(){
         auto v = new std::vector<int>(getgetRowN());
         this->rowN = std::vector<int>();
-        auto capsule = py::capsule(v, [](void *v) { delete reinterpret_cast<std::vector<long>*>(v); });
+        auto capsule = py::capsule(v, [](void *v) { delete reinterpret_cast<std::vector<int>*>(v); });
         return py::array(v->size(), v->data(), capsule);
     };
 
     py::array getColumnN(){
         auto v = new std::vector<int>(getgetColumnN());
         this->columN = std::vector<int>();
-        auto capsule = py::capsule(v, [](void *(v)) { delete reinterpret_cast<std::vector<long>*>(v); });
+        auto capsule = py::capsule(v, [](void *(v)) { delete reinterpret_cast<std::vector<int>*>(v); });
         return py::array(v->size(), v->data(), capsule);
     };
 

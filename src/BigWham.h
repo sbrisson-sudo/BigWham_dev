@@ -70,7 +70,7 @@ class Bigwhamio {
 
   ~Bigwhamio() = default;
 
-  void set(const std::vector<double>& coor, const std::vector<int64_t>& conn,
+  void set(const std::vector<double>& coor, const std::vector<int>& conn,
            const std::string& kernel, const std::vector<double>& properties,
            const int max_leaf_size, const double eta, const double eps_aca) {
     // coor and conn are assumed to be passed in row-major storage format
@@ -329,7 +329,6 @@ class Bigwhamio {
     std::cout << "end of set() of bigwhamio object \n";
   }
 
-
   bool isBuilt() { return isBuilt_; };
 
   //---------------------------------------------------------------------------
@@ -362,12 +361,12 @@ class Bigwhamio {
   };
 
   //---------------------------------------------------------------------------
-  std::vector<long> getPermutation() {
+  std::vector<int> getPermutation() {
     IL_EXPECT_FAST(isBuilt_);
     std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
               << collocationPoints_.size(1) << "\n";
 
-    std::vector<long> permut;
+    std::vector<int> permut;
     permut.assign(permutation_.size(), 0);
     for (il::int_t i = 0; i < permutation_.size(); i++) {
       permut[i] = permutation_[i];
@@ -391,7 +390,7 @@ class Bigwhamio {
   long matrixSize(int k) { return h_.size(k); };
 
   //---------------------------------------------------------------------------
-  std::vector<long> getHpattern() {
+  std::vector<int> getHpattern() {
     // API function to output the hmatrix pattern
     //  as flattened list via a pointer
     //  the numberofblocks is also returned (by reference)
@@ -412,7 +411,7 @@ class Bigwhamio {
     long len = 6 * numberofblocks;
     std::cout << "number of blocks " << numberofblocks << "\n";
 
-    std::vector<long> patternlist(len, 0);
+    std::vector<int> patternlist(len, 0);
 
     int index = 0;
     //  starts with full rank
@@ -442,7 +441,7 @@ class Bigwhamio {
 
   //---------------------------------------------------------------------------
   void getFullBlocks(std::vector<double>& val_list,
-                     std::vector<long>& pos_list) {
+                     std::vector<int>& pos_list) {
     // return the full dense block entries of the hmat as
     // flattened lists
     // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
@@ -509,7 +508,7 @@ class Bigwhamio {
     return p;
   }
   //---------------------------------------------------------------------------
-  il::Array2D<il::int_t> getConn(const std::vector<int64_t>& conn) {
+  il::Array2D<il::int_t> getConn(const std::vector<int>& conn) {
     int nnodes_elts = getNodesPerElem();
     il::int_t nelts = conn.size() / nnodes_elts;
 
@@ -543,7 +542,7 @@ class Bigwhamio {
       const std::vector<double>& solution, const std::vector<double>& obsPts,
       const int npts,  // do we really need it? we know dimension + size of inputs
       const std::vector<double>& properties, const std::vector<double>& coor,
-      const std::vector<int64_t>& conn, const bool are_dd_global) {
+      const std::vector<int>& conn, const bool are_dd_global) {
     /* BE CAREFUL 2D CASES NEVER TESTED! */
 
     // PURPOSE: compute stresses at list of points (of size npts )
@@ -650,7 +649,7 @@ class Bigwhamio {
   std::vector<double> computeDisplacements(
       std::vector<double>& solution, std::vector<double>& obsPts, int npts,
       const std::vector<double>& properties, const std::vector<double>& coor,
-      const std::vector<int64_t>& conn, bool are_dd_global) {
+      const std::vector<int>& conn, bool are_dd_global) {
     // PURPOSE: compute displacements at list of points (of size npts )
     //          from a solution vector.
     // INPUT:   "solution" a flattened list containing the solution in terms of

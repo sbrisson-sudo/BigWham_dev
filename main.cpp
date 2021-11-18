@@ -138,7 +138,7 @@ int test2DP1(){
     f_coor[2*i+1]=test2.coordinates(i,1);
   }
 
-  std::vector<int64_t> f_conn;
+  std::vector<int> f_conn;
   f_conn.assign(2*test2.numberOfElts(),0);
   for (il::int_t i=0;i<test2.numberOfElts();i++){
     f_conn[2*i]=test2.connectivity(i,0);
@@ -270,7 +270,7 @@ int testS3DP0(){
     f_coor[2*i+1]=Mesh0.coordinates(i,1);
   }
 
-  std::vector<int64_t> f_conn;
+  std::vector<int> f_conn;
   f_conn.assign(2*Mesh0.numberOfElts(),0);
   for (il::int_t i=0;i<Mesh0.numberOfElts();i++){
     f_conn[2*i]=Mesh0.connectivity(i,0);
@@ -332,7 +332,7 @@ int testS3DP0(){
   }
 
   std::vector<double> val_list;
-  std::vector<long> pos_list;
+  std::vector<int> pos_list;
 
   testbie.getFullBlocks(val_list, pos_list);
 
@@ -662,7 +662,7 @@ int test3DR0() {
                                     -1.,2.,0.,
                                     1.,2.,0.};
     // connectivity
-    const std::vector<int64_t> conn = {0,1,2,3,
+    const std::vector<int> conn = {0,1,2,3,
                                        3,2,5,4};
 
     const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
@@ -1613,7 +1613,7 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
             nodes_flat.push_back(nodes(i,j));
         }
     }
-    std::vector<int64_t> conn_flat;
+    std::vector<int> conn_flat;
     conn_flat.reserve(3 * conn.size(0));
     for (int i = 0; i < conn.size(0); i++){
         for (int j = 0; j < conn.size(1); j++){
@@ -1654,7 +1654,7 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
         radius[i] = sqrt(sum);
     }
 
-    std::vector<long> perm = test.getPermutation();
+    std::vector<int> perm = test.getPermutation();
     std::cout << "permutation ... " << "\n";
     std::cout << perm[0] << "\n";
     std::cout << perm[1] << "\n";
@@ -1970,7 +1970,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
             nodes_flat.push_back(nodes(i,j));
         }
     }
-    std::vector<int64_t> conn_flat;
+    std::vector<int> conn_flat;
     conn_flat.reserve(3 * conn.size(0));
     for (int i = 0; i < conn.size(0); i++){
         for (int j = 0; j < conn.size(1); j++){
@@ -2059,7 +2059,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     }
 
     // permute dd
-    std::vector<long> perm = test.getPermutation();
+    std::vector<int> perm = test.getPermutation();
 
     // permute dd vector
     il::Array<double> dd_analytical_perm{3*nodes_coor.size(0)};
@@ -2176,7 +2176,7 @@ int check3DR0() {
             nodes_flat.push_back(nodes(i,j));
         }
     }
-    std::vector<int64_t> conn_flat;
+    std::vector<int> conn_flat;
     conn_flat.reserve(3 * conn.size(0));
     for (int i = 0; i < conn.size(0); i++){
         for (int j = 0; j < conn.size(1); j++){
@@ -2674,7 +2674,7 @@ int testPl3D(){
         nodes_flat.push_back(coor(i,j));
       }
     }
-    std::vector<int64_t> conn_flat;
+    std::vector<int> conn_flat;
     conn_flat.reserve(3 * conn.size(0));
     for (int i = 0; i < conn.size(0); i++){
       for (int j = 0; j < conn.size(1); j++){
@@ -2697,9 +2697,12 @@ int testPl3D(){
     std::cout << "Hdot new bigwhamio " << tt.time() << " E.x norm " << il::norm(y,il::Norm::L2) <<"\n";
     std::cout << " val "<< y4[0]<<  "\n";
     std::vector<double> val;
-    std::vector<long> pos;
+    std::vector<int> pos;
     testb.getFullBlocks(val,pos);
-    std::cout << " val "<< val[0] << " val size" << val.size() << " pos size"<< pos.size() <<  "\n";
+    for (il::int_t i=0;i<10;i++){
+        std::cout << " val "<< val[i] << "  pos size"<< pos[2*i] << "-"<< pos[2*i+1] << "\n";
+    }
+
   return 0;
 }
 
