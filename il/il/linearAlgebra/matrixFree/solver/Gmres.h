@@ -291,7 +291,6 @@ void Gmres<T>::Next() {
           stop_iteration = true;
         }
 
-
         // This number plays a critical role in the precision of the method
 //        double error_ratio = norm_residual / y_norm;
 //        if (norm_residual <= relative_precision_ * y_norm) {

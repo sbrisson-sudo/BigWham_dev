@@ -1,5 +1,5 @@
 //
-// This file is part of HFP.
+// This file part of BigWham
 //
 // Created by D. Nikolski on 1/12/2017.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,

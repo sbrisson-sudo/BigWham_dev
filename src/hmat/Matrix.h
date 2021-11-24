@@ -1,3 +1,12 @@
+//
+// This file is part of BigWham.
+//
+// Created by Francois Fayard - 2018
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// file for more details.
+//
+
 #pragma once
 
 // This an example of a Matrix Generator needed to code for the implementation of a
@@ -5,7 +14,7 @@
 
 #include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
 
-namespace il {
+namespace bie {
 
 template <typename T>
 class Matrix : public MatrixGenerator<T> {
@@ -70,4 +79,4 @@ void Matrix<T>::set(il::int_t b0, il::int_t b1, il::io_t,
   }
 }
 
-}  // namespace il
+}  // namespace bie

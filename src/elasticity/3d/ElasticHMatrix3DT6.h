@@ -1,12 +1,12 @@
 //
-// This file is_n_a part of HFP.
+// This file part of BigWham
 //
 // Created by Carlo Peruzzo on 08.08.19.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2019.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
-//
+// last update - openMP pragma - 14.11.2021
 
 #pragma once
 
@@ -19,7 +19,7 @@
 namespace bie {
 
 template <typename T>
-class ElasticHMatrix3DT6 : public il::MatrixGenerator<T> {
+class ElasticHMatrix3DT6 : public bie::MatrixGenerator<T> {
  private:
   il::Array2D<double> point_;
 
@@ -106,77 +106,73 @@ void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,
  *  -----------
  *  ( the above expression "current" in k1 and k2, refers to the double loop below)
  */
-  IL_EXPECT_MEDIUM(M.size(0) % blockSize() == 0);
-  IL_EXPECT_MEDIUM(M.size(1) % blockSize() == 0);
-  IL_EXPECT_MEDIUM(b0 + M.size(0) / blockSize() <= point_.size(0));
-  IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= point_.size(0));
+  IL_EXPECT_FAST(M.size(0) % blockSize() == 0);
+  IL_EXPECT_FAST(M.size(1) % blockSize() == 0);
+  IL_EXPECT_FAST(b0 + M.size(0) / blockSize() <= point_.size(0));
+  IL_EXPECT_FAST(b1 + M.size(1) / blockSize() <= point_.size(0));
 
-  //    il::int_t old_k1;
-  //    il::int_t old_k0;
-  //    il::int_t e_k1, e_k0, is_l, ir_l;
-  //    il::Array2D<double> stnl{3,3,0.0};
-
-#ifndef NUMBEROFTHREADS
-#define NUMBEROFTHREADS 4
-#endif
-#pragma omp parallel for num_threads(NUMBEROFTHREADS)
-  for (il::int_t j1 = 0; j1 < M.size(1) / blockSize();
-       ++j1)  // Loop over a subset of source nodes
+#pragma omp parallel if(M.size(1) / blockSize()>200)
   {
-    il::int_t old_k1;
-    il::int_t old_k0;
-    il::int_t e_k1, e_k0, is_l, ir_l;
-    il::Array2D<double> stnl{3, 3, 0.0};
+#pragma omp for
+    for (il::int_t j1 = 0; j1 < M.size(1) / blockSize();
+       ++j1)  // Loop over a subset of source nodes
+    {
+      il::int_t old_k1;
+      il::int_t old_k0;
+      il::int_t e_k1, e_k0, is_l, ir_l;
+      il::Array2D<double> stnl{3, 3, 0.0};
 
-    il::int_t k1 = b1 + j1;
-    old_k1 = permutation_[k1];
+      il::int_t k1 = b1 + j1;
+      old_k1 = permutation_[k1];
 
-    // todo: make it general now is only for -> 6 nodes per triangular element
-    e_k1 = il::floor(old_k1 / 6.);
-    is_l = old_k1 % 6;
+      // todo: make it general now is only for -> 6 nodes per triangular element
+      e_k1 = il::floor(old_k1 / 6.);
+      is_l = old_k1 % 6;
 
+      il::Array2D<double> xv = mesh_.getVerticesElt(
+          e_k1);  // get vertices' coordinates of source element
+      bie::FaceData elem_data_s(xv, 2);  // 2 = interpolation order
 
-    il::Array2D<double> xv = mesh_.getVerticesElt(e_k1); // get vertices' coordinates of source element
-    bie::FaceData elem_data_s(xv, 2); // 2 = interpolation order
-    
-    // Loop over a subset of collocation points
+      // Loop over a subset of collocation points
 
-    for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
-      il::int_t k0 = b0 + j0;
-      old_k0 = permutation_[k0];
-      e_k0 = il::floor(old_k0 / 6.);
-      ir_l = old_k0 % 6;
+      for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
+        il::int_t k0 = b0 + j0;
+        old_k0 = permutation_[k0];
+        e_k0 = il::floor(old_k0 / 6.);
+        ir_l = old_k0 % 6;
 
-      xv = mesh_.getVerticesElt(e_k0); // get vertices' coordinates of receiver element
-      bie::FaceData elem_data_r(xv, 2); // 2 = interpolation order
+        xv = mesh_.getVerticesElt(
+            e_k0);  // get vertices' coordinates of receiver element
+        bie::FaceData elem_data_r(xv, 2);  // 2 = interpolation order
 
-      // call to the kernel
-      stnl = traction_influence_3DT6(
-          elem_data_s, elem_data_r, is_l, ir_l, elas_, I_want_global_DD,
-          I_want_global_traction);
+        // call to the kernel
+        stnl =
+            traction_influence_3DT6(elem_data_s, elem_data_r, is_l, ir_l, elas_,
+                                    I_want_global_DD, I_want_global_traction);
 
-      /* stnl is a matrix 3x3 like that if the source node is NOT at the
-         boundary: t_dir_x_node(ir_l)_dd1_on_node_(is_l)
-         t_dir_x_node(ir_l)_dd2_on_node_(is_l)
-         t_dir_x_node(ir_l)_dd3_on_node_(is_l)
-         t_dir_y_node(ir_l)_dd1_on_node_(is_l)
-         t_dir_y_node(ir_l)_dd2_on_node_(is_l)
-         t_dir_y_node(ir_l)_dd3_on_node_(is_l)
-         t_dir_z_node(ir_l)_dd1_on_node_(is_l)
-         t_dir_z_node(ir_l)_dd2_on_node_(is_l)
-         t_dir_z_node(ir_l)_dd3_on_node_(is_l) */
+        /* stnl is a matrix 3x3 like that if the source node is NOT at the
+           boundary: t_dir_x_node(ir_l)_dd1_on_node_(is_l)
+           t_dir_x_node(ir_l)_dd2_on_node_(is_l)
+           t_dir_x_node(ir_l)_dd3_on_node_(is_l)
+           t_dir_y_node(ir_l)_dd1_on_node_(is_l)
+           t_dir_y_node(ir_l)_dd2_on_node_(is_l)
+           t_dir_y_node(ir_l)_dd3_on_node_(is_l)
+           t_dir_z_node(ir_l)_dd1_on_node_(is_l)
+           t_dir_z_node(ir_l)_dd2_on_node_(is_l)
+           t_dir_z_node(ir_l)_dd3_on_node_(is_l) */
 
-      /* stnl is a matrix 3x3 like that if the source node is at the boundary:
-         t_dir_x_node(ir_l)_dd1_on_node_(is_l)                    0 0 0
-         t_dir_y_node(ir_l)_dd2_on_node_(is_l)                    0 0 0
-         t_dir_z_node(ir_l)_dd3_on_node_(is_l) */
+        /* stnl is a matrix 3x3 like that if the source node is at the boundary:
+           t_dir_x_node(ir_l)_dd1_on_node_(is_l)                    0 0 0
+           t_dir_y_node(ir_l)_dd2_on_node_(is_l)                    0 0 0
+           t_dir_z_node(ir_l)_dd3_on_node_(is_l) */
 
-      for (il::int_t j = 0; j < 3; j++) {
-        for (il::int_t i = 0; i < 3; i++) {
-          M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j);
+        for (il::int_t j = 0; j < 3; j++) {
+          for (il::int_t i = 0; i < 3; i++) {
+            M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j);
 
-          // I'm writing on
-          // M( direction , number of DD )
+            // I'm writing on
+            // M( direction , number of DD )
+          }
         }
       }
     }

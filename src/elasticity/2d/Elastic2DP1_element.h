@@ -1,5 +1,5 @@
 //
-// This file is part of HFPx2D.
+// This file part of BigWham
 //
 // Created by Brice Lecampion on 29.08.17.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,

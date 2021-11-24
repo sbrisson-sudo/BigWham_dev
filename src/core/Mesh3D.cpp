@@ -42,7 +42,7 @@ namespace bie {
             std::cout << "  Number of vertices : " << this->numberVertices() << "\n";
             std::cout << "  Number of elements : " << this->numberOfElts() << "\n";
             std::cout << "  Number of collocation points : " << this->numberCollPts() << "\n";
-            std::cout << "  Number of unknowns : " << 3 * this->numberCollPts() << "\n";
+         //   std::cout << "  Number of unknowns : " << 3 * this->numberCollPts() << "\n";
         }
     }
 

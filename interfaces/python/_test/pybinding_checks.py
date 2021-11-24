@@ -46,7 +46,7 @@ eps_aca = 0.001
 
 
 #create an Hdot instance
-displHMAT = bigwham4py.Hmatrix(kernel, coor, conn, np.array([Young, PoissonRatio]), max_leaf_size, eta, eps_aca)
+displHMAT = bigwhamPybind.Hmatrix(kernel, coor, conn, np.array([Young, PoissonRatio]), max_leaf_size, eta, eps_aca)
 
 print("Testing the Hdot product for the displacement HMAT \n")
 res = displHMAT._matvec([1.,2.,3.,4.,5.,6.])

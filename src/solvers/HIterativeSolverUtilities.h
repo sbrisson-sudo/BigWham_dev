@@ -52,9 +52,9 @@ class DiagPreconditioner : public il::FunctorArray<T> {
 /////////  here - must implement the proper permutation corresponding to Hlu
 // template <typename T>
 // class HLUPreconditioner : public il::FunctorArray<T> {
-//  il::HMatrix<T> Hlu_;
+//  bie::HMatrix<T> Hlu_;
 // public:
-//  explicit HLUPreconditioner(il::HMatrix<T>& Hlu) : Hlu_{std::move(Hlu)} {};
+//  explicit HLUPreconditioner(bie::HMatrix<T>& Hlu) : Hlu_{std::move(Hlu)} {};
 //
 //  il::int_t size(il::int_t d) const override {
 //    IL_EXPECT_MEDIUM(d == 0 || d == 1);
@@ -86,12 +86,12 @@ class DiagPreconditioner : public il::FunctorArray<T> {
 template <typename T>
 class Matrix : public il::FunctorArray<T> {
  private:
-  il::HMatrix<T> H_;
+  bie::HMatrix<T> H_;
   il::Array2D<il::int_t>  fr_patt_;
   il::Array2D<il::int_t>  lr_patt_;
 
  public:
-  explicit Matrix(il::HMatrix<T>& H,il::Array2D<il::int_t> & fr_patt, il::Array2D<il::int_t> & lr_patt)
+  explicit Matrix(bie::HMatrix<T>& H,il::Array2D<il::int_t> & fr_patt, il::Array2D<il::int_t> & lr_patt)
   : H_{H},fr_patt_{fr_patt},lr_patt_{lr_patt} {};
 
   il::int_t size(il::int_t d) const override {

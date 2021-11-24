@@ -14,19 +14,19 @@
 namespace il {
 
 template <typename T>
-inline void luDecomposition(double epsilon, il::io_t, il::HMatrix<T>& H);
+inline void luDecomposition(double epsilon, il::io_t, bie::HMatrix<T>& H);
 
 template <typename T>
- inline void luDecomposition(double epsilon, il::spot_t s, il::io_t, il::HMatrix<T>& H);
+ inline void luDecomposition(double epsilon, il::spot_t s, il::io_t, bie::HMatrix<T>& H);
 
 template <typename T>
-inline void luDecomposition(double epsilon, il::io_t, il::HMatrix<T>& H) {
+inline void luDecomposition(double epsilon, il::io_t, bie::HMatrix<T>& H) {
   luDecomposition(epsilon, H.root(), il::io, H);
 }
 
 template <typename T>
 inline void luDecomposition(double epsilon, il::spot_t s, il::io_t,
-                     il::HMatrix<T>& H) {
+                     bie::HMatrix<T>& H) {
   if (H.isFullRank(s)) {
     H.ConvertToFullLu(s);
     il::ArrayEdit<int> pivot = H.AsFullLuPivot(s);

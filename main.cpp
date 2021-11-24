@@ -10,7 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-
+#include <omp.h>
 #include <string>
 #include <random>
 #include <chrono>
@@ -21,6 +21,10 @@
 
 #include <hmat/cluster/cluster.h>
 #include <hmat/compression/toHMatrix.h>
+
+#include <hmat/hmatrix/toHPattern.h>
+#include <hmat/hmatrix/Hmat.h>
+
 #include <hmat/hmatrix/HMatrix.h>
 #include <hmat/hmatrix/HMatrixUtils.h>
 #include <hmat/linearAlgebra/blas/hdot.h>
@@ -34,7 +38,7 @@
 #include <core/ElasticProperties.h>
 #include <core/FaceData.cpp>
 #include <core/FaceData.h>
-//#include <src/solvers/HIterativeSolverUtilities.h>
+#include <core/FaceData.h>
 #include <_test/elastic3DR0_element_benchmark.h>
 
 
@@ -64,10 +68,10 @@ int test2DP1(){
   il::int_t leaf_size=32; //test->max_leaf_size;
   il::Timer tt;
   tt.Start();
-  const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
 
-  const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTree(coll_points, cluster.partition, 0.0);
+  const il::Tree<bie::SubHMatrix, 4> hmatrix_tree =
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, 0.0);
   tt.Stop();
 
   std::cout << "Time for cluster construction " << tt.time() <<"\n";
@@ -76,15 +80,15 @@ int test2DP1(){
 
   bie::ElasticProperties elas_aux(1.0,0.2);
 
-  il::HMatrix<double> h_ ;
+  bie::HMatrix<double> h_ ;
   const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
                                             test2, elas_aux};
 
   std::cout << " create h mat " << M.size(0) <<"\n";
 
-  h_= il::toHMatrix(M, hmatrix_tree, 0.001);
+  h_= bie::toHMatrix(M, hmatrix_tree, 0.001);
   std::cout << " create h mat ended " << h_.isBuilt() <<"\n";
-  std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
+  std::cout << " compression ratio " << bie::compressionRatio(h_)<<"\n";
 
   double Ep=1.0/(1.0-0.2*0.2);
   double sig = 1.0;
@@ -127,7 +131,6 @@ int test2DP1(){
   Bigwhamio testbie;
   //Bigwhamio *test = new Bigwhamio();
 
-
   std::vector<double> f_coor;
   f_coor.assign(2*test2.numberOfNodes(),0.);
   for (il::int_t i=0;i<test2.numberOfNodes();i++){
@@ -135,7 +138,7 @@ int test2DP1(){
     f_coor[2*i+1]=test2.coordinates(i,1);
   }
 
-  std::vector<int64_t> f_conn;
+  std::vector<int> f_conn;
   f_conn.assign(2*test2.numberOfElts(),0);
   for (il::int_t i=0;i<test2.numberOfElts();i++){
     f_conn[2*i]=test2.connectivity(i,0);
@@ -205,10 +208,10 @@ int testS3DP0(){
   il::int_t leaf_size=12;
   il::Timer tt;
   tt.Start();
-  const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
 
-  const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTree(coll_points, cluster.partition, 10.0);
+  const il::Tree<bie::SubHMatrix, 4> hmatrix_tree =
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, 10.0);
   tt.Stop();
   std::cout << "Time for cluster construction " << tt.time() <<"\n";
   tt.Reset();
@@ -216,16 +219,16 @@ int testS3DP0(){
 
   bie::ElasticProperties elas_aux(1.0,0.2);
 
-  il::HMatrix<double> h_ ;
+  bie::HMatrix<double> h_ ;
   const bie::ElasticHMatrix2DP0<double> M{coll_points, cluster.permutation,
                                           Mesh0, elas_aux, 10000.};
 
 //  std::cout << " in set h mat 2 " << cluster.permutation.size() << " e aca " << test->epsilon_aca <<"\n";
 
   std::cout << " create h mat " << M.size(0) <<"\n";
-  h_= il::toHMatrix(M, hmatrix_tree, 0.001);
+  h_= bie::toHMatrix(M, hmatrix_tree, 0.001);
   std::cout << " create h mat ended " << h_.isBuilt() <<"\n";
-  std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
+  std::cout << " compression ratio " << bie::compressionRatio(h_)<<"\n";
 
   double Ep=1.0/(1.0-0.2*0.2);
   double sig = 1.0;
@@ -267,7 +270,7 @@ int testS3DP0(){
     f_coor[2*i+1]=Mesh0.coordinates(i,1);
   }
 
-  std::vector<int64_t> f_conn;
+  std::vector<int> f_conn;
   f_conn.assign(2*Mesh0.numberOfElts(),0);
   for (il::int_t i=0;i<Mesh0.numberOfElts();i++){
     f_conn[2*i]=Mesh0.connectivity(i,0);
@@ -303,14 +306,7 @@ int testS3DP0(){
   std::cout << " build ?" << testbie.isBuilt()
             <<  " CR :"<< testbie.getCompressionRatio() << " CR   " <<"\n";
 
-
-//  std::cout << " Test h - pattern \n";
-//
-//  std::string hpatfilename = "/Users/bricelecampion/ClionProjects/BigWham/cmake-build-debug/Hpat.csv";
-
- // il::output_hmatPatternF(h_,hpatfilename);
-
-  il::Array2D<il::int_t> pat_SPOT = il::output_hmatPattern(h_);
+  il::Array2D<il::int_t> pat_SPOT = bie::output_hmatPattern(h_);
 
   std::cout << "n blocks "  << " / " << pat_SPOT.size(1) << "\n";
 
@@ -436,8 +432,6 @@ int testFullMat()
   for (il::int_t i=0;i<xx.size()/2;i++){
     xx[2*i]=0.0;
     xx[2*i+1]=wsol_nodes[i];
-//    std::cout <<" x_s " << i <<" "<< xx[2*i] <<"\n";
-//    std::cout <<" x_n " << i <<" "<< xx[2*i+1] <<"\n";
   }
 
   il::Array< double> y1=il::dot(Mfull,xx);
@@ -454,7 +448,6 @@ int testFullMat()
 
 }
 ///////////////////////////////////////////////////////////////////////////////
-
 int testHdot() {
   std::cout << "--------------- testHdot ---------------------\n";
 
@@ -503,7 +496,7 @@ int testHdot() {
   il::int_t leaf_size=32;
   il::Timer tt;
   tt.Start();
-  const il::Cluster cluster = il::cluster(leaf_size, il::io, coll_points);
+  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
 
   tt.Stop();
   std::cout << "Time for  cluster tree construction " << tt.time() <<"\n";
@@ -515,22 +508,22 @@ int testHdot() {
 //  std::cin.ignore(); // pause while user do not enter return
 
   tt.Start();
-  const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-      il::hmatrixTree(coll_points, cluster.partition, 3.0);
+  const il::Tree<bie::SubHMatrix, 4> hmatrix_tree =
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, 3.0);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
   std::cout << " binary cluster depth ..." << hmatrix_tree.depth() << "\n";
   std::cout << " root - " << hmatrix_tree.root().index << "\n";
   tt.Reset();
 
-  il::int_t nb=nbBlocks(hmatrix_tree);
+  il::int_t nb=bie::nbBlocks(hmatrix_tree);
   std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
   //std::cin.ignore(); // pause while user do not enter return
-  il::int_t n_fullb=nbFullBlocks(hmatrix_tree);
+  il::int_t n_fullb=bie::nbFullBlocks(hmatrix_tree);
   std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
 
   tt.Start();
-  il::HPattern my_patt=createPattern(hmatrix_tree);
+  bie::HPattern my_patt=bie::createPattern(hmatrix_tree);
   std::cout << "Time for pattern construction " << tt.time() <<"\n";
   std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
   std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
@@ -545,20 +538,20 @@ int testHdot() {
   }
   tt.Reset();
 
-  il::HMatrix<double> h_ ;
+  bie::HMatrix<double> h_ ;
   const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
                                           mesh, elas};
   std::cout << " create h mat - size " << M.size(0) << " * " << M.size(1) <<"\n";
   tt.Start();
-  h_= il::toHMatrix(M, hmatrix_tree, 0.0001);
+  h_= bie::toHMatrix(M, hmatrix_tree, 0.0001);
   tt.Stop();
 
   std::cout << " create h mat ended " << h_.isBuilt() <<  " in " << tt.time() <<  "\n";
-  std::cout << " compression ratio " << il::compressionRatio(h_)<<"\n";
-  std::cout << " Compressed memory " << (il::compressionRatio(h_)*8*(4*ne*4*ne)) <<"\n";
+  std::cout << " compression ratio " << bie::compressionRatio(h_)<<"\n";
+  std::cout << " Compressed memory " << (bie::compressionRatio(h_)*8*(4*ne*4*ne)) <<"\n";
   std::cout << " dense case memory " << 8*(4*ne*4*ne) << "\n";
-  std::cout <<  "number of blocks " << il::numberofBlocks(h_) << "\n";
-  std::cout << "number of full blocks " << il::numberofFullBlocks(h_) <<"\n";
+  std::cout <<  "number of blocks " << bie::numberofBlocks(h_) << "\n";
+  std::cout << "number of full blocks " << bie::numberofFullBlocks(h_) <<"\n";
  // std::cout << " press enter to continue ...\n";
   //std::cin.ignore(); // pause while user do not enter return
   tt.Reset();
@@ -669,7 +662,7 @@ int test3DR0() {
                                     -1.,2.,0.,
                                     1.,2.,0.};
     // connectivity
-    const std::vector<int64_t> conn = {0,1,2,3,
+    const std::vector<int> conn = {0,1,2,3,
                                        3,2,5,4};
 
     const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
@@ -1620,7 +1613,7 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
             nodes_flat.push_back(nodes(i,j));
         }
     }
-    std::vector<int64_t> conn_flat;
+    std::vector<int> conn_flat;
     conn_flat.reserve(3 * conn.size(0));
     for (int i = 0; i < conn.size(0); i++){
         for (int j = 0; j < conn.size(1); j++){
@@ -1831,7 +1824,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
 //
 //    double eta=10;
 //    const il::Tree<il::SubHMatrix, 4> hmatrix_tree =
-//            il::hmatrixTree(coll_points, cluster.partition, eta);
+//            il::hmatrixTreeIxI(coll_points, cluster.partition, eta);
 //    tt.Stop();
 //
 //    std::cout << "Time for cluster construction " << tt.time() <<"\n";
@@ -1977,7 +1970,7 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
             nodes_flat.push_back(nodes(i,j));
         }
     }
-    std::vector<int64_t> conn_flat;
+    std::vector<int> conn_flat;
     conn_flat.reserve(3 * conn.size(0));
     for (int i = 0; i < conn.size(0); i++){
         for (int j = 0; j < conn.size(1); j++){
@@ -2183,7 +2176,7 @@ int check3DR0() {
             nodes_flat.push_back(nodes(i,j));
         }
     }
-    std::vector<int64_t> conn_flat;
+    std::vector<int> conn_flat;
     conn_flat.reserve(3 * conn.size(0));
     for (int i = 0; i < conn.size(0); i++){
         for (int j = 0; j < conn.size(1); j++){
@@ -2292,23 +2285,444 @@ int check3DR0() {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+int testNewHmat() {
+  std::cout << "--------------- test new Hmat implemntation Hdot ---------------------\n";
+#ifndef NUMBEROFTHREADS
+#define NUMBEROFTHREADS 4
+#endif
+#if _OPENMP
+#pragma omp parallel default(none)  num_threads(NUMBEROFTHREADS)
+  {
+    printf("Hello from thread %d, nthreads %d\n", omp_get_thread_num(), omp_get_num_threads());
+  }
+#endif
+
+  // star cracks mesh - crack length unity
+  il::int_t nfracs=10;
+  il::int_t ne_per_frac=1000;
+  il::Array<double> rad{ne_per_frac+1,0.};
+  il::Array<double> angle{nfracs,0.};
+//
+  for (il::int_t i=0;i<=ne_per_frac;i++){
+    rad[i]=1.*i/ne_per_frac;
+  }
+  for (il::int_t i=0;i<nfracs;i++){
+    angle[i]=2*(il::pi)*i/nfracs;
+  }
+//
+  il::int_t ne=ne_per_frac*nfracs;
+  il::Array2D<double> nodes{ne+1,2,0.};
+  il::Array2D<il::int_t> conn{ne,2};
+  il::int_t index=0;
+  nodes(index,0)=0.;
+  nodes(index,1)=0.;
+  for (il::int_t i=0;i<nfracs;i++){
+    for (il::int_t j=1;j<ne_per_frac+1;j++){
+      index++;
+      nodes(index,0)=rad[j]*cos(angle[i]);
+      nodes(index,1)=rad[j]*sin(angle[i]);
+    }
+  }
+  for (il::int_t i=0;i<ne;i++){
+    conn(i,0)=i;
+    conn(i,1)=i+1;
+  }
+  for (il::int_t j=0;j<nfracs;j++){
+    // first node of each fract is the first nod of the mesh.
+    conn(j*ne_per_frac,0)=0;
+  }
+
+  std::cout << " N unknowns: " << 4*ne <<"\n";
+  bie::Mesh mesh(nodes,conn,1);
+
+  bie::ElasticProperties elas(1.0,0.2);
+  il::Array2D<double> coll_points = mesh.getCollocationPoints();
+
+  // hmat parameters
+  il::int_t leaf_size=32;
+  double eta =3.0;
+  double epsilon_aca=1.e-4;
+
+  il::Timer tt;
+
+// Construction of the binary cluster Tree
+  tt.Start();
+  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
+  tt.Stop();
+  std::cout << "Time for  cluster tree construction " << tt.time() <<"\n";
+  std::cout << " cluster depth ..." <<  cluster.partition.depth() <<"\n";
+  std::cout << " cluster - part " << cluster.permutation.size() << "\n";
+  std::cout << " N nodes at level 2:: "<<  cluster.partition.nnodesAtLevel(2) <<"\n";
+  tt.Reset();
+  il::Array<il::Range> listnodes=cluster.partition.getNodesAtLevel(2);
+  std::cout << " nodes 0 at level 2 " <<  listnodes[0].begin << " / " << listnodes[0].end <<"\n";
+
+//  construction of the block-cluster tree -> the partition of the h-mat
+  tt.Start();
+  const il::Tree<bie::SubHMatrix, 4> block_tree =
+      bie::hmatrixTreeIxI(coll_points, cluster.partition, eta);
+  tt.Stop();
+  std::cout << "Time for binary cluster tree construction " << tt.time() <<"\n";
+  std::cout << " binary cluster depth ..." << block_tree.depth() << "\n";
+  std::cout << " root - " << block_tree.root().index << "\n";
+  tt.Reset();
+
+  tt.Start();
+  const il::Tree<bie::SubHMatrix, 4> block_tree2 =
+      bie::hmatrixTreeIxJ(coll_points, cluster.partition, coll_points, cluster.partition,eta);
+  tt.Stop();
+  std::cout << "Time for binary cluster tree construction 2 " << tt.time() <<"\n";
+  std::cout << " binary cluster depth ..." << block_tree2.depth() << "\n";
+  std::cout << " root - " << block_tree2.root().index << "\n";
+  tt.Reset();
+
+  // the matrix generator
+  bie::HMatrix<double> h_ ;
+  const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
+                                          mesh, elas};
+  // creation of the Hmatrix the old way.....
+  std::cout << " Create h mat - the old way ...  size" << M.size(0) << " * " << M.size(1) <<"\n";
+  tt.Start();
+  h_= bie::toHMatrix(M, block_tree, epsilon_aca);
+  tt.Stop();
+  std::cout << " create h mat  old way in " << tt.time() <<"\n";
+  tt.Reset();
+  std::cout << " create h mat ended " << h_.isBuilt() <<  " in " << tt.time() <<  "\n";
+  std::cout << " compression ratio " << bie::compressionRatio(h_)<<"\n";
+  std::cout << " Compressed memory " << (bie::compressionRatio(h_)*8*(4*ne*4*ne)) <<"\n";
+  std::cout << " dense case memory " << 8*(4*ne*4*ne) << "\n";
+  std::cout <<  "number of blocks " << bie::numberofBlocks(h_) << "\n";
+  std::cout << "number of full blocks " << bie::numberofFullBlocks(h_) <<"\n";
+  tt.Reset();
+  tt.Start();
+  il::Array2D<il::int_t> pattern=output_hmatPattern(h_);
+  tt.Stop();
+  std::cout << " time for getting pattern (old way)"  << tt.time() <<  " number of blocks "  << pattern.size(1) << "\n";
+  tt.Reset();
+
+  //
+  il::int_t nb=bie::nbBlocks(block_tree);
+  std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
+  il::int_t n_fullb=bie::nbFullBlocks(block_tree);
+  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
+
+// creation of the hmatrix the new way....
+  tt.Start();
+  bie::HPattern my_patt=bie::createPattern(block_tree);
+  std::cout << "Time for pattern construction " << tt.time() <<"\n";
+  std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
+  std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
+  std::cout  << " n lrb " <<  my_patt.LRB_pattern.size(1) <<"\n";
+  my_patt.nr=M.size(0);
+  my_patt.nc=M.size(1);
+  tt.Reset();
+  tt.Start();
+  bie::HPattern my_patt2=bie::createPattern(block_tree2);
+  std::cout << "Time for pattern construction " << tt.time() <<"\n";
+  std::cout << " Number of sub-matrix full blocks: "  << my_patt2.n_FRB <<  " \n";
+  std::cout  << " n fb " <<  my_patt2.FRB_pattern.size(1) <<"\n";
+  std::cout  << " n lrb " <<  my_patt2.LRB_pattern.size(1) <<"\n";
+  tt.Reset();
+
+  //
+  bie::Hmat<double> hmt_(my_patt2);
+  tt.Start();
+  hmt_.build(M,epsilon_aca);
+  tt.Stop();
+  std::cout << "Creation hmat new way new in "  << tt.time() <<"\n";
+  tt.Reset();
+  std::cout << "Compression ratio new way " << hmt_.compressionRatio() <<"\n";
+
+  // dot-product of linear system and checks
+  double Ep=1.0/(1.0-0.2*0.2);
+  double sig = 1.0;
+  double a=1.0;
+  double coef = 4.0 * sig / (Ep);
+  // at collocation points
+  il::Array<double> wsol_coll{mesh.numberCollocationPoints(), 0.};
+  for (int i = 0; i < coll_points.size(0); ++i) {
+    if (std::abs(coll_points(i,0)) < a) {
+      wsol_coll[i] = coef * sqrt(pow(a, 2) - pow(coll_points(i,0), 2));
+    }
+  }
+  //at corresponding nodes - works here due to simple mesh....
+  il::Array<double> wsol_nodes{coll_points.size(0), 0.};
+  double aux_x=0.; int j=0;
+  for (int i = 0; i < conn.size(0); ++i) {
+    aux_x=nodes(conn(i,0),0);
+    if (std::abs(aux_x) < a) {
+      wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
+    }
+    j++;
+    aux_x=nodes(conn(i,1),0);
+    if (std::abs(aux_x) < a) {
+      wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
+    }
+    j++;
+  }
+
+  il::Array<double> xx{coll_points.size(0)*2};
+  for (il::int_t i=0;i<xx.size()/2;i++){
+    xx[2*i]=0.0;
+    xx[2*i+1]=wsol_nodes[i];
+  }
+
+  int np = 10;
+
+  tt.Start();
+  il::Array< double> y1=il::dot(h_,xx);
+  for (int i=0;i<np;i++){
+    y1=il::dot(h_,xx);
+  }
+  tt.Stop();
+  std::cout << " time for recursive hdot " << tt.time()/(np+1) <<"\n";
+  tt.Reset();
+  tt.Start();
+  il::Array< double> y2= il::dotwithpattern_serial(h_, pattern, xx);
+  for (int i=0;i<np;i++){
+    y2= il::dotwithpattern_serial(h_, pattern, xx);
+  }
+  tt.Stop();
+  std::cout << " time for Non-recursive hdot serial " << tt.time()/(np+1) <<"\n";
+
+  il::Array2D<il::int_t> lr_patt{pattern.size(0),0};
+  il::Array2D<il::int_t> fr_patt{pattern.size(0),0};
+  il::Array2D<il::int_t> fr_patt2{pattern.size(0)+2,0};
+
+  lr_patt.Reserve(3,pattern.size(1));
+  fr_patt.Reserve(3,pattern.size(1));
+  fr_patt2.Reserve(5,pattern.size(1));
+
+  il::int_t nfb=0;il::int_t nlb=0;
+  for (il::int_t i=0;i<pattern.size(1);i++){
+    il::spot_t s(pattern(0,i));
+    if (h_.isFullRank(s)){
+
+      fr_patt.Resize(3,nfb+1);
+      fr_patt(0,nfb)=pattern(0,i);
+      fr_patt(1,nfb)=pattern(1,i);
+      fr_patt(2,nfb)=pattern(2,i);
+
+      fr_patt2.Resize(5,nfb+1);
+      fr_patt2(0,nfb)=pattern(0,i);
+      fr_patt2(1,nfb)=pattern(1,i);
+      fr_patt2(2,nfb)=pattern(2,i);
+      const bie::SubHMatrix info = block_tree.value(s);
+      fr_patt2(3,nfb)=info.range0.end;
+      fr_patt2(4,nfb)=info.range1.end;
+
+      nfb++;
+    } else if (h_.isLowRank(s)){
+
+      lr_patt.Resize(3,nlb+1);
+      lr_patt(0,nlb)=pattern(0,i);
+      lr_patt(1,nlb)=pattern(1,i);
+      lr_patt(2,nlb)=pattern(2,i);
+      nlb++;
+    } else {
+      std::cout <<"error in pattern !\n" ;
+      il::abort();
+    }
+  }
+  tt.Reset();
+
+  tt.Start();
+  il::Array< double> y3= il::dotwithpattern(h_, fr_patt, lr_patt, xx);
+  for (int i=0;i<np;i++){
+    y3= il::dotwithpattern(h_, fr_patt, lr_patt, xx);
+  }
+  tt.Stop();
+  std::cout << " time for Non-recursive hdot (parallel_invoke) " << tt.time()/(np+1) <<"\n";
+
+  tt.Reset();
+
+  tt.Start();
+  il::Array<double> y4= hmt_.matvec(xx);
+  for (int i=0;i<np;i++){
+    y4= hmt_.matvec(xx);
+  }
+  tt.Stop();
+  std::cout << " time for Non-recursive hdot .. new way " << tt.time()/(np+1)  <<"\n";
+  std::cout << " norm y1 " << il::norm(y1,il::Norm::L2) << " y2 " << il::norm(y2,il::Norm::L2)
+            <<" y3 " << il::norm(y3,il::Norm::L2)
+          <<" y4 " << il::norm(y4,il::Norm::L2) << "\n";
+  std::cout << "----------end of test hdot  ---------------------\n";
+
+  return 0;
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+int testPl3D(){
+// testing the square DD rectangle kernel used in Pyfrac.
+  il::int_t nx=100;
+  il::int_t ny=100;
+  il::int_t ne=nx*ny;
+  double Lx=100.;
+  double Ly=100.;
+  double hx=2.*Lx/(nx-1);
+  double hy=2.*Ly/(ny-1);
+
+
+  il::Array2D<double> coor{(nx+1)*(ny+1),3,0.};
+  il::Array2D<il::int_t> conn{nx*ny,4,0};
+  il::int_t k=0;
+  for (il::int_t j=0;j<ny+1;j++){
+    for (il::int_t i=0;i<nx+1;i++){
+      coor(k,0)= i*hx -Lx-hx/2. ; //x
+      coor(k,1)= j*hy -Ly-hy/2.; // y
+      coor(k,2)=0.;
+      k++;
+    }
+  }
+  il::int_t e=0;
+  for (il::int_t j=0;j<ny;j++) {
+    for (il::int_t i = 0; i < nx; i++) {
+      conn(e,0)=j*(nx+1)+i;
+      conn(e,1)=j*(nx+1)+i+1;
+      conn(e,2)=(j+1)*(nx+1)+i+1;
+      conn(e,3)=(j+1)*(nx+1)+i;
+      e++;
+    }
+  }
+
+  bie::Mesh3D mesh(coor,conn,0);
+  il::Array2D<double> xv{4,3,0.};
+  for (il::int_t j=0;j<3;j++){
+    for (il::int_t i=0;i<4;i++) {
+      xv(i,j)=coor(conn(5,i),j);
+      xv(i,j)=coor(conn(5,i),j);
+    }
+  }
+
+
+  bie::FaceData fd(xv,0);
+  bie::ElasticProperties elas(1.0,0.2);
+  il::Array2D<double> coll_points = mesh.getCollocationPoints();
+
+  // hmat parameters
+  il::int_t max_leaf_size=100;
+  double eta =3.0;
+  double epsilon_aca=1.e-4;
+
+  il::Timer tt;
+  tt.Start();
+  const bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, coll_points);
+  tt.Stop();
+  std::cout << "Time for  cluster tree construction " << tt.time() <<"\n";
+  std::cout << " cluster depth ..." <<  cluster.partition.depth() <<"\n";
+  std::cout << " cluster - part " << cluster.permutation.size() << "\n";
+  std::cout << " N nodes at level 2:: "<<  cluster.partition.nnodesAtLevel(2) <<"\n";
+  tt.Reset();
+
+  tt.Start();
+  const il::Tree<bie::SubHMatrix, 4> block_tree =
+      bie::hmatrixTreeIxI(coll_points, cluster.partition,eta);
+  tt.Stop();
+  std::cout << "Time for binary cluster tree construction 2 " << tt.time() <<"\n";
+  std::cout << " binary cluster depth ..." << block_tree.depth() << "\n";
+  std::cout << " root - " << block_tree.root().index << "\n";
+  tt.Reset();
+
+  // the matrix generator
+  bie::HMatrix<double> h_ ;
+  const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{coll_points, cluster.permutation,
+                                          mesh, elas};
+
+  // creation of the hmatrix the new way....
+  tt.Start();
+  bie::HPattern my_patt=bie::createPattern(block_tree);
+  std::cout << "Time for pattern construction " << tt.time() <<"\n";
+  std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
+  std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
+  std::cout  << " n lrb " <<  my_patt.LRB_pattern.size(1) <<"\n";
+  my_patt.nr=M.size(0);
+  my_patt.nc=M.size(1);
+  tt.Reset();
+
+  //
+  const il::int_t pp=M.blockSize();
+  bie::Hmat<double> hmt_(my_patt);
+  tt.Start();
+  hmt_.build(M,epsilon_aca);
+  tt.Stop();
+  std::cout << "Creation hmat new way new in "  << tt.time() <<"\n";
+  tt.Reset();
+  std::cout << "Compression ratio new way " << hmt_.compressionRatio() <<"\n";
+
+  // some hdot speed
+  il::Array<double> xx{mesh.numberOfElts(),0.};
+  il::Array<double> y{mesh.numberOfElts(),1.};
+    xx[0]=1.;
+  tt.Start();
+  y=hmt_.matvec(xx);
+  tt.Stop();
+  std::cout << "Hdot new way " << tt.time() << il::norm(y,il::Norm::L2) <<"\n";
+
+  // using bigwhamio2
+  const std::vector<double> properties = {elas.getE(), elas.getNu()}; // Young Modulus , Poisson's ratio
+
+  const std::string kernel_name = "3DR0opening";
+  bie:
+  Bigwhamio testb{};
+    // convert to std vectors
+    std::vector<double> nodes_flat;
+    nodes_flat.reserve(3 * coor.size(0));
+    for (int i = 0; i < coor.size(0); i++){
+      for (int j = 0; j < coor.size(1); j++){
+        nodes_flat.push_back(coor(i,j));
+      }
+    }
+    std::vector<int> conn_flat;
+    conn_flat.reserve(3 * conn.size(0));
+    for (int i = 0; i < conn.size(0); i++){
+      for (int j = 0; j < conn.size(1); j++){
+        conn_flat.push_back(conn(i,j));
+      }
+    }
+    testb.set(nodes_flat,conn_flat,kernel_name,properties,
+             static_cast<int>(max_leaf_size), eta, epsilon_aca);
+    std::vector<double> xs;
+    xs.reserve(xx.size());
+    for (int i=0;i<xx.size();i++){
+      xs.push_back(xx[i]);
+    }
+    tt.Start();
+    std::vector<double> y4=testb.hdotProduct(xs);
+    tt.Stop();
+    for (int i=0;i<xx.size();i++){
+      y[i]=y4[i];
+    }
+    std::cout << "Hdot new bigwhamio " << tt.time() << " E.x norm " << il::norm(y,il::Norm::L2) <<"\n";
+    std::cout << " val "<< y4[0]<<  "\n";
+    std::vector<double> val;
+    std::vector<int> pos;
+    testb.getFullBlocks(val,pos);
+    for (il::int_t i=0;i<10;i++){
+        std::cout << " val "<< val[i] << "  pos size"<< pos[2*i] << "-"<< pos[2*i+1] << "\n";
+    }
+    std::cout << " val "<< val[val.size()-1] << "  pos size"<< pos[2*(val.size()-1)] << "-"<< pos[2*(val.size()-1)+1] << "\n";
+  return 0;
+}
+
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
 
  // int a = check3DR0();   // this gives an error - Can't open the file - make sure that test in the main are short and can be run when pushed.
 
-
   //test3DR0();
   //perf3DR0();
 
-  //test2DP1();
+ // test2DP1();
 
-  //testS3DP0();
+ // testS3DP0();
 
 //  testFullMat();
-  testHdot();
+//  testNewHmat();
 
+  testPl3D();
 //// tests for 3DT6 not updated since the change of interface
 //test3DT6Mesh();
 //std::string vertices_file = "/home/alexis/bigwham/vertices5000.csv";

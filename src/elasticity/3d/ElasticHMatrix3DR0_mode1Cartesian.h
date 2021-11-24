@@ -11,8 +11,8 @@
 #pragma once
 #include <string>
 
+#include <elasticity/3d/Elastic3DR0_mode1Cartesian_element.h>
 #include <hmat/arrayFunctor/MatrixGenerator.h>
-#include <elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian_element.h>
 #include <src/core/ElasticProperties.h>
 #include <src/core/FaceData.h>
 #include <src/core/Mesh3D.h>
@@ -20,7 +20,7 @@
 namespace bie {
 
     template <typename T>
-    class ElasticHMatrix3DR0_mode1Cartesian : public il::MatrixGenerator<T> {
+    class ElasticHMatrix3DR0_mode1Cartesian : public bie::MatrixGenerator<T> {
      private:
       il::Array2D<double> point_;
 
@@ -42,7 +42,7 @@ namespace bie {
     template <typename T>
     ElasticHMatrix3DR0_mode1Cartesian<T>::ElasticHMatrix3DR0_mode1Cartesian(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
                                                                             bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas)  // il::Array2D<il::int_t> // &binary_ind_pts_at_front
-      : point_{point}, //std::move(point) never fucking do that !
+      : point_{point}, //std::move(point)
         permutation_{permutation},
         mesh_{i_meshtools},
         elas_{elas} //      binary_ind_pts_at_front_{binary_ind_pts_at_front}
@@ -97,49 +97,44 @@ namespace bie {
          *  ( the above expression "current" in k0 and k1, refers to the double loop below)
          */
 
-          IL_EXPECT_MEDIUM(M.size(0) % blockSize() == 0);
-          IL_EXPECT_MEDIUM(M.size(1) % blockSize() == 0);
-          IL_EXPECT_MEDIUM(b0 + M.size(0) / blockSize() <= point_.size(0));
-          IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= point_.size(0));
+          IL_EXPECT_FAST(M.size(0) % blockSize() == 0);
+          IL_EXPECT_FAST(M.size(1) % blockSize() == 0);
+          IL_EXPECT_FAST(b0 + M.size(0) / blockSize() <= point_.size(0));
+          IL_EXPECT_FAST(b1 + M.size(1) / blockSize() <= point_.size(0));
 
-          //    il::int_t old_k1;
-          //    il::int_t old_k0;
-          //    il::int_t e_k1, e_k0;
-          //    il::Array2D<double> stnl{3,3,0.0};
+#pragma omp parallel if(M.size(1) / blockSize()>200)
+          {
+#pragma omp for
+            for (il::int_t j1 = 0; j1 < M.size(1);
+                 ++j1) {  // Loop over a subset of source nodes
 
-        #ifndef NUMBEROFTHREADS
-            #define NUMBEROFTHREADS 12
-        #endif
-        #pragma omp  parallel for num_threads(NUMBEROFTHREADS)
-        for (il::int_t j1 = 0; j1 < M.size(1) ; ++j1)  { // Loop over a subset of source nodes
+              il::int_t old_k1;
+              il::int_t old_k0;
+              il::int_t e_k1, e_k0;
 
-            il::int_t old_k1;
-            il::int_t old_k0;
-            il::int_t e_k1, e_k0;
+              il::int_t k1 = b1 + j1;
+              old_k1 = permutation_[k1];
+              e_k1 =old_k1;  // il::floor(old_k1 / number of nodes per element);
 
-            il::int_t k1 = b1 + j1;
-            old_k1 = permutation_[k1];
-            e_k1 = old_k1; // il::floor(old_k1 / number of nodes per element);
+              // get vertices' coordinates of source element
+              il::Array2D<double> xv = mesh_.getVerticesElt(e_k1);
+              bie::FaceData elem_data_s(xv, 0);  // 0 = interpolation order
 
-            il::Array2D<double> xv = mesh_.getVerticesElt(e_k1); // get vertices' coordinates of source element
-            bie::FaceData elem_data_s(xv, 0); // 0 = interpolation order
-
-            // Loop over a subset of collocation points
-
-            for (il::int_t j0 = 0; j0 < M.size(0) ; ++j0)
-            {
+              // Loop over a subset of collocation points
+              for (il::int_t j0 = 0; j0 < M.size(0); ++j0) {
                 il::int_t k0 = b0 + j0;
                 old_k0 = permutation_[k0];
-                e_k0 = old_k0; // il::floor(old_k1 / number of nodes per element);
+                e_k0 =old_k0;  // il::floor(old_k1 / number of nodes per element);
 
-                xv = mesh_.getVerticesElt(e_k0); // get vertices' coordinates of receiver element
-                bie::FaceData elem_data_r(xv, 0); // 0 = interpolation order
+                // get vertices' coordinates of receiver element
+                xv = mesh_.getVerticesElt(e_k0);
+                bie::FaceData elem_data_r(xv, 0);  // 0 = interpolation order
 
-                M(j0 , j1) = bie::traction_influence_3DR0opening(elem_data_s,
-                                                             elem_data_r,
-                                                              elas_); //https://en.wikipedia.org/wiki/Codomain
-
+                M(j0, j1) = bie::traction_influence_3DR0opening(
+                    elem_data_s, elem_data_r,
+                    elas_);  // https://en.wikipedia.org/wiki/Codomain
+              }
             }
-        }
+          }
     }
 }  // namespace bie

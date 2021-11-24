@@ -8,7 +8,6 @@
 //
 
 #include <tbb/tbb.h>
-
 #include <elasticity/2d/FullMatrixAssembly2D.h>
 
 namespace  bie{

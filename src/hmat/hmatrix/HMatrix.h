@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <il/StaticArray.h>
@@ -8,14 +9,14 @@
 #include <hmat/hmatrix/HMatrixNode.h>
 #include <hmat/hmatrix/HMatrixType.h>
 
-namespace il {
+namespace bie {
 
 template <typename T>
 class HMatrix {
  private:
   struct HNode {
    public:
-    il::HMatrixNode<T> value;
+    bie::HMatrixNode<T> value;
     il::int_t parent;
     il::StaticArray<il::int_t, 4> children;
    public:
@@ -38,7 +39,7 @@ class HMatrix {
   bool isLowRank(il::spot_t s) const;
   bool isHierarchical(il::spot_t s) const;
   bool isFullLu(il::spot_t s) const;
-  il::HMatrixType type(il::spot_t s) const;
+  bie::HMatrixType type(il::spot_t s) const;
 
   il::int_t rankOfLowRank(il::spot_t s) const;
   void UpdateRank(il::spot_t s, il::int_t r);
@@ -115,7 +116,7 @@ bool HMatrix<T>::isFullLu(il::spot_t s) const {
 }
 
 template <typename T>
-il::HMatrixType HMatrix<T>::type(il::spot_t s) const {
+bie::HMatrixType HMatrix<T>::type(il::spot_t s) const {
   return tree_[s.index].value.type();
 }
 
@@ -167,7 +168,7 @@ il::Array2DView<T> HMatrix<T>::asFullRank(il::spot_t s) const {
 
 template <typename T>
 il::Array2DEdit<T> HMatrix<T>::AsFullRank(il::spot_t s) {
-  return tree_[s.index].value.AsFullRank().Edit();
+    return tree_[s.index].value.AsFullRank().Edit();
 }
 
 template <typename T>
@@ -275,4 +276,4 @@ bool HMatrix<T>::isBuilt(il::spot_t s) const {
   }
 }
 
-}  // namespace il
+}  // namespace bie

@@ -1,5 +1,5 @@
 //
-// This file is part of HFPx2D.
+// This file part of BigWham
 //
 // Created by nikolski on 2/14/2018.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
@@ -33,9 +33,6 @@ namespace bie {
                                         il::Array<double> solution,
                                         vPPrCall PPrCall, double ker_options);
 
-
-
-
 }
 
-#endif //HFP_POSTPROCESSDDM_H
+#endif

@@ -11,7 +11,7 @@
 namespace il {
 
 template <typename T>
-void dot_rec(il::int_t parallelism, const il::HMatrix<T>& A, il::spot_t s,
+void dot_rec(il::int_t parallelism, const bie::HMatrix<T>& A, il::spot_t s,
              il::ArrayView<T> x, il::io_t, il::ArrayEdit<T> y) {
   IL_EXPECT_FAST(A.size(0, s) == y.size());
   IL_EXPECT_FAST(A.size(1, s) == x.size());
@@ -80,7 +80,7 @@ void dot_rec(il::int_t parallelism, const il::HMatrix<T>& A, il::spot_t s,
 }
 
 template <typename T>
-il::Array<T> dot(const il::HMatrix<T>& A, const il::Array<T>& x) {
+il::Array<T> dot(const bie::HMatrix<T>& A, const il::Array<T>& x) {
   IL_EXPECT_FAST(A.size(1) == x.size());
 
   il::Array<T> y{A.size(0), 0.0};
@@ -96,7 +96,7 @@ il::Array<T> dot(const il::HMatrix<T>& A, const il::Array<T>& x) {
 
 
 // full-rank dot product
-static void dotfullrank(const il::HMatrix<double>& A_,
+static void dotfullrank(const bie::HMatrix<double>& A_,
                         const il::Array2D<il::int_t>& fullRank_pattern,
                         ArrayView<double> x_, il::io_t, il::Array<double>& y_) {
   IL_EXPECT_FAST(A_.size(1) == x_.size());
@@ -120,7 +120,7 @@ static void dotfullrank(const il::HMatrix<double>& A_,
 }
 
 // low-rank block dot product
-static void dotlowrank(const il::HMatrix<double>& A_,
+static void dotlowrank(const bie::HMatrix<double>& A_,
                        const il::Array2D<il::int_t>& lowRank_pattern,
                        ArrayView<double> x_, il::io_t, il::Array<double>& y_) {
   IL_EXPECT_FAST(A_.size(1) == x_.size());
@@ -147,7 +147,7 @@ static void dotlowrank(const il::HMatrix<double>& A_,
 
 // dot product with pattern using tbb parallel_invoke
 inline il::Array<double> dotwithpattern(
-    const il::HMatrix<double>& A_, const il::Array2D<il::int_t>& FR_pattern,
+    const bie::HMatrix<double>& A_, const il::Array2D<il::int_t>& FR_pattern,
     const il::Array2D<il::int_t>& LR_pattern,const Array<double>& x_) {
 
   IL_EXPECT_FAST(A_.size(1) == x_.size());
@@ -169,7 +169,7 @@ inline il::Array<double> dotwithpattern(
 
 //  serial dot product with the stored pattern
 static il::Array<double> dotwithpattern_serial(
-    const il::HMatrix<double>& A_, const il::Array2D<il::int_t>& h_pattern,
+    const bie::HMatrix<double>& A_, const il::Array2D<il::int_t>& h_pattern,
     const il::Array<double>& x_) {
   IL_EXPECT_FAST(A_.size(1) == x_.size());
 

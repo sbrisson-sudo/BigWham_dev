@@ -390,6 +390,8 @@ inline void blas(double alpha, il::Array2DView<double> A, il::Dot op,
       IL_EXPECT_FAST(A.size(1) == x.size());
       break;
     case il::Dot::Transpose:
+//      IL_EXPECT_FAST(A.size(1) == x.size());
+//      IL_EXPECT_FAST(A.size(0) == y.size());
     case il::Dot::Star:
       IL_EXPECT_FAST(A.size(0) == x.size());
       IL_EXPECT_FAST(A.size(1) == y.size());

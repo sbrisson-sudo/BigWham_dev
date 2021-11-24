@@ -1,9 +1,17 @@
+//
+// This file is part of BigWham.
+//
+// Created by Francois Fayard - 2018
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// file for more details.
+//
 #pragma once
 
 #include <il/Array2D.h>
 #include <il/Array2DView.h>
 
-namespace il {
+namespace bie {
 
 template <typename T>
 class MatrixGenerator {
@@ -16,10 +24,10 @@ class MatrixGenerator {
 };
 
 template <typename T>
-il::Array2D<T> toArray2D(const il::MatrixGenerator<T>& M) {
+il::Array2D<T> toArray2D(const bie::MatrixGenerator<T>& M) {
   il::Array2D<T> ans{M.size(0), M.size(1)};
   M.set(0, 0, il::io, ans.Edit());
   return ans;
 }
 
-}  // namespace il
+}

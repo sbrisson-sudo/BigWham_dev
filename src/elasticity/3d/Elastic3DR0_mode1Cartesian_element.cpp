@@ -6,21 +6,18 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-
-#include <cmath>
-#include <limits>
-#include <iostream>
-#include <il/linearAlgebra.h>
 #include <il/blas.h>
+#include <il/linearAlgebra.h>
 #include <src/elasticity/3d/Elastic3DR0_common.h>
-#include <src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian_element.h>
-
+#include <src/elasticity/3d/Elastic3DR0_mode1Cartesian_element.h>
+#include <cmath>
+#include <iostream>
+#include <limits>
 
 namespace bie{
     // RONGVED SOLUTION FOR A P0 Rectangular dislocation in a full space
     // dislocation is centered on the origin in the plane z=0 , (-a,a) in x (-b,b)
     // in y
-
 
     // Fundamental stress kernel
     double StressesKernelR0opening(

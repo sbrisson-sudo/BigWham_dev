@@ -18,8 +18,6 @@
 #include <src/core/Mesh2D.h>
 #include <src/core/SegmentData.h>
 
-#include <src/elasticity/jacobi_prec_assembly.h>
-
 #include <utility>
 
 namespace bie {

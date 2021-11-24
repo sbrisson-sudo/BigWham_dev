@@ -15,7 +15,8 @@
 #include <interfaces/python/pybind11-master/include/pybind11/functional.h>
 #include <interfaces/python/pybind11-master/include/pybind11/chrono.h>
 
-#include "BigWham.h"
+#include <BigWham.h>
+#include <omp.h>
 
 namespace py = pybind11;
 
@@ -32,25 +33,22 @@ public:
 
     void set(Bigwhamio & BigwhamioObj) {
         std::vector<int> pos_list;
-        long nbfentry;
+        int nbfentry;
 
         std::cout << " calling getFullBlocks \n";
         BigwhamioObj.getFullBlocks(this->val_list,pos_list);
         std::cout << " n entries: " <<  (this->val_list.size()) << "\n";
-        std::cout << " preparing the Mtensors \n";
+        std::cout << " Preparing the vectors \n";
 
         nbfentry = this->val_list.size();
         this->rowN.resize(nbfentry);
         this->columN.resize(nbfentry);
 
-        // be careful makeSparseMatrix require 1-indexing for position !
-        for (int i=0;i<pos_list.size()/2;i++){
+        for (int i=0;i<nbfentry;i++){
             this->rowN[i]=pos_list[2*i];
             this->columN[i]=pos_list[2*i+1];
         }
-
         std::cout << " --- set pyGetFullBlocks completed ---- \n";
-
     };
 
     std::vector<double> & getgetValList(){return this->val_list;};
@@ -83,7 +81,6 @@ public:
 };
 
 
-
 PYBIND11_MODULE(bigwhamPybind, m) {
 
 //    // Binding the mother class Bigwhamio
@@ -101,7 +98,6 @@ PYBIND11_MODULE(bigwhamPybind, m) {
       .def("hdotProductInPermutted", &Bigwhamio::hdotProductInPermutted)
       .def("hdotProduct",            &Bigwhamio::hdotProduct, " dot product between hmat and a vector x",py::arg("x"))
       .def("computeStresses", &Bigwhamio::computeStresses, "function to compute the stress at a given set of points")
-      .def("getInfluenceCoe", &Bigwhamio::getInfluenceCoe)
       .def("computeDisplacements", &Bigwhamio::computeDisplacements);
 
 

@@ -31,60 +31,60 @@
 namespace il {
 
 template <typename T>
-void solve(const il::HMatrix<T>& lu, il::MatrixType type, il::io_t,
+void solve(const bie::HMatrix<T>& lu, il::MatrixType type, il::io_t,
            il::ArrayEdit<T> xy);
 
 template <typename T>
-void solve(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solve(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
            il::ArrayEdit<T> x);
 
 template <typename T>
-void solveLower(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveLower(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                 il::ArrayEdit<T> x);
 
 template <typename T>
-void solveLower(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveLower(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                 il::Array2DEdit<T> A);
 
 template <typename T>
-void solveLower(double epsilon, const il::HMatrix<T>& lu, il::spot_t slu,
-                il::spot_t s, il::io_t, il::HMatrix<T>& A);
+void solveLower(double epsilon, const bie::HMatrix<T>& lu, il::spot_t slu,
+                il::spot_t s, il::io_t, bie::HMatrix<T>& A);
 
 template <typename T>
-void solveUpper(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveUpper(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                 il::ArrayEdit<T> x);
 
 template <typename T>
-void solveUpper(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveUpper(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                 il::Array2DEdit<T> A);
 
 template <typename T>
-void solveUpper(const il::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
-                il::io_t, il::HMatrix<T>& A);
+void solveUpper(const bie::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
+                il::io_t, bie::HMatrix<T>& A);
 
 template <typename T>
-void solveUpperTranspose(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveUpperTranspose(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                          il::Array2DEdit<T> A);
 
 template <typename T>
-void solveUpperTranspose(const il::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
-                         il::io_t, il::HMatrix<T>& A);
+void solveUpperTranspose(const bie::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
+                         il::io_t, bie::HMatrix<T>& A);
 
 template <typename T>
-void solveUpperRight(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveUpperRight(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                      il::Array2DEdit<T> A);
 
 template <typename T>
-void solveUpperRight(double epsilon, const il::HMatrix<T>& lu, il::spot_t slu,
-                     il::spot_t s, il::io_t, il::HMatrix<T>& A);
+void solveUpperRight(double epsilon, const bie::HMatrix<T>& lu, il::spot_t slu,
+                     il::spot_t s, il::io_t, bie::HMatrix<T>& A);
 
 template <typename T>
-void solve(const il::HMatrix<T>& lu, il::io_t, il::ArrayEdit<T> xy) {
+void solve(const bie::HMatrix<T>& lu, il::io_t, il::ArrayEdit<T> xy) {
   il::solve(lu, lu.root(), il::io, xy);
 }
 
 template <typename T>
-void solve(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solve(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
            il::ArrayEdit<T> x) {
   IL_EXPECT_MEDIUM(lu.size(0, s) == lu.size(1, s));
   IL_EXPECT_MEDIUM(lu.size(1, s) == x.size());
@@ -94,14 +94,14 @@ void solve(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
 }
 
 template <typename T>
-void solveLower(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveLower(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                 il::ArrayEdit<T> x) {
   il::Array2DEdit<T> x_as_matrix{x.Data(), x.size(), 1, x.size(), 0, 0};
   solveLower(lu, s, il::io, x_as_matrix);
 }
 
 template <typename T>
-void solveLower(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveLower(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                 il::Array2DEdit<T> A) {
   IL_EXPECT_MEDIUM(lu.size(0, s) == lu.size(1, s));
   IL_EXPECT_MEDIUM(lu.size(0, s) == A.size(0));
@@ -129,8 +129,8 @@ void solveLower(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
 }
 
 template <typename T>
-void solveLower(double epsilon, const il::HMatrix<T>& lu, il::spot_t slu,
-                il::spot_t s, il::io_t, il::HMatrix<T>& A) {
+void solveLower(double epsilon, const bie::HMatrix<T>& lu, il::spot_t slu,
+                il::spot_t s, il::io_t, bie::HMatrix<T>& A) {
   IL_EXPECT_MEDIUM(lu.size(0, slu) == lu.size(1, slu));
   IL_EXPECT_MEDIUM(lu.size(1, slu) == A.size(0, s));
 
@@ -213,14 +213,14 @@ void solveLower(double epsilon, const il::HMatrix<T>& lu, il::spot_t slu,
 }
 
 template <typename T>
-void solveUpper(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveUpper(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                 il::ArrayEdit<T> x) {
   il::Array2DEdit<T> x_as_matrix{x.Data(), x.size(), 1, x.size(), 0, 0};
   solveUpper(lu, s, il::io, x_as_matrix);
 }
 
 template <typename T>
-void solveUpper(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveUpper(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                 il::Array2DEdit<T> A) {
   IL_EXPECT_MEDIUM(lu.size(0, s) == lu.size(1, s));
   IL_EXPECT_MEDIUM(lu.size(1, s) == A.size(0));
@@ -248,8 +248,8 @@ void solveUpper(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
 }
 
 template <typename T>
-void solveUpper(const il::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
-                il::io_t, il::HMatrix<T>& A) {
+void solveUpper(const bie::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
+                il::io_t, bie::HMatrix<T>& A) {
   IL_EXPECT_MEDIUM(lu.size(0, slu) == lu.size(1, slu));
   IL_EXPECT_MEDIUM(lu.size(1, slu) == A.size(0, s));
 
@@ -307,7 +307,7 @@ void solveUpper(const il::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
 }
 
 template <typename T>
-void solveUpperTranspose(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveUpperTranspose(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                          il::Array2DEdit<T> A) {
   IL_EXPECT_MEDIUM(lu.size(0, s) == lu.size(1, s));
   IL_EXPECT_MEDIUM(lu.size(0, s) == A.size(0));
@@ -335,13 +335,13 @@ void solveUpperTranspose(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
 }
 
 template <typename T>
-void solveUpperTranspose(const il::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
-                         il::io_t, il::HMatrix<T>& A) {
+void solveUpperTranspose(const bie::HMatrix<T>& lu, il::spot_t slu, il::spot_t s,
+                         il::io_t, bie::HMatrix<T>& A) {
   il::abort();
 }
 
 template <typename T>
-void solveUpperRight(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
+void solveUpperRight(const bie::HMatrix<T>& lu, il::spot_t s, il::io_t,
                      il::Array2DEdit<T> A) {
   IL_EXPECT_MEDIUM(lu.size(0, s) == lu.size(1, s));
   IL_EXPECT_MEDIUM(lu.size(0, s) == A.size(1));
@@ -370,8 +370,8 @@ void solveUpperRight(const il::HMatrix<T>& lu, il::spot_t s, il::io_t,
 }
 
 template <typename T>
-void solveUpperRight(double epsilon, const il::HMatrix<T>& lu, il::spot_t slu,
-                     il::spot_t s, il::io_t, il::HMatrix<T>& A) {
+void solveUpperRight(double epsilon, const bie::HMatrix<T>& lu, il::spot_t slu,
+                     il::spot_t s, il::io_t, bie::HMatrix<T>& A) {
   IL_EXPECT_MEDIUM(lu.size(0, slu) == lu.size(1, slu));
   IL_EXPECT_MEDIUM(lu.size(0, slu) == A.size(1, s));
 

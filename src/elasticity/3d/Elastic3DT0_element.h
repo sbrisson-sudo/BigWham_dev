@@ -1,5 +1,5 @@
 //
-// This file is part of BigWham_exe.
+// This file part of BigWham
 //
 // Created by Brice Lecampion on 23.05.20.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,

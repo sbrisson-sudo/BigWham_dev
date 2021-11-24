@@ -19,6 +19,7 @@
 #ifndef IL_TREE_H
 #define IL_TREE_H
 
+#include <iostream>
 // <cstring> is needed for memcpy
 #include <cstring>
 // <initializer_list> is needed for std::initializer_list<T>
@@ -32,9 +33,7 @@
 #include <il/SmallArray.h>
 #include "StaticArray.h"
 
-#define NEWTREE
 
-#ifdef NEWTREE
 namespace il {
 
 template <typename T, il::int_t n>
@@ -53,9 +52,16 @@ class Tree {
   il::int_t depth_;
   il::Array<Node> tree_;
 
+  il::int_t depth_rec(il::spot_t s) ;
+  il::int_t nnodesAtLevel_rec(il::spot_t s,il::int_t currentlevel,il::int_t level) const;
+
+  void getNodesAtLevel_rec(il::spot_t s,il::int_t currentlevel,il::int_t level,
+                           il::io_t,il::Array<T> &listAtLevel, il::int_t& off_set_k) const;
+
  public:
   Tree();
-  il::int_t depth() const;
+  il::int_t depth() const ;
+  void setDepth()  ;
   il::spot_t root() const;
   il::spot_t parent(il::spot_t s) const;
   il::spot_t child(il::spot_t s, il::int_t i) const;
@@ -64,14 +70,42 @@ class Tree {
   void Set(il::spot_t s, T value);
   void AddChild(il::spot_t s, il::int_t i);
   const T& value(il::spot_t) const;
+
+  il::int_t nnodesAtLevel(il::int_t level) const;
+  il::Array<T> getNodesAtLevel(il::int_t level) const;
 };
 
 template <typename T, il::int_t n>
 Tree<T, n>::Tree() : depth_{0}, tree_{1} {}
 
 template <typename T, il::int_t n>
-il::int_t Tree<T, n>::depth() const {
+il::int_t Tree<T, n>::depth() const  {
   return depth_;
+}
+
+template <typename T, il::int_t n>
+void Tree<T, n>::setDepth()   {
+  if (depth_ == 0)
+  {
+    depth_=this->depth_rec(il::spot_t{0});
+  }
+}
+
+template <typename T, il::int_t n>
+il::int_t Tree<T, n>::depth_rec(il::spot_t s)  {
+  if (hasChild(s) == false) {
+    return 0;
+  } else {
+    il::int_t max = 0;
+    for (il::int_t i = 0; i < n; i++) {
+      const il::spot_t st = this->child(s, i);
+      il::int_t aux = this->depth_rec(st);
+      if (aux > max) {
+        max = aux;
+      }
+    }
+    return (max+1);
+  }
 }
 
 template <typename T, il::int_t n>
@@ -127,163 +161,64 @@ const T& Tree<T, n>::value(il::spot_t s) const {
   return tree_[s.index].value;
 };
 
-}  // namespace il
-
-#else
-
-namespace il {
 
 template <typename T, il::int_t n>
-class Tree {
- private:
-  struct Node {
-   public:
-    T value;
-    unsigned char flag;
-
-   public:
-    Node() : Node{false} {};
-    Node(bool valid)
-        : value{},
-          flag{valid ? static_cast<unsigned char>(1)
-                     : static_cast<unsigned char>(0)} {};
-    bool isValid() const { return (flag % 2) == 1; };
-    bool isEmpty() const { return ((flag / 2) % 2) == 0; };
-    bool hasChild() const { return flag >= 4; };
-  };
-  il::Array<Node> tree_;
-
- public:
-  Tree();
-  Tree(il::int_t depth);
-  il::int_t depth() const;
-  il::spot_t root() const;
-  il::spot_t parent(il::spot_t s) const;
-  il::spot_t child(il::spot_t s, il::int_t i) const;
-  bool isEmpty(il::spot_t s) const;
-  bool hasChild(il::spot_t s) const;
-  bool hasChild(il::spot_t s, il::int_t i) const;
-  il::SmallArray<il::int_t, n> children(il::spot_t s) const;
-  void Set(il::spot_t s, T value);
-  void AddChild(il::spot_t s, il::int_t i);
-  const T& value(il::spot_t) const;
-};
-
-template <typename T, il::int_t n>
-Tree<T, n>::Tree() : tree_{1, il::emplace, true} {}
-
-template <typename T, il::int_t n>
-Tree<T, n>::Tree(il::int_t depth) {
-  il::int_t m = n;
-  for (il::int_t k = 0; k < depth; ++k) {
-    m *= n;
-  }
-  m = (m - 1) / (n - 1);
-  tree_.Reserve(m);
-  tree_.Resize(1, il::emplace, true);
-};
-
-template <typename T, il::int_t n>
-il::int_t Tree<T, n>::depth() const {
-  il::int_t m = tree_.size();
-  il::int_t fac = 1;
-  il::int_t depth = -1;
-  while (m >= 0) {
-    m -= fac;
-    fac *= n;
-    ++depth;
-  }
-  return depth;
+  il::int_t Tree<T, n>::nnodesAtLevel(il::int_t level) const {
+  return nnodesAtLevel_rec(this->root(),0,level);
 }
 
-template <typename T, il::int_t n>
-il::spot_t Tree<T, n>::root() const {
-  return il::spot_t{0};
-};
 
 template <typename T, il::int_t n>
-il::spot_t Tree<T, n>::parent(il::spot_t s) const {
-  IL_EXPECT_MEDIUM(s.index > 0);
-
-  return il::spot_t{(s.index - 1) / n};
-};
-
-template <typename T, il::int_t n>
-il::spot_t Tree<T, n>::child(il::spot_t s, il::int_t i) const {
-  IL_EXPECT_MEDIUM(tree_[s.index].hasChild());
-
-  return il::spot_t{n * s.index + 1 + i};
-};
-
-template <typename T, il::int_t n>
-void Tree<T, n>::Set(il::spot_t s, T x) {
-  tree_[s.index].value = x;
-  if (tree_[s.index].flag % 2 == 0) {
-    tree_[s.index].flag += 1;
-  }
-}
-
-template <typename T, il::int_t n>
-bool Tree<T, n>::isEmpty(il::spot_t s) const {
-  return tree_[s.index].isEmpty();
-};
-
-template <typename T, il::int_t n>
-bool Tree<T, n>::hasChild(il::spot_t s) const {
-  return tree_[s.index].hasChild();
-};
-
-template <typename T, il::int_t n>
-bool Tree<T, n>::hasChild(il::spot_t s, il::int_t i) const {
-  unsigned char flag = tree_[s.index].flag;
-  if (i == 0) {
-    return (flag / 4) % 2 == 1;
-  } else if (i == 1) {
-    return (flag / 8) % 2 == 1;
-  } else if (i == 2) {
-    return (flag / 16) % 2 == 1;
-  } else if (i == 3) {
-    return (flag / 32) % 2 == 1;
-  } else {
-    IL_UNREACHABLE;
-  }
-  IL_UNREACHABLE;
-  return true;
-};
-
-template <typename T, il::int_t n>
-il::SmallArray<il::int_t, n> Tree<T, n>::children(il::spot_t s) const {
-  il::int_t flag = tree_[s.index].flag / 4;
-  il::SmallArray<il::int_t, n> ans{};
-  il::int_t i = 0;
-  while (flag != 0) {
-    if (flag % 2 == 1) {
-      ans.Append(i);
+il::int_t Tree<T, n>::nnodesAtLevel_rec(il::spot_t s,il::int_t currentlevel,il::int_t level) const {
+    if (currentlevel==level) {
+      return n;
     }
-    ++i;
-    flag /= 2;
-  }
-  return ans;
-};
+    il::int_t naux=0;
+    for (il::int_t i=0;i<n;i++){
+      const il::spot_t st = this->child(s, i);
+      naux+=nnodesAtLevel_rec(st,currentlevel+1,level);
+    }
+    return naux;
+}
+
 
 template <typename T, il::int_t n>
-void Tree<T, n>::AddChild(il::spot_t s, il::int_t i) {
-  IL_EXPECT_MEDIUM(i >= 0 && i < n);
+il::Array<T> Tree<T, n>::getNodesAtLevel(il::int_t level) const {
 
-  unsigned char flag = 1 << (2 + i);
-  tree_[s.index].flag = tree_[s.index].flag | flag;
-  if (n * s.index + 1 + i >= tree_.size()) {
-    tree_.Resize(n * s.index + 2 + i); // todo - fix this as memory leaks.
-  }
-};
+  il::int_t nn=nnodesAtLevel(level);
+  il::Array<T> nodesEntryAtL{nn};
+  il::int_t offset_i=0;
+
+  getNodesAtLevel_rec(this-> root(),0,level,il::io,nodesEntryAtL,offset_i);
+  std::cout << " rec done nodes level!\n";
+  return nodesEntryAtL;
+}
 
 template <typename T, il::int_t n>
-const T& Tree<T, n>::value(il::spot_t s) const {
-  return tree_[s.index].value;
+void Tree<T, n>::getNodesAtLevel_rec(il::spot_t s,il::int_t currentlevel,il::int_t level,il::io_t,il::Array<T> &listAtLevel, il::int_t& off_set_k) const {
+    if (currentlevel==level-1){
+      for (il::int_t i=0;i<n;i++){
+        const il::spot_t st = this->child(s, i);
+        listAtLevel[off_set_k]=this->value(st);
+        off_set_k++;
+      }
+    } else if (currentlevel<level-1)
+    {
+      for (il::int_t i=0;i<n;i++){
+        const il::spot_t st = this->child(s, i);
+        getNodesAtLevel_rec(st,currentlevel+1,level,il::io,listAtLevel,off_set_k);
+      }
+    } else{
+
+    };
+
 };
 
-}  // namespace il
 
-#endif
+
+
+
+}
+
 
 #endif  // IL_TREE_H
