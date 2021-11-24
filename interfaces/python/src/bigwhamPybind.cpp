@@ -16,6 +16,7 @@
 #include <interfaces/python/pybind11-master/include/pybind11/chrono.h>
 
 #include <BigWham.h>
+#include <omp.h>
 
 namespace py = pybind11;
 

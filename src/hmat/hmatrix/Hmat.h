@@ -115,6 +115,7 @@ class Hmat {
 #else
     full_rank_blocks_.insert(full_rank_blocks_.end(), private_full_rank_blocks.begin(), private_full_rank_blocks.end());
 #endif
+    //private_full_rank_blocks.clear();
   }
        isBuilt_FR_=true;
 
