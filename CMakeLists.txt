@@ -267,7 +267,7 @@ target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} ) #${CMAKE_OPENBLAS_LIBRAR
 
 set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)
 add_executable(BigWham_exe  main.cpp )
-include_directories(il $ENV{TBBROOT}/include/ )
+include_directories(il $ENV{TBBROOT}/include/ $ENV{MKLROOT}/include/ )
 
 target_link_libraries(BigWham_exe BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
 
