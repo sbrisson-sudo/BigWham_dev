@@ -2712,8 +2712,8 @@ int test3DT0_matrix_build(){
     std::cout << "-------------- test3DR0 Matrix-Build ---------------------\n";
 
     il::int_t nx, ny, k=0 ;
-    nx = 501;
-    ny = 501;
+    nx = 301;
+    ny = 301;
     double Lx = 0.3, Ly = 0.3, hx = 0., hy = 0.;
 
     hx = 2. * Lx / (nx - 1);
