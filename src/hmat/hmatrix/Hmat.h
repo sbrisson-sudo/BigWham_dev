@@ -35,8 +35,8 @@ class Hmat {
   il::int_t dof_dimension_{}; //  dof per collocation points - not really needed to be stored
   il::StaticArray<il::int_t,2> size_; // size of tot mat (row, ocols)
 
-  std::vector<bie::LowRank<T>> low_rank_blocks_; // vector of low rank blocks
-  std::vector<il::Array2D<T>> full_rank_blocks_; // vector of full rank blocks
+  std::vector<std::unique_ptr<bie::LowRank<T>>> low_rank_blocks_;
+  std::vector<std::unique_ptr<il::Array2D<T>>>  full_rank_blocks_; // vector of full rank blocks
 
   bool isBuilt_= false;
   bool isBuilt_LR_=false;
@@ -77,8 +77,7 @@ class Hmat {
      tt.Start();
      this->build(matrix_gen,epsilon_aca);
      tt.Stop();
-     std::cout << "Creation of hmat done in "  << tt.time() <<"\n";
-     std::cout << "Compression ratio - " << this->compressionRatio() <<"\n";
+     std::cout << "Creation of hmat done in "  << tt.time() <<"\n";std::cout << "Compression ratio - " << this->compressionRatio() <<"\n";
      std::cout << "Hmat object - built " << "\n";
    };
    // -----------------------------------------------------------------------------
@@ -90,7 +89,8 @@ class Hmat {
 
 #pragma omp parallel
   {
-    std::vector<il::Array2D<T>> private_full_rank_blocks;
+      std::vector<std::unique_ptr<il::Array2D<T>>> private_full_rank_blocks;
+
 #pragma omp for nowait schedule(static)
     for (il::int_t i = 0; i < pattern_.n_FRB; i++) {
       il::int_t i0 = pattern_.FRB_pattern(1, i);
@@ -101,24 +101,23 @@ class Hmat {
       const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
       const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
 
-      il::Array2D<T> sub{ni, nj};
-      matrix_gen.set(i0, j0, il::io, sub.Edit());
-      private_full_rank_blocks.push_back(sub);
-      //full_rank_blocks_.push_back(sub);
+      //std::shared_ptr<il::Array2D<T>> a = std::make_shared<il::Array2D<T>> (ni, nj);
+      std::unique_ptr<il::Array2D<T>> a =std::make_unique<il::Array2D<T>>  (ni, nj);
+      matrix_gen.set(i0, j0, il::io, (*a).Edit());
+      private_full_rank_blocks.push_back(std::move(a));
     }
 #ifdef _OPENMP
 #pragma omp for schedule(static) ordered
     for(int i=0; i<omp_get_num_threads(); i++) {
 #pragma omp ordered
-      full_rank_blocks_.insert(full_rank_blocks_.end(), private_full_rank_blocks.begin(), private_full_rank_blocks.end());
+      full_rank_blocks_.insert(full_rank_blocks_.end(), std::make_move_iterator(private_full_rank_blocks.begin()), std::make_move_iterator(private_full_rank_blocks.end()));
     }
 #else
-    full_rank_blocks_.insert(full_rank_blocks_.end(), private_full_rank_blocks.begin(), private_full_rank_blocks.end());
+    full_rank_blocks_.insert(full_rank_blocks_.end(), std::make_move_iterator(private_full_rank_blocks.begin()), std::make_move_iterator(private_full_rank_blocks.end()));
 #endif
     //private_full_rank_blocks.clear();
   }
        isBuilt_FR_=true;
-
   }
 ////////////////////////////////////////////////////////////////////////////////
 ///
@@ -132,7 +131,8 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
 
 #pragma omp parallel
     {
-      std::vector<bie::LowRank<T>> private_low_rank_blocks;
+      std::vector<std::unique_ptr<bie::LowRank<T>>> private_low_rank_blocks;
+
 #pragma omp for nowait schedule(static)
       for (il::int_t i = 0; i < pattern_.n_LRB; i++) {
         il::int_t i0 = pattern_.LRB_pattern(1, i);
@@ -145,29 +145,30 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
         // here we have an if condition for the LRA call dependent on dof_dimension_
         bie::LowRank<T> lra;
         if (matrix_gen.blockSize()==1){
-          lra = bie::adaptiveCrossApproximation<1>(matrix_gen, range0, range1,
-            epsilon);
+          lra = bie::adaptiveCrossApproximation<1>(matrix_gen, range0, range1, epsilon);
         } else if (matrix_gen.blockSize()==2){
-           lra = bie::adaptiveCrossApproximation<2>(matrix_gen, range0, range1,
-                                                                   epsilon);
+            lra = bie::adaptiveCrossApproximation<2>(matrix_gen, range0, range1, epsilon);
         } else if (matrix_gen.blockSize()==3){
-          lra = bie::adaptiveCrossApproximation<3>(matrix_gen, range0, range1,
-                                                                 epsilon);
+          lra = bie::adaptiveCrossApproximation<3>(matrix_gen, range0, range1, epsilon);
         } else {
           IL_UNREACHABLE;
         }
-        private_low_rank_blocks.push_back(lra);
+        std::unique_ptr<bie::LowRank<T>> lra_p( new bie::LowRank<T>( std::move(lra) ) );
+
         // store the rank in the low_rank pattern
-        pattern_.LRB_pattern(5, i) = lra.A.size(1);
+        pattern_.LRB_pattern(5, i) = (*lra_p).A.size(1);
+
+        private_low_rank_blocks.push_back(std::move(lra_p)); // lra_p does not exist after such call
       }
+
 #ifdef _OPENMP
 #pragma omp for schedule(static) ordered
       for(int i=0; i<omp_get_num_threads(); i++) {
 #pragma omp ordered
-        low_rank_blocks_.insert(low_rank_blocks_.end(), private_low_rank_blocks.begin(), private_low_rank_blocks.end());
+        low_rank_blocks_.insert(low_rank_blocks_.end(), std::make_move_iterator(private_low_rank_blocks.begin()), std::make_move_iterator(private_low_rank_blocks.end()));
       }
 #else
-      low_rank_blocks_.insert(low_rank_blocks_.end(), private_low_rank_blocks.begin(), private_low_rank_blocks.end());
+      low_rank_blocks_.insert(low_rank_blocks_.end(), std::make_move_iterator(private_low_rank_blocks.begin()), std::make_move_iterator(private_low_rank_blocks.end()));
 #endif
     }
         isBuilt_LR_=true;
@@ -197,12 +198,13 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     il::int_t n=0;
 
     for (il::int_t i=0;i<pattern_.n_FRB;i++){
-      il::Array2DView<double> a = full_rank_blocks_[i].view();
+
+      il::Array2DView<double> a = (*full_rank_blocks_[i]).view();
       n+=a.size(0)*a.size(1);
     }
     for (il::int_t i=0;i<pattern_.n_LRB;i++) {
-      il::Array2DView<double> a = low_rank_blocks_[i].A.view();
-      il::Array2DView<double> b = low_rank_blocks_[i].B.view();
+      il::Array2DView<double> a = (*low_rank_blocks_[i]).A.view();
+      il::Array2DView<double> b = (*low_rank_blocks_[i]).B.view();
       n+=a.size(0)*a.size(1)+b.size(0)*b.size(1);
     }
     return n;
@@ -233,7 +235,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
       il::int_t iend=pattern_.FRB_pattern(3,i);
       il::int_t jend=pattern_.FRB_pattern(4,i);
 
-      il::Array2DView<T> a = full_rank_blocks_[i].view();
+      il::Array2DView<T> a = (*full_rank_blocks_[i]).view();
       il::ArrayView<T> xs = x.view(il::Range{j0* dof_dimension_, jend* dof_dimension_});
       il::ArrayEdit<T> ys = yprivate.Edit(il::Range{i0* dof_dimension_, iend* dof_dimension_});
 
@@ -257,8 +259,8 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
       il::int_t iend = pattern_.LRB_pattern(3, i);
       il::int_t jend = pattern_.LRB_pattern(4, i);
 
-      il::Array2DView<double> a = low_rank_blocks_[i].A.view();
-      il::Array2DView<double> b = low_rank_blocks_[i].B.view();
+      il::Array2DView<double> a = (*low_rank_blocks_[i]).A.view();
+      il::Array2DView<double> b = (*low_rank_blocks_[i]).B.view();
 
       il::ArrayView<double> xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
       il::ArrayEdit<double> ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
@@ -333,7 +335,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     //  compute the number of  entries in the whole full rank blocks
     int nbfentry=0;
     for (il::int_t i=0;i<pattern_.n_FRB;i++) {
-      il::Array2D<double>  aux=full_rank_blocks_[i];
+      il::Array2DView<double>  aux=((*full_rank_blocks_[i]).view());
       nbfentry=nbfentry+static_cast<int>(aux.size(0)*aux.size(1)) ;
     }
 
@@ -352,7 +354,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
      // loop on full rank and get i,j and val
     int nr=0; int npos=0;
     for (il::int_t k = 0;k < pattern_.n_FRB; k++) {
-      il::Array2D<double>  aux=full_rank_blocks_[k];
+      il::Array2D<double>  aux=*full_rank_blocks_[k];
       il::int_t i0 = pattern_.FRB_pattern(1, k);
       il::int_t j0 = pattern_.FRB_pattern(2, k);
       il::int_t index=0;

@@ -2706,6 +2706,94 @@ int testPl3D(){
   return 0;
 }
 
+
+int test3DT0_matrix_build(){
+
+    std::cout << "-------------- test3DR0 Matrix-Build ---------------------\n";
+
+    il::int_t nx, ny, k=0 ;
+    nx = 501;
+    ny = 501;
+    double Lx = 0.3, Ly = 0.3, hx = 0., hy = 0.;
+
+    hx = 2. * Lx / (nx - 1);
+    hy = 2. * Ly / (ny - 1);
+
+    il::Array2D<il::int_t> conn{nx * ny, 4};
+
+    for (int j = 0; j < ny; j++){
+        for (int i = 0; i < nx; i++){
+            conn(k, 0) = (i + j * (nx + 1));
+            conn(k, 1) = (i + 1) + j * (nx + 1);
+            conn(k, 2) = i + 1 + (j + 1) * (nx + 1);
+            conn(k, 3) = i + (j + 1) * (nx + 1);
+            k = k + 1;
+        }
+    }
+
+    il::Array2D<double> nodes{(nx + 1)*(ny + 1),3};
+    il::Array<double> x{(nx + 1)}, y{(ny + 1)};
+
+    for (int i = 0; i < (nx + 1); i++){
+        x[i] = - Lx - hx/2. + i * hx/2.;
+    }
+    for (int i = 0; i < (ny + 1); i++){
+        y[i] = - Ly - hy/2. + i * hy/2.;
+    }
+
+    int index = 0;
+    for (int j = 0; j < (ny + 1); j++){
+        for (int i = 0; i < (nx + 1); i++){
+            nodes(index, 0) = x[i];
+            nodes(index, 1) = y[j];
+            nodes(index, 2) = 0.;
+            index = index + 1;
+        }
+    }
+
+
+    bie::Mesh3D mesh(nodes, conn, 0);
+
+    double nu = 0.25;
+    double G = 1.0;
+    double young = 2.0 * G * (1.0+nu);
+
+    // now we use the BIGWHAM
+
+    // convert to std vectors
+    std::vector<double> nodes_flat;
+    nodes_flat.reserve(3 * nodes.size(0));
+    for (int i = 0; i < nodes.size(0); i++){
+        for (int j = 0; j < nodes.size(1); j++){
+            nodes_flat.push_back(nodes(i,j));
+        }
+    }
+    std::vector<int> conn_flat;
+    conn_flat.reserve(3 * conn.size(0));
+    for (int i = 0; i < conn.size(0); i++){
+        for (int j = 0; j < conn.size(1); j++){
+            conn_flat.push_back(conn(i,j));
+        }
+    }
+
+    //std::cout << "Memory requirements " << "\n";
+    //std::cout << "GiB =  " << 0.0383212 * nx * ny * nx * ny * 8. / 1024. / 1024. /1024.  << " "  << "\n";
+
+    const std::vector<double> properties = {young, nu}; // Young Modulus , Poisson's ratio
+    const int max_leaf_size = 450;
+    const double eta_test = 3.;
+    const double eps_aca = 0.0001;
+
+    // create HMAT
+    const std::string kernel_name = "3DR0opening";
+    Bigwhamio test;
+    test.set(nodes_flat,conn_flat,kernel_name,properties,
+             max_leaf_size, eta_test, eps_aca);
+
+    std::cout << "-------------- End of test3DT0 Matrix-Build ------------- " << "\n";
+    return  0;
+}
+
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
@@ -2721,8 +2809,8 @@ int main() {
 
 //  testFullMat();
 //  testNewHmat();
-
-  testPl3D();
+test3DT0_matrix_build();
+  //testPl3D();
 //// tests for 3DT6 not updated since the change of interface
 //test3DT6Mesh();
 //std::string vertices_file = "/home/alexis/bigwham/vertices5000.csv";

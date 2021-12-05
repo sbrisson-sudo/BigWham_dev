@@ -20,7 +20,7 @@ project(BigWham VERSION 1.0
         DESCRIPTION "This is the library containing the wheels"
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 #####################################
 # set options: False = 0, True = 1  #
@@ -33,7 +33,7 @@ set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
-set(IL_OPENMP 0) # to activate openMP  for bigwham (recommended but should have openmp lib installed)
+set(IL_OPENMP 1) # to activate openMP  for bigwham (recommended but should have openmp lib installed)
 set(IL_TBB 1)
 
 set(USE_INTEL 0)  # compiler option
@@ -180,6 +180,7 @@ if(IL_MKL)
             # to fill up here ...
         endif()
     endif()
+    MESSAGE("-- The MKL is found at: " $ENV{MKLROOT})
 
     # For OpenBlas
 elseif(IL_OPENBLAS)
@@ -199,7 +200,7 @@ endif()
 
 set(SOURCE_FILES_DIR ${PROJECT_SOURCE_DIR}/src)
 
-include_directories(il $ENV{TBBROOT}/include/tbb  src src/hmat .)
+include_directories(il $ENV{TBBROOT}/include/tbb $ENV{MKLROOT}/include  src src/hmat .)
 
 MESSAGE("Using TBB:")
 MESSAGE("-- The TBB is found at: " $ENV{TBBROOT})
@@ -289,7 +290,7 @@ if(BUILD_PYTHON_BINDINGS)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         elseif(UNIX)
             target_link_directories(part PRIVATE ${OPENMP_LIBRARY})
-            target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES}  ${OPENMP_LIBRARY}"-Wl,--end-group" -lpthread -lm -ldl)
+            target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
             target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         elseif(WIN32)
