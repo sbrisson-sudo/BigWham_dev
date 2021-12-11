@@ -34,7 +34,7 @@ class Hmat {
   bie::HPattern pattern_; // the Hmat pattern
 
   il::int_t dof_dimension_{}; //  dof per collocation points - not really needed to be stored
-  il::StaticArray<il::int_t,2> size_; // size of tot mat (row, ocols)
+  il::StaticArray<il::int_t,2> size_; // size of tot mat (row, cols)
 
   std::vector<std::unique_ptr<bie::LowRank<T>>> low_rank_blocks_;
   std::vector<std::unique_ptr<il::Array2D<T>>>  full_rank_blocks_; // vector of full rank blocks

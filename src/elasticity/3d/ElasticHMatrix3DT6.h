@@ -129,25 +129,21 @@ void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       e_k1 = il::floor(old_k1 / 6.);
       is_l = old_k1 % 6;
 
-      il::Array2D<double> xv = mesh_.getVerticesElt(
-          e_k1);  // get vertices' coordinates of source element
+      il::Array2D<double> xv = mesh_.getVerticesElt(e_k1);  // get vertices' coordinates of source element
       bie::FaceData elem_data_s(xv, 2);  // 2 = interpolation order
 
       // Loop over a subset of collocation points
-
       for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
         il::int_t k0 = b0 + j0;
         old_k0 = permutation_[k0];
         e_k0 = il::floor(old_k0 / 6.);
         ir_l = old_k0 % 6;
 
-        xv = mesh_.getVerticesElt(
-            e_k0);  // get vertices' coordinates of receiver element
+        xv = mesh_.getVerticesElt(e_k0);  // get vertices' coordinates of receiver element
         bie::FaceData elem_data_r(xv, 2);  // 2 = interpolation order
 
         // call to the kernel
-        stnl =
-            traction_influence_3DT6(elem_data_s, elem_data_r, is_l, ir_l, elas_,
+        stnl =traction_influence_3DT6(elem_data_s, elem_data_r, is_l, ir_l, elas_,
                                     I_want_global_DD, I_want_global_traction);
 
         /* stnl is a matrix 3x3 like that if the source node is NOT at the
@@ -169,7 +165,6 @@ void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,
         for (il::int_t j = 0; j < 3; j++) {
           for (il::int_t i = 0; i < 3; i++) {
             M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j);
-
             // I'm writing on
             // M( direction , number of DD )
           }

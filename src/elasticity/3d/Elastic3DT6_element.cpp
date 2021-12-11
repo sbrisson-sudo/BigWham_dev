@@ -404,7 +404,6 @@ il::Array2D<double> traction_influence_3DT6(
   // Rotation tensor for the target element (the same function as for the source is being used)
   il::StaticArray2D<double, 3, 3> r_tensor_t =make_el_r_tensor(el_vert_t);
 
-
   // Take the Normal vector (n) at collocation point (x) from the r_tensor_t
   // minus because of n:=-e3
   il::StaticArray<double, 3> nrm_cp_glob;
@@ -415,8 +414,6 @@ il::Array2D<double> traction_influence_3DT6(
   // Collocation points' coordinates  (in the Global coordinate system)
   il::StaticArray<il::StaticArray<double, 3>, 6> el_cp_crd = el_cp_uniform(el_vert_t, elem_data_r.getBeta1(), elem_data_r.getBeta2());
 
-
-
   // Shifting to the n_t-th collocation pt
   HZ hz = make_el_pt_hz(el_vert_s, el_cp_crd[n_t], r_tensor_s);
 
@@ -426,17 +423,13 @@ il::Array2D<double> traction_influence_3DT6(
   il::StaticArray2D<double, 6, 18> stress_infl_el2p_loc_h =
       make_local_3dbem_submatrix(1,  elas_.getG(), elas_.getNu(), hz.h, hz.z, tau, sfm);
 
-
-
   // Alternative 2: rotating nrm_cp_glob to
   // the source element's local coordinate system
   // because I need the normal ar the cp in the source coordinates system
-  il::StaticArray<double, 3> nrm_cp_loc =
-      il::dot(r_tensor_s, nrm_cp_glob);
+  il::StaticArray<double, 3> nrm_cp_loc =il::dot(r_tensor_s, nrm_cp_glob);
   // nrm_cp_glob is the normal @ cp in the global coord system
   // Expressing it through the coord. system of the source el.
   // you get nrm_cp_loc
-
 
   il::StaticArray2D<double, 3, 18> trac_el2p_loc =nv_dot_sim(nrm_cp_loc, stress_infl_el2p_loc_h);
 
@@ -447,7 +440,6 @@ il::Array2D<double> traction_influence_3DT6(
   //
   // trac_el2p_loc--> traction and DD are both in local system of the SOURCE element
   //
-
 
   il::StaticArray2D<double, 3, 18> trac_cp_local2global =il::dot(r_tensor_s, il::Dot::Transpose,trac_el2p_loc);
   // 3 component of traction vs 6 source nodes * 3 DD components
@@ -472,8 +464,7 @@ il::Array2D<double> traction_influence_3DT6(
   il::StaticArray2D<double, 3, 3> trac_infl_n2p_local2global;
   for (int j = 0; j < 3; ++j) {
     for (int k = 0; k < 3; ++k) {
-      trac_infl_n2p_local2global(k, j) =
-          trac_cp_local2global(k, 3 * n_s + j);
+      trac_infl_n2p_local2global(k, j) =trac_cp_local2global(k, 3 * n_s + j);
     }
   }
   if (I_want_global_DD==0 && I_want_global_traction==1)
@@ -534,7 +525,6 @@ il::Array2D<double> traction_influence_3DT6(
       }
     }
   }
-
 
   return NodeDDtriplet_to_CPtraction_influence_matrix;
   // t_dir_x_node(n_t)_dd1_on_node_(n_s)  t_dir_x_node(n_t)_dd2_on_node_(n_s)  t_dir_x_node(n_t)_dd3_on_node_(n_s)
