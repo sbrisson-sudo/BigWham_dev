@@ -13,11 +13,9 @@
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
 #include <il/linearAlgebra.h>
-// #include <il/linearAlgebra/dense/blas/dot.h>
-// #include <il/linearAlgebra/dense/blas/cross.h>
 #include <il/linearAlgebra/dense/norm.h>
-#include "elasticity/3d/constants.h"
-#include "element_utilities.h"
+#include <src/elasticity/3d/constants.h>
+#include <src/core/element_utilities.h>
 
 namespace bie {
 
@@ -59,8 +57,7 @@ namespace bie {
 
 // Element's local coordinate system manipulations
 
-    il::StaticArray2D<double, 3, 3> make_el_r_tensor
-            (const il::StaticArray2D<double, 3, 3> &el_vert) {
+    il::StaticArray2D<double, 3, 3> make_el_r_tensor(const il::StaticArray2D<double, 3, 3> &el_vert) {
 // This function calculates the rotation tensor -
 // coordinate transform from "global" (reference) 
 // Cartesian coordinate system to the element's local 
@@ -196,8 +193,7 @@ namespace bie {
                                               // I  e_global->e_local      I*v_global=v_local
                                               // I^T*v_local=v_global or v_local^T*I=v_global^T
 
-        il::StaticArray2D<std::complex<double>, 2, 2> tau_2_mc =
-                make_el_tau_2_mc(el_vert, r_tensor);
+        il::StaticArray2D<std::complex<double>, 2, 2> tau_2_mc =make_el_tau_2_mc(el_vert, r_tensor);
         il::StaticArray2D<std::complex<double>, 6, 6> sfm{0.0}, sfm_mc{0.0};
 
         // coefficients of shape functions (rows) 

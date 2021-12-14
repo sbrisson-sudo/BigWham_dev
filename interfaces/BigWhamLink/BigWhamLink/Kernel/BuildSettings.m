@@ -1,3 +1,4 @@
+(* ::Package:: *)
 
 (* Specify build settings such as compiler and linker flags, libraries to be linked, etc. here *)
 
