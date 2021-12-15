@@ -25,12 +25,9 @@ namespace bie {
 // Element-to-point influence matrix (submatrix of the global one)
 // (Integration of a kernel of the elasticity equation over a triangular element
 // with 2nd order polynomial approximating (shape) functions)
-    il::StaticArray2D<double, 6, 18> make_local_3dbem_submatrix
-            (const int kernel_id,
-             double shear_m, double poiss_r, double h, std::complex<double> z,
+    il::StaticArray2D<double, 6, 18> make_local_3dbem_submatrix(const int kernel_id,double shear_m, double poiss_r, double h, std::complex<double> z,
              const il::StaticArray<std::complex<double>, 3> &tau,
              const il::StaticArray2D<std::complex<double>, 6, 6> &sfm);
-
 
 // Integration of a kernel of the elasticity equation
 // over a part of a polygonal element (a sector associated with one edge)
@@ -44,11 +41,11 @@ namespace bie {
 // Stress components (vs local Cartesian coordinate system of the element)
 // combined as S11+S22, S11-S22+2*I*S12, S13+I*S23, S33
 
-    il::StaticArray4D<std::complex<double>, 6, 4, 3, 9> s_integral_gen   (const int ker,double poiss_r, std::complex<double> eix,double h, std::complex<double> d);
+    il::StaticArray4D<std::complex<double>, 6, 4, 3, 9> s_integral_gen(const int ker,double poiss_r, std::complex<double> eix,double h, std::complex<double> d);
 
-    il::StaticArray4D<std::complex<double>, 6, 4, 3, 5> s_integral_red   (const int kernel_id,double poiss_r, std::complex<double> eix,double h);
+    il::StaticArray4D<std::complex<double>, 6, 4, 3, 5> s_integral_red(const int kernel_id,double poiss_r, std::complex<double> eix,double h);
 
-    il::StaticArray3D<std::complex<double>, 6, 4, 3> s_integral_lim    (const int ker,double poiss_r, std::complex<double> eix,std::complex<double> d);
+    il::StaticArray3D<std::complex<double>, 6, 4, 3> s_integral_lim(const int ker,double poiss_r, std::complex<double> eix,std::complex<double> d);
 
 // Constituing functions for the integrals
 // of any kernel of the elasticity equation
@@ -62,18 +59,15 @@ namespace bie {
 // eix = std::exp(I*x); x = std::arg(t-z)-std::arg(d);
 // a = std::fabs(t-z-d)*sign(x);
 
-    il::StaticArray<std::complex<double>, 9> integral_cst_fun  (double h, std::complex<double> d, double a,double x, std::complex<double> eix);
+    il::StaticArray<std::complex<double>, 9> integral_cst_fun(double h, std::complex<double> d, double a,double x, std::complex<double> eix);
 
-    il::StaticArray<std::complex<double>, 5> integral_cst_fun_red   (double h, std::complex<double> d, double a);
+    il::StaticArray<std::complex<double>, 5> integral_cst_fun_red(double h, std::complex<double> d, double a);
 
 /// Function to assemble by Nodes - required for hmat
 // todo move to StaticArray
-il::Array2D<double> traction_influence_3DT6(
-            bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
-            il::int_t n_s,
-            il::int_t  n_t, bie::ElasticProperties const &elas_,
-            il::int_t I_want_global_DD,
-            il::int_t I_want_global_traction);
+il::Array2D<double> traction_influence_3DT6(bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
+                                            il::int_t n_s,il::int_t  n_t, bie::ElasticProperties const &elas_,
+                                            il::int_t I_want_global_DD,il::int_t I_want_global_traction);
 
 }
 

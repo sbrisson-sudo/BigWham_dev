@@ -33,11 +33,10 @@ namespace bie {
 // (Integration of a kernel of the elasticity equation over a triangular element
 // with 2nd order polynomial approximating (shape) functions)
     il::StaticArray2D<double, 6, 18>
-    make_local_3dbem_submatrix
-            (const int kernel_id,
-             double shear_m, double poiss_r, double h, std::complex<double> z,
-             const il::StaticArray<std::complex<double>, 3> &tau,
-             const il::StaticArray2D<std::complex<double>, 6, 6> &sfm) {
+            make_local_3dbem_submatrix(const int kernel_id,double shear_m, double poiss_r, double h, std::complex<double> z,
+                                       const il::StaticArray<std::complex<double>, 3> &tau,
+                                       const il::StaticArray2D<std::complex<double>, 6, 6> &sfm) {
+
         // This function assembles a local "stiffness" sub-matrix
         // (influence of DD at the element nodes to stresses at the point z)
         // in terms of a triangular element's local coordinates
@@ -183,8 +182,7 @@ namespace bie {
         }
 
         // contraction with "shifted" sfm (left)
-        il::StaticArray3D<std::complex<double>, 6, 4, 3>
-                s_ij_infl_nod = dot(sfm_z, s_ij_infl_mon);
+        il::StaticArray3D<std::complex<double>, 6, 4, 3>  s_ij_infl_nod = dot(sfm_z, s_ij_infl_mon);
         //s_ij_infl_nod(nodes of source elem,stress component in complex not., dd compoment)
 
         // re-shaping and scaling (by elastic properties) of the resulting matrix
@@ -293,8 +291,7 @@ namespace bie {
 // powers of r, g0=arctan((ah)/(dr)),
 // f0=arctanh(a/r) and its derivatives w.r. to h
 
-    il::StaticArray<std::complex<double>, 9> integral_cst_fun
-            (double h, std::complex<double> d, double a,
+    il::StaticArray<std::complex<double>, 9> integral_cst_fun (double h, std::complex<double> d, double a,
              double x, std::complex<double> eix) {
 
         double abs_d = std::abs(d), d2 = abs_d * abs_d, a2 = a * a,
@@ -325,8 +322,7 @@ namespace bie {
 // Special case (reduced summation,
 // collocation point projected onto the element contour) - additional terms
 
-    il::StaticArray<std::complex<double>, 5> integral_cst_fun_red
-            (double h, std::complex<double> d, double a) {
+    il::StaticArray<std::complex<double>, 5> integral_cst_fun_red(double h, std::complex<double> d, double a) {
 
         double h2 = h * h, h4 = h2 * h2, h6 = h4 * h2,
                 abs_d = std::abs(d), d2 = abs_d * abs_d, a2 = a * a,
@@ -348,15 +344,14 @@ namespace bie {
     }
 
 
-    ///////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
-il::Array2D<double> traction_influence_3DT6(
-        bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
-        il::int_t n_s,  // n_s is a node of the "source" element
-        il::int_t  n_t,  // n_t is the collocation point of the "target" element
-        bie::ElasticProperties const &elas_,
-        il::int_t I_want_global_DD,
-        il::int_t I_want_global_traction) {
+il::Array2D<double> traction_influence_3DT6(bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
+                                            il::int_t n_s,  // n_s is a node of the "source" element
+                                            il::int_t  n_t,  // n_t is the collocation point of the "target" element
+                                            bie::ElasticProperties const &elas_,
+                                            il::int_t I_want_global_DD,
+                                            il::int_t I_want_global_traction) {
 
   il::Array2D<double> NodeDDtriplet_to_CPtraction_influence_matrix{3,3,0.0};
 

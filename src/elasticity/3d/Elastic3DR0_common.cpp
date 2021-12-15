@@ -467,5 +467,4 @@ namespace bie{
         return a_and_b ;
     }
 
-
 }

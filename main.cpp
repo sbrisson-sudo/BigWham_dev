@@ -2806,6 +2806,7 @@ int main() {
  // test2DP1();
 
  // testS3DP0();
+std::cout << "Mahcine epsilon " << std::numeric_limits<double>::epsilon() <<"\n";
 
 //  testFullMat();
 //  testNewHmat();

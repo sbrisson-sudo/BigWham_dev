@@ -116,7 +116,6 @@ namespace bie {
 
         il::StaticArray4D<std::complex<double>, 6, 4, 3, 9> c_array{0.0};
 
-
         // S_11 + S_22
         
         c_array(0, 0, 0, 2) = h * d_sin_p;
@@ -901,9 +900,7 @@ namespace bie {
 // reduced summation; collocation point projected onto
 // an edge line or a vertex of the element
 
-    il::StaticArray4D<std::complex<double>, 6, 4, 3, 5> s_ij_red_h
-            (double nu, std::complex<double> eix,
-             double h) {
+    il::StaticArray4D<std::complex<double>, 6, 4, 3, 5> s_ij_red_h(double nu, std::complex<double> eix,double h) {
         // const std::complex<double> I(0.0, 1.0);
 
         double c_1_nu = 1.0 + nu;
@@ -948,7 +945,6 @@ namespace bie {
         std::complex<double> p1, p2, p3, p4;
 
         il::StaticArray4D<std::complex<double>, 6, 4, 3, 5> c_array{0.0};
-
 
         // S_11 + S_22
         
@@ -1177,9 +1173,7 @@ namespace bie {
 
 // Limit case (h==0, plane) - all stress components
 
-    il::StaticArray3D<std::complex<double>, 6, 4, 3> s_ij_lim_h
-            (double nu, std::complex<double> eix,
-             std::complex<double> d) {
+    il::StaticArray3D<std::complex<double>, 6, 4, 3> s_ij_lim_h(double nu, std::complex<double> eix,std::complex<double> d) {
         // const std::complex<double> I(0.0, 1.0);
 
         double c_1_2nu = 1.0 + 2.0 * nu;

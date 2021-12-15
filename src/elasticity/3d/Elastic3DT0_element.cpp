@@ -129,11 +129,7 @@ namespace bie {
     }
 
 // Fundamental stress kernel = stress influence coefficients
-    il::StaticArray2D<double, 3, 6> StressesKernelT0(
-            il::Array2D<double> &x,
-            il::Array2D<double> &xv,
-            double &G,
-            double &nu) {
+    il::StaticArray2D<double, 3, 6> StressesKernelT0(il::Array2D<double> &x,il::Array2D<double> &xv,double &G,double &nu) {
 
         // this routine is based on the works of Nintcheu Fata (2009,2011)
 
@@ -1325,10 +1321,7 @@ namespace bie {
 
     // By order of appearance in displacement influence coefficients due to DD1
 
-    double i3_Xi(
-            il::StaticArray<double, 3> &chi,
-            il::StaticArray<double, 3> &sinAlpha
-    ) {
+    double i3_Xi(il::StaticArray<double, 3> &chi,il::StaticArray<double, 3> &sinAlpha) {
         double sum = 0.0;
         for (int i = 0; i < 3; i++) {
             sum += chi[i] * sinAlpha[i];
@@ -1338,10 +1331,7 @@ namespace bie {
 
     // By order of appearance in displacement influence coefficients due to DD2
 
-    double i3_Zeta(
-            il::StaticArray<double, 3> &chi,
-            il::StaticArray<double, 3> &cosAlpha
-    ) {
+    double i3_Zeta(il::StaticArray<double, 3> &chi,il::StaticArray<double, 3> &cosAlpha) {
         double sum = 0.0;
         for (int i = 0; i < 3; i++) {
             sum += chi[i] * cosAlpha[i];
@@ -1394,9 +1384,7 @@ namespace bie {
         return A_rotated;
     }
 
-    il::Array<double> point_stress_3DT0(
-            il::Array<double> &observ_pt,
-            FaceData &elem_data_s, // source element
+    il::Array<double> point_stress_3DT0(il::Array<double> &observ_pt,FaceData &elem_data_s, // source element
             il::Array<double> &dd,
             ElasticProperties const &elas_ // elastic properties
     )
