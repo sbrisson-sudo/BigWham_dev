@@ -380,12 +380,8 @@ namespace bie {
                         cps(0, i) = this->xc_[i] + std::numeric_limits<double>::epsilon();
                              //   2.22045e-16; // perturbation by machine epsilon
                     }
-//                    cps(0, 0) = this->xc_[0] + 2.22045e-16; // perturbation by machine epsilon
-//                    cps(0, 1) = this->xc_[1] + 2.22045e-16; // perturbation by machine epsilon
-//                    cps(0, 2) = this->xc_[2] + 2.22045e-16; // perturbation by machine epsilon
                 }
                 else{ // else is 3DR0 or any other BE of zero interpolation order, thus no perturbation
-
                     // loop over coordinates needed because collocation_points is Array2D and xc_ is Array1D
                     for (il::int_t i = 0; i < 3; i++) {
                         cps(0, i) = this->xc_[i];
