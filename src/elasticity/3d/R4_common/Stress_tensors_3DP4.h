@@ -10,7 +10,7 @@
 #ifndef INC_3DEQSIM_SRC_ELASTICKERNELSP4_H
 #define INC_3DEQSIM_SRC_ELASTICKERNELSP4_H
 
-namespace EQSim{
+namespace bie{
 
 il::Array2D<double> StressTensorDueToDDx11P4(double &a, double &b, double &x1,
                                              double &x2, double &x3, double &Nu,

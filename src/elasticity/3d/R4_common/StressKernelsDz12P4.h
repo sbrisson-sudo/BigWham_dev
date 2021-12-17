@@ -10,7 +10,7 @@
 #ifndef INC_3DEQSIM_SRC_STRESSKERNELSDZ12P4_H
 #define INC_3DEQSIM_SRC_STRESSKERNELSDZ12P4_H
 
-namespace EQSim{
+namespace bie{
 
 il::Array<double> StressComponentsDueToDDz12P4(double &a, double &b,
                                                double &x1, double &x2,

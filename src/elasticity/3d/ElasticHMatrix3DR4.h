@@ -2,38 +2,38 @@
 // Created by Federico Ciardo on 11.08.21.
 //
 
-#ifndef INC_3DEQSIM_SRC_ELASTICHMATRIX3D_H
-#define INC_3DEQSIM_SRC_ELASTICHMATRIX3D_H
+#ifndef INC_3Dbie_SRC_ELASTICHMATRIX3D_H
+#define INC_3Dbie_SRC_ELASTICHMATRIX3D_H
 
 // Inclusion from the project
 #include <hmat/arrayFunctor/MatrixGenerator.h>
+#include <src/elasticity/3d/Elastic3DR0_common.h> //todo: rename because it is used here
+#include "Elastic3DR4_element.h"
+#include <src/core/Mesh3D.h>
+#include "R4_common/Utils.cpp"
 
-#include "FullSpaceElasticity.h"
-#include <core/Mesh3D.h>
-#include "Utils.cpp"
-
-namespace EQSim {
+namespace bie {
 
 // We do not need a Template class since we are going to use always doubles for
 // elastic coefficients
-class ElasticHMatrix3D : public il::MatrixGenerator<double> {
+class ElasticHMatrix3D : public MatrixGenerator<double> {
  private:
   il::Array2D<double> centroids_;
   il::Array<il::int_t> permutation_;
-  EQSim::Mesh mesh_;
-  EQSim::SolidMatrixProperties matrixProperties_;
+  bie::Mesh3D mesh_;
+  bie::ElasticProperties Matrix_Prop_;
   il::Array2D<il::int_t> neigh_elts_;
 
  public:
   // Constructor
   ElasticHMatrix3D(il::Array2D<double> &points,
-                   const il::Array<il::int_t> &permutation, EQSim::Mesh &mesh,
+                   const il::Array<il::int_t> &permutation, const bie::Mesh3D &mesh,
                    il::Array2D<il::int_t> &neigh_elts,
-                   EQSim::SolidMatrixProperties &matrix_prop) {
+                   bie::ElasticProperties &matrix_prop) {
     centroids_ = points;
     permutation_ = permutation;
     mesh_ = mesh;
-    matrixProperties_ = matrix_prop;
+    Matrix_Prop_ = matrix_prop;
     neigh_elts_ = neigh_elts;
     IL_EXPECT_FAST(centroids_.size(1) == 3);
   }
@@ -42,7 +42,7 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
   il::int_t size(il::int_t d) const override {
     IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
-    il::int_t size = mesh_.getNumberOfDofs();
+    il::int_t size = mesh_.numberCollPts() * 3;
 
     return size;
   };
@@ -52,7 +52,7 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
   il::int_t sizeAsBlocks(il::int_t d) const override {
     IL_EXPECT_MEDIUM(d == 0 || d == 1);
 
-    il::int_t sizeAsBlocks = (mesh_.getNumberOfDofs() / 3);
+    il::int_t sizeAsBlocks = (mesh_.numberCollPts());
 
     return sizeAsBlocks;
   };
@@ -65,8 +65,6 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
     IL_EXPECT_MEDIUM(b0 + M.size(0) / blockSize() <= centroids_.size(0));
     IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= centroids_.size(0));
 
-    // Get interpolation order
-    il::int_t interp_order = mesh_.getInterpolationOrder();
 
 #pragma omp parallel
       {
@@ -98,22 +96,21 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
             il::Array<double> aMapped{9, 0.};
             il::Array<double> bMapped{9, 0.};
             il::Array2D<double> TractionsDueToDDsOnSingleElt{3, 3, 0.};
-            EQSim::ElementData elt_s_i;  // Data of source element i
-            EQSim::ElementData elt_r;    // Data of receiver element
+
 
             // Mapping based on the function I implemented for finding the
             // neighbour elements of a source element and the convention of the
             // nine-element patch of Shou et al.
             il::Array<il::int_t> MapElementPatch{9, 0};
-            MapElementPatch[0] = 6;
-            MapElementPatch[1] = 7;
-            MapElementPatch[2] = 8;
-            MapElementPatch[3] = 3;
+            MapElementPatch[0] = 0;
+            MapElementPatch[1] = 3;
+            MapElementPatch[2] = 6;
+            MapElementPatch[3] = 1;
             MapElementPatch[4] = 4;
-            MapElementPatch[5] = 5;
-            MapElementPatch[6] = 0;
-            MapElementPatch[7] = 1;
-            MapElementPatch[8] = 2;
+            MapElementPatch[5] = 7;
+            MapElementPatch[6] = 2;
+            MapElementPatch[7] = 5;
+            MapElementPatch[8] = 8;
 
             il::int_t k1 = b1 + k;
             il::int_t elt_k1 = permutation_[k1];  // original source element
@@ -159,22 +156,26 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
               continue;
             }
 
+
             // Get receiver element data
-            elt_r = mesh_.getElementData(elt_k3);
+            il::Array2D<double> xv_r = mesh_.getVerticesElt(elt_k3);
+            bie::FaceData elt_r(xv_r,0);    // todo: p=0 needs to be changed because the element is R4 but the collocation point is only 1!
 
             /// Loop over the nine source elements composing one source element
             /// patch
             for (il::int_t i = 0; i < neigh_elts_.size(1); ++i) {
+
               // Get source i element data
               il::int_t neigh_inner_elt_i = neigh_elts_eltk1[i];
-              elt_s_i = mesh_.getElementData(neigh_inner_elt_i);
-              normal_source_elt_i = elt_s_i.getN();
-              theta_source_elt_i = elt_s_i.getTheta();
+              il::Array2D<double> xv_s = mesh_.getVerticesElt(neigh_inner_elt_i);
+              bie::FaceData elt_s_i(xv_s,0);  // Data of source element i
+              normal_source_elt_i = elt_s_i.getNormal();
 
               // Get rotation matrix for the source element i and its transpose
-              R = EQSim::RotationMatrix3D(normal_source_elt_i,
-                                          theta_source_elt_i);
-              Rt = R;
+//              R = bie::RotationMatrix3D(normal_source_elt_i,
+//                                          theta_source_elt_i);
+              il::Array2D<double> R = elt_s_i.rotationMatrix(false); // R(g->l)
+              Rt = R; //todo: update the method to get transpose
               Rt(0, 1) = R(1, 0);
               Rt(0, 2) = R(2, 0);
               Rt(1, 0) = R(0, 1);
@@ -183,16 +184,22 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
               Rt(2, 1) = R(1, 2);
 
               // Calculate the relative distance receiver - source
+              il::Array2D<double> elt_r_cp;
+              elt_r_cp = elt_r.getCollocationPoints();
+
+              il::Array2D<double> elt_s_i_cp;
+              elt_s_i_cp = elt_s_i.getCollocationPoints();
+
               for (il::int_t I = 0;
                    I < relative_distance_receiv_source_i.size(); ++I) {
                 relative_distance_receiv_source_i[I] =
-                    elt_r.getCentroidElt(I) - elt_s_i.getCentroidElt(I);
+                        elt_r_cp(0,I) - elt_s_i_cp(0,I);
               }
               // Switch to frame of source element I
               auxXe = il::dot(Rt, relative_distance_receiv_source_i);
               auxSe1 = il::dot(Rt, elt_r.getS1());
               auxSe2 = il::dot(Rt, elt_r.getS2());
-              auxNe = il::dot(Rt, elt_r.getN());
+              auxNe = il::dot(Rt, elt_r.getNormal());
 
               // Fill 2D array Xe, Se1, Se2, Ne
               for (il::int_t I = 0; I < auxXe.size(); ++I) {
@@ -201,9 +208,10 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
                 se2(i, I) = auxSe2[I];
                 ne(i, I) = auxNe[I];
               }
-
-              a_elts_i[i] = elt_s_i.getA();
-              b_elts_i[i] = elt_s_i.getB();
+              il::StaticArray<double,2> a_and_b = get_a_and_b(elt_s_i.getVertices(),elt_s_i.getNoV());
+              double a = a_and_b[0], b = a_and_b[1];
+              a_elts_i[i] = a;
+              b_elts_i[i] = b;
             }
 
             // Apply mapping
@@ -229,13 +237,13 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
 
             // Call to the elastic kernel
             TractionsDueToDDsOnSingleElt =
-                EQSim::TractionsDueToDDsOnSingleEltP4(
+                bie::TractionsDueToDDsOnSingleEltP4(
                     aMapped, bMapped, XeMapped, se1Mapped, se2Mapped, neMapped,
-                    matrixProperties_, il::io);
+                    Matrix_Prop_, il::io);
 
             Elast_Coeff =
-                ((2 * matrixProperties_.getShearModulus()) /
-                 (8. * il::pi * (1 - matrixProperties_.getPoissonRatio())));
+                ((2 * Matrix_Prop_.getG()) /
+                 (8. * il::pi * (1 - Matrix_Prop_.getNu())));
 
             // Fill the submatrix
             for (il::int_t j = 0; j < TractionsDueToDDsOnSingleElt.size(0);
@@ -280,12 +288,12 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
     il::Array2D<double> R{3, 3, 0.};   // Rotation matrix
     il::Array2D<double> Rt{3, 3, 0.};  // Transpose of rotation matrix
 
-    EQSim::ElementData elt_r;  // Data of receiver element
+    bie::ElementData elt_r;  // Data of receiver element
 
     ////// P4 elements //////
     if (interp_order == 4) {
       // Initialization of some variables needed for P4 elements
-      EQSim::ElementData elt_s_i;
+      bie::ElementData elt_s_i;
       il::Array<double> normal_source_elt_i{3, 0.};
       double theta_source_elt_i, Elast_Coeff;
       il::Array<double> relative_distance_receiv_source_i{3, 0.};
@@ -346,7 +354,7 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
             theta_source_elt_i = elt_s_i.getTheta();
 
             // Get rotation matrix for the source element i and its transpose
-            R = EQSim::RotationMatrix3D(normal_source_elt_i,
+            R = bie::RotationMatrix3D(normal_source_elt_i,
                                         theta_source_elt_i);
             Rt = R;
             Rt(0, 1) = R(1, 0);
@@ -402,7 +410,7 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
           }
 
           // Call to the elastic kernel
-          TractionsDueToDDsOnSingleElt = EQSim::TractionsDueToDDsOnSingleEltP4(
+          TractionsDueToDDsOnSingleElt = bie::TractionsDueToDDsOnSingleEltP4(
               aMapped, bMapped, XeMapped, se1Mapped, se2Mapped, neMapped,
               matrixProperties_, il::io);
 
@@ -424,7 +432,7 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
       ////// P0 elements //////
     } else if (interp_order == 0) {
       // Initialization of some variables
-      EQSim::ElementData elt_s;  // Data of source element
+      bie::ElementData elt_s;  // Data of source element
       il::Array<double> normal_source_elt{};
       il::Array<double> normal_receiver_elt{};
       il::Array<double> s1_receiver_elt{};
@@ -457,7 +465,7 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
           theta_source_elt = elt_s.getTheta();
 
           // Get rotation matrix for the source element and its transpose
-          R = EQSim::RotationMatrix3D(normal_source_elt, theta_source_elt);
+          R = bie::RotationMatrix3D(normal_source_elt, theta_source_elt);
           Rt = R;
           Rt(0, 1) = R(1, 0);
           Rt(0, 2) = R(2, 0);
@@ -487,7 +495,7 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
           auto b_elt_s = elt_s.getB();
 
           // Call to the elastic kernel
-          TractionsDueToDDsOnSingleElt = EQSim::TractionsDueToDDsOnSingleEltP0(
+          TractionsDueToDDsOnSingleElt = bie::TractionsDueToDDsOnSingleEltP0(
               a_elt_s, b_elt_s, Xe, se1, se2, ne, matrixProperties_, il::io);
 
           // Fill the submatrix
@@ -504,6 +512,6 @@ class ElasticHMatrix3D : public il::MatrixGenerator<double> {
   };*/
 };
 
-}  // namespace EQSim
+}  // namespace bie
 
-#endif  // INC_3DEQSIM_SRC_ELASTICHMATRIX3D_H
+#endif  // INC_3Dbie_SRC_ELASTICHMATRIX3D_H

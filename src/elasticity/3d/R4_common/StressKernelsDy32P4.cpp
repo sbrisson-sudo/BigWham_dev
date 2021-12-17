@@ -4,9 +4,9 @@
 
 #include "StressKernelsDy32P4.h"
 
-#include <src/Utils.cpp>
+#include "Utils.cpp"
 
-namespace EQSim {
+namespace bie {
 
 il::Array<double> StressComponentsDueToDDy32P4(double &a, double &b, double &x1,
                                                double &x2, double &x3,

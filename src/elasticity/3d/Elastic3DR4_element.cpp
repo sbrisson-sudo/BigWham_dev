@@ -3,12 +3,13 @@
 //
 
 // Inclusion from the project
-#include "FullSpaceElasticity.h"
+#include "Elastic3DR4_element.h"
 
-#include "AssemblyKernelsP4.h"
-#include "Utils.cpp"
+#include "R4_common/Stress_tensors_3DP4.h"
+#include "R4_common/Utils.cpp"
+#include <src/core/ElasticProperties.h>
 
-namespace EQSim {
+namespace bie{
 
 /// P4 elements
 il::Array2D<double> TractionsDueToDDsOnSingleEltP4(
@@ -16,13 +17,13 @@ il::Array2D<double> TractionsDueToDDsOnSingleEltP4(
     il::Array2D<double> &Xe_mapped, il::Array2D<double> &shear1_vector_mapped,
     il::Array2D<double> &shear2_vector_mapped,
     il::Array2D<double> &normal_vector_mapped,
-    SolidMatrixProperties Matrix_Prop,
+    ElasticProperties &Matrix_Prop,
     il::io_t) {
 
   // Poisson ratio
-  double nu = Matrix_Prop.getPoissonRatio();
+  double nu = Matrix_Prop.getNu();;
   // Shear modulus
-  double Shear_Mod = Matrix_Prop.getShearModulus();
+  double Shear_Mod = Matrix_Prop.getG();
 
   il::Array<double> x1{Xe_mapped.size(0), 0.};
   il::Array<double> x2{Xe_mapped.size(0), 0.};
@@ -64,93 +65,93 @@ il::Array2D<double> TractionsDueToDDsOnSingleEltP4(
   il::Array2D<double> StressTensorDueToDz32{3, 3, 0.};
   il::Array2D<double> StressTensorDueToDz33{3, 3, 0.};
 
-  StressTensorDueToDx11 = EQSim::StressTensorDueToDDx11P4(
+  StressTensorDueToDx11 = bie::StressTensorDueToDDx11P4(
       a_mapped[0], b_mapped[0], x1[0], x2[0], x3[0], nu, Shear_Mod);
-  StressTensorDueToDx12 = EQSim::StressTensorDueToDDx12P4(
+  StressTensorDueToDx12 = bie::StressTensorDueToDDx12P4(
       a_mapped[1], b_mapped[1], x1[1], x2[1], x3[1], nu, Shear_Mod);
-  StressTensorDueToDx13 = EQSim::StressTensorDueToDDx13P4(
+  StressTensorDueToDx13 = bie::StressTensorDueToDDx13P4(
       a_mapped[2], b_mapped[2], x1[2], x2[2], x3[2], nu, Shear_Mod);
-  StressTensorDueToDx21 = EQSim::StressTensorDueToDDx21P4(
+  StressTensorDueToDx21 = bie::StressTensorDueToDDx21P4(
       a_mapped[3], b_mapped[3], x1[3], x2[3], x3[3], nu, Shear_Mod);
-  StressTensorDueToDx22 = EQSim::StressTensorDueToDDx22P4(
+  StressTensorDueToDx22 = bie::StressTensorDueToDDx22P4(
       a_mapped[4], b_mapped[4], x1[4], x2[4], x3[4], nu, Shear_Mod);
-  StressTensorDueToDx23 = EQSim::StressTensorDueToDDx23P4(
+  StressTensorDueToDx23 = bie::StressTensorDueToDDx23P4(
       a_mapped[5], b_mapped[5], x1[5], x2[5], x3[5], nu, Shear_Mod);
-  StressTensorDueToDx31 = EQSim::StressTensorDueToDDx31P4(
+  StressTensorDueToDx31 = bie::StressTensorDueToDDx31P4(
       a_mapped[6], b_mapped[6], x1[6], x2[6], x3[6], nu, Shear_Mod);
-  StressTensorDueToDx32 = EQSim::StressTensorDueToDDx32P4(
+  StressTensorDueToDx32 = bie::StressTensorDueToDDx32P4(
       a_mapped[7], b_mapped[7], x1[7], x2[7], x3[7], nu, Shear_Mod);
-  StressTensorDueToDx33 = EQSim::StressTensorDueToDDx33P4(
+  StressTensorDueToDx33 = bie::StressTensorDueToDDx33P4(
       a_mapped[8], b_mapped[8], x1[8], x2[8], x3[8], nu, Shear_Mod);
 
-  StressTensorDueToDy11 = EQSim::StressTensorDueToDDy11P4(
+  StressTensorDueToDy11 = bie::StressTensorDueToDDy11P4(
       a_mapped[0], b_mapped[0], x1[0], x2[0], x3[0], nu, Shear_Mod);
-  StressTensorDueToDy12 = EQSim::StressTensorDueToDDy12P4(
+  StressTensorDueToDy12 = bie::StressTensorDueToDDy12P4(
       a_mapped[1], b_mapped[1], x1[1], x2[1], x3[1], nu, Shear_Mod);
-  StressTensorDueToDy13 = EQSim::StressTensorDueToDDy13P4(
+  StressTensorDueToDy13 = bie::StressTensorDueToDDy13P4(
       a_mapped[2], b_mapped[2], x1[2], x2[2], x3[2], nu, Shear_Mod);
-  StressTensorDueToDy21 = EQSim::StressTensorDueToDDy21P4(
+  StressTensorDueToDy21 = bie::StressTensorDueToDDy21P4(
       a_mapped[3], b_mapped[3], x1[3], x2[3], x3[3], nu, Shear_Mod);
-  StressTensorDueToDy22 = EQSim::StressTensorDueToDDy22P4(
+  StressTensorDueToDy22 = bie::StressTensorDueToDDy22P4(
       a_mapped[4], b_mapped[4], x1[4], x2[4], x3[4], nu, Shear_Mod);
-  StressTensorDueToDy23 = EQSim::StressTensorDueToDDy23P4(
+  StressTensorDueToDy23 = bie::StressTensorDueToDDy23P4(
       a_mapped[5], b_mapped[5], x1[5], x2[5], x3[5], nu, Shear_Mod);
-  StressTensorDueToDy31 = EQSim::StressTensorDueToDDy31P4(
+  StressTensorDueToDy31 = bie::StressTensorDueToDDy31P4(
       a_mapped[6], b_mapped[6], x1[6], x2[6], x3[6], nu, Shear_Mod);
-  StressTensorDueToDy32 = EQSim::StressTensorDueToDDy32P4(
+  StressTensorDueToDy32 = bie::StressTensorDueToDDy32P4(
       a_mapped[7], b_mapped[7], x1[7], x2[7], x3[7], nu, Shear_Mod);
-  StressTensorDueToDy33 = EQSim::StressTensorDueToDDy33P4(
+  StressTensorDueToDy33 = bie::StressTensorDueToDDy33P4(
       a_mapped[8], b_mapped[8], x1[8], x2[8], x3[8], nu, Shear_Mod);
 
-  StressTensorDueToDz11 = EQSim::StressTensorDueToDDz11P4(
+  StressTensorDueToDz11 = bie::StressTensorDueToDDz11P4(
       a_mapped[0], b_mapped[0], x1[0], x2[0], x3[0], nu, Shear_Mod);
-  StressTensorDueToDz12 = EQSim::StressTensorDueToDDz12P4(
+  StressTensorDueToDz12 = bie::StressTensorDueToDDz12P4(
       a_mapped[1], b_mapped[1], x1[1], x2[1], x3[1], nu, Shear_Mod);
-  StressTensorDueToDz13 = EQSim::StressTensorDueToDDz13P4(
+  StressTensorDueToDz13 = bie::StressTensorDueToDDz13P4(
       a_mapped[2], b_mapped[2], x1[2], x2[2], x3[2], nu, Shear_Mod);
-  StressTensorDueToDz21 = EQSim::StressTensorDueToDDz21P4(
+  StressTensorDueToDz21 = bie::StressTensorDueToDDz21P4(
       a_mapped[3], b_mapped[3], x1[3], x2[3], x3[3], nu, Shear_Mod);
-  StressTensorDueToDz22 = EQSim::StressTensorDueToDDz22P4(
+  StressTensorDueToDz22 = bie::StressTensorDueToDDz22P4(
       a_mapped[4], b_mapped[4], x1[4], x2[4], x3[4], nu, Shear_Mod);
-  StressTensorDueToDz23 = EQSim::StressTensorDueToDDz23P4(
+  StressTensorDueToDz23 = bie::StressTensorDueToDDz23P4(
       a_mapped[5], b_mapped[5], x1[5], x2[5], x3[5], nu, Shear_Mod);
-  StressTensorDueToDz31 = EQSim::StressTensorDueToDDz31P4(
+  StressTensorDueToDz31 = bie::StressTensorDueToDDz31P4(
       a_mapped[6], b_mapped[6], x1[6], x2[6], x3[6], nu, Shear_Mod);
-  StressTensorDueToDz32 = EQSim::StressTensorDueToDDz32P4(
+  StressTensorDueToDz32 = bie::StressTensorDueToDDz32P4(
       a_mapped[7], b_mapped[7], x1[7], x2[7], x3[7], nu, Shear_Mod);
-  StressTensorDueToDz33 = EQSim::StressTensorDueToDDz33P4(
+  StressTensorDueToDz33 = bie::StressTensorDueToDDz33P4(
       a_mapped[8], b_mapped[8], x1[8], x2[8], x3[8], nu, Shear_Mod);
 
 
-  il::Array<double> n_1 = EQSim::row_selection(normal_vector_mapped, 0);
-  il::Array<double> n_2 = EQSim::row_selection(normal_vector_mapped, 1);
-  il::Array<double> n_3 = EQSim::row_selection(normal_vector_mapped, 2);
-  il::Array<double> n_4 = EQSim::row_selection(normal_vector_mapped, 3);
-  il::Array<double> n_5 = EQSim::row_selection(normal_vector_mapped, 4);
-  il::Array<double> n_6 = EQSim::row_selection(normal_vector_mapped, 5);
-  il::Array<double> n_7 = EQSim::row_selection(normal_vector_mapped, 6);
-  il::Array<double> n_8 = EQSim::row_selection(normal_vector_mapped, 7);
-  il::Array<double> n_9 = EQSim::row_selection(normal_vector_mapped, 8);
+  il::Array<double> n_1 = bie::row_selection(normal_vector_mapped, 0);
+  il::Array<double> n_2 = bie::row_selection(normal_vector_mapped, 1);
+  il::Array<double> n_3 = bie::row_selection(normal_vector_mapped, 2);
+  il::Array<double> n_4 = bie::row_selection(normal_vector_mapped, 3);
+  il::Array<double> n_5 = bie::row_selection(normal_vector_mapped, 4);
+  il::Array<double> n_6 = bie::row_selection(normal_vector_mapped, 5);
+  il::Array<double> n_7 = bie::row_selection(normal_vector_mapped, 6);
+  il::Array<double> n_8 = bie::row_selection(normal_vector_mapped, 7);
+  il::Array<double> n_9 = bie::row_selection(normal_vector_mapped, 8);
 
-  il::Array<double> s1_1 = EQSim::row_selection(shear1_vector_mapped, 0);
-  il::Array<double> s1_2 = EQSim::row_selection(shear1_vector_mapped, 1);
-  il::Array<double> s1_3 = EQSim::row_selection(shear1_vector_mapped, 2);
-  il::Array<double> s1_4 = EQSim::row_selection(shear1_vector_mapped, 3);
-  il::Array<double> s1_5 = EQSim::row_selection(shear1_vector_mapped, 4);
-  il::Array<double> s1_6 = EQSim::row_selection(shear1_vector_mapped, 5);
-  il::Array<double> s1_7 = EQSim::row_selection(shear1_vector_mapped, 6);
-  il::Array<double> s1_8 = EQSim::row_selection(shear1_vector_mapped, 7);
-  il::Array<double> s1_9 = EQSim::row_selection(shear1_vector_mapped, 8);
+  il::Array<double> s1_1 = bie::row_selection(shear1_vector_mapped, 0);
+  il::Array<double> s1_2 = bie::row_selection(shear1_vector_mapped, 1);
+  il::Array<double> s1_3 = bie::row_selection(shear1_vector_mapped, 2);
+  il::Array<double> s1_4 = bie::row_selection(shear1_vector_mapped, 3);
+  il::Array<double> s1_5 = bie::row_selection(shear1_vector_mapped, 4);
+  il::Array<double> s1_6 = bie::row_selection(shear1_vector_mapped, 5);
+  il::Array<double> s1_7 = bie::row_selection(shear1_vector_mapped, 6);
+  il::Array<double> s1_8 = bie::row_selection(shear1_vector_mapped, 7);
+  il::Array<double> s1_9 = bie::row_selection(shear1_vector_mapped, 8);
 
-  il::Array<double> s2_1 = EQSim::row_selection(shear2_vector_mapped, 0);
-  il::Array<double> s2_2 = EQSim::row_selection(shear2_vector_mapped, 1);
-  il::Array<double> s2_3 = EQSim::row_selection(shear2_vector_mapped, 2);
-  il::Array<double> s2_4 = EQSim::row_selection(shear2_vector_mapped, 3);
-  il::Array<double> s2_5 = EQSim::row_selection(shear2_vector_mapped, 4);
-  il::Array<double> s2_6 = EQSim::row_selection(shear2_vector_mapped, 5);
-  il::Array<double> s2_7 = EQSim::row_selection(shear2_vector_mapped, 6);
-  il::Array<double> s2_8 = EQSim::row_selection(shear2_vector_mapped, 7);
-  il::Array<double> s2_9 = EQSim::row_selection(shear2_vector_mapped, 8);
+  il::Array<double> s2_1 = bie::row_selection(shear2_vector_mapped, 0);
+  il::Array<double> s2_2 = bie::row_selection(shear2_vector_mapped, 1);
+  il::Array<double> s2_3 = bie::row_selection(shear2_vector_mapped, 2);
+  il::Array<double> s2_4 = bie::row_selection(shear2_vector_mapped, 3);
+  il::Array<double> s2_5 = bie::row_selection(shear2_vector_mapped, 4);
+  il::Array<double> s2_6 = bie::row_selection(shear2_vector_mapped, 5);
+  il::Array<double> s2_7 = bie::row_selection(shear2_vector_mapped, 6);
+  il::Array<double> s2_8 = bie::row_selection(shear2_vector_mapped, 7);
+  il::Array<double> s2_9 = bie::row_selection(shear2_vector_mapped, 8);
 
   // Traction vector on (x1,x2,x3) due to Dx in 11 etc..
   il::Array<double> tractionVectorDx11 = il::dot(StressTensorDueToDx11, n_1);
@@ -349,4 +350,4 @@ il::Array2D<double> TractionsDueToDDsOnSingleEltP4(
   return TractionsDueToDDsOnSingleEltP4;
 }
 
-}  // namespace EQSim
+}  // namespace bie

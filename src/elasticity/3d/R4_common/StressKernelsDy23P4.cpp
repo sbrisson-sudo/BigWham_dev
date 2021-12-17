@@ -2,11 +2,11 @@
 // Created by Federico Ciardo on 17.08.21.
 //
 
-#include <src/Utils.cpp>
+#include "Utils.cpp"
 
 #include "StressKernelsDx23P4.h"
 
-namespace EQSim {
+namespace bie {
 
 il::Array<double> StressComponentsDueToDDy23P4(double &a, double &b, double &x1,
                                                double &x2, double &x3,
