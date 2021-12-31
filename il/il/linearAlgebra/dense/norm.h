@@ -135,14 +135,14 @@ double norm(const il::Array2D<T>& A, Norm norm_type) {
       }
     } break;
     case Norm::Frobenius:{
-        T sum =0;
+        T sum =0 ;
         for (il::int_t j = 0; j < A.size(1); ++j) {
             for (il::int_t i = 0; i < A.size(0); ++i) {
                 sum += il::ipow<2>(A(i, j));
             }
         }
         ans = std::sqrt(ans);
-    }
+    } break;
     default:
       IL_EXPECT_FAST(false);
   }
