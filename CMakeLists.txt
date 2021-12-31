@@ -247,7 +247,7 @@ set(SOURCE_FILES
         )
 
 set(CMAKE_POSITION_INDEPENDENT_CODE True)
-add_library(BigWham STATIC ${SOURCE_FILES} )
+add_library(BigWham STATIC ${SOURCE_FILES} src/elasticity/3d/ElasticHMatrix3DT0displ.h)
 target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} )
 
 set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)

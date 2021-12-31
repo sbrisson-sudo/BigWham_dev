@@ -130,7 +130,6 @@ namespace bie {
 
 // Fundamental stress kernel = stress influence coefficients
     il::StaticArray2D<double, 3, 6> StressesKernelT0(il::Array2D<double> &x,il::Array2D<double> &xv,double &G,double &nu) {
-
         // this routine is based on the works of Nintcheu Fata (2009,2011)
 
         // inputs

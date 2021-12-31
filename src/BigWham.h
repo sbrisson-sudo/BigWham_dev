@@ -47,7 +47,7 @@ class Bigwhamio {
   int dimension_;      // spatial dimension
   int dof_dimension_;  // number of dof per nodes / collocation points
 
-  bool isBuilt_;  // if the class instance is built
+  bool isBuilt_;  // True if the class instance is built
 
   // H-matrix parameters
   int max_leaf_size_;
@@ -167,7 +167,7 @@ class Bigwhamio {
         h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
       }
     } else if (kernel_ == "3DT6" || kernel_ == "3DR0_displ" ||
-               kernel_ == "3DR0" || kernel_ == "3DT0" || kernel_ == "3DR0opening" ) {
+               kernel_ == "3DR0" || kernel_ == "3DT0" || kernel_ == "3DT0_disp" || kernel_ == "3DR0opening" ) {
       // step 1 - create the mesh object
       dimension_ = 3;
       il::int_t nnodes_elts = 0;  // n of nodes per element
@@ -176,7 +176,7 @@ class Bigwhamio {
         dof_dimension_ = 3;
         nnodes_elts = 3;
         p = 2;
-      } else if (kernel_ == "3DT0") {
+      } else if (kernel_ == "3DT0" || kernel_ == "3DT0_disp") {
         dof_dimension_ = 3;
         nnodes_elts = 3;
         p = 0;
@@ -258,7 +258,7 @@ class Bigwhamio {
       if (kernel_ == "3DT6")  // or maybe use switch
       {
         std::cout
-            << "Kernel Isotropic ELasticity 3D T6 (quadratic) triangle \n";
+            << "Hypersingular Kernel Isotropic ELasticity 3D T6 (quadratic) triangle \n";
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
                   << collocationPoints_.size(1) << "\n";
         const bie::ElasticHMatrix3DT6<double> M{
@@ -266,28 +266,31 @@ class Bigwhamio {
         h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
 
       } else if (kernel_ == "3DT0") {
-        std::cout   << "Kernel Isotropic Elasticity 3D T0 (quadratic) triangle \n";
-        std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
-                  << collocationPoints_.size(1) << "\n";
+        std::cout   << "Hypersingular Kernel Isotropic Elasticity 3D T0  triangle \n";
+        std::cout << "coll points dim " << collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
         const bie::ElasticHMatrix3DT0<double> M{collocationPoints_, permutation_, mesh3d, elas,0};  // local_global = 0 if local-local, 1 if global-global
         h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
+      } else if (kernel_ == "3DT0_displ"){
+          std::cout   << "Singular Kernel Isotropic Elasticity 3D T0  triangle \n";
+          std::cout << "coll points dim " << collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
+          const bie::ElasticHMatrix3DT0<double> M{collocationPoints_, permutation_, mesh3d, elas,0};  // local_global = 0 if local-local, 1 if global-global
+          h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
       } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" || kernel_ == "3DR0opening") {
-        std::cout << "Kernel Isotropic ELasticity 3D R0 (constant) rectangle \n";
-        std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
-                  << collocationPoints_.size(1) << "\n";
+        std::cout << " Kernel Isotropic ELasticity 3D R0 (constant) rectangle \n";
+        std::cout << "coll points dim " << collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
         if (kernel_ == "3DR0") {
           // DD to traction HMAT
-          std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
+          std::cout << "\n Kernel: "<< kernel_ << " " <<  "< Hypersingular traction kernel >"<< "\n  ";
           const bie::ElasticHMatrix3DR0<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
           h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
         } else if (kernel_ == "3DR0_displ") {
           // DD to displacement HMAT
-          std::cout << "\n Kernel: "<< kernel_ << " " <<  "< displacement kernel >"<< "\n  ";
+          std::cout << "\n Kernel: "<< kernel_ << " " <<  "< Singular displacement kernel >"<< "\n  ";
           const bie::ElasticHMatrix3DR0displ<double> M{collocationPoints_, permutation_, mesh3d, elas, 0, 0};
           h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
         } else if (kernel_ == "3DR0opening") {
           // DD to displacement HMAT
-          std::cout << "\n Kernel: "<< kernel_ << " " <<  "< traction kernel >"<< "\n  ";
+          std::cout << "\n Kernel: "<< kernel_ << " " <<  "< Hypersingular traction kernel >"<< "\n  ";
           const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{collocationPoints_, permutation_, mesh3d, elas};
           h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
         }
