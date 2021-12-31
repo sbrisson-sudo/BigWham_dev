@@ -33,7 +33,7 @@ set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
-set(IL_OPENMP 0) # to activate openMP  for bigwham (recommended but should have openmp lib installed)
+set(IL_OPENMP 1) # to activate openMP  for bigwham (recommended but should have openmp lib installed)
 set(IL_TBB 1)
 
 set(USE_INTEL 0)  # compiler option
@@ -333,7 +333,7 @@ if(BUILD_GOOGLE_TESTS)
             src/elasticity/_test/elastic3DR0_element_tests.cpp
             src/_test/elastic3DR0_element_benchmark.cpp
             src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-            )
+            src/elasticity/3d/t_potential_3DT6.cpp src/elasticity/3d/t_potential_3DT6.h)
 
     add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 

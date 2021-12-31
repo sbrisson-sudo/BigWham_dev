@@ -174,9 +174,7 @@ LowRank<T> adaptiveCrossApproximation(const bie::MatrixGenerator<T>& M,
     //    frobenius_norm_difference =
     //        il::frobeniusNorm(difference_matrix);
 
-    if (i0_search == -1 ||
-        il::abs(frobenius_norm_ab) <=
-            il::ipow<2>(epsilon) * il::abs(frobenius_low_rank) ||
+    if (i0_search == -1 || il::abs(frobenius_norm_ab) <=  il::ipow<2>(epsilon) * il::abs(frobenius_low_rank) ||
         rank == il::min(n0, n1)) {
       break;
     }

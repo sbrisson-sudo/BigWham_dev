@@ -132,8 +132,6 @@ namespace bie {
                             }
                         }
                     }
-                    // il::blas(1.0, s_incr_n, 1.0, il::io, s_ij_infl_mon);
-                    // il::blas(-1.0, s_incr_m, 1.0, il::io, s_ij_infl_mon);
                 } else { // out-of-plane case
                     double an = il::abs(tz[n] - dm), // moved form abs to il::abs() CP2021
                             am = il::abs(tz[m] - dm); // moved form abs to il::abs() CP2021
@@ -244,7 +242,7 @@ namespace bie {
                 c = s_ij_lim_h(poiss_r, eix, d);
                 break;
             case 0:
-                // c = s_ij_lim_t(poiss_r, eix, sgnh, d);
+                    // c = s_ij_lim_t(poiss_r, eix, sgnh, d);
                 break;
             default:break;
         }
