@@ -33,6 +33,7 @@
 #include <elasticity/3d/ElasticHMatrix3DR0displ.h>
 #include <elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h>
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
+#include <elasticity/3d/ElasticHMatrix3DT0displ.h>
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
 
 
@@ -167,7 +168,7 @@ class Bigwhamio {
         h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
       }
     } else if (kernel_ == "3DT6" || kernel_ == "3DR0_displ" ||
-               kernel_ == "3DR0" || kernel_ == "3DT0" || kernel_ == "3DT0_disp" || kernel_ == "3DR0opening" ) {
+               kernel_ == "3DR0" || kernel_ == "3DT0" || kernel_ == "3DT0_displ" || kernel_ == "3DR0opening" ) {
       // step 1 - create the mesh object
       dimension_ = 3;
       il::int_t nnodes_elts = 0;  // n of nodes per element
@@ -176,7 +177,7 @@ class Bigwhamio {
         dof_dimension_ = 3;
         nnodes_elts = 3;
         p = 2;
-      } else if (kernel_ == "3DT0" || kernel_ == "3DT0_disp") {
+      } else if (kernel_ == "3DT0" || kernel_ == "3DT0_displ") {
         dof_dimension_ = 3;
         nnodes_elts = 3;
         p = 0;
@@ -273,7 +274,7 @@ class Bigwhamio {
       } else if (kernel_ == "3DT0_displ"){
           std::cout   << "Singular Kernel Isotropic Elasticity 3D T0  triangle \n";
           std::cout << "coll points dim " << collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
-          const bie::ElasticHMatrix3DT0<double> M{collocationPoints_, permutation_, mesh3d, elas,0};  // local_global = 0 if local-local, 1 if global-global
+          const bie::ElasticHMatrix3DT0displ<double> M{collocationPoints_, permutation_, mesh3d, elas,0};  // local_global = 0 if local-local, 1 if global-global
           h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
       } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" || kernel_ == "3DR0opening") {
         std::cout << " Kernel Isotropic ELasticity 3D R0 (constant) rectangle \n";
@@ -502,7 +503,7 @@ class Bigwhamio {
       p = 2;
     } else if (kernel_ == "3DT0") {
       p = 0;
-    } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" || (kernel_ == "S3DP0") || kernel_ =="3DR0opening" ) {
+    } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" ||  kernel_ == "3DT0_displ" || (kernel_ == "S3DP0") || kernel_ =="3DR0opening" ) {
       p = 0;
     } else if (kernel_ == "2DP1") {
       p = 1;
@@ -567,7 +568,7 @@ class Bigwhamio {
     //          mesh
     // OUTPUT:  a flattened list containing the stress at each required point
 
-    std::cout << " Computing stress tensor ...\n";
+    std::cout << " Computing stress tensor at obs points...\n";
 
     IL_EXPECT_FAST(this->isBuilt_);
     // note solution MUST be of length = number of dofs !

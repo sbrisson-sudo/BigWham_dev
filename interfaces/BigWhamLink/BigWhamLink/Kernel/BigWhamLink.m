@@ -116,7 +116,10 @@ template = LTemplate["HmatExpressions",
       LFun["getFullBlocks", {}, LType[SparseArray, Real]],
       LFun["computeStresses", {{Real, 1, "Constant"},{Real, 2, "Constant"},
         Integer,{Real, 1, "Constant"},{Real, 2, "Constant"},{Integer, 2, "Constant"}, 
-        "Boolean"}, {Real, 2}]
+        "Boolean"}, {Real, 2}],
+        LFun["computeDisplacements", {{Real, 1, "Constant"},{Real, 2, "Constant"},
+          Integer,{Real, 1, "Constant"},{Real, 2, "Constant"},{Integer, 2, "Constant"},
+          "Boolean"}, {Real, 2}]
        (*[sol,obsPts,nPts,prop,coor,conn,areDDglobal];*)
       }
      ]
@@ -267,6 +270,9 @@ ComputeStresses[id_?(testHmatExpr), sol_?(VectorQ[#, NumericQ] &),
 obsPts_?(MatrixQ[#, NumericQ] &), nPts_?IntegerQ, prop_?(VectorQ[#, NumericQ] &),
 coor_?(MatrixQ[#, NumericQ] &), conn_?(MatrixQ[#, IntegerQ] &),areDDglobal_?BooleanQ]:=id@"computeStresses"[sol,obsPts,nPts,prop,coor,conn-1,areDDglobal]; (* switch to 0 -index base for connectivity *)
 
+ComputeDisplacements[id_?(testHmatExpr), sol_?(VectorQ[#, NumericQ] &),
+             obsPts_?(MatrixQ[#, NumericQ] &), nPts_?IntegerQ, prop_?(VectorQ[#, NumericQ] &),
+             coor_?(MatrixQ[#, NumericQ] &), conn_?(MatrixQ[#, IntegerQ] &),areDDglobal_?BooleanQ]:=id@"computeDisplacements"[sol,obsPts,nPts,prop,coor,conn-1,areDDglobal]; (* switch to 0 -index base for connectivity *)
 
 
 End[]

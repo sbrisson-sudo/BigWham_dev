@@ -69,7 +69,6 @@ namespace bie {
     template <typename T>
     il::int_t ElasticHMatrix3DT0displ<T>::sizeAsBlocks(il::int_t d) const {
         IL_EXPECT_MEDIUM(d == 0 || d == 1);
-
         return (mesh_.numberCollPts());
     }
 
@@ -139,8 +138,7 @@ namespace bie {
 
                     for (il::int_t j = 0; j < 3; j++) {
                         for (il::int_t i = 0; i < 3; i++) {
-                            M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j);
-                            // M( direction , number of DD )
+                            M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j); // M( direction , number of DD )
                         }
                     }
                 }
@@ -149,7 +147,6 @@ namespace bie {
     }
 
 }
-
 
 
 #endif //BIGWHAM_ELASTICHMATRIX3DT0DISPL_H
