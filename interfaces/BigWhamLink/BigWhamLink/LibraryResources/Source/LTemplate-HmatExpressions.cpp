@@ -528,3 +528,42 @@ extern "C" DLLEXPORT int HMatExpr_computeStresses(WolframLibraryData libData, mi
 }
 
 
+extern "C" DLLEXPORT int HMatExpr_computeDisplacements(WolframLibraryData libData, mint Argc, MArgument * Args, MArgument Res)
+{
+	mma::detail::MOutFlushGuard flushguard;
+	const mint id = MArgument_getInteger(Args[0]);
+	if (HMatExpr_collection.find(id) == HMatExpr_collection.end()) { libData->Message("noinst"); return LIBRARY_FUNCTION_ERROR; }
+	
+	try
+	{
+		mma::TensorRef<double> var1 = mma::detail::getTensor<double>(Args[1]);
+		mma::TensorRef<double> var2 = mma::detail::getTensor<double>(Args[2]);
+		mint var3 = MArgument_getInteger(Args[3]);
+		mma::TensorRef<double> var4 = mma::detail::getTensor<double>(Args[4]);
+		mma::TensorRef<double> var5 = mma::detail::getTensor<double>(Args[5]);
+		mma::TensorRef<mint> var6 = mma::detail::getTensor<mint>(Args[6]);
+		bool var7 = MArgument_getBoolean(Args[7]);
+		
+		mma::TensorRef<double> res = (HMatExpr_collection[id])->computeDisplacements(var1, var2, var3, var4, var5, var6, var7);
+		mma::detail::setTensor<double>(Res, res);
+	}
+	catch (const mma::LibraryError & libErr)
+	{
+		libErr.report();
+		return libErr.error_code();
+	}
+	catch (const std::exception & exc)
+	{
+		mma::detail::handleUnknownException(exc.what(), "HMatExpr::computeDisplacements()");
+		return LIBRARY_FUNCTION_ERROR;
+	}
+	catch (...)
+	{
+		mma::detail::handleUnknownException(NULL, "HMatExpr::computeDisplacements()");
+		return LIBRARY_FUNCTION_ERROR;
+	}
+	
+	return LIBRARY_NO_ERROR;
+}
+
+

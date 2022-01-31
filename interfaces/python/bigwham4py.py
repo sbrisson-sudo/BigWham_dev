@@ -74,6 +74,9 @@ class Hmatrix(LinearOperator):
         n=self.H_.getSpatialDimension()
         return np.reshape(aux,(int(aux.size/n),n))
 
+    def getSpatialDimension(self):
+        return self.H_.getSpatialDimension()
+
     def _getFullBlocks(self):
         fb=pyGetFullBlocks()  # not fan of this way of creating empty object and setting them after - a constructor should do something!
         fb.set(self.H_)

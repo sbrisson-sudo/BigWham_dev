@@ -47,7 +47,13 @@ namespace bie{
             ElasticProperties const &elas_ // elastic properties
     );
 
-    // generic integrals
+    il::Array<double> point_displacement_3DT0(
+            il::Array<double> &observ_pt, // coordinates
+            FaceData &elem_data_s, // source element
+            il::Array<double> &dd, // dislacement discontinuities components
+            ElasticProperties const &elas_); // elastic properties
+
+    // generic integrals -- why the heck these functiomns are interfaced ??
 
     // By order of appearance in stress influence coefficients due to DD1
 

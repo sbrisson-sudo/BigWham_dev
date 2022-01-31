@@ -6,11 +6,13 @@
 // Geo-Energy Laboratory, 2016-2020.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
-
-#include "Elastic3DT0_element.h"
+#include <iostream>
 #include <il/linearAlgebra.h>
 #include <il/linearAlgebra/dense/norm.h>
-#include <iostream>
+#include <il/linearAlgebra/dense/blas/dot.h>
+
+
+#include "Elastic3DT0_element.h"
 
 namespace bie {
 
@@ -878,10 +880,7 @@ namespace bie {
     }
 
     // Fundamental displacement kernel = displacement influence coefficients
-    il::StaticArray2D<double, 3, 3> DisplacementKernelT0(
-            il::Array2D<double> &x,
-            il::Array2D<double> &xv,
-            double &nu) {
+    il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::Array2D<double> &x,il::Array2D<double> &xv, double &nu) {
 
         // this routine is based on the works of Nintcheu Fata (2009,2011)
 
@@ -891,8 +890,8 @@ namespace bie {
         //     x0 y0 z0
         //     x1 y1 z1
         //     x2 y2 z2
-        //   -G: shear modulus
         //   -nu: Poisson's ratio
+        // (note the shear modulus does not enter here)
         // output
         //   Displacement = 3 x 3 matrix with the displacement influence coefficients arranged as:
         //   U1, U2, U3 -> for rows
@@ -1453,4 +1452,56 @@ namespace bie {
         return stress_at_point;
     }
 
+
+    il::Array<double> point_displacement_3DT0(il::Array<double> &observ_pt,FaceData &elem_data_s, // source element
+                                        il::Array<double> &dd,
+                                        ElasticProperties const &elas_ // elastic properties
+    )
+    {
+        /*
+         * It returns the displacement components:
+         * u_xx, u_yy, u_zz
+         * expressed in the global reference system
+         *
+         */
+
+        double G = elas_.getG(), nu = elas_.getNu();
+
+        // get coordinates vertices of triangular source element
+        il::Array2D<double> el_vertices_s;
+        el_vertices_s = elem_data_s.getVertices();
+
+        // observation point coordinates from 1D array to 2D array
+        il::Array2D<double> x{1,3,0.};
+        for (int i = 0; i < 3; ++i) { x(0,i) = observ_pt[i];}
+
+        // get stress influence coefficients - in the local reference system of the source element
+        il::StaticArray2D<double,3,3> disp_influence_aux = DisplacementKernelT0(x,el_vertices_s,nu);
+        il::Array2D<double> disp_influence{3,3};
+        for (int j=0;j<3;j++){
+            for (int i=0;i<3;i++){
+                disp_influence(i,j)=disp_influence_aux(i,j);
+            }
+        }
+        // Note:
+        // expressed in the reference system of the DD element
+        // index        ->    DD1 (shear)    DD2 (shear)     DD3 (normal)
+        //   0      -> |       U1,            U1,             U1            |
+        //   1      -> |       U2,            U2,             U2            |
+        //   2      -> |       U3,            U3,             U3            |
+
+        // Apply immediately the DD in order to get a displacement vector in the reference system local to the source element
+        il::Array<double> displacement_at_point_local = il::dot(disp_influence,dd);
+
+        // rotation matrix from local to global
+        il::Array2D<double> R_source = elem_data_s.rotationMatrix(false); // false: R(l->g)
+        // transpose of rotation matrix, or from global to local
+        il::Array2D<double> R_source_transposed = elem_data_s.rotationMatrix(true); // true: R(g->l)
+
+        // Get the displacements in the global reference system
+        il::Array<double> displacement_at_point = il::dot(R_source_transposed,displacement_at_point_local);
+
+        return displacement_at_point;
+
+    }
 }

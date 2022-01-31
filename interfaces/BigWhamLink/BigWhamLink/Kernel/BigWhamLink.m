@@ -32,7 +32,6 @@ AppendTo[$ContextPath,LClassContext[]];
 
 $BigWhamVersion::usage = "$BigWhamVersion gives the version number of the BigWham library ";
 GetFilesDate::usage = "Get dates of BigWham library and BigWhamLink library object files "
-ComputeStresses::usage = "ComputeStresses[id,sol,obsPts,nPts,prop,coor,conn,areDDglobal] - return the stress tensor for a list of obs pts"
 
 toHMatExpr::usage = "toHMatExpr[pts, conn,kernelname, properties, maxleafsize,eta,eps_aca] create the HmatExpr object \
                       holding all the hierarchical matrix information and data";
@@ -49,7 +48,10 @@ GetKernel::usage = "GetKernel[id] returns the name (as string) of the BEM kernel
 GetProblemDimension::usage = "GetProblemDimension[id] returns the dimension of the vectorized BEM problem"
 
 (*PlotHpattern2::usage = "Plotting the hierarchical matrix pattern";*)
-GetPattern::usage = " "
+GetPattern::usage = "GetPattern[id] return the pattern of the Hmatrix  "
+
+ComputeStresses::usage = "ComputeStresses[id,sol,obsPts,nPts,prop,coor,conn,areDDglobal] - return the stress tensor for a list of obs pts"
+ComputeDisplacements::usage = "ComputeDisplacements[id,sol,obsPts,nPts,prop,coor,conn,areDDglobal] - return the displacement vector for a list of obs pts"
 
 Begin["`Private`"]
 (* Implementation of the package *)

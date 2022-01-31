@@ -710,7 +710,7 @@ class Bigwhamio {
       }
       case 3: {
         /*
-            implemented only for constant DD over a rectangular element
+            implemented only for constant DD
         */
         il::int_t index = 0;
         for (il::int_t i = 0; i < npts; i++) {
@@ -718,15 +718,17 @@ class Bigwhamio {
           pts(i, 1) = obsPts[index++];
           pts(i, 2) = obsPts[index++];
         }
-
         std::cout << "\n compute displacement - " << kernel_ << "\n";
         if (kernel_ == "3DT6") {
           bie::Mesh3D mesh3d(Coor, Conn, p);
           std::cout << "\n WARNING: not implemented !!\n";
           il::abort();
         } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0") {
-          bie::Mesh3D mesh3d(Coor, Conn, p, false);
-          displacements = bie::computeDisplacements3D(pts, mesh3d, elas, solu, bie::point_displacement_3DR0,are_dd_global);
+            bie::Mesh3D mesh3d(Coor, Conn, p, false);
+            displacements = bie::computeDisplacements3D(pts, mesh3d, elas, solu, bie::point_displacement_3DR0,are_dd_global);
+        } else if (kernel_ == "3DT0" || kernel_== "3DT0_displ"){
+            bie::Mesh3D mesh3d(Coor, Conn, p, false);
+            displacements = bie::computeDisplacements3D(pts, mesh3d, elas, solu, bie::point_displacement_3DT0,are_dd_global);
         }
         break;
       }
