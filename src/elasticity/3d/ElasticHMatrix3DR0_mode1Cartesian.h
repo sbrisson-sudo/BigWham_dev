@@ -104,35 +104,37 @@ namespace bie {
 
 #pragma omp parallel if(M.size(1) / blockSize()>200)
           {
-#pragma omp for
+#pragma omp for collapse(2)
             for (il::int_t j1 = 0; j1 < M.size(1);
                  ++j1) {  // Loop over a subset of source nodes
 
-              il::int_t old_k1;
-              il::int_t old_k0;
-              il::int_t e_k1, e_k0;
-
-              il::int_t k1 = b1 + j1;
-              old_k1 = permutation_[k1];
-              e_k1 =old_k1;  // il::floor(old_k1 / number of nodes per element);
-
-              // get vertices' coordinates of source element
-              il::Array2D<double> xv = mesh_.getVerticesElt(e_k1);
-              bie::FaceData elem_data_s(xv, 0);  // 0 = interpolation order
 
               // Loop over a subset of collocation points
               for (il::int_t j0 = 0; j0 < M.size(0); ++j0) {
-                il::int_t k0 = b0 + j0;
-                old_k0 = permutation_[k0];
-                e_k0 =old_k0;  // il::floor(old_k1 / number of nodes per element);
 
-                // get vertices' coordinates of receiver element
-                xv = mesh_.getVerticesElt(e_k0);
-                bie::FaceData elem_data_r(xv, 0);  // 0 = interpolation order
+                    il::int_t old_k1;
+                    il::int_t old_k0;
+                    il::int_t e_k1, e_k0;
 
-                M(j0, j1) = bie::traction_influence_3DR0opening(
-                    elem_data_s, elem_data_r,
-                    elas_);  // https://en.wikipedia.org/wiki/Codomain
+                    il::int_t k1 = b1 + j1;
+                    old_k1 = permutation_[k1];
+                    e_k1 =old_k1;  // il::floor(old_k1 / number of nodes per element);
+
+                    // get vertices' coordinates of source element
+                    il::Array2D<double> xv = mesh_.getVerticesElt(e_k1);
+                    bie::FaceData elem_data_s(xv, 0);  // 0 = interpolation order
+
+                    il::int_t k0 = b0 + j0;
+                    old_k0 = permutation_[k0];
+                    e_k0 =old_k0;  // il::floor(old_k1 / number of nodes per element);
+
+                    // get vertices' coordinates of receiver element
+                    xv = mesh_.getVerticesElt(e_k0);
+                    bie::FaceData elem_data_r(xv, 0);  // 0 = interpolation order
+
+                    M(j0, j1) = bie::traction_influence_3DR0opening(
+                        elem_data_s, elem_data_r,
+                        elas_);  // https://en.wikipedia.org/wiki/Codomain
               }
             }
           }

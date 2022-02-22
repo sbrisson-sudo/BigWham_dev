@@ -32,6 +32,6 @@ wolfram API, Hmatrix algorithms etc.)  2015-
 - Dmitry Nikolskiy (3D Quadratic triangular DD element kernels) 2017-2019
 - Carlo Peruzzo (3D mesh, 3D kernels API, 3D constant Rectangular kernels, Python Bindings) 2019-
 - Alexis Saez (3D mesh, 3D constant triangular DD elements kernels) 2020-
-- Federico Ciardo (2D code parts, 2D static crack benchmarks) 2016-2019
+- Federico Ciardo (2D code parts, 2D static crack benchmarks, 3D kernels) 2016-2021
 - Lisa Gordeliy (Static crack benchmarks)  2019
 - Stéphanie Chaillat-Loiseuille (HMat algorithms) 2018
