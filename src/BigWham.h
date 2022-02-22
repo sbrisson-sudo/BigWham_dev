@@ -56,6 +56,11 @@ class Bigwhamio {
   // kernel
   std::string kernel_;
 
+  // statistics
+  double block_clstr_crtion_time_;
+  double binary_clstr_tree_time_;
+  double hmat_time_;
+
  public:
   //---------------------------------------------------------------------------
   Bigwhamio() { // default constructor
@@ -66,6 +71,10 @@ class Bigwhamio {
     epsilon_aca_ = 0.001;
     max_leaf_size_ = 100;
     kernel_ = "none";
+
+    block_clstr_crtion_time_ = 0.;
+    binary_clstr_tree_time_ = 0.;
+    hmat_time_ = 0.;
   };
 
   ~Bigwhamio() = default;
@@ -245,6 +254,7 @@ class Bigwhamio {
           bie::cluster(max_leaf_size_, il::io, collocationPoints_);
       tt.Stop();
       std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
+      binary_clstr_tree_time_ = tt.time();
       tt.Reset();
 
       permutation_ = cluster.permutation;
@@ -254,6 +264,7 @@ class Bigwhamio {
           bie::hmatrixTreeIxI(collocationPoints_, cluster.partition,eta);
       tt.Stop();
       std::cout << "hmatrix   Block Cluster creation time :  " << tt.time() << "\n";
+      block_clstr_crtion_time_ = tt.time();
       tt.Reset();
       std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
                 << collocationPoints_.size(1) << "\n";
@@ -316,7 +327,7 @@ class Bigwhamio {
     std::cout << "H mat set : CR = " << h_.compressionRatio()
               << " eps_aca " << epsilon_aca_ << " eta " << eta_ << "\n";
     std::cout << "H-mat time = :  " << tt.time() << "\n";
-
+    hmat_time_ = tt.time();
     std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
               << collocationPoints_.size(1) << "\n";
 
@@ -333,6 +344,10 @@ class Bigwhamio {
 
   //---------------------------------------------------------------------------
   //  get and other methods below
+  double getHmatTime(){ return hmat_time_;};
+  double getBlockClstrTime() { return block_clstr_crtion_time_;};
+  double getBinaryClstrTime() { return binary_clstr_tree_time_;};
+
   std::vector<double> getCollocationPoints() {
     IL_EXPECT_FAST(isBuilt_);
     std::cout << "beginning of getCollocationPoints bigwham \n";

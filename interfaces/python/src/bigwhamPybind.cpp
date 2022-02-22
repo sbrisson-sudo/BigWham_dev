@@ -98,7 +98,10 @@ PYBIND11_MODULE(bigwhamPybind, m) {
       .def("hdotProductInPermutted", &Bigwhamio::hdotProductInPermutted)
       .def("hdotProduct",            &Bigwhamio::hdotProduct, " dot product between hmat and a vector x",py::arg("x"))
       .def("computeStresses", &Bigwhamio::computeStresses, "function to compute the stress at a given set of points")
-      .def("computeDisplacements", &Bigwhamio::computeDisplacements);
+      .def("computeDisplacements", &Bigwhamio::computeDisplacements)
+      .def("getHmatTime", &Bigwhamio::getHmatTime)
+      .def("getBlockClstrTime", &Bigwhamio::getBlockClstrTime)
+      .def("getBinaryClstrTime", &Bigwhamio::getBinaryClstrTime);
 
 
     py::class_<pyGetFullBlocks>(m, "pyGetFullBlocks")
