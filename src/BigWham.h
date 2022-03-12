@@ -342,6 +342,8 @@ class Bigwhamio {
 
   bool isBuilt() { return isBuilt_; };
 
+  void hmatDestructor(){this->h_.~Hmat<double>();};
+
   //---------------------------------------------------------------------------
   //  get and other methods below
   double getHmatTime(){ return hmat_time_;};

@@ -87,6 +87,7 @@ PYBIND11_MODULE(bigwhamPybind, m) {
 //    // option py::dynamic_attr() added to allow new members to be created dynamically);
     py::class_<Bigwhamio>(m, "Bigwhamio", py::dynamic_attr(), py::module_local())
       .def(py::init<>())       // constructor
+      .def("hmatDestructor", &Bigwhamio::hmatDestructor)
       .def("set",                    &Bigwhamio::set)
       .def("getCollocationPoints",   &Bigwhamio::getCollocationPoints)
       .def("getPermutation",         &Bigwhamio::getPermutation)

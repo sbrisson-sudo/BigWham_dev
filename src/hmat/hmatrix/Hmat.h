@@ -223,60 +223,54 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
   il::Array<T> matvec(const il::Array<T> & x){
     IL_EXPECT_FAST(x.size()==size_[1]);
     il::Array<T> y{size_[0],0.};
+    il::int_t n_B = pattern_.n_FRB + pattern_.n_LRB;
 
-  // loop on full rank
 #pragma omp parallel
-    {
-    il::Array<T> yprivate{size_[0],0.};
+      {
+          il::Array<T> yprivate{size_[0],0.};
 #pragma omp for nowait schedule(static)
-    for (il::int_t i = 0; i < pattern_.n_FRB; i++) {
-      il::int_t i0=pattern_.FRB_pattern(1,i);
-      il::int_t j0=pattern_.FRB_pattern(2,i);
-      il::int_t iend=pattern_.FRB_pattern(3,i);
-      il::int_t jend=pattern_.FRB_pattern(4,i);
+          for (il::int_t i = 0; i < n_B; i++) {
+              if (i < pattern_.n_FRB) // loop on full rank
+              {
+                  il::int_t i0=pattern_.FRB_pattern(1,i);
+                  il::int_t j0=pattern_.FRB_pattern(2,i);
+                  il::int_t iend=pattern_.FRB_pattern(3,i);
+                  il::int_t jend=pattern_.FRB_pattern(4,i);
 
-      il::Array2DView<T> a = (*full_rank_blocks_[i]).view();
-      il::ArrayView<T> xs = x.view(il::Range{j0* dof_dimension_, jend* dof_dimension_});
-      il::ArrayEdit<T> ys = yprivate.Edit(il::Range{i0* dof_dimension_, iend* dof_dimension_});
+                  il::Array2DView<T> a = (*full_rank_blocks_[i]).view();
+                  il::ArrayView<T> xs = x.view(il::Range{j0* dof_dimension_, jend* dof_dimension_});
+                  il::ArrayEdit<T> ys = yprivate.Edit(il::Range{i0* dof_dimension_, iend* dof_dimension_});
 
-      il::blas(1.0, a, xs, 1.0, il::io, ys);
-  }
-  // the reduction below may be improved ?
+                  il::blas(1.0, a, xs, 1.0, il::io, ys);
+              }
+              else  /// loop on low rank
+              {   il::int_t ii = i - pattern_.n_FRB;
+                  il::int_t i0 = pattern_.LRB_pattern(1, ii);
+                  il::int_t j0 = pattern_.LRB_pattern(2, ii);
+                  il::int_t iend = pattern_.LRB_pattern(3, ii);
+                  il::int_t jend = pattern_.LRB_pattern(4, ii);
+
+                  il::Array2DView<double> a = (*low_rank_blocks_[ii]).A.view();
+                  il::Array2DView<double> b = (*low_rank_blocks_[ii]).B.view();
+
+                  il::ArrayView<double> xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
+                  il::ArrayEdit<double> ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+                  const il::int_t r = a.size(1);
+                  il::Array<double> tmp{r, 0.0};
+
+                  il::blas(1.0, b, il::Dot::None, xs, 0.0, il::io,
+                           tmp.Edit());  // Note here we have stored b (not b^T)
+                  il::blas(1.0, a, tmp.view(), 1.0, il::io, ys);
+              }
+
+          }
+          // the reduction below may be improved ?
 #pragma omp critical
-    for (il::int_t j=0;j<y.size();j++){
-      y[j]+=yprivate[j];
-    }
-  };
+          for (il::int_t j=0;j<y.size();j++){
+              y[j]+=yprivate[j];
+          }
+      };
 
-  /// loop on low rank
-#pragma omp parallel
-  {
-    il::Array<T> yprivate{size_[0],0.};
-#pragma omp for nowait schedule(static)
-    for (il::int_t i = 0; i < pattern_.n_LRB; i++) {
-      il::int_t i0 = pattern_.LRB_pattern(1, i);
-      il::int_t j0 = pattern_.LRB_pattern(2, i);
-      il::int_t iend = pattern_.LRB_pattern(3, i);
-      il::int_t jend = pattern_.LRB_pattern(4, i);
-
-      il::Array2DView<double> a = (*low_rank_blocks_[i]).A.view();
-      il::Array2DView<double> b = (*low_rank_blocks_[i]).B.view();
-
-      il::ArrayView<double> xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
-      il::ArrayEdit<double> ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
-      const il::int_t r = a.size(1);
-      il::Array<double> tmp{r, 0.0};
-
-      il::blas(1.0, b, il::Dot::None, xs, 0.0, il::io,
-               tmp.Edit());  // Note here we have stored b (not b^T)
-      il::blas(1.0, a, tmp.view(), 1.0, il::io, ys);
-    }
-      // the reduction below may be improved ?
-#pragma omp critical
-     for (il::int_t j=0;j<y.size();j++){
-        y[j]+=yprivate[j];
-      }
-  }
   return y;
   }
   //--------------------------------------------------------------------------
