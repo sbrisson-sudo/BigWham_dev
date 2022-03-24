@@ -47,6 +47,17 @@ class Hmat {
    Hmat()= default;
    ~Hmat()= default;
 
+   // delete the memory pointed by low_rank_blocks_ and  full_rank_blocks_
+   void hmatMemFree(){
+       for (il::int_t i = 0; i < pattern_.n_FRB; i++) {
+           this->full_rank_blocks_[i].reset();
+       }
+       for (il::int_t i = 0; i < pattern_.n_LRB; i++) {
+           this->low_rank_blocks_[i].reset();
+       }
+
+   };
+
    // simple constructor from pattern
    Hmat(const bie::HPattern& pattern){
      pattern_=pattern;

@@ -342,7 +342,12 @@ class Bigwhamio {
 
   bool isBuilt() { return isBuilt_; };
 
-  void hmatDestructor(){this->h_.~Hmat<double>();};
+  void hmatDestructor(){
+      // this function will free the memory and set the hmat obj to its initial status prior to initialization
+      // this will avoid ownership specifications at binding time
+      //this->h_.~Hmat<double>();
+      this->h_.hmatMemFree();
+      };
 
   //---------------------------------------------------------------------------
   //  get and other methods below
