@@ -148,9 +148,10 @@ namespace bie {
                     I_want_global_DD,
                     I_want_global_codomain);  // https://en.wikipedia.org/wiki/Codomain
 
+                    //
                 for (il::int_t j = 0; j < 3; j++) {
                   for (il::int_t i = 0; i < 3; i++) {
-                    M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j);
+                    M(j0 * 3 + i, j1 * 3 + j) = stnl(i,j)  ;//- stnl(j,i); //
                     // I'm writing on
                     // M( direction , number of DD )
                   }

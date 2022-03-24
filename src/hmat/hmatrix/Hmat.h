@@ -6,6 +6,7 @@
 // Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
+// last modifications 5.2.21: Moving to std::unique_ptr (C. Peruzzo)
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "openmp-use-default-none"
 
@@ -33,7 +34,7 @@ class Hmat {
   bie::HPattern pattern_; // the Hmat pattern
 
   il::int_t dof_dimension_{}; //  dof per collocation points - not really needed to be stored
-  il::StaticArray<il::int_t,2> size_; // size of tot mat (row, ocols)
+  il::StaticArray<il::int_t,2> size_; // size of tot mat (row, cols)
 
   std::vector<std::unique_ptr<bie::LowRank<T>>> low_rank_blocks_;
   std::vector<std::unique_ptr<il::Array2D<T>>>  full_rank_blocks_; // vector of full rank blocks
@@ -71,7 +72,7 @@ class Hmat {
      const il::Tree<bie::SubHMatrix, 4> block_tree =
          bie::hmatrixTreeIxI(coll_points, cluster.partition,eta);
      tt.Stop();
-     std::cout << "Time for binary cluster tree construction 2 " << tt.time() <<"\n";
+     std::cout << "Time for binary cluster tree construction  " << tt.time() <<"\n";
      std::cout << " binary cluster tree depth =" << block_tree.depth() << "\n";
      tt.Reset();
      tt.Start();
@@ -112,7 +113,6 @@ class Hmat {
       const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
       const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
 
-      //std::shared_ptr<il::Array2D<T>> a = std::make_shared<il::Array2D<T>> (ni, nj);
       std::unique_ptr<il::Array2D<T>> a =std::make_unique<il::Array2D<T>>  (ni, nj);
       matrix_gen.set(i0, j0, il::io, (*a).Edit());
       private_full_rank_blocks.push_back(std::move(a));
@@ -126,7 +126,6 @@ class Hmat {
 #else
     full_rank_blocks_.insert(full_rank_blocks_.end(), std::make_move_iterator(private_full_rank_blocks.begin()), std::make_move_iterator(private_full_rank_blocks.end()));
 #endif
-    //private_full_rank_blocks.clear();
   }
        isBuilt_FR_=true;
   }

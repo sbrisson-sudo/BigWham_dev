@@ -321,7 +321,7 @@ set(SOURCE_FILES
 #        src/elasticity/3d/Elastic3DR4_element.cpp
 #        src/elasticity/3d/ElasticHMatrix3DR4.h
 
-        
+
         # Solver
       #  src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
@@ -333,11 +333,11 @@ if(BUILD_STATIC_LIB)
     set(CMAKE_POSITION_INDEPENDENT_CODE True)
     add_library(BigWham STATIC ${SOURCE_FILES} )
     target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} )
-    
+
     set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)
     add_executable(BigWham_exe  main.cpp )
-    include_directories(il $ENV{TBBROOT}/include/ )
-    
+    include_directories(il $ENV{TBBROOT}/include/ $ENV{MKLROOT}/include/)
+
     target_link_libraries(BigWham_exe BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
 
 

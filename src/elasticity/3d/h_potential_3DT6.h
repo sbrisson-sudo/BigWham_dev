@@ -18,18 +18,11 @@
 
 namespace bie {
 
+    il::StaticArray4D<std::complex<double>, 6, 4, 3, 9> s_ij_gen_h(double nu, std::complex<double> eix,double h, std::complex<double> d);
 
-    il::StaticArray4D<std::complex<double>, 6, 4, 3, 9> s_ij_gen_h
-            (double nu, std::complex<double> eix,
-             double h, std::complex<double> d);
+    il::StaticArray4D<std::complex<double>, 6, 4, 3, 5> s_ij_red_h(double nu, std::complex<double> eix,double h);
 
-    il::StaticArray4D<std::complex<double>, 6, 4, 3, 5> s_ij_red_h
-            (double nu, std::complex<double> eix,
-             double h);
-
-    il::StaticArray3D<std::complex<double>, 6, 4, 3> s_ij_lim_h
-            (double nu, std::complex<double> eix,
-             std::complex<double> d);
+    il::StaticArray3D<std::complex<double>, 6, 4, 3> s_ij_lim_h(double nu, std::complex<double> eix,std::complex<double> d);
 
 }
 #endif //INC_HFPX3D_H_POTENTIAL_H

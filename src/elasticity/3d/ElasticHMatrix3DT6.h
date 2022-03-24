@@ -25,7 +25,6 @@ class ElasticHMatrix3DT6 : public bie::MatrixGenerator<T> {
 
   il::Array<il::int_t> permutation_;
   const bie::Mesh3D mesh_;
-  //  il::Array2D<il::int_t> binary_ind_pts_at_front_;
 
  public:
   il::int_t I_want_global_DD;
@@ -39,8 +38,7 @@ class ElasticHMatrix3DT6 : public bie::MatrixGenerator<T> {
   il::int_t size(il::int_t d) const override;
   il::int_t blockSize() const override;
   il::int_t sizeAsBlocks(il::int_t d) const override;
-  void set(il::int_t b0, il::int_t b1, il::io_t,
-           il::Array2DEdit<T> M) const override;
+  void set(il::int_t b0, il::int_t b1, il::io_t,il::Array2DEdit<T> M) const override;
 };
 
 template <typename T>
@@ -50,7 +48,7 @@ ElasticHMatrix3DT6<T>::ElasticHMatrix3DT6(
     il::int_t I_want_global_DD,
     il::int_t I_want_global_traction)  // il::Array2D<il::int_t>
                                        // &binary_ind_pts_at_front
-    : point_{point}, //std::move(point) never fucking do that !
+    : point_{point},
       permutation_{permutation},
       mesh_{i_meshtools},
       elas_{elas},
@@ -63,9 +61,7 @@ ElasticHMatrix3DT6<T>::ElasticHMatrix3DT6(
 template <typename T>
 il::int_t ElasticHMatrix3DT6<T>::size(il::int_t d) const {
   IL_EXPECT_MEDIUM(d == 0 || d == 1);
-
-  return mesh_
-      .numberCollPts() * 3;  // num of nodes * (# of degree of freedom per node)
+  return mesh_.numberCollPts() * 3;  // num of nodes * (# of degree of freedom per node)
 };
 
 template <typename T>
@@ -81,8 +77,7 @@ il::int_t ElasticHMatrix3DT6<T>::sizeAsBlocks(il::int_t d) const {
 }
 
 template <typename T>
-void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,
-                                il::Array2DEdit<T> M) const {
+void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,il::Array2DEdit<T> M) const {
 /*  Preliminaries:
  *  Divide the full Hmat in blocks of 3x3 units. 3 is the # of DD for each node of the mesh.
  *  Consider a submatrix M that has certain sizes =< sizes of Hmat. The submatrix M considers a number of couples
@@ -129,25 +124,21 @@ void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       e_k1 = il::floor(old_k1 / 6.);
       is_l = old_k1 % 6;
 
-      il::Array2D<double> xv = mesh_.getVerticesElt(
-          e_k1);  // get vertices' coordinates of source element
+      il::Array2D<double> xv = mesh_.getVerticesElt(e_k1);  // get vertices' coordinates of source element
       bie::FaceData elem_data_s(xv, 2);  // 2 = interpolation order
 
       // Loop over a subset of collocation points
-
       for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
         il::int_t k0 = b0 + j0;
         old_k0 = permutation_[k0];
         e_k0 = il::floor(old_k0 / 6.);
         ir_l = old_k0 % 6;
 
-        xv = mesh_.getVerticesElt(
-            e_k0);  // get vertices' coordinates of receiver element
+        xv = mesh_.getVerticesElt(e_k0);  // get vertices' coordinates of receiver element
         bie::FaceData elem_data_r(xv, 2);  // 2 = interpolation order
 
         // call to the kernel
-        stnl =
-            traction_influence_3DT6(elem_data_s, elem_data_r, is_l, ir_l, elas_,
+        stnl =traction_influence_3DT6(elem_data_s, elem_data_r, is_l, ir_l, elas_,
                                     I_want_global_DD, I_want_global_traction);
 
         /* stnl is a matrix 3x3 like that if the source node is NOT at the
@@ -169,7 +160,6 @@ void ElasticHMatrix3DT6<T>::set(il::int_t b0, il::int_t b1, il::io_t,
         for (il::int_t j = 0; j < 3; j++) {
           for (il::int_t i = 0; i < 3; i++) {
             M(j0 * 3 + i, j1 * 3 + j) = stnl(i, j);
-
             // I'm writing on
             // M( direction , number of DD )
           }
