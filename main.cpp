@@ -28,7 +28,7 @@
 #include <hmat/hmatrix/HMatrix.h>
 #include <hmat/hmatrix/HMatrixUtils.h>
 #include <hmat/linearAlgebra/blas/hdot.h>
-#include <hmat/linearAlgebra/factorization/luDecomposition.h>
+//#include <hmat/linearAlgebra/factorization/luDecomposition.h>
 #include <elasticity/2d/ElasticHMatrix2DP0.h>
 #include <elasticity/2d/ElasticHMatrix2DP1.h>
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
@@ -2300,7 +2300,7 @@ int testNewHmat() {
 
   // star cracks mesh - crack length unity
   il::int_t nfracs=10;
-  il::int_t ne_per_frac=1000;
+  il::int_t ne_per_frac=100;
   il::Array<double> rad{ne_per_frac+1,0.};
   il::Array<double> angle{nfracs,0.};
 //
@@ -2809,8 +2809,8 @@ int main() {
 std::cout << "Mahcine epsilon " << std::numeric_limits<double>::epsilon() <<"\n";
 
 //  testFullMat();
-//  testNewHmat();
-test3DT0_matrix_build();
+    testNewHmat();
+//test3DT0_matrix_build();
   //testPl3D();
 //// tests for 3DT6 not updated since the change of interface
 //test3DT6Mesh();

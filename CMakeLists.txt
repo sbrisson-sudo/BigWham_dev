@@ -260,70 +260,6 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DR0.h
         src/elasticity/3d/ElasticHMatrix3DR0displ.h
         src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
-        # - R4 element
-#        src/elasticity/3d/R4_common/StressKernelsDx11P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx11P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDx12P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx12P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDx13P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx13P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDx21P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx21P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDx22P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx22P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDx23P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx23P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDx31P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx31P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDx32P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx32P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDx33P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDx33P4.h
-#
-#        src/elasticity/3d/R4_common/StressKernelsDy11P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy11P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDy12P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy12P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDy13P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy13P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDy21P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy21P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDy22P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy22P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDy23P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy23P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDy31P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy31P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDy32P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy32P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDy33P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDy33P4.h
-#
-#        src/elasticity/3d/R4_common/StressKernelsDz11P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz11P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDz12P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz12P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDz13P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz13P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDz21P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz21P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDz22P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz22P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDz23P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz23P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDz31P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz31P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDz32P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz32P4.h
-#        src/elasticity/3d/R4_common/StressKernelsDz33P4.cpp
-#        src/elasticity/3d/R4_common/StressKernelsDz33P4.h
-#
-#        src/elasticity/3d/Elastic3DR4_element.cpp
-#        src/elasticity/3d/ElasticHMatrix3DR4.h
-
-
-        # Solver
-      #  src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
         src/BigWham.h
         src/hmat/hmatrix/LatticeHmat.h
@@ -339,7 +275,6 @@ if(BUILD_STATIC_LIB)
     include_directories(il $ENV{TBBROOT}/include/ $ENV{MKLROOT}/include/)
 
     target_link_libraries(BigWham_exe BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
-
 
     if(IL_MKL)
         if(APPLE)
