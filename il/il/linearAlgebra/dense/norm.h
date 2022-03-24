@@ -27,7 +27,7 @@
 
 namespace il {
 
-enum class Norm { L1, L2, Linf };
+enum class Norm { L1, L2, Linf, Frobenius };
 
 template <il::int_t n>
 double norm(const il::StaticArray<double, n>& v, il::Norm norm_type) {
@@ -133,6 +133,15 @@ double norm(const il::Array2D<T>& A, Norm norm_type) {
       for (il::int_t i = 0; i < sum_row.size(); ++i) {
         ans = il::max(ans, sum_row[i]);
       }
+    } break;
+    case Norm::Frobenius:{
+        T sum =0 ;
+        for (il::int_t j = 0; j < A.size(1); ++j) {
+            for (il::int_t i = 0; i < A.size(0); ++i) {
+                sum += il::ipow<2>(A(i, j));
+            }
+        }
+        ans = std::sqrt(ans);
     } break;
     default:
       IL_EXPECT_FAST(false);

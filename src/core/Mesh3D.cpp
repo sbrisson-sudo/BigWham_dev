@@ -20,8 +20,7 @@ namespace bie {
     //        CONSTRUCTOR
     //////////////////////////////////////////////////////////////////////////
 
-    Mesh3D::Mesh3D(const il::Array2D<double> &coordinates, const il::Array2D<il::int_t> &connectivity,
-           const il::int_t p, bool verbose){
+    Mesh3D::Mesh3D(const il::Array2D<double> &coordinates, const il::Array2D<il::int_t> &connectivity,const il::int_t p, bool verbose){
 
         // inputs
         //   -coordinates: vertices' coordinates in the global reference system - size: number of vertices x 3

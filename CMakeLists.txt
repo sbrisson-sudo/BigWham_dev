@@ -20,20 +20,21 @@ project(BigWham VERSION 1.0
         DESCRIPTION "This is the library containing the wheels"
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 #####################################
 # set options: False = 0, True = 1  #
 #####################################
 
 set(BUILD_PYTHON_BINDINGS 1)
+set(BUILD_STATIC_LIB 1)
 set(BUILD_GOOGLE_TESTS 1)
 
 set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
 set(IL_MKL 1)
 set(IL_OPENBLAS 0)
-set(IL_OPENMP 0) # to activate openMP  for bigwham (recommended but should have openmp lib installed)
+set(IL_OPENMP 1) # to activate openMP  for bigwham (recommended but should have openmp lib installed)
 set(IL_TBB 1)
 
 set(USE_INTEL 0)  # compiler option
@@ -45,6 +46,26 @@ set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++11 -O3  -mavx
 
 if(USE_STATIC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
+endif()
+
+
+################################################################################
+# set the python executable and lib to use for bindings below
+################################################################################
+
+if (BUILD_PYTHON_BINDINGS)
+    if (APPLE)
+        set(PYTHON_EXECUTABLE "/Users/bricelecampion/opt/anaconda3/envs/python3.9/bin/python3.9")
+        set(PYTHON_LIBRARY "/Users/bricelecampion/opt/anaconda3/envs/python3.9/lib/libpython3.9.dylib ")
+    elseif(LINUX)
+        set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
+        set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
+    elseif(WINDOWS)
+        set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
+        set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8/libpython3.9.dylib ")
+    endif()
+    message("The Python interpreter is : " ${PYTHON_EXECUTABLE})
+    message("The Python Library is : " ${PYTHON_LIBRARY})
 endif()
 
 
@@ -180,6 +201,7 @@ if(IL_MKL)
             # to fill up here ...
         endif()
     endif()
+    MESSAGE("-- The MKL is found at: " $ENV{MKLROOT})
 
     # For OpenBlas
 elseif(IL_OPENBLAS)
@@ -199,7 +221,7 @@ endif()
 
 set(SOURCE_FILES_DIR ${PROJECT_SOURCE_DIR}/src)
 
-include_directories(il $ENV{TBBROOT}/include/tbb  src src/hmat .)
+include_directories(il $ENV{TBBROOT}/include/tbb $ENV{MKLROOT}/include  src src/hmat .)
 
 MESSAGE("Using TBB:")
 MESSAGE("-- The TBB is found at: " $ENV{TBBROOT})
@@ -238,6 +260,68 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DR0.h
         src/elasticity/3d/ElasticHMatrix3DR0displ.h
         src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
+        # - R4 element
+#        src/elasticity/3d/R4_common/StressKernelsDx11P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx11P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDx12P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx12P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDx13P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx13P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDx21P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx21P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDx22P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx22P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDx23P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx23P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDx31P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx31P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDx32P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx32P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDx33P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDx33P4.h
+#
+#        src/elasticity/3d/R4_common/StressKernelsDy11P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy11P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDy12P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy12P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDy13P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy13P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDy21P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy21P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDy22P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy22P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDy23P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy23P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDy31P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy31P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDy32P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy32P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDy33P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDy33P4.h
+#
+#        src/elasticity/3d/R4_common/StressKernelsDz11P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz11P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDz12P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz12P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDz13P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz13P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDz21P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz21P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDz22P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz22P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDz23P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz23P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDz31P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz31P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDz32P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz32P4.h
+#        src/elasticity/3d/R4_common/StressKernelsDz33P4.cpp
+#        src/elasticity/3d/R4_common/StressKernelsDz33P4.h
+#
+#        src/elasticity/3d/Elastic3DR4_element.cpp
+#        src/elasticity/3d/ElasticHMatrix3DR4.h
+
+
         # Solver
       #  src/solvers/HIterativeSolverUtilities.h
         # BigWham Interface
@@ -245,36 +329,38 @@ set(SOURCE_FILES
         src/hmat/hmatrix/LatticeHmat.h
         )
 
-set(CMAKE_POSITION_INDEPENDENT_CODE True)
-add_library(BigWham STATIC ${SOURCE_FILES} )
-target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} )
+if(BUILD_STATIC_LIB)
+    set(CMAKE_POSITION_INDEPENDENT_CODE True)
+    add_library(BigWham STATIC ${SOURCE_FILES} )
+    target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} )
 
-set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)
-add_executable(BigWham_exe  main.cpp )
-include_directories(il $ENV{TBBROOT}/include/ )
+    set_target_properties(BigWham PROPERTIES LINKER_LANGUAGE CXX)
+    add_executable(BigWham_exe  main.cpp )
+    include_directories(il $ENV{TBBROOT}/include/ $ENV{MKLROOT}/include/)
 
-target_link_libraries(BigWham_exe BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
+    target_link_libraries(BigWham_exe BigWham ) #${CMAKE_OPENBLAS_LIBRARIES}
 
-if(IL_MKL)
-    if(APPLE)
-        target_link_directories(BigWham_exe PRIVATE ${OPENMP_LIBRARY})
-        target_link_libraries(BigWham_exe  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
-        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
-        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include $ENV{TBBROOT}/lib )
-    elseif(UNIX)
-        target_link_libraries(BigWham_exe "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
-        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
-        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-    elseif(WIN32) # not tested
-        target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
-        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
+
+    if(IL_MKL)
+        if(APPLE)
+            target_link_directories(BigWham_exe PRIVATE ${OPENMP_LIBRARY})
+            target_link_libraries(BigWham_exe  ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
+            target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
+            target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include $ENV{TBBROOT}/lib )
+        elseif(UNIX)
+            target_link_libraries(BigWham_exe "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
+            target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
+            target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
+        elseif(WIN32) # not tested
+            target_compile_definitions(BigWham PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
+            target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
+        endif()
+    elseif(IL_OPENBLAS)
+        target_compile_definitions(BigWham PRIVATE IL_OPENBLAS=1 IL_BLAS=0 IL_OPENMP=0)
+        target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR})
     endif()
-elseif(IL_OPENBLAS)
-    target_compile_definitions(BigWham PRIVATE IL_OPENBLAS=1 IL_BLAS=0 IL_OPENMP=0)
-    target_include_directories(BigWham PRIVATE ${CMAKE_SOURCE_DIR})
 endif()
 
-message(${CMAKE_MKL_LIBRARIES})
 ################################################################
 # Pybind --->use with PYTHON version >=3.7
 ################################################################
@@ -289,7 +375,7 @@ if(BUILD_PYTHON_BINDINGS)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         elseif(UNIX)
             target_link_directories(part PRIVATE ${OPENMP_LIBRARY})
-            target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES}  ${OPENMP_LIBRARY}"-Wl,--end-group" -lpthread -lm -ldl)
+            target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
             target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
             target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
         elseif(WIN32)

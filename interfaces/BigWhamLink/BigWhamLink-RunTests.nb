@@ -1,0 +1,1073 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 12.2' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     51175,       1065]
+NotebookOptionsPosition[     47286,       1001]
+NotebookOutlinePosition[     47686,       1017]
+CellTagsIndexPosition[     47643,       1014]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[BoxData[{
+ RowBox[{"PacletDirectoryLoad", "[", 
+  RowBox[{
+   RowBox[{"NotebookDirectory", "[", "]"}], "<>", "\"\<..\>\""}], 
+  "]"}], "\[IndentingNewLine]", 
+ RowBox[{"<<", 
+  "BigWhamLink`"}], "\[IndentingNewLine]", "$BigWhamVersion"}], "Input",
+ InitializationCell->True,
+ CellChangeTimes->{{3.816449144446288*^9, 3.816449171254807*^9}, {
+  3.821985854879093*^9, 3.821985859059111*^9}, {3.821985889604834*^9, 
+  3.8219858915240307`*^9}},
+ CellLabel->"In[62]:=",ExpressionUUID->"b5f45225-d305-4eb9-b671-10b5687985f9"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"/Users/bricelecampion/Documents/Work/Geomechanics/Codes/Pear/\
+BigWhamLink\"\>", 
+   ",", "\<\"/Users/bricelecampion/Documents/Work/Geomechanics/Codes/Pear\"\>\
+"}], "}"}]], "Output",
+ CellChangeTimes->{{3.816449162205517*^9, 3.816449171975621*^9}, 
+   3.816504467477915*^9, 3.816504528547944*^9, 3.816504561166841*^9, 
+   3.816504624377819*^9, 3.816504721669327*^9, 3.8165047847931213`*^9, {
+   3.8165048486303377`*^9, 3.816504878026873*^9}, 3.816504941359918*^9, 
+   3.816504990772787*^9, 3.816505046637154*^9, 3.816505441331924*^9, 
+   3.816669615280249*^9, 3.817274018863162*^9, 3.819376596038659*^9, 
+   3.819377119901775*^9, 3.8219648956270447`*^9, 3.8219707690382233`*^9, 
+   3.821970826710018*^9, 3.821971137496881*^9, 3.82197971584096*^9, 
+   3.821981829182521*^9, 3.821981865232668*^9, {3.821985861582451*^9, 
+   3.8219858617282953`*^9}, 3.8219858925866003`*^9},
+ CellLabel->"Out[62]=",ExpressionUUID->"97959757-5ca5-4fff-b8e4-f7ea2469b96c"],
+
+Cell[BoxData["\<\"BigWhamLink`LTemplate`Classes`\"\>"], "Print",
+ CellChangeTimes->{{3.8219858615836782`*^9, 3.8219858617295218`*^9}, 
+   3.82198589259059*^9},
+ CellLabel->
+  "During evaluation of \
+In[62]:=",ExpressionUUID->"ce3bdf73-ecaa-4c5e-8b06-3c6b77affca2"],
+
+Cell[BoxData["\<\"1.2\"\>"], "Output",
+ CellChangeTimes->{{3.816449162205517*^9, 3.816449171975621*^9}, 
+   3.816504467477915*^9, 3.816504528547944*^9, 3.816504561166841*^9, 
+   3.816504624377819*^9, 3.816504721669327*^9, 3.8165047847931213`*^9, {
+   3.8165048486303377`*^9, 3.816504878026873*^9}, 3.816504941359918*^9, 
+   3.816504990772787*^9, 3.816505046637154*^9, 3.816505441331924*^9, 
+   3.816669615280249*^9, 3.817274018863162*^9, 3.819376596038659*^9, 
+   3.819377119901775*^9, 3.8219648956270447`*^9, 3.8219707690382233`*^9, 
+   3.821970826710018*^9, 3.821971137496881*^9, 3.82197971584096*^9, 
+   3.821981829182521*^9, 3.821981865232668*^9, {3.821985861582451*^9, 
+   3.8219858617282953`*^9}, 3.821985892630072*^9},
+ CellLabel->"Out[64]=",ExpressionUUID->"fc04aabd-2665-47a6-9618-b882f605fcec"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"(*", " ", 
+  RowBox[{"RUN", " ", "THE", " ", "DIFFERENT", " ", "TESTS"}], " ", 
+  "*)"}]], "Input",
+ CellChangeTimes->{{3.800352716119686*^9, 3.800352722390005*^9}},
+ CellLabel->"In[72]:=",ExpressionUUID->"6c349088-341c-4cf0-92c4-1ce331a4700f"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"TestsFiles", "=", 
+   RowBox[{"{", 
+    RowBox[{"\"\<GriffithCrack-2D.wlt\>\"", ",", "\"\<Tests-API-3D.wlt\>\""}],
+     "}"}]}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"TestRelDir", "=", "\"\<./BigWhamLink/Tests/\>\""}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.800351642860325*^9, 3.8003516752897253`*^9}, {
+  3.800351968975871*^9, 3.8003519703424997`*^9}, {3.800953607844799*^9, 
+  3.8009536125319233`*^9}, {3.810286115508896*^9, 3.810286122392521*^9}, {
+  3.8102963522083607`*^9, 3.810296386274396*^9}, {3.820414109837393*^9, 
+  3.8204141177595177`*^9}, {3.8219859121017733`*^9, 3.821985947131482*^9}, {
+  3.821986023886232*^9, 3.8219860243154497`*^9}},
+ CellLabel->"In[80]:=",ExpressionUUID->"dc837da2-ce46-462b-9128-7bbbff01efa1"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"replist", "=", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"TestReport", "[", 
+     RowBox[{
+      RowBox[{"NotebookDirectory", "[", "]"}], "<>", "TestRelDir", "<>", 
+      "#"}], "]"}], " ", "&"}], " ", "/@", " ", "TestsFiles"}]}]], "Input",
+ CellChangeTimes->{{3.800351591677371*^9, 3.800351592441881*^9}, {
+  3.800351655908057*^9, 3.800351727191526*^9}},
+ CellLabel->"In[82]:=",ExpressionUUID->"8d43f404-6376-4645-b03e-2b8a2cb90d88"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData["\<\" constructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025861598*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"394944d9-0adb-4f22-abe7-67640b484134"],
+
+Cell[BoxData["\<\"Now setting up and constructing the HMatrix ...\"\>"], \
+"Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025863216*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"9fdc88d3-3a1a-411e-80c6-4db42f3ec62a"],
+
+Cell[BoxData["\<\" HMatrix is now set !\"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.8219860258670397`*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"00f04790-95a3-4f64-a0c0-60337c586e61"],
+
+Cell[BoxData["\<\" destructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.8219860258683043`*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"f35073a9-2dfe-47d9-a523-163a3cffa290"],
+
+Cell[BoxData["\<\" destructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025869699*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"753303fe-0208-414b-8299-e997825a4ac6"],
+
+Cell[BoxData["\<\" constructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025874604*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"5e679105-2a4a-4cac-8a9d-7a79df5dd76c"],
+
+Cell[BoxData["\<\"Now setting up and constructing the HMatrix ...\"\>"], \
+"Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025876089*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"8d37ee76-ead8-4f67-9178-467891690000"],
+
+Cell[BoxData["\<\" HMatrix is now set !\"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.82198602590292*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"08e79f23-ff06-47e3-9a67-3c4260c3c930"],
+
+Cell[BoxData["\<\" destructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025904036*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"75694383-484e-47c8-91cb-8d297f22d9cd"],
+
+Cell[BoxData["\<\" constructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025905027*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"d3dff3bb-7b17-4355-b0a0-580d8df75731"],
+
+Cell[BoxData["\<\"Now setting up and constructing the HMatrix ...\"\>"], \
+"Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025906023*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"159253f0-fc60-428c-b333-707f5ade9c5a"],
+
+Cell[BoxData["\<\" HMatrix is now set !\"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025907041*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"e5449483-9143-45e8-80d7-dce3016d22b1"],
+
+Cell[BoxData["\<\" constructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025908039*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"b4a3fa2b-5885-4f8a-a4c5-f53d61d36cf7"],
+
+Cell[BoxData["\<\"Now setting up and constructing the HMatrix ...\"\>"], \
+"Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025909053*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"222a3b39-c101-47e1-9627-93ba0df2261c"],
+
+Cell[BoxData["\<\" HMatrix is now set !\"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.82198602593964*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"34447ec1-f54d-4d41-a5c3-738b8b713f91"],
+
+Cell[BoxData["\<\" destructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.8219860259407682`*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"4dd6e970-9981-4e36-9199-0de709cfc130"],
+
+Cell[BoxData["\<\" constructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025970334*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"2e17f7d8-ca4f-461a-9720-79d5ccda9165"],
+
+Cell[BoxData["\<\"Now setting up and constructing the HMatrix ...\"\>"], \
+"Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025971334*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"fa578c92-04a3-45f6-8ac0-8a33304b88cb"],
+
+Cell[BoxData["\<\" HMatrix is now set !\"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.821986025972272*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"b765d440-3ed5-4fda-8432-9448272b4fce"],
+
+Cell[BoxData["\<\" destructor called \"\>"], "Print",
+ CellChangeTimes->{
+  3.821985951698947*^9, {3.8219860002693367`*^9, 3.8219860259731903`*^9}},
+ CellLabel->
+  "During evaluation of \
+In[82]:=",ExpressionUUID->"b7587f31-cf98-4aec-9484-6d0cb9dd8bb9"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   InterpretationBox[
+    RowBox[{
+     TagBox["TestReportObject",
+      "SummaryHead"], "[", 
+     DynamicModuleBox[{Typeset`open$$ = False, Typeset`embedState$$ = 
+      "Ready"}, 
+      TemplateBox[{
+        PaneSelectorBox[{False -> GridBox[{{
+              PaneBox[
+               ButtonBox[
+                DynamicBox[
+                 FEPrivate`FrontEndResource["FEBitmaps", "SummaryBoxOpener"]],
+                 ButtonFunction :> (Typeset`open$$ = True), Appearance -> 
+                None, BaseStyle -> {}, Evaluator -> Automatic, Method -> 
+                "Preemptive"], Alignment -> {Center, Center}, ImageSize -> 
+               Dynamic[{
+                 Automatic, 
+                  3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                   Magnification])}]], 
+              GraphicsBox[{
+                InsetBox[
+                 BoxData[
+                  FormBox[
+                   PaneBox[
+                    DynamicBox[
+                    FEPrivate`FrontEndResource[
+                    "MUnitExpressions", "SuccessIcon"]], Alignment -> Center, 
+                    ImageSize -> 
+                    Dynamic[{
+                    Automatic, 
+                    3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                    Magnification])}]], TraditionalForm]]]}, 
+               PlotRange -> {{0, 1}, {0, 1}}, Background -> GrayLevel[0.93], 
+               Axes -> False, AspectRatio -> 1, ImageSize -> 
+               Dynamic[{
+                 Automatic, 
+                  3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                   Magnification])}], Frame -> True, FrameTicks -> None, 
+               FrameStyle -> Directive[
+                 Thickness[Tiny], 
+                 GrayLevel[0.55]]], 
+              GridBox[{{
+                 RowBox[{
+                   TagBox["\"Title: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                   "\"Test Report: GriffithCrack-2D.wlt\"", "SummaryItem"]}], 
+                 "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox["\"Success rate: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                    TemplateBox[{"100", "\"%\""}, "RowDefault"], 
+                    "SummaryItem"]}], 
+                 RowBox[{
+                   TagBox["\"Tests run: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["4", "SummaryItem"]}]}}, 
+               GridBoxAlignment -> {
+                "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+               False, GridBoxItemSize -> {
+                "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+               GridBoxSpacings -> {
+                "Columns" -> {{2}}, "Rows" -> {{Automatic}}}, 
+               BaseStyle -> {
+                ShowStringCharacters -> False, NumberMarks -> False, 
+                 PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+            GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+            AutoDelete -> False, 
+            GridBoxItemSize -> {
+             "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+            BaselinePosition -> {1, 1}], True -> GridBox[{{
+              PaneBox[
+               ButtonBox[
+                DynamicBox[
+                 FEPrivate`FrontEndResource["FEBitmaps", "SummaryBoxCloser"]],
+                 ButtonFunction :> (Typeset`open$$ = False), Appearance -> 
+                None, BaseStyle -> {}, Evaluator -> Automatic, Method -> 
+                "Preemptive"], Alignment -> {Center, Center}, ImageSize -> 
+               Dynamic[{
+                 Automatic, 
+                  3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                   Magnification])}]], 
+              GraphicsBox[{
+                InsetBox[
+                 BoxData[
+                  FormBox[
+                   PaneBox[
+                    DynamicBox[
+                    FEPrivate`FrontEndResource[
+                    "MUnitExpressions", "SuccessIcon"]], Alignment -> Center, 
+                    ImageSize -> 
+                    Dynamic[{
+                    Automatic, 
+                    3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                    Magnification])}]], TraditionalForm]]]}, 
+               PlotRange -> {{0, 1}, {0, 1}}, Background -> GrayLevel[0.93], 
+               Axes -> False, AspectRatio -> 1, ImageSize -> 
+               Dynamic[{
+                 Automatic, 
+                  3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                   Magnification])}], Frame -> True, FrameTicks -> None, 
+               FrameStyle -> Directive[
+                 Thickness[Tiny], 
+                 GrayLevel[0.55]]], 
+              GridBox[{{
+                 RowBox[{
+                   TagBox["\"Title: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                   "\"Test Report: GriffithCrack-2D.wlt\"", "SummaryItem"]}], 
+                 "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox["\"Success rate: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                    TemplateBox[{"100", "\"%\""}, "RowDefault"], 
+                    "SummaryItem"]}], 
+                 RowBox[{
+                   TagBox["\"Tests run: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["4", "SummaryItem"]}]}, {
+                 RowBox[{
+                   TagBox["\"Succeeded: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["4", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox["\"Failed: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox[
+                   "\"Failed with wrong results: \"", 
+                    "SummaryItemAnnotation"], "\[InvisibleSpace]", 
+                   TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox[
+                   "\"Failed with messages: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox[
+                   "\"Failed with errors: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox["\"Time elapsed: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                    TemplateBox[{"0.1`", "\"s\"", "seconds", "\"Seconds\""}, 
+                    "Quantity", SyntaxForm -> Mod], "SummaryItem"]}], 
+                 "\[SpanFromLeft]"}}, 
+               GridBoxAlignment -> {
+                "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+               False, GridBoxItemSize -> {
+                "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+               GridBoxSpacings -> {
+                "Columns" -> {{2}}, "Rows" -> {{Automatic}}}, 
+               BaseStyle -> {
+                ShowStringCharacters -> False, NumberMarks -> False, 
+                 PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+            GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+            AutoDelete -> False, 
+            GridBoxItemSize -> {
+             "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+            BaselinePosition -> {1, 1}]}, 
+         Dynamic[Typeset`open$$], ImageSize -> Automatic]},
+       "SummaryPanel"],
+      DynamicModuleValues:>{}], "]"}],
+    TestReportObject[
+     Association[
+     "Title" -> "Test Report: GriffithCrack-2D.wlt", "TimeElapsed" -> 
+      Quantity[0.1, "Seconds"], "TestsSucceededCount" -> 4, 
+      "TestsFailedCount" -> 0, "TestsFailedWrongResultsCount" -> 0, 
+      "TestsFailedWithMessagesCount" -> 0, "TestsFailedWithErrorsCount" -> 0, 
+      "Aborted" -> False, "TestResults" -> Association[1 -> TestResultObject[
+          Association[
+          "TestClass" -> None, "TestIndex" -> 1, "TestID" -> 
+           "S3DP0-Griffith-Hdot", "Outcome" -> "Success", "Input" -> 
+           HoldForm[$CellContext`Nn = 70; $CellContext`pts = 
+              Table[{-1 + 2. ($CellContext`i/$CellContext`Nn), 
+                 0.}, {$CellContext`i, 
+                 0, $CellContext`Nn}]; $CellContext`conn = 
+              Table[{$CellContext`i, $CellContext`i + 1}, {$CellContext`i, 1, 
+                 Length[$CellContext`pts] - 1}]; $CellContext`YME = 
+              1.; $CellContext`Nu = 0.2; $CellContext`inst = 
+              BigWhamLink`toHMatExpr[$CellContext`pts, $CellContext`conn, 
+                "S3DP0", {$CellContext`YME, $CellContext`Nu, 1000.}, 16, 30., 
+                0.001]; $CellContext`xy = 
+              BigWhamLink`GetCollocationPoints[$CellContext`inst]; \
+$CellContext`ww = 
+              Map[(4/($CellContext`YME/(1 - $CellContext`Nu^2))) 
+                Sqrt[1 - Part[#, 1]^2]& , $CellContext`xy]; $CellContext`xx = 
+              ConstantArray[0., 2 Length[$CellContext`xy]]; 
+             Part[$CellContext`xx, 
+                Span[2, -1, 2]] = $CellContext`ww; $CellContext`f = 
+              BigWhamLink`Hdot[$CellContext`inst, $CellContext`xx]; \
+$CellContext`test = 1 - Median[
+                 Part[$CellContext`f, 
+                  Span[2, -1, 2]]] < 0.0013; 
+             Unset[$CellContext`inst]; $CellContext`test], "ExpectedOutput" -> 
+           HoldForm[True], "ActualOutput" -> HoldForm[True], 
+           "ExpectedMessages" -> {}, "ActualMessages" -> {}, 
+           "AbsoluteTimeUsed" -> 
+           Quantity[0.010508`4.172035061946026, "Seconds"], "CPUTimeUsed" -> 
+           Quantity[0.011112000000000677`, "Seconds"], "MemoryUsed" -> 
+           Quantity[15584, "Bytes"]]], 2 -> TestResultObject[
+          Association[
+          "TestClass" -> None, "TestIndex" -> 2, "TestID" -> 
+           "S3DP0-Griffith-HIterativeSolve", "Outcome" -> "Success", "Input" -> 
+           HoldForm[$CellContext`Nn = 70; $CellContext`pts = 
+              Table[{-1 + 2. ($CellContext`i/$CellContext`Nn), 
+                 0.}, {$CellContext`i, 
+                 0, $CellContext`Nn}]; $CellContext`conn = 
+              Table[{$CellContext`i, $CellContext`i + 1}, {$CellContext`i, 1, 
+                 Length[$CellContext`pts] - 1}]; $CellContext`YME = 
+              1.; $CellContext`Nu = 0.2; $CellContext`inst = 
+              BigWhamLink`toHMatExpr[$CellContext`pts, $CellContext`conn, 
+                "S3DP0", {$CellContext`YME, $CellContext`Nu, 1000.}, 16, 30., 
+                0.0001]; $CellContext`xy = 
+              BigWhamLink`GetCollocationPoints[$CellContext`inst]; \
+$CellContext`ww = 
+              Map[(4/($CellContext`YME/(1 - $CellContext`Nu^2))) 
+                Sqrt[1 - Part[#, 1]^2]& , $CellContext`xy]; $CellContext`feb = 
+              BigWhamLink`GetFullBlocks[$CellContext`inst]; $CellContext`F = 
+              ConstantArray[0., 2 Length[$CellContext`xy]]; 
+             Part[$CellContext`F, 
+                Span[2, -1, 2]] = 1.; $CellContext`fdot[
+                Pattern[$CellContext`x, 
+                 Blank[]]] := 
+              BigWhamLink`Hdot[$CellContext`inst, $CellContext`x]; \
+$CellContext`dataP = 
+              SparseArray`SparseMatrixILU[$CellContext`feb, Method -> "ILUT", 
+                "FillIn" -> 5, "Tolerance" -> 10^(-5.)]; $CellContext`prec = 
+              Function[$CellContext`x, 
+                
+                SparseArray`SparseMatrixApplyILU[$CellContext`dataP, \
+$CellContext`x]]; {$CellContext`sol, $CellContext`stats} = Reap[
+                
+                LinearSolve[$CellContext`fdot, $CellContext`F, 
+                 Method -> {
+                  "Krylov", {
+                   "Method" -> "BiCGSTAB", 
+                    "Preconditioner" -> $CellContext`prec, 
+                    "PreconditionerSide" -> Right, "Tolerance" -> 10^(-7.), 
+                    "MaxIterations" -> 1000, "ResidualNormFunction" -> (Sow[
+                    Norm[#, 2]]& )}}]]; $CellContext`w = 
+              Part[$CellContext`sol, 
+                Span[2, -1, 2]]; $CellContext`relErrr = 
+              ReplaceAll[
+               Abs[$CellContext`w - $CellContext`ww]/$CellContext`ww, {
+                ComplexInfinity -> 0}]; $CellContext`test = 
+              Median[$CellContext`relErrr] < 10^(-2.); 
+             Unset[$CellContext`inst]; $CellContext`test], "ExpectedOutput" -> 
+           HoldForm[True], "ActualOutput" -> HoldForm[True], 
+           "ExpectedMessages" -> {}, "ActualMessages" -> {}, 
+           "AbsoluteTimeUsed" -> 
+           Quantity[0.011426`4.208409217556524, "Seconds"], "CPUTimeUsed" -> 
+           Quantity[0.03884200000000071, "Seconds"], "MemoryUsed" -> 
+           Quantity[80272, "Bytes"]]], 3 -> TestResultObject[
+          Association[
+          "TestClass" -> None, "TestIndex" -> 3, "TestID" -> 
+           "2DP1-Griffith-Hdot", "Outcome" -> "Success", "Input" -> 
+           HoldForm[$CellContext`Nn = 70; $CellContext`pts = 
+              Table[{-1 + 2. ($CellContext`i/$CellContext`Nn), 
+                 0.}, {$CellContext`i, 
+                 0, $CellContext`Nn}]; $CellContext`conn = 
+              Table[{$CellContext`i, $CellContext`i + 1}, {$CellContext`i, 1, 
+                 Length[$CellContext`pts] - 1}]; $CellContext`YME = 
+              1; $CellContext`Nu = 0.2; $CellContext`inst = 
+              BigWhamLink`toHMatExpr[$CellContext`pts, $CellContext`conn, 
+                "2DP1", {$CellContext`YME, $CellContext`Nu}, 16, 30., 
+                0.0001]; $CellContext`xy = 
+              BigWhamLink`GetCollocationPoints[$CellContext`inst]; \
+$CellContext`xyn = Map[Part[$CellContext`pts, #]& , 
+                Flatten[
+                 Map[Part[$CellContext`conn, #]& , 
+                  Range[$CellContext`Nn]]]]; $CellContext`ww = 
+              Map[(4/($CellContext`YME/(1 - $CellContext`Nu^2))) 
+                Sqrt[1 - Part[#, 1]^2]& , $CellContext`xyn]; $CellContext`xx = 
+              ConstantArray[0., 2 Length[$CellContext`xyn]]; 
+             Part[$CellContext`xx, 
+                Span[2, -1, 2]] = $CellContext`ww; $CellContext`f = 
+              BigWhamLink`Hdot[$CellContext`inst, $CellContext`xx]; \
+$CellContext`test = Median[
+                 Abs[1 - Part[$CellContext`f, 
+                   Span[2, -1, 2]]]] < 0.004], "ExpectedOutput" -> 
+           HoldForm[True], "ActualOutput" -> HoldForm[True], 
+           "ExpectedMessages" -> {}, "ActualMessages" -> {}, 
+           "AbsoluteTimeUsed" -> 
+           Quantity[0.015001`4.32663520888808, "Seconds"], "CPUTimeUsed" -> 
+           Quantity[0.12039900000000081`, "Seconds"], "MemoryUsed" -> 
+           Quantity[17072, "Bytes"]]], 4 -> TestResultObject[
+          Association[
+          "TestClass" -> None, "TestIndex" -> 4, "TestID" -> 
+           "2DP1-Griffith-HIterativeSolve", "Outcome" -> "Success", "Input" -> 
+           HoldForm[$CellContext`Nn = 70; $CellContext`pts = 
+              Table[{-1 + 2. ($CellContext`i/$CellContext`Nn), 
+                 0.}, {$CellContext`i, 
+                 0, $CellContext`Nn}]; $CellContext`conn = 
+              Table[{$CellContext`i, $CellContext`i + 1}, {$CellContext`i, 1, 
+                 Length[$CellContext`pts] - 1}]; $CellContext`YME = 
+              1; $CellContext`Nu = 0.2; $CellContext`inst = 
+              BigWhamLink`toHMatExpr[$CellContext`pts, $CellContext`conn, 
+                "2DP1", {$CellContext`YME, $CellContext`Nu}, 16, 30., 
+                0.0001]; $CellContext`xyn = Map[Part[$CellContext`pts, #]& , 
+                Flatten[
+                 Map[Part[$CellContext`conn, #]& , 
+                  Range[$CellContext`Nn]]]]; $CellContext`ww = 
+              Map[(4/($CellContext`YME/(1 - $CellContext`Nu^2))) 
+                Sqrt[1 - Part[#, 1]^2]& , $CellContext`xyn]; $CellContext`feb = 
+              BigWhamLink`GetFullBlocks[$CellContext`inst]; $CellContext`F = 
+              ConstantArray[0., 
+                Part[
+                 BigWhamLink`GetSize[$CellContext`inst], 1]]; 
+             Part[$CellContext`F, 
+                Span[2, -1, 2]] = 1.; $CellContext`fdot[
+                Pattern[$CellContext`x, 
+                 Blank[]]] := 
+              BigWhamLink`Hdot[$CellContext`inst, $CellContext`x]; \
+$CellContext`dataP = 
+              SparseArray`SparseMatrixILU[$CellContext`feb, Method -> "ILUT", 
+                "FillIn" -> 5, "Tolerance" -> 10^(-5.)]; $CellContext`prec = 
+              Function[$CellContext`x, 
+                
+                SparseArray`SparseMatrixApplyILU[$CellContext`dataP, \
+$CellContext`x]]; {$CellContext`sol, $CellContext`stats} = Reap[
+                
+                LinearSolve[$CellContext`fdot, $CellContext`F, 
+                 Method -> {
+                  "Krylov", {
+                   "Method" -> "BiCGSTAB", 
+                    "Preconditioner" -> $CellContext`prec, 
+                    "PreconditionerSide" -> Right, "Tolerance" -> 10^(-7.), 
+                    "MaxIterations" -> 1000, "ResidualNormFunction" -> (Sow[
+                    Norm[#, 2]]& )}}]]; $CellContext`relErrr = 
+              Abs[Part[$CellContext`sol, 
+                   Span[4, -3, 2]] - Part[$CellContext`ww, 
+                  Span[2, -2]]]/Part[$CellContext`ww, 
+                Span[2, -2]]; Median[$CellContext`relErrr] < 0.00224], 
+           "ExpectedOutput" -> HoldForm[True], "ActualOutput" -> 
+           HoldForm[True], "ExpectedMessages" -> {}, "ActualMessages" -> {}, 
+           "AbsoluteTimeUsed" -> 
+           Quantity[0.021048`4.473725832909641, "Seconds"], "CPUTimeUsed" -> 
+           Quantity[0.18965400000000088`, "Seconds"], "MemoryUsed" -> 
+           Quantity[72960, "Bytes"]]]], 
+      "TestsSucceededIndices" -> {1, 2, 3, 4}, "TestsFailedIndices" -> {}, 
+      "TestsFailedWrongResultsIndices" -> {}, 
+      "TestsFailedWithMessagesIndices" -> {}, 
+      "TestsFailedWithErrorsIndices" -> {}]],
+    Editable->False,
+    SelectWithContents->True,
+    Selectable->False], ",", 
+   InterpretationBox[
+    RowBox[{
+     TagBox["TestReportObject",
+      "SummaryHead"], "[", 
+     DynamicModuleBox[{Typeset`open$$ = False, Typeset`embedState$$ = 
+      "Ready"}, 
+      TemplateBox[{
+        PaneSelectorBox[{False -> GridBox[{{
+              PaneBox[
+               ButtonBox[
+                DynamicBox[
+                 FEPrivate`FrontEndResource["FEBitmaps", "SummaryBoxOpener"]],
+                 ButtonFunction :> (Typeset`open$$ = True), Appearance -> 
+                None, BaseStyle -> {}, Evaluator -> Automatic, Method -> 
+                "Preemptive"], Alignment -> {Center, Center}, ImageSize -> 
+               Dynamic[{
+                 Automatic, 
+                  3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                   Magnification])}]], 
+              GraphicsBox[{
+                InsetBox[
+                 BoxData[
+                  FormBox[
+                   PaneBox[
+                    DynamicBox[
+                    FEPrivate`FrontEndResource[
+                    "MUnitExpressions", "SuccessIcon"]], Alignment -> Center, 
+                    ImageSize -> 
+                    Dynamic[{
+                    Automatic, 
+                    3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                    Magnification])}]], TraditionalForm]]]}, 
+               PlotRange -> {{0, 1}, {0, 1}}, Background -> GrayLevel[0.93], 
+               Axes -> False, AspectRatio -> 1, ImageSize -> 
+               Dynamic[{
+                 Automatic, 
+                  3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                   Magnification])}], Frame -> True, FrameTicks -> None, 
+               FrameStyle -> Directive[
+                 Thickness[Tiny], 
+                 GrayLevel[0.55]]], 
+              GridBox[{{
+                 RowBox[{
+                   TagBox["\"Title: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                   "\"Test Report: Tests-API-3D.wlt\"", "SummaryItem"]}], 
+                 "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox["\"Success rate: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                    TemplateBox[{"100", "\"%\""}, "RowDefault"], 
+                    "SummaryItem"]}], 
+                 RowBox[{
+                   TagBox["\"Tests run: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["1", "SummaryItem"]}]}}, 
+               GridBoxAlignment -> {
+                "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+               False, GridBoxItemSize -> {
+                "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+               GridBoxSpacings -> {
+                "Columns" -> {{2}}, "Rows" -> {{Automatic}}}, 
+               BaseStyle -> {
+                ShowStringCharacters -> False, NumberMarks -> False, 
+                 PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+            GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+            AutoDelete -> False, 
+            GridBoxItemSize -> {
+             "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+            BaselinePosition -> {1, 1}], True -> GridBox[{{
+              PaneBox[
+               ButtonBox[
+                DynamicBox[
+                 FEPrivate`FrontEndResource["FEBitmaps", "SummaryBoxCloser"]],
+                 ButtonFunction :> (Typeset`open$$ = False), Appearance -> 
+                None, BaseStyle -> {}, Evaluator -> Automatic, Method -> 
+                "Preemptive"], Alignment -> {Center, Center}, ImageSize -> 
+               Dynamic[{
+                 Automatic, 
+                  3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                   Magnification])}]], 
+              GraphicsBox[{
+                InsetBox[
+                 BoxData[
+                  FormBox[
+                   PaneBox[
+                    DynamicBox[
+                    FEPrivate`FrontEndResource[
+                    "MUnitExpressions", "SuccessIcon"]], Alignment -> Center, 
+                    ImageSize -> 
+                    Dynamic[{
+                    Automatic, 
+                    3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                    Magnification])}]], TraditionalForm]]]}, 
+               PlotRange -> {{0, 1}, {0, 1}}, Background -> GrayLevel[0.93], 
+               Axes -> False, AspectRatio -> 1, ImageSize -> 
+               Dynamic[{
+                 Automatic, 
+                  3.5 (CurrentValue["FontCapHeight"]/AbsoluteCurrentValue[
+                   Magnification])}], Frame -> True, FrameTicks -> None, 
+               FrameStyle -> Directive[
+                 Thickness[Tiny], 
+                 GrayLevel[0.55]]], 
+              GridBox[{{
+                 RowBox[{
+                   TagBox["\"Title: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                   "\"Test Report: Tests-API-3D.wlt\"", "SummaryItem"]}], 
+                 "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox["\"Success rate: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                    TemplateBox[{"100", "\"%\""}, "RowDefault"], 
+                    "SummaryItem"]}], 
+                 RowBox[{
+                   TagBox["\"Tests run: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["1", "SummaryItem"]}]}, {
+                 RowBox[{
+                   TagBox["\"Succeeded: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["1", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox["\"Failed: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox[
+                   "\"Failed with wrong results: \"", 
+                    "SummaryItemAnnotation"], "\[InvisibleSpace]", 
+                   TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox[
+                   "\"Failed with messages: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox[
+                   "\"Failed with errors: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox["0", "SummaryItem"]}], "\[SpanFromLeft]"}, {
+                 RowBox[{
+                   TagBox["\"Time elapsed: \"", "SummaryItemAnnotation"], 
+                   "\[InvisibleSpace]", 
+                   TagBox[
+                    
+                    TemplateBox[{"0.04`", "\"s\"", "seconds", "\"Seconds\""}, 
+                    "Quantity", SyntaxForm -> Mod], "SummaryItem"]}], 
+                 "\[SpanFromLeft]"}}, 
+               GridBoxAlignment -> {
+                "Columns" -> {{Left}}, "Rows" -> {{Automatic}}}, AutoDelete -> 
+               False, 
+               GridBoxItemSize -> {
+                "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+               GridBoxSpacings -> {
+                "Columns" -> {{2}}, "Rows" -> {{Automatic}}}, 
+               BaseStyle -> {
+                ShowStringCharacters -> False, NumberMarks -> False, 
+                 PrintPrecision -> 3, ShowSyntaxStyles -> False}]}}, 
+            GridBoxAlignment -> {"Columns" -> {{Left}}, "Rows" -> {{Top}}}, 
+            AutoDelete -> False, 
+            GridBoxItemSize -> {
+             "Columns" -> {{Automatic}}, "Rows" -> {{Automatic}}}, 
+            BaselinePosition -> {1, 1}]}, 
+         Dynamic[Typeset`open$$], ImageSize -> Automatic]},
+       "SummaryPanel"],
+      DynamicModuleValues:>{}], "]"}],
+    TestReportObject[
+     Association[
+     "Title" -> "Test Report: Tests-API-3D.wlt", "TimeElapsed" -> 
+      Quantity[0.04, "Seconds"], "TestsSucceededCount" -> 1, 
+      "TestsFailedCount" -> 0, "TestsFailedWrongResultsCount" -> 0, 
+      "TestsFailedWithMessagesCount" -> 0, "TestsFailedWithErrorsCount" -> 0, 
+      "Aborted" -> False, "TestResults" -> Association[1 -> TestResultObject[
+          Association[
+          "TestClass" -> None, "TestIndex" -> 1, "TestID" -> 
+           "Test-getCollocationPoints-3DT6", "Outcome" -> "Success", "Input" -> 
+           HoldForm[$CellContext`L = 
+              1; $CellContext`coorVertices = {{0, 0, 
+                0}, {$CellContext`L, 0, 0}, {
+                0, $CellContext`L, 0}, {-$CellContext`L, 0, 0}, {
+                0, -$CellContext`L, 0}}; $CellContext`connectivity = {{1, 2, 
+               3}, {1, 3, 4}, {1, 4, 5}, {1, 5, 2}}; $CellContext`inst = 
+              BigWhamLink`toHMatExpr[$CellContext`coorVertices, \
+$CellContext`connectivity, "3DT6", {1, 0.3}, 100, 1., 
+                0.001]; $CellContext`numberElements = 
+              4; $CellContext`coorNodes = 
+              ConstantArray[0, {6 $CellContext`numberElements, 3}]; 
+             Do[Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 1] = 
+                Part[$CellContext`coorVertices, 
+                  Part[
+                   Part[$CellContext`connectivity, $CellContext`i], 1]]; 
+               Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 2] = 
+                Part[$CellContext`coorVertices, 
+                  Part[
+                   Part[$CellContext`connectivity, $CellContext`i], 2]]; 
+               Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 3] = 
+                Part[$CellContext`coorVertices, 
+                  Part[
+                   Part[$CellContext`connectivity, $CellContext`i], 3]]; 
+               Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 4] = (
+                  Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 2] + 
+                  Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 3])/2; 
+               Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 5] = (
+                  Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 1] + 
+                  Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 3])/2; 
+               Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 6] = (
+                  Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 1] + 
+                  Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 2])/
+                 2, {$CellContext`i, 
+                1, $CellContext`numberElements}]; $CellContext`centroidElem = 
+              Map[{(Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 1], 1] + Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 2], 1] + Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 3], 1])/
+                 3, (Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 1], 2] + Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 2], 2] + Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 3], 2])/
+                 3, (Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 1], 3] + Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 2], 3] + Part[
+                    Part[$CellContext`coorNodes, 6 (# - 1) + 3], 3])/3}& , 
+                Range[$CellContext`numberElements]]; $CellContext`beta1 = 
+              0.35; $CellContext`beta2 = 0.35; $CellContext`coorCollPts = 
+              ConstantArray[0, {6 $CellContext`numberElements, 3}]; 
+             Do[Part[$CellContext`coorCollPts, 6 ($CellContext`i - 1) + 1] = 
+                Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 
+                   1] + $CellContext`beta1 (
+                   Part[$CellContext`centroidElem, $CellContext`i] - 
+                   Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 1]); 
+               Part[$CellContext`coorCollPts, 6 ($CellContext`i - 1) + 2] = 
+                Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 
+                   2] + $CellContext`beta1 (
+                   Part[$CellContext`centroidElem, $CellContext`i] - 
+                   Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 2]); 
+               Part[$CellContext`coorCollPts, 6 ($CellContext`i - 1) + 3] = 
+                Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 
+                   3] + $CellContext`beta1 (
+                   Part[$CellContext`centroidElem, $CellContext`i] - 
+                   Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 3]); 
+               Part[$CellContext`coorCollPts, 6 ($CellContext`i - 1) + 4] = 
+                Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 
+                   4] + $CellContext`beta2 (
+                   Part[$CellContext`centroidElem, $CellContext`i] - 
+                   Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 4]); 
+               Part[$CellContext`coorCollPts, 6 ($CellContext`i - 1) + 5] = 
+                Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 
+                   5] + $CellContext`beta2 (
+                   Part[$CellContext`centroidElem, $CellContext`i] - 
+                   Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 5]); 
+               Part[$CellContext`coorCollPts, 6 ($CellContext`i - 1) + 6] = 
+                Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 
+                   6] + $CellContext`beta2 (
+                   Part[$CellContext`centroidElem, $CellContext`i] - 
+                   Part[$CellContext`coorNodes, 6 ($CellContext`i - 1) + 
+                    6]), {$CellContext`i, 
+                1, $CellContext`numberElements}]; $CellContext`test = 
+              BigWhamLink`GetCollocationPoints[$CellContext`inst] == \
+$CellContext`coorCollPts], "ExpectedOutput" -> HoldForm[True], "ActualOutput" -> 
+           HoldForm[True], "ExpectedMessages" -> {}, "ActualMessages" -> {}, 
+           "AbsoluteTimeUsed" -> 
+           Quantity[0.003853`3.736314006844995, "Seconds"], "CPUTimeUsed" -> 
+           Quantity[0.030808999999999642`, "Seconds"], "MemoryUsed" -> 
+           Quantity[120, "Bytes"]]]], "TestsSucceededIndices" -> {1}, 
+      "TestsFailedIndices" -> {}, "TestsFailedWrongResultsIndices" -> {}, 
+      "TestsFailedWithMessagesIndices" -> {}, 
+      "TestsFailedWithErrorsIndices" -> {}]],
+    Editable->False,
+    SelectWithContents->True,
+    Selectable->False]}], "}"}]], "Output",
+ CellChangeTimes->{{3.800351696490058*^9, 3.800351728167368*^9}, 
+   3.800953591347413*^9, 3.800953634165782*^9, 3.800964094442306*^9, 
+   3.803354566041752*^9, 3.810285906528043*^9, 3.810286135954547*^9, 
+   3.810296391061812*^9, {3.8102965773622627`*^9, 3.810296587047502*^9}, 
+   3.8102966263936234`*^9, 3.810296769752542*^9, 3.8103799948021097`*^9, 
+   3.820414122875951*^9, 3.821504188979916*^9, 3.821985951748218*^9, {
+   3.821986000310071*^9, 3.821986026004629*^9}},
+ CellLabel->"Out[82]=",ExpressionUUID->"525805c0-b50f-4e50-bcca-497743330756"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"replist", "[", 
+     RowBox[{"[", "#", "]"}], "]"}], "[", "\"\<AllTestsSucceeded\>\"", "]"}], 
+   " ", "&"}], " ", "/@", " ", 
+  RowBox[{"Range", "[", 
+   RowBox[{"Length", "[", "replist", "]"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.8003518752044973`*^9, 3.800351909400112*^9}},
+ CellLabel->"In[83]:=",ExpressionUUID->"9b232cfd-2dc7-47d4-835c-09a2a10bbd85"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"True", ",", "True"}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.800351875560907*^9, 3.80035191007786*^9, 3.800953591536378*^9, 
+   3.8009536343396053`*^9, 3.8009640947480497`*^9, 3.803354568788827*^9, 
+   3.810285909830193*^9, 3.810286138088792*^9, 3.810296413140768*^9, 
+   3.810296631763831*^9, 3.8102967715251703`*^9, 3.8103799958371058`*^9, 
+   3.820414125355783*^9, 3.821504190883486*^9, {3.8219859914304934`*^9, 
+   3.821986027325101*^9}},
+ CellLabel->"Out[83]=",ExpressionUUID->"6c4b3cc0-3577-4ea7-a2b1-bf977589653b"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"replist", "[", 
+     RowBox[{"[", "#", "]"}], "]"}], "[", "\"\<TestsSucceededCount\>\"", 
+    "]"}], " ", "&"}], " ", "/@", " ", 
+  RowBox[{"Range", "[", 
+   RowBox[{"Length", "[", "replist", "]"}], "]"}]}]], "Input",
+ CellChangeTimes->{3.80035191866963*^9},
+ CellLabel->"In[84]:=",ExpressionUUID->"d6f4395f-7b91-4c96-8dfe-5d7c56458539"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"4", ",", "1"}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.800351919862479*^9, 3.800953591590083*^9, 3.800953634399452*^9, 
+   3.8009640947862883`*^9, 3.8102964140946608`*^9, 3.8102966415428257`*^9, 
+   3.810296772290474*^9, 3.81037999639986*^9, 3.820414126231723*^9, 
+   3.821504191520885*^9, {3.821985991469983*^9, 3.821986028068612*^9}},
+ CellLabel->"Out[84]=",ExpressionUUID->"045b33cd-3cef-4d50-9150-d438b8f1569b"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"replist", "[", 
+     RowBox[{"[", "#", "]"}], "]"}], "[", "\"\<TimeElapsed\>\"", "]"}], "&"}],
+   " ", "/@", " ", 
+  RowBox[{"Range", "[", 
+   RowBox[{"Length", "[", "replist", "]"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.810286189436068*^9, 3.8102861928244877`*^9}},
+ CellLabel->"In[85]:=",ExpressionUUID->"62ab43b7-2bdd-471c-b5f6-5f0ef942c9f9"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   TemplateBox[{"0.1`", "\"s\"", "seconds", "\"Seconds\""},
+    "Quantity"], ",", 
+   TemplateBox[{"0.04`", "\"s\"", "seconds", "\"Seconds\""},
+    "Quantity"]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.8102964151858597`*^9, 3.810296643193575*^9, 3.810296773587586*^9, 
+   3.810379996973918*^9, 3.820414126981496*^9, 3.821504192153079*^9, {
+   3.821985991476153*^9, 3.821986028782338*^9}},
+ CellLabel->"Out[85]=",ExpressionUUID->"93068072-2bf0-4db3-a830-c2605ec6b918"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"replist", "[", 
+     RowBox[{"[", "1", "]"}], "]"}], "[", "\"\<TestResults\>\"", "]"}], "[", 
+   RowBox[{"[", "1", "]"}], "]"}], "[", "\"\<Outcome\>\"", "]"}]], "Input",
+ CellChangeTimes->{
+  3.810283743965521*^9, {3.810296780879644*^9, 3.8102969053798113`*^9}},
+ CellLabel->"In[86]:=",ExpressionUUID->"095bdde5-661d-412b-887b-69ecc3355ad3"],
+
+Cell[BoxData["\<\"Success\"\>"], "Output",
+ CellChangeTimes->{{3.810296789295293*^9, 3.8102969057437763`*^9}, 
+   3.810379997522787*^9, 3.820414127895355*^9, 3.821504193674746*^9, {
+   3.821985991482127*^9, 3.8219860296063128`*^9}},
+ CellLabel->"Out[86]=",ExpressionUUID->"8ace145a-e163-4015-8143-983e5d8453c3"]
+}, Open  ]]
+},
+WindowSize->{808, 975},
+WindowMargins->{{Automatic, 357}, {-347, Automatic}},
+FrontEndVersion->"12.2 for Mac OS X x86 (64-bit) (December 12, 2020)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"c26a8651-1872-418c-8fb6-7ef5b440b100"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 524, 11, 89, "Input",ExpressionUUID->"b5f45225-d305-4eb9-b671-10b5687985f9",
+ InitializationCell->True],
+Cell[1107, 35, 995, 16, 56, "Output",ExpressionUUID->"97959757-5ca5-4fff-b8e4-f7ea2469b96c"],
+Cell[2105, 53, 264, 5, 24, "Print",ExpressionUUID->"ce3bdf73-ecaa-4c5e-8b06-3c6b77affca2"],
+Cell[2372, 60, 804, 11, 34, "Output",ExpressionUUID->"fc04aabd-2665-47a6-9618-b882f605fcec"]
+}, Open  ]],
+Cell[3191, 74, 268, 5, 30, "Input",ExpressionUUID->"6c349088-341c-4cf0-92c4-1ce331a4700f"],
+Cell[3462, 81, 785, 15, 52, "Input",ExpressionUUID->"dc837da2-ce46-462b-9128-7bbbff01efa1"],
+Cell[CellGroupData[{
+Cell[4272, 100, 452, 10, 30, "Input",ExpressionUUID->"8d43f404-6376-4645-b03e-2b8a2cb90d88"],
+Cell[CellGroupData[{
+Cell[4749, 114, 252, 5, 24, "Print",ExpressionUUID->"394944d9-0adb-4f22-abe7-67640b484134"],
+Cell[5004, 121, 281, 6, 24, "Print",ExpressionUUID->"9fdc88d3-3a1a-411e-80c6-4db42f3ec62a"],
+Cell[5288, 129, 255, 5, 24, "Print",ExpressionUUID->"00f04790-95a3-4f64-a0c0-60337c586e61"],
+Cell[5546, 136, 253, 5, 24, "Print",ExpressionUUID->"f35073a9-2dfe-47d9-a523-163a3cffa290"],
+Cell[5802, 143, 251, 5, 24, "Print",ExpressionUUID->"753303fe-0208-414b-8299-e997825a4ac6"],
+Cell[6056, 150, 252, 5, 24, "Print",ExpressionUUID->"5e679105-2a4a-4cac-8a9d-7a79df5dd76c"],
+Cell[6311, 157, 281, 6, 24, "Print",ExpressionUUID->"8d37ee76-ead8-4f67-9178-467891690000"],
+Cell[6595, 165, 252, 5, 24, "Print",ExpressionUUID->"08e79f23-ff06-47e3-9a67-3c4260c3c930"],
+Cell[6850, 172, 251, 5, 24, "Print",ExpressionUUID->"75694383-484e-47c8-91cb-8d297f22d9cd"],
+Cell[7104, 179, 252, 5, 24, "Print",ExpressionUUID->"d3dff3bb-7b17-4355-b0a0-580d8df75731"],
+Cell[7359, 186, 281, 6, 24, "Print",ExpressionUUID->"159253f0-fc60-428c-b333-707f5ade9c5a"],
+Cell[7643, 194, 253, 5, 24, "Print",ExpressionUUID->"e5449483-9143-45e8-80d7-dce3016d22b1"],
+Cell[7899, 201, 252, 5, 24, "Print",ExpressionUUID->"b4a3fa2b-5885-4f8a-a4c5-f53d61d36cf7"],
+Cell[8154, 208, 281, 6, 24, "Print",ExpressionUUID->"222a3b39-c101-47e1-9627-93ba0df2261c"],
+Cell[8438, 216, 252, 5, 24, "Print",ExpressionUUID->"34447ec1-f54d-4d41-a5c3-738b8b713f91"],
+Cell[8693, 223, 253, 5, 24, "Print",ExpressionUUID->"4dd6e970-9981-4e36-9199-0de709cfc130"],
+Cell[8949, 230, 252, 5, 24, "Print",ExpressionUUID->"2e17f7d8-ca4f-461a-9720-79d5ccda9165"],
+Cell[9204, 237, 281, 6, 24, "Print",ExpressionUUID->"fa578c92-04a3-45f6-8ac0-8a33304b88cb"],
+Cell[9488, 245, 253, 5, 24, "Print",ExpressionUUID->"b765d440-3ed5-4fda-8432-9448272b4fce"],
+Cell[9744, 252, 253, 5, 24, "Print",ExpressionUUID->"b7587f31-cf98-4aec-9484-6d0cb9dd8bb9"]
+}, Open  ]],
+Cell[10012, 260, 33627, 638, 118, "Output",ExpressionUUID->"525805c0-b50f-4e50-bcca-497743330756"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[43676, 903, 421, 10, 30, "Input",ExpressionUUID->"9b232cfd-2dc7-47d4-835c-09a2a10bbd85"],
+Cell[44100, 915, 564, 10, 34, "Output",ExpressionUUID->"6c4b3cc0-3577-4ea7-a2b1-bf977589653b"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[44701, 930, 397, 10, 30, "Input",ExpressionUUID->"d6f4395f-7b91-4c96-8dfe-5d7c56458539"],
+Cell[45101, 942, 458, 8, 34, "Output",ExpressionUUID->"045b33cd-3cef-4d50-9150-d438b8f1569b"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[45596, 955, 409, 10, 30, "Input",ExpressionUUID->"62ab43b7-2bdd-471c-b5f6-5f0ef942c9f9"],
+Cell[46008, 967, 510, 11, 37, "Output",ExpressionUUID->"93068072-2bf0-4db3-a830-c2605ec6b918"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[46555, 983, 401, 9, 30, "Input",ExpressionUUID->"095bdde5-661d-412b-887b-69ecc3355ad3"],
+Cell[46959, 994, 311, 4, 34, "Output",ExpressionUUID->"8ace145a-e163-4015-8143-983e5d8453c3"]
+}, Open  ]]
+}
+]
+*)
+

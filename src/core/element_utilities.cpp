@@ -13,11 +13,9 @@
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
 #include <il/linearAlgebra.h>
-// #include <il/linearAlgebra/dense/blas/dot.h>
-// #include <il/linearAlgebra/dense/blas/cross.h>
 #include <il/linearAlgebra/dense/norm.h>
-#include "elasticity/3d/constants.h"
-#include "element_utilities.h"
+#include <src/elasticity/3d/constants.h>
+#include <src/core/element_utilities.h>
 
 namespace bie {
 
@@ -33,8 +31,7 @@ namespace bie {
         return n_a;
     }
 
-    il::StaticArray<double, 3> normalize
-            (const il::StaticArray<double, 3> &a) {
+    il::StaticArray<double, 3> normalize(const il::StaticArray<double, 3> &a) {
 // normalized 3D vector
         il::StaticArray<double, 3> e;
         // double n_a = l2norm(a);
@@ -45,8 +42,7 @@ namespace bie {
         return e;
     }
 
-    il::StaticArray<double, 3> cross(const il::StaticArray<double, 3> &a,
-                                     const il::StaticArray<double, 3> &b) {
+    il::StaticArray<double, 3> cross(const il::StaticArray<double, 3> &a,const il::StaticArray<double, 3> &b) {
 // cross product of two 3D vectors
         IL_EXPECT_FAST(a.size() == 3);
         IL_EXPECT_FAST(b.size() == 3);
@@ -59,8 +55,7 @@ namespace bie {
 
 // Element's local coordinate system manipulations
 
-    il::StaticArray2D<double, 3, 3> make_el_r_tensor
-            (const il::StaticArray2D<double, 3, 3> &el_vert) {
+    il::StaticArray2D<double, 3, 3> make_el_r_tensor(const il::StaticArray2D<double, 3, 3> &el_vert) {
 // This function calculates the rotation tensor -
 // coordinate transform from "global" (reference) 
 // Cartesian coordinate system to the element's local 
@@ -86,9 +81,7 @@ namespace bie {
         return r_tensor;
     }
 
-    il::StaticArray<std::complex<double>, 3> make_el_tau_crd
-            (const il::StaticArray2D<double, 3, 3> &el_vert,
-             const il::StaticArray2D<double, 3, 3> &r_tensor) {
+    il::StaticArray<std::complex<double>, 3> make_el_tau_crd(const il::StaticArray2D<double, 3, 3> &el_vert,const il::StaticArray2D<double, 3, 3> &r_tensor) {
 // This function calculates the tau-coordinates
 // of the element's vertices
 // r-tensor is the rotation tensor for the
@@ -122,8 +115,7 @@ namespace bie {
         return tau;
     }
 
-    il::StaticArray2D<std::complex<double>, 2, 2> make_el_tau_2_mc
-            (const il::StaticArray2D<double, 3, 3> &el_vert,
+    il::StaticArray2D<std::complex<double>, 2, 2> make_el_tau_2_mc(const il::StaticArray2D<double, 3, 3> &el_vert,
              const il::StaticArray2D<double, 3, 3> &r_tensor) {
 // This function calculates the coordinate transform
 // from local Cartesian coordinates to "master element"
@@ -155,10 +147,7 @@ namespace bie {
         return transform_mtr;
     }
 
-    HZ make_el_pt_hz
-            (const il::StaticArray2D<double, 3, 3> &el_vert,
-             const il::StaticArray<double, 3> &m_pt_crd,
-             const il::StaticArray2D<double, 3, 3> &r_tensor) {
+    HZ make_el_pt_hz(const il::StaticArray2D<double, 3, 3> &el_vert,const il::StaticArray<double, 3> &m_pt_crd,const il::StaticArray2D<double, 3, 3> &r_tensor) {
 // This function calculates the h- and tau-coordinates 
 // of the point m_pt_cr with respect to the element's 
 // local Cartesian coordinate system with origin at 
@@ -177,9 +166,7 @@ namespace bie {
 
 // Element's basis (shape) functions
 
-    il::StaticArray2D<std::complex<double>, 6, 6> make_el_sfm_uniform
-            (const il::StaticArray2D<double, 3, 3> &el_vert,
-             il::io_t, il::StaticArray2D<double, 3, 3> &r_tensor) {
+    il::StaticArray2D<std::complex<double>, 6, 6> make_el_sfm_uniform(const il::StaticArray2D<double, 3, 3> &el_vert,il::io_t, il::StaticArray2D<double, 3, 3> &r_tensor) {
 // This function calculates the basis (shape) functions' 
 // coefficients (rows of sfm) for a triangular boundary 
 // element with 2nd order polynomial approximation of unknowns
@@ -196,12 +183,12 @@ namespace bie {
                                               // I  e_global->e_local      I*v_global=v_local
                                               // I^T*v_local=v_global or v_local^T*I=v_global^T
 
-        il::StaticArray2D<std::complex<double>, 2, 2> tau_2_mc =
-                make_el_tau_2_mc(el_vert, r_tensor);
+        il::StaticArray2D<std::complex<double>, 2, 2> tau_2_mc =make_el_tau_2_mc(el_vert, r_tensor);
         il::StaticArray2D<std::complex<double>, 6, 6> sfm{0.0}, sfm_mc{0.0};
 
         // coefficients of shape functions (rows) 
         // for master element (0<=x,y<=1); ~[1, x, y, x^2, y^2, x*y]
+        // Matrix M(s) in D.Nikolskyi notation
         sfm_mc(0, 0) = 1.0;
         sfm_mc(0, 1) = -3.0;
         sfm_mc(0, 2) = -3.0;
@@ -231,9 +218,9 @@ namespace bie {
             cq(j, 2) = 2.0 * tau_2_mc(j, 0) * tau_2_mc(j, 1);
             cq(2, j) = tau_2_mc(0, j) * tau_2_mc(1, j);
         }
-        cq(2, 2) = tau_2_mc(0, 0) * tau_2_mc(1, 1) + 
-                tau_2_mc(1, 0) * tau_2_mc(0, 1);
+        cq(2, 2) = tau_2_mc(0, 0) * tau_2_mc(1, 1) + tau_2_mc(1, 0) * tau_2_mc(0, 1);
 
+        // matrix S in D.Nikolskiy notation
         il::StaticArray2D<std::complex<double>, 6, 6> tau_sq_2_mc{0.0};
         tau_sq_2_mc(0, 0) = 1.0;
         for (int j = 0; j <= 1; ++j) {
@@ -246,15 +233,12 @@ namespace bie {
                 tau_sq_2_mc(j + 3, k + 3) = cq(j, k);
             }
         }
-        // assembly of sfm
+        // assembly of sfm M.S
         sfm = il::dot(sfm_mc, tau_sq_2_mc);
         return sfm;
     }
-
-    il::StaticArray2D<std::complex<double>, 6, 6> make_el_sfm_nonuniform
-            (const il::StaticArray2D<double, 3, 3> &el_vert,
-             const il::StaticArray<double, 3> &vertex_wts,
-             il::io_t, il::StaticArray2D<double, 3, 3> &r_tensor) {
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    il::StaticArray2D<std::complex<double>, 6, 6> make_el_sfm_nonuniform(const il::StaticArray2D<double, 3, 3> &el_vert,const il::StaticArray<double, 3> &vertex_wts,il::io_t, il::StaticArray2D<double, 3, 3> &r_tensor) {
 // This function calculates the basis (shape) functions' 
 // coefficients (rows of sfm) for a triangular boundary 
 // element with 2nd order polynomial approximation of unknowns
@@ -278,8 +262,7 @@ namespace bie {
         r_tensor = make_el_r_tensor(el_vert);
         // tau_2_mc defines inverse coordinate transform 
         // [tau, conj(tau)] to [x,y] (see make_el_tau_2_mc)
-        il::StaticArray2D<std::complex<double>, 2, 2> tau_2_mc = 
-                make_el_tau_2_mc(el_vert, r_tensor);
+        il::StaticArray2D<std::complex<double>, 2, 2> tau_2_mc =make_el_tau_2_mc(el_vert, r_tensor);
         il::StaticArray2D<std::complex<double>, 6, 6> sfm{0.0}, sfm_mc{0.0};
 
         // coefficients of shape functions (rows) 
@@ -350,9 +333,9 @@ namespace bie {
 // "weights" vertex_wts
     //};
 
-    il::StaticArray2D<std::complex<double>, 6, 6> shift_el_sfm
-            (std::complex<double> z) {
+    il::StaticArray2D<std::complex<double>, 6, 6> shift_el_sfm(std::complex<double> z) {
         // "shifted" sfm from z, tau[m], and local sfm
+        // in D.Nikolskiy notation - the Z(s) matrix
         std::complex<double> zc = std::conj(z);
         il::StaticArray2D<std::complex<double>, 6, 6> shift_2_z{0.0};
         shift_2_z(0, 0) = 1.0;
@@ -375,8 +358,7 @@ namespace bie {
 
 // Collocation points
 
-    il::StaticArray<il::StaticArray<double, 3>, 6> el_cp_uniform
-            (const il::StaticArray2D<double, 3, 3> &el_vert, double beta,double betaMiddlenode) {
+    il::StaticArray<il::StaticArray<double, 3>, 6> el_cp_uniform(const il::StaticArray2D<double, 3, 3> &el_vert, double beta,double betaMiddlenode) {
 // This function calculates the coordinates
 // of the collocation points on a triangular boundary element
 // with 2nd order polynomial approximation of unknowns
@@ -399,14 +381,9 @@ namespace bie {
             for (int j = 0; j < 3; ++j)
             {  // j is the component of the coord. x y z
                 // from the vertex
-                (coll_pt_crd[v])[j] =
-                        (1.0 - beta) * el_vert(j, v) +
-                        beta * el_centroid[j];
+                (coll_pt_crd[v])[j] =(1.0 - beta) * el_vert(j, v) +beta * el_centroid[j];
                 // from the mid side node
-                (coll_pt_crd[v + 3])[j] =
-                        0.5 * (1.0 - betaMiddlenode) *
-                        (el_vert(j, m) + el_vert(j, l)) +
-                        betaMiddlenode * el_centroid[j];
+                (coll_pt_crd[v + 3])[j] =0.5 * (1.0 - betaMiddlenode) *(el_vert(j, m) + el_vert(j, l)) +betaMiddlenode * el_centroid[j];
             }
         }
         return coll_pt_crd;
@@ -422,9 +399,7 @@ namespace bie {
         //          1------3------2
     }
 
-    il::StaticArray<il::StaticArray<double, 3>, 6> el_cp_nonuniform
-            (const il::StaticArray2D<double, 3, 3> &el_vert,
-             const il::StaticArray<double, 3> &vertex_wts,
+    il::StaticArray<il::StaticArray<double, 3>, 6> el_cp_nonuniform(const il::StaticArray2D<double, 3, 3> &el_vert,const il::StaticArray<double, 3> &vertex_wts,
              double beta,double betaMiddlenode) {
 // This function calculates the coordinates
 // of the collocation points on a triangular boundary element
@@ -450,18 +425,15 @@ namespace bie {
                         (1.0 - beta) * el_vert(j, v) + beta * el_centroid[j];
                 // from the mid side node
                 (coll_pt_crd[v + 3])[j] =
-                        (1.0 - betaMiddlenode) *
-                                (vertex_wts[m] * el_vert(j, m) +
-                                        vertex_wts[l] * el_vert(j, l)) /
-                        (vertex_wts[m] + vertex_wts[l]) +
-                                betaMiddlenode * el_centroid[j];
+                        (1.0 - betaMiddlenode) *  (vertex_wts[m] * el_vert(j, m) + vertex_wts[l] * el_vert(j, l)) /
+                        (vertex_wts[m] + vertex_wts[l]) + betaMiddlenode * el_centroid[j];
             }
         }
         return coll_pt_crd;
     }
 
-    Element_Struct_T set_ele_struct
-            (il::StaticArray2D<double, 3, 3> &el_vert,
+//////////////////////////////////////////////////////////////
+    Element_Struct_T set_ele_struct(il::StaticArray2D<double, 3, 3> &el_vert,
              //il::StaticArray<double, 3> &vert_wts,
              double beta,double betaMiddlenode) {
 // This function defines the whole set of element properties:
@@ -489,8 +461,7 @@ namespace bie {
         // values of nodal SF at CP
         for (int n = 0; n < 6; ++n) {
             // position of CP
-            HZ hz = make_el_pt_hz
-                    (ele_s.vert, ele_s.cp_crd[n], ele_s.r_tensor);
+            HZ hz = make_el_pt_hz(ele_s.vert, ele_s.cp_crd[n], ele_s.r_tensor);
             std::complex<double> tau = hz.z;
             il::StaticArray<std::complex<double>, 6> tau_v {0.0};
             tau_v[0] = 1.0;
@@ -511,8 +482,7 @@ namespace bie {
 
 // Integration of shape functions over the element
 
-    il::StaticArray<std::complex<double>, 6> el_p2_cbp_integral
-            (std::complex<double> a, std::complex<double> b) {
+    il::StaticArray<std::complex<double>, 6> el_p2_cbp_integral(std::complex<double> a, std::complex<double> b) {
 // This function calculates
 // the surface-to-contour integral conversion
 // (Cauchy-Borel-Pompeiu) for monomials of 2nd order
@@ -600,9 +570,7 @@ namespace bie {
     }
 */
 
-    il::StaticArray<double, 6> el_p2_sf_integral
-            (il::StaticArray2D<std::complex<double>, 6, 6> el_sfm,
-             il::StaticArray<std::complex<double>, 3> el_tau) {
+    il::StaticArray<double, 6> el_p2_sf_integral(il::StaticArray2D<std::complex<double>, 6, 6> el_sfm,il::StaticArray<std::complex<double>, 3> el_tau) {
 // This function calculates the integral
 // of 2nd order polynomial shape functions
 // over an element

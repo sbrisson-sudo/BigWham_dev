@@ -23,12 +23,8 @@
 
 namespace bie {
 
-il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
-                                    bie::Mesh3D& mesh,
-                                    bie::ElasticProperties& elas,
-                                    il::Array<double> solution,
-                                    vPPrCall3D PPrCall,
-                                    bool are_dd_global)
+il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,bie::Mesh3D& mesh,bie::ElasticProperties& elas,
+                                    il::Array<double> solution,vPPrCall3D PPrCall,bool are_dd_global)
   {
       // Function to get stresses (sig_xx, sig_yy, sig_zz, sig_xy, sig_xz, sig_yz) at given points
       // due to DDs of solution
@@ -101,12 +97,9 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,
   } // end computeStresses3D
 
 
-    il::Array2D<double> computeDisplacements3D(il::Array2D<double>& observ_pts,
-                                          bie::Mesh3D& mesh,
-                                          bie::ElasticProperties& elas,
-                                          il::Array<double> solution,
-                                          vPPrCall3D PPrCall,
-                                          bool are_dd_global)
+    il::Array2D<double> computeDisplacements3D(il::Array2D<double>& observ_pts,bie::Mesh3D& mesh,
+                                          bie::ElasticProperties& elas,il::Array<double> solution,
+                                          vPPrCall3D PPrCall,bool are_dd_global)
     {
         // Function to get displacements (u_x, u_y, u_z) at given points
         // due to DDs of solution
