@@ -29,7 +29,7 @@
 #ifdef IL_MKL
 #include <mkl_lapacke.h>
 #elif IL_OPENBLAS
-#include <OpenBLAS/lapacke.h>
+#include <lapacke.h>
 #endif
 
 namespace il {
