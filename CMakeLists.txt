@@ -381,7 +381,7 @@ if(BUILD_PYTHON_BINDINGS)
           # this command is needed to copy the library bigwhamPybind to a specific location
           add_custom_command(TARGET bigwhamPybind POST_BUILD
                COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind>  ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so
-               COMMENT "Created /home/peruzzo/PyFrac/src/solid/bigwhamPybind.so")
+               COMMENT "Created ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so ")
     endif()
 endif()
 
