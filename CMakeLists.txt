@@ -41,6 +41,8 @@ set(IL_MKL 0)      # --> if IL_MKL=0 then it must be IL_OPENBLAS=1
 set(IL_OPENBLAS 1)
 set(IL_OPENMP 1)   # --> to activate openMP for bigwham (recommended but should have openmp lib installed)
 set(IL_TBB 1)      # --> this must be 1 at the moment
+set(COPY_TO_SPECIFIC_LOCATION 0) # --> update BIGWHAM_PYBIND_DEST if you want to copy the shared library to a specific destination
+set(BIGWHAM_PYBIND_DEST   "/home/peruzzo/PyFrac/src/solid/" )
 
 set(USE_INTEL 0)   # --> compiler option
 set(USE_STATIC 0)  # --> to add static option to CMAKE_CXX_FLAGS
@@ -68,8 +70,8 @@ if (BUILD_PYTHON_BINDINGS)
     elseif(LINUX)
         #set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
         #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
-        set(PYTHON_EXECUTABLE "/home/peruzzo/PyFrac/pyfracvenv/bin/python" )
-        set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
+        #set(PYTHON_EXECUTABLE "/home/peruzzo/PyFrac/pyfracvenv/bin/python" )
+        #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
     elseif(WINDOWS)
         set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
         set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8/libpython3.9.dylib ")
@@ -375,12 +377,12 @@ if(BUILD_PYTHON_BINDINGS)
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so
             COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so")
 
-
-    # this command is needed to copy the library bigwhamPybind to a specific location
-    add_custom_command(TARGET bigwhamPybind POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> /home/peruzzo/PyFrac/src/solid/bigwhamPybind.so
-            COMMENT "Created /home/peruzzo/PyFrac/src/solid/bigwhamPybind.so")
-
+    if(COPY_TO_SPECIFIC_LOCATION)
+          # this command is needed to copy the library bigwhamPybind to a specific location
+          add_custom_command(TARGET bigwhamPybind POST_BUILD
+               COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind>  ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so
+               COMMENT "Created /home/peruzzo/PyFrac/src/solid/bigwhamPybind.so")
+    endif()
 endif()
 
 
