@@ -20,7 +20,7 @@ import numpy as np
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spilu
-from scipy.sparse import dia_matrix
+from scipy.sparse import diags
 
 from .lib.bigwhamPybind import *
 
@@ -117,9 +117,9 @@ class Hmatrix(LinearOperator):
         return fb.diagonal()
 
     def H_jacobi_prec(self):
-        diag = self.H_diag()
+        diag = self.H_diag()   # return a nd.array
         overdiag = 1./diag
-        return dia_matrix(overdiag, dtype=float)
+        return diags(overdiag, dtype=float)
 
 #--------------------------------
 #

@@ -1,5 +1,6 @@
 cmake-build-release/
 cmake-build-debug/
 *.o
+interfaces/python/lib/
 CMakeLists.txt
 local_computation/
