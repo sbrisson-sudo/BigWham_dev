@@ -20,6 +20,7 @@ import numpy as np
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spilu
+from scipy.sparse import dia_matrix
 
 from .lib.bigwhamPybind import *
 
@@ -40,6 +41,12 @@ class Hmatrix(LinearOperator):
                     eps_aca            (float)              approximation factor (usually 0.001 - 0.0001)
         """
         # NOTE: no specific kernel checks are implemented for now - for grown-ups only
+
+        self.kernel_=kernel
+        self.properties_=properties
+        self.max_leaf_size_=max_leaf_size
+        self.eta_=eta
+        self.eps_aca_=eps_aca
 
         self.H_ = Bigwhamio()
         self.H_.set(coor.flatten(),conn.flatten(),kernel,properties.flatten(),max_leaf_size,eta,eps_aca)
@@ -96,9 +103,23 @@ class Hmatrix(LinearOperator):
 
     # a method constructing an ILU Preconditionner of the H matrix
     def H_ILU_prec(self,fill_factor=5,drop_tol=1e-5):
-        fb = self._getFullBlocks()
-        fbinv = spilu(fb,fill_factor=fill_factor,drop_tol=drop_tol)
+        #fb = self._getFullBlocks()
+        fbinv = self.H_ILU(fill_factor=fill_factor,drop_tol=drop_tol)
         return LinearOperator(self.shape_, fbinv.solve)
+
+    def H_ILU(self,fill_factor=5,drop_tol=1e-5):
+        fb= self._getFullBlocks()
+        fbILU = spilu(fb,fill_factor=fill_factor,drop_tol=drop_tol)
+        return fbILU
+
+    def H_diag(self):
+        fb = self._getFullBlocks()
+        return fb.diagonal()
+
+    def H_jacobi_prec(self):
+        diag = self.H_diag()
+        overdiag = 1./diag
+        return dia_matrix(overdiag, dtype=float)
 
 #--------------------------------
 #
