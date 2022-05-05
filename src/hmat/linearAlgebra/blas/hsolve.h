@@ -6,8 +6,8 @@
 #define IL_CBLAS_INT MKL_INT
 #define IL_CBLAS_LAYOUT CBLAS_LAYOUT
 #elif IL_OPENBLAS
-#include <OpenBLAS/cblas.h>
-#include <OpenBLAS/lapacke.h>
+#include <cblas.h>
+#include <lapacke.h>
 #define IL_CBLAS_INT int
 #define IL_CBLAS_LAYOUT CBLAS_ORDER
 #endif
