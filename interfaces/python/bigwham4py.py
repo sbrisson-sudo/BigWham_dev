@@ -19,6 +19,8 @@
 import numpy as np
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse import csc_matrix
+from scipy.sparse import csr_matrix
+
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
 
