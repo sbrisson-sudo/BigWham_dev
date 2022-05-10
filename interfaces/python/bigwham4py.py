@@ -78,10 +78,17 @@ class Hmatrix(LinearOperator):
     def getCompression(self):
         return self.H_.getCompressionRatio()
 
+    def getPermutation(self):
+        return np.asarray(self.H_.getPermutation())
+
     def getCollocationPoints(self):
-        aux=np.asarray(self.H_.getCollocationPoints())
         n=self.H_.getSpatialDimension()
-        return np.reshape(aux,(int(aux.size/n),n))
+        aux=np.asarray(self.H_.getCollocationPoints())
+        auxpermut=np.reshape(aux,(int(aux.size/n),n))
+        permut=self.getPermutation()
+        colPts=0.*auxpermut
+        colPts[permut]=auxpermut
+        return colPts
 
     def getSpatialDimension(self):
         return self.H_.getSpatialDimension()
