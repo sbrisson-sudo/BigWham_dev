@@ -31,6 +31,7 @@ set(CMAKE_CXX_STANDARD 14)
 # set options: False = 0, True = 1  #
 #####################################
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(BUILD_PYTHON_BINDINGS 1)
 set(BUILD_STATIC_LIB 1)
 set(BUILD_GOOGLE_TESTS 1)
@@ -46,6 +47,8 @@ set(BIGWHAM_PYBIND_DEST   "/home/peruzzo/PyFrac/src/solid/" )
 
 set(USE_INTEL 0)   # --> compiler option
 set(USE_STATIC 0)  # --> to add static option to CMAKE_CXX_FLAGS
+
+MESSAGE("MKL ${IL_MKL}")
 
 #####################################
 # optimization options              #
@@ -174,7 +177,7 @@ endif()
 
 # For Intel MKL
 if(IL_MKL)
-    MESSAGE("   Detecting MKL")
+    MESSAGE("   Detecting MKL ${IL_MKL} ${IL_OPENBLAS}")
     MESSAGE(${CMAKE_CXX_COMPILER_ID})
     if(APPLE)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
