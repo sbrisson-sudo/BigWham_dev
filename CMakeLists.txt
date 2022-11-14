@@ -38,9 +38,9 @@ set(BUILD_GOOGLE_TESTS 1)
 
 set(LLDB_ENABLE_PYTHON 1)
 set(CMAKE_VERBOSE_MAKEFILE 1)
-set(IL_MKL 1)      # --> if IL_MKL=0 then it must be IL_OPENBLAS=1
-set(IL_OPENBLAS 0)
-set(IL_OPENMP 1)   # --> to activate openMP for bigwham (recommended but should have openmp lib installed)
+set(IL_MKL 1 CACHE BOOL "MKL")      # --> if IL_MKL=0 then it must be IL_OPENBLAS=1
+set(IL_OPENBLAS 0 CACHE BOOL "OPENBLAS")
+set(IL_OPENMP 1 CACHE BOOL "OPENMP")   # --> to activate openMP for bigwham (recommended but should have openmp lib installed)
 set(IL_TBB 1)      # --> this must be 1 at the moment
 set(COPY_TO_SPECIFIC_LOCATION 0) # --> update BIGWHAM_PYBIND_DEST if you want to copy the shared library to a specific destination
 set(BIGWHAM_PYBIND_DEST   "/home/peruzzo/PyFrac/src/solid/" )
@@ -48,6 +48,7 @@ set(BIGWHAM_PYBIND_DEST   "/home/peruzzo/PyFrac/src/solid/" )
 set(USE_INTEL 0)   # --> compiler option
 set(USE_STATIC 0)  # --> to add static option to CMAKE_CXX_FLAGS
 
+MESSAGE("MKL ${FOO_MKL}")
 MESSAGE("MKL ${IL_MKL}")
 
 #####################################
@@ -222,6 +223,7 @@ if(IL_MKL)
 
     # For OpenBlas
 elseif(IL_OPENBLAS)
+    MESSAGE("   Detecting OPENBLAS ${IL_OPENBLAS}")
     if(APPLE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_MKL -DIL_OPENBLAS -DIL_BLAS")
         set(CMAKE_OPENBLAS_LIBRARIES "openblas")
