@@ -8,6 +8,7 @@
 //
 //
 //
+#include <limits>
 
 // Inclusion from Inside Loop library
 #include <il/linearAlgebra.h>

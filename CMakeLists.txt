@@ -276,6 +276,7 @@ set(SOURCE_FILES
         #  - T0 element
         src/elasticity/3d/Elastic3DT0_element.cpp
         src/elasticity/3d/ElasticHMatrix3DT0.h
+        src/elasticity/3d/ElasticHMatrix3DT0_modes2and3.h
         #  - R0 element
         src/elasticity/3d/Elastic3DR0_common.cpp
         src/elasticity/3d/Elastic3DR0_element.cpp
@@ -283,6 +284,7 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DR0.h
         src/elasticity/3d/ElasticHMatrix3DR0displ.h
         src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
+        src/elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h
         # BigWham Interface
         src/BigWham.h
         src/hmat/hmatrix/LatticeHmat.h

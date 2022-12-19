@@ -41,7 +41,7 @@
 #include <core/FaceData.h>
 #include <_test/elastic3DR0_element_benchmark.h>
 
-
+// TEST 2DP1 ///////////////////////////////////////////////////////////////////////////////
 int test2DP1(){
 
   std::cout << "-------------- test2DP1 ---------------------\n";
@@ -180,7 +180,7 @@ int test2DP1(){
 ///////////////////////////////////////////////////////////////////////////////
 
 
-/////////////////////////////////////////////////////////////////////////////////
+// TEST 2DP1 ///////////////////////////////////////////////////////////////////////////////
 int testS3DP0(){
 // testing the S3DP0 kernel implementation on griffith crack
   std::cout << "-------------- testS3DP0 ---------------------\n";
@@ -356,7 +356,7 @@ int testS3DP0(){
 ///////////////////////////////////////////////////////////////////////////////
 
 
-///////////////////////////////////////////////////////////////////////////////
+// TEST FULL MAT /////////////////////////////////////////////////////////////////////////////
 int testFullMat()
 {
   std::cout << "--------------- testFullMat ---------------------\n";
@@ -448,6 +448,9 @@ int testFullMat()
 
 }
 ///////////////////////////////////////////////////////////////////////////////
+
+
+// TEST H DOT /////////////////////////////////////////////////////////////////////////////
 int testHdot() {
   std::cout << "--------------- testHdot ---------------------\n";
 
@@ -650,7 +653,10 @@ int testHdot() {
   return 0;
 
 }
+/////////////////////////////////////////////////////////////////////////////////
 
+
+// TEST 3DR0 /////////////////////////////////////////////////////////////////////////////
 int test3DR0() {
     std::cout << "-------------- test3DR0 ---------------------\n";
 
@@ -720,7 +726,116 @@ int test3DR0() {
     std::cout << "\n----------end of test 3DR0  ---------------------\n";
     return 0;
 }
+/////////////////////////////////////////////////////////////////////////////////
 
+
+// TEST 3DR0_MODE2AND3/////////////////////////////////////////////////////////////////////////////
+int test3DR0modes2and3() {
+    std::cout << "-------------- test3DR0modes2and3 ---------------------\n";
+    // this function tests if the implementation of the reduced 3DR0 element works
+
+    // coordinates
+    const std::vector<double> coor={-1.,-1.,0.,
+                                    1.,-1.,0.,
+                                    1.,1.,0.,
+                                    -1.,1.,0.,
+                                    -1.,2.,0.,
+                                    1.,2.,0.};
+    // connectivity
+    const std::vector<int> conn = {0,1,2,3,
+                                   3,2,5,4};
+
+    const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
+    const int max_leaf_size = 1000;
+    const double eta = 0.;
+    const double eps_aca = 0.001;
+
+
+
+    const std::string tractionKernel = "3DR0";
+    Bigwhamio tractionHMAT;
+    tractionHMAT.set(coor,conn,tractionKernel,properties,
+                     max_leaf_size, eta, eps_aca);
+
+    const std::string tractionKernel_shearONLY = "3DR0shear";
+    Bigwhamio tractionHMAT_shearONLY;
+    tractionHMAT_shearONLY.set(coor,conn,tractionKernel_shearONLY,properties,max_leaf_size, eta, eps_aca);
+
+    // use the Hdot product
+    const std::vector<double>  xx = {1.,2.,0.,4.,5.,0.};
+    std::vector<double> x;
+    std::cout << "Traction HMAT dot product \n" ;
+    x = tractionHMAT.hdotProduct(xx);
+    for(int i=0; i<x.size(); ++i) std::cout << x[i] << " ";
+    std::cout << "\n" ;
+
+    const std::vector<double>  xxRed = {1.,2.,4.,5.};
+    std::vector<double> xRed;
+    std::cout << "Traction HMAT dot product \n" ;
+    xRed = tractionHMAT_shearONLY.hdotProduct(xxRed);
+    for(int i=0; i<xRed.size(); ++i) std::cout << xRed[i] << " ";
+    std::cout << "\n" ;
+
+
+    std::cout << "\n----------end of test 3DR0modes2and3  ---------------------\n";
+    return 0;
+}
+/////////////////////////////////////////////////////////////////////////////////
+
+// TEST 3DR0_MODE2AND3/////////////////////////////////////////////////////////////////////////////
+int test3DT0modes2and3() {
+    std::cout << "-------------- test3DT0modes2and3 ---------------------\n";
+    // this function tests if the implementation of the reduced 3DR0 element works
+
+    // coordinates
+    const std::vector<double> coor={-1.,-1.,0.,
+                                    1.,-1.,0.,
+                                    1.,1.,0.,
+                                    -1.,1.,0.,
+                                    -1.,2.,0.,
+                                    1.,2.,0.};
+    // connectivity
+    const std::vector<int> conn = {0,1,3,1,2,3,
+                                   3,2,4,2,5,4};
+
+    const std::vector<double> properties = {100, 0.2}; // Young Modulus , Poisson's ratio
+    const int max_leaf_size = 1000;
+    const double eta = 0.;
+    const double eps_aca = 0.001;
+
+
+
+    const std::string tractionKernel = "3DT0";
+    Bigwhamio tractionHMAT;
+    tractionHMAT.set(coor,conn,tractionKernel,properties,
+                     max_leaf_size, eta, eps_aca);
+
+    const std::string tractionKernel_shearONLY = "3DT0shear";
+    Bigwhamio tractionHMAT_shearONLY;
+    tractionHMAT_shearONLY.set(coor,conn,tractionKernel_shearONLY,properties,max_leaf_size, eta, eps_aca);
+
+    // use the Hdot product
+    const std::vector<double>  xx = {1.,2.,0.,4.,5.,0.,6.,7.,0.,8.,9.,0.};
+    std::vector<double> x;
+    std::cout << "Traction HMAT dot product \n" ;
+    x = tractionHMAT.hdotProduct(xx);
+    for(int i=0; i<x.size(); ++i) std::cout << x[i] << " ";
+    std::cout << "\n" ;
+
+    const std::vector<double>  xxRed = {1.,2.,4.,5.,6.,7.,8.,9.};
+    std::vector<double> xRed;
+    std::cout << "Traction HMAT dot product \n" ;
+    xRed = tractionHMAT_shearONLY.hdotProduct(xxRed);
+    for(int i=0; i<xRed.size(); ++i) std::cout << xRed[i] << " ";
+    std::cout << "\n" ;
+
+
+    std::cout << "\n----------end of test 3DT0modes2and3  ---------------------\n";
+    return 0;
+}
+/////////////////////////////////////////////////////////////////////////////////
+
+// TEST PERF 3DR0 ///////////////////////////////////////////////////////////////////////////////
 int perf3DR0() {
     std::cout << "-------------- perf3DR0 ---------------------\n";
 
@@ -754,8 +869,10 @@ int perf3DR0() {
     std::cout << "\n----------end of test 3DR0 perf ---------------------\n";
     return 0;
 }
+/////////////////////////////////////////////////////////////////////////////////
 
 
+// TEST 3DT0 ///////////////////////////////////////////////////////////////////////////////
 int test3DT0() {
 
     std::cout << "--------------- test3DT0 ---------------------\n";
@@ -1451,7 +1568,10 @@ int test3DT0() {
 
     return 0;
 }
+/////////////////////////////////////////////////////////////////////////////////
 
+
+// READ COORD CSV ///////////////////////////////////////////////////////////////////////////////
 // For the 3D code
 // Functions to read coordinate matrix and connectivity matrix from CSV file
 
@@ -1514,7 +1634,10 @@ il::Array2D<double> read_coord_CSV(std::string& inputfileCOORD){
         std::cout << "Can't open the file" << std::endl;
     }
 }
+/////////////////////////////////////////////////////////////////////////////////
 
+
+// READ CONN CSV ///////////////////////////////////////////////////////////////////////////////
 il::Array2D<il::int_t> read_conn_CSV(std::string& inputfileCONN){
 
     il::Array2D<il::int_t> connectivity_table;
@@ -1575,7 +1698,10 @@ il::Array2D<il::int_t> read_conn_CSV(std::string& inputfileCONN){
     }
 
 }
+/////////////////////////////////////////////////////////////////////////////////
 
+
+// TEST 3DT0 PENNY SHAPED ///////////////////////////////////////////////////////////////////////////////
 int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_file){
 
     // Make sure to use the kernel in local-local
@@ -1793,7 +1919,10 @@ int test3DT0_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     return  0;
 
 }
+/////////////////////////////////////////////////////////////////////////////////
 
+
+// TEST 3DT6 PENNY SHAPED ///////////////////////////////////////////////////////////////////////////////
 int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_file){
 
     std::cout << "-------------- test3DT6 Penny-Shaped Crack ---------------------\n";
@@ -2138,8 +2267,10 @@ int test3DT6_PennyShaped(std::string& vertices_file, std::string& connectivity_f
     return  0;
 
 }
+/////////////////////////////////////////////////////////////////////////////////
 
 
+// CHECK 3DR0 ///////////////////////////////////////////////////////////////////////////////
 int check3DR0() {
 
     std::cout << "-------------- test3DR0 ---------------------\n";
@@ -2283,9 +2414,10 @@ int check3DR0() {
     return 0;
 
 }
+/////////////////////////////////////////////////////////////////////////////////
 
 
-///////////////////////////////////////////////////////////////////////////////
+// TEST NEW HMAT /////////////////////////////////////////////////////////////////////////////
 int testNewHmat() {
   std::cout << "--------------- test new Hmat implemntation Hdot ---------------------\n";
 #ifndef NUMBEROFTHREADS
@@ -2554,6 +2686,8 @@ int testNewHmat() {
 }
 ////////////////////////////////////////////////////////////////////////////////
 
+
+// TEST PL3D///////////////////////////////////////////////////////////////////////////////
 int testPl3D(){
 // testing the square DD rectangle kernel used in Pyfrac.
   il::int_t nx=100;
@@ -2705,8 +2839,10 @@ int testPl3D(){
     std::cout << " val "<< val[val.size()-1] << "  pos size"<< pos[2*(val.size()-1)] << "-"<< pos[2*(val.size()-1)+1] << "\n";
   return 0;
 }
+/////////////////////////////////////////////////////////////////////////////////
 
 
+// TEST 3DT0 MATRIX BUILD ///////////////////////////////////////////////////////////////////////////////
 int test3DT0_matrix_build(){
 
     std::cout << "-------------- test3DR0 Matrix-Build ---------------------\n";
@@ -2793,39 +2929,55 @@ int test3DT0_matrix_build(){
     std::cout << "-------------- End of test3DT0 Matrix-Build ------------- " << "\n";
     return  0;
 }
+/////////////////////////////////////////////////////////////////////////////////
 
+
+/////////////////////////////////////////////////////////////////////////////////
 int main() {
 
   std::cout << "++++++++++++++++++++\n";
 
- // int a = check3DR0();   // this gives an error - Can't open the file - make sure that test in the main are short and can be run when pushed.
+  //int a = check3DR0();   // this gives an error - Can't open the file - make sure that test in the main are short and can be run when pushed.
 
   //test3DR0();
+
+  test3DR0modes2and3();
+
+  test3DT0modes2and3();
+
   //perf3DR0();
 
- // test2DP1();
+  //test2DP1();
 
- // testS3DP0();
-std::cout << "Mahcine epsilon " << std::numeric_limits<double>::epsilon() <<"\n";
+  //testS3DP0();
 
-//  testFullMat();
-    testNewHmat();
-//test3DT0_matrix_build();
+  std::cout << "Mahcine epsilon " << std::numeric_limits<double>::epsilon() <<"\n";
+
+  //testFullMat();
+
+  //testNewHmat();
+
+  //test3DT0_matrix_build();
+
   //testPl3D();
-//// tests for 3DT6 not updated since the change of interface
-//test3DT6Mesh();
-//std::string vertices_file = "/home/alexis/bigwham/vertices5000.csv";
-//std::string connectivity_file = "/home/alexis/bigwham/connectivity5000.csv";
-//test3DT6PennyShaped(vertices_file,connectivity_file);
-//test3DT6_PennyShaped(vertices_file,connectivity_file);
 
-//test3DT0();
-//// note that here you need to pass the csv files for the mesh (vertices and connectivity)
-//std::string vertices_file = "/Users/alexis/BigWhamLink/vertices.csv";
-//std::string connectivity_file = "/Users/alexis/BigWhamLink/conn.csv";
-//test3DT0_PennyShaped(vertices_file,connectivity_file);
+  //// tests for 3DT6 not updated since the change of interface
+  //test3DT6Mesh();
+
+   //std::string vertices_file = "/home/alexis/bigwham/vertices5000.csv";
+   //std::string connectivity_file = "/home/alexis/bigwham/connectivity5000.csv";
+   //test3DT6PennyShaped(vertices_file,connectivity_file);
+   //test3DT6_PennyShaped(vertices_file,connectivity_file);
+
+   //test3DT0();
+
+   //// note that here you need to pass the csv files for the mesh (vertices and connectivity)
+   //std::string vertices_file = "/Users/alexis/BigWhamLink/vertices.csv";
+   //std::string connectivity_file = "/Users/alexis/BigWhamLink/conn.csv";
+   //test3DT0_PennyShaped(vertices_file,connectivity_file);
 
   std::cout << "\n End of BigWham - exe " << "\n";
 
 }
 
+/////////////////////////////////////////////////////////////////////////////////

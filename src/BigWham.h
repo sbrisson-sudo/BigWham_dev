@@ -35,7 +35,8 @@
 #include <elasticity/3d/ElasticHMatrix3DT0.h>
 #include <elasticity/3d/ElasticHMatrix3DT0displ.h>
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
-
+#include <elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h>
+#include <elasticity/3d/ElasticHMatrix3DT0_modes2and3.h>
 
 class Bigwhamio {
  private:
@@ -177,7 +178,7 @@ class Bigwhamio {
         h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
       }
     } else if (kernel_ == "3DT6" || kernel_ == "3DR0_displ" ||
-               kernel_ == "3DR0" || kernel_ == "3DT0" || kernel_ == "3DT0_displ" || kernel_ == "3DR0opening" ) {
+               kernel_ == "3DR0" || kernel_ == "3DT0" || kernel_ == "3DT0_displ" || kernel_ == "3DR0opening" || kernel_ == "3DR0shear" || kernel_ == "3DT0shear") {
       // step 1 - create the mesh object
       dimension_ = 3;
       il::int_t nnodes_elts = 0;  // n of nodes per element
@@ -194,6 +195,14 @@ class Bigwhamio {
         dof_dimension_ = 3;
         nnodes_elts = 4;
         p = 0;
+      } else if (kernel_ == "3DR0shear") {
+          dof_dimension_ = 2;
+          nnodes_elts = 4;
+          p = 0;
+      } else if (kernel_ == "3DT0shear") {
+          dof_dimension_ = 2;
+          nnodes_elts = 3;
+          p = 0;
       } else if (kernel_ == "3DR0opening") {
         dof_dimension_ = 1;
         nnodes_elts = 4;
@@ -287,7 +296,7 @@ class Bigwhamio {
           std::cout << "coll points dim " << collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
           const bie::ElasticHMatrix3DT0displ<double> M{collocationPoints_, permutation_, mesh3d, elas,0};  // local_global = 0 if local-local, 1 if global-global
           h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
-      } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" || kernel_ == "3DR0opening") {
+      } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" || kernel_ == "3DR0opening" ||  kernel_ == "3DR0shear" || kernel_ == "3DT0shear") {
         std::cout << " Kernel Isotropic ELasticity 3D R0 (constant) rectangle \n";
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - " << collocationPoints_.size(1) << "\n";
         if (kernel_ == "3DR0") {
@@ -305,6 +314,18 @@ class Bigwhamio {
           std::cout << "\n Kernel: "<< kernel_ << " " <<  "< Hypersingular traction kernel >"<< "\n  ";
           const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{collocationPoints_, permutation_, mesh3d, elas};
           h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
+        }
+        else if (kernel_ == "3DR0shear") {
+            // DD to displacement HMAT
+            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< Hypersingular traction kernel >"<< "\n  ";
+            const bie::ElasticHMatrix3DR0_modes2and3Cartesian<double> M{collocationPoints_, permutation_, mesh3d, elas,0,0};
+            h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
+        }
+        else if (kernel_ == "3DT0shear") {
+            // DD to displacement HMAT
+            std::cout << "\n Kernel: "<< kernel_ << " " <<  "< Hypersingular traction kernel >"<< "\n  ";
+            const bie::ElasticHMatrix3DT0_modes2and3<double> M{collocationPoints_, permutation_, mesh3d, elas,0};
+            h_.toHmat(M,cluster, collocationPoints_,  eta_,epsilon_aca_);
         }
       }
 
