@@ -96,8 +96,23 @@ PYBIND11_MODULE(bigwhamPybind, m) {
       .def("getSpatialDimension",    &Bigwhamio::getSpatialDimension)
       .def("matrixSize",             &Bigwhamio::matrixSize)
       .def("getHpattern",            &Bigwhamio::getHpattern)
-      .def("hdotProductInPermutted", &Bigwhamio::hdotProductInPermutted)
-      .def("hdotProduct",            &Bigwhamio::hdotProduct, " dot product between hmat and a vector x",py::arg("x"))
+      //.def("hdotProductInPermutted", &Bigwhamio::hdotProductInPermutted)
+      // I change the previous binding of hdotProductInPermutted to return a numpy array!!
+      .def("hdotProductInPermutted", [](Bigwhamio & self, const std::vector<double>& x)-> decltype(auto){
+                auto v = new std::vector<double>(self.hdotProductInPermutted(x));
+                auto capsule = py::capsule(v, [](void *v) { delete reinterpret_cast<std::vector<double>*>(v); });
+                return py::array(v->size(), v->data(), capsule);
+            }," dot product between hmat and a vector x",py::arg("x"),py::return_value_policy::reference)
+
+      //.def("hdotProduct",            &Bigwhamio::hdotProduct, " dot product between hmat and a vector x",py::arg("x"))
+      // I change the previous binding of hdotProduct to return a numpy array!!
+      // todo: is it possible to move the result of the dot product to an std::array? the array is contiguous in memory but not the vector!!!!!! CP
+      .def("hdotProduct", [](Bigwhamio & self, const std::vector<double>& x)-> decltype(auto){
+                auto v = new std::vector<double>(self.hdotProduct(x));
+                auto capsule = py::capsule(v, [](void *v) { delete reinterpret_cast<std::vector<double>*>(v); });
+                return py::array(v->size(), v->data(), capsule);
+            }," dot product between hmat and a vector x",py::arg("x"),py::return_value_policy::reference)
+
       .def("computeStresses", &Bigwhamio::computeStresses, "function to compute the stress at a given set of points")
       .def("computeDisplacements", &Bigwhamio::computeDisplacements)
       .def("getHmatTime", &Bigwhamio::getHmatTime)

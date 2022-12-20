@@ -389,6 +389,9 @@ myHmat_linear_operator = Hmatrix(kernel,coor,conn,properties,max_leaf_size=100,e
 # [DD1_el1, DD2_el1, DD3_el1, DD1_el2, DD2_el2, DD3_el2]
 solution_DDs = np.ones(mesh.NumberOfElts*3)
 
+#test the dot product
+dot_res = myHmat_linear_operator._matvec(solution_DDs)
+
 # "obsPts" a flattened list containing the coordinates of the observation points
 #          coordinates [ x(1), y(1), z(1), ... ,x(npts), y(npts), z(npts) ]
 obsPts = [1.1, 1.2, 0.,
