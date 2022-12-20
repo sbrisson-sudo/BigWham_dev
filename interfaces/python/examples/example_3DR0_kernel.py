@@ -28,8 +28,6 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 
-
-#from .lib.bigwhamPybind import *
 from interfaces.python.lib.bigwhamPybind import *
 
 
@@ -393,7 +391,9 @@ solution_DDs = np.ones(mesh.NumberOfElts*3)
 
 # "obsPts" a flattened list containing the coordinates of the observation points
 #          coordinates [ x(1), y(1), z(1), ... ,x(npts), y(npts), z(npts) ]
-obsPts = [1.1,1.2,0.,  1,2,4,   1,3,4]
+obsPts = [1.1, 1.2, 0.,
+          1,2,4,
+          1,3,4]
 
 # "npts" the number of observation points
 npts = 2

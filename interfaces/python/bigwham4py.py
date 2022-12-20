@@ -24,7 +24,13 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
 
-from .lib.bigwhamPybind import *
+import matplotlib
+import matplotlib.pyplot as plt
+from matplotlib.collections import PatchCollection
+from matplotlib.patches import Rectangle
+
+
+from interfaces.python.lib.bigwhamPybind import *
 
 ##############################
 #  Hmatrix class in python   #
@@ -103,12 +109,44 @@ class Hmatrix(LinearOperator):
 
     def _getPattern(self):
         aux=np.asarray(self.H_.getHpattern())
+        #  as flattened list via a pointer
+        #  the numberofblocks is also returned (by reference)
+        #
+        #  the pattern matrix is formatted as
+        # row = 1 block : i_begin,j_begin, i_end,j_end,FLAG,entry_size
+        # with FLAG=0 for full rank and FLAG=1 for low rank
+        #
+        # we output a flatten row-major order std::vector
+
         nr=6
         return np.reshape(aux,(int(aux.size/nr),nr))
 
     def plotPattern(self):
-    # todo must be implemented e.g. using a matplotlolib PatchCollection of Rectangles or ?
-        pass
+        data_pattern = self._getPattern()
+
+        patches = []
+        p_colors = []
+        max_y = data_pattern[:,3].max()
+        for i in range(len(data_pattern)):
+            height = np.abs(data_pattern[i,0] - data_pattern[i,2])
+            width = np.abs(data_pattern[i,1] - data_pattern[i,3])
+            y1 = max_y - data_pattern[i,0] - height; x1 = data_pattern[i,1]
+            rectangle = Rectangle((x1, y1), width, height)
+            patches.append(rectangle)
+            p_colors.append(data_pattern[i,4])
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        p = PatchCollection(patches, cmap=matplotlib.cm.PiYG, edgecolors='black',alpha=0.4)
+        p.set_array(p_colors)
+        ax.add_collection(p)
+        ax.set_ylim([data_pattern[:,0].min(),data_pattern[:,3].max()])
+        ax.set_xlim([data_pattern[:,1].min(),data_pattern[:,2].max()])
+        ax.set_aspect('equal')
+        #fig.colorbar(p)
+        fig.show()
+        plt.show(block=True)
+        return fig
 
     # a method constructing an ILU Preconditionner of the H matrix
     def H_ILU_prec(self,fill_factor=5,drop_tol=1e-5):
