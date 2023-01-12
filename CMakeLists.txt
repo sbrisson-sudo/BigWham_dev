@@ -372,24 +372,28 @@ if(BUILD_PYTHON_BINDINGS)
 
     # use this
     add_subdirectory(pybind11)
+    pybind11_add_module(py11_bigwham interfaces/python/src/bigwhamPybind.cpp)
+    target_link_libraries(py11_bigwham private part)
+    # target_compile_definitions(cmake_example
+    #                        PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})
     # add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master)
     # include_directories(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master/include/  )
     # or use
     # find_package(pybind11 REQUIRED)
-    add_library(bigwhamPybind MODULE interfaces/python/src/bigwhamPybind.cpp)
-    target_link_libraries(bigwhamPybind PRIVATE pybind11::module part)
+    # add_library(bigwhamPybind MODULE interfaces/python/src/bigwhamPybind.cpp)
+    # target_link_libraries(bigwhamPybind PRIVATE pybind11::module part)
 
     # this command is needed to copy the library bigwhamPybind to a specific location
-    add_custom_command(TARGET bigwhamPybind POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so
-            COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so")
+    # add_custom_command(TARGET bigwhamPybind POST_BUILD
+    #         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so
+    #         COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so")
 
-    if(COPY_TO_SPECIFIC_LOCATION)
-          # this command is needed to copy the library bigwhamPybind to a specific location
-          add_custom_command(TARGET bigwhamPybind POST_BUILD
-               COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind>  ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so
-               COMMENT "Created ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so ")
-    endif()
+    # if(COPY_TO_SPECIFIC_LOCATION)
+    #       # this command is needed to copy the library bigwhamPybind to a specific location
+    #       add_custom_command(TARGET bigwhamPybind POST_BUILD
+    #            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind>  ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so
+    #            COMMENT "Created ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so ")
+    # endif()
 endif()
 
 
