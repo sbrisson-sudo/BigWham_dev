@@ -371,8 +371,9 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     # use this
-    add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master)
-    include_directories(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master/include/  )
+    add_subdirectory(pybind11)
+    # add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master)
+    # include_directories(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master/include/  )
     # or use
     # find_package(pybind11 REQUIRED)
     add_library(bigwhamPybind MODULE interfaces/python/src/bigwhamPybind.cpp)
