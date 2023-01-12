@@ -4,3 +4,8 @@ cmake-build-debug/
 interfaces/python/lib/
 CMakeLists.txt
 local_computation/
+
+build/
+.clangd/
+.vscode/
+compile_commands.json
