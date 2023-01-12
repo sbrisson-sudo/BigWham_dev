@@ -84,7 +84,7 @@ If[Not@MemberQ[$LibraryPath, $libraryDirectory],
 
 (*-----------------------------------------------*)
 (* BigWham lib onject file *)
-$BigwhamLib=FileNameJoin[{$BigWhamDirectory,"/cmake-build-release/libBigWham.a"}];
+$BigwhamLib=FileNameJoin[{$BigWhamDirectory,"/build/libBigWham.a"}];
 
 (***** The library template specification*****)
 (* template Specification *)
@@ -140,7 +140,7 @@ incdir = {
 
 (* lib files directory *)
 libdir = {
-	FileNameJoin[{$BigWhamDirectory, "/cmake-build-release/"}],
+	FileNameJoin[{$BigWhamDirectory, "/build/"}],
   $MKLROOT <> "/lib/", $TBBROOT <> "/lib/"
   }
 

@@ -6,9 +6,9 @@
 
 (*- SPECIFYING MKL AND TBB ROOT here -- customize as needed *)
 Switch[$SystemID, "Linux-x86-64", {
-	$MKLROOT = "/opt/intel/compilers_and_libraries_2019.3.199/linux/mkl";
-  $TBBROOT = "/opt/intel/compilers_and_libraries_2019.3.199/linux/tbb";
-  $TBBLIBPATH="/opt/intel/compilers_and_libraries_2019.3.199/linux/tbb/lib/intel64_lin/gcc4.8/libtbb.so.2";
+	$MKLROOT = "/opt/intel/compilers_and_libraries_2018.2.199/linux/mkl";
+  $TBBROOT = "/opt/intel/compilers_and_libraries_2018.2.199/linux/tbb";
+  $TBBLIBPATH="/opt/intel/compilers_and_libraries_2018.2.199/linux/tbb/lib/intel64_lin/gcc4.7/libtbb.so.2";
   }
   , "MacOSX-x86-64", {
   $MKLROOT = "/opt/intel/compilers_and_libraries_2020/mac/mkl";
@@ -19,7 +19,7 @@ Switch[$SystemID, "Linux-x86-64", {
 
 (* PATH of the BigWham root folder *)
 (* edit as see fit *)
-$BigWhamDirectory =  "/Users/bricelecampion/Documents/Work/Geomechanics/Codes/BigWham/";
+$BigWhamDirectory =  "/home/ankit/geolab/BigWham/";
 
 
 
