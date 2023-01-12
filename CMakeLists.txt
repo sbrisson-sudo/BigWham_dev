@@ -371,9 +371,12 @@ if(BUILD_PYTHON_BINDINGS)
     endif()
 
     # use this
+
+    find_package(Python COMPONENTS Interpreter Development)
+    set(PYBIND11_PYTHON_VERSION 3.5)
     add_subdirectory(pybind11)
     pybind11_add_module(py11_bigwham interfaces/python/src/bigwhamPybind.cpp)
-    target_link_libraries(py11_bigwham private part)
+    target_link_libraries(py11_bigwham PRIVATE part)
     # target_compile_definitions(cmake_example
     #                        PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})
     # add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master)
