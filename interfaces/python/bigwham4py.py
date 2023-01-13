@@ -24,7 +24,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
 
-from .lib.bigwhamPybind import *
+from bigwhamPybind import *
 
 ##############################
 #  Hmatrix class in python   #

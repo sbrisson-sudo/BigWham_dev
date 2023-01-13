@@ -30,26 +30,25 @@ set(CMAKE_CXX_STANDARD 14)
 #####################################
 # set options: False = 0, True = 1  #
 #####################################
+option(CMAKE_EXPORT_COMPILE_COMMANDS "Generate compile_commands.json" ON)
+option(BUILD_PYTHON_BINDINGS "Build Pybind11 binding" ON)
+option(BUILD_STATIC_LIB "Build STATIC .a library" ON)
+option(BUILD_GOOGLE_TESTS "Build google tests" ON)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(BUILD_PYTHON_BINDINGS 1)
-set(BUILD_STATIC_LIB 1)
-set(BUILD_GOOGLE_TESTS 1)
+option(LLDB_ENABLE_PYTHON "LLDB python debugging" ON)
+option(CMAKE_VERBOSE_MAKEFILE "makefile verbose" ON)
+option(IL_MKL "MKL" ON)      # --> if IL_MKL=0 then it must be IL_OPENBLAS=1
+option(IL_OPENBLAS "OPENBLAS" OFF)
+option(IL_OPENMP "OPENMP" ON) # --> to activate openMP for bigwham (recommended but should have openmp lib installed)
+option(IL_TBB "TBB" ON)      # --> this must be 1 at the moment
 
-set(LLDB_ENABLE_PYTHON 1)
-set(CMAKE_VERBOSE_MAKEFILE 1)
-set(IL_MKL 1 CACHE BOOL "MKL")      # --> if IL_MKL=0 then it must be IL_OPENBLAS=1
-set(IL_OPENBLAS 0 CACHE BOOL "OPENBLAS")
-set(IL_OPENMP 1 CACHE BOOL "OPENMP")   # --> to activate openMP for bigwham (recommended but should have openmp lib installed)
-set(IL_TBB 1)      # --> this must be 1 at the moment
-set(COPY_TO_SPECIFIC_LOCATION 0) # --> update BIGWHAM_PYBIND_DEST if you want to copy the shared library to a specific destination
-set(BIGWHAM_PYBIND_DEST   "/home/peruzzo/PyFrac/src/solid/" )
+option(COPY_TO_SPECIFIC_LOCATION "bigwham copy to specific location" OFF) # --> update BIGWHAM_PYBIND_DEST if you want to copy the shared library to a specific destination
 
-set(USE_INTEL 0)   # --> compiler option
-set(USE_STATIC 0)  # --> to add static option to CMAKE_CXX_FLAGS
+option(USE_INTEL "use intel" OFF)   # --> compiler option
+option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
-MESSAGE("MKL ${FOO_MKL}")
-MESSAGE("MKL ${IL_MKL}")
+set(PYENV_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/bigwham_venv" CACHE PATH "root path of bigwham venv")
+
 
 #####################################
 # optimization options              #
@@ -62,28 +61,6 @@ set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++14 -O3  -mavx
 if(USE_STATIC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
 endif()
-
-################################################################################
-# set the python executable and lib to use for bindings below
-################################################################################
-
-if (BUILD_PYTHON_BINDINGS)
-    if (APPLE)
-        set(PYTHON_EXECUTABLE "/Users/bricelecampion/opt/anaconda3/envs/python3.9/bin/python3.9")
-        set(PYTHON_LIBRARY "/Users/bricelecampion/opt/anaconda3/envs/python3.9/lib/libpython3.9.dylib ")
-    elseif(LINUX)
-        #set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
-        #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
-        #set(PYTHON_EXECUTABLE "/home/peruzzo/PyFrac/pyfracvenv/bin/python" )
-        #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
-    elseif(WINDOWS)
-        set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
-        set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8/libpython3.9.dylib ")
-    endif()
-    message("   -- The Python interpreter set by the user is : " ${PYTHON_EXECUTABLE})
-    message("   -- The Python Library set by the user is : " ${PYTHON_LIBRARY})
-endif()
-
 
 ################################################################################
 # set compiler: clang, gcc, intel etc.
@@ -346,57 +323,34 @@ endif()
 ################################################################
 # Pybind --->use with PYTHON version >=3.7
 ################################################################
+
+message("BUILD_PYTHON_BINDINGS ${BUILD_PYTHON_BINDINGS}")
+
 if(BUILD_PYTHON_BINDINGS)
-    add_library(part SHARED  ${SOURCE_FILES})
-
-    if(IL_MKL)
-        if(APPLE)
-            target_link_directories(part PRIVATE ${OPENMP_LIBRARY})
-            target_link_libraries(part ${CMAKE_MKL_LIBRARIES} -lpthread -lm -ldl)
-            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=0 IL_OPENMP=0)
-            target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-        elseif(UNIX)
-            target_link_directories(part PRIVATE ${OPENMP_LIBRARY})
-            target_link_libraries(part "-Wl,--start-group" ${CMAKE_MKL_LIBRARIES} "-Wl,--end-group" -lpthread -lm -ldl)
-            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-            target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include $ENV{TBBROOT}/include)
-        elseif(WIN32)
-            target_compile_definitions(part PRIVATE IL_MKL=1 IL_BLAS=1 IL_OPENMP=1)
-            target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR} $ENV{MKLROOT}/include)
-        endif()
-    elseif(IL_OPENBLAS)
-        target_link_libraries(part  ${CMAKE_OPENBLAS_LIBRARIES} -lgfortran -lpthread -lm    -ltbb   )
-        target_compile_definitions(part PRIVATE IL_OPENBLAS=1 IL_BLAS=1 IL_OPENMP=1)
-        target_include_directories(part PRIVATE ${CMAKE_SOURCE_DIR}  $ENV{TBBROOT}/include/tbb ${OPENBLASROOT})
-    endif()
-
-    # use this
-
     find_package(Python COMPONENTS Interpreter Development)
     set(PYBIND11_PYTHON_VERSION 3.5)
+    set(pyenv_root_lib_path "${PYENV_ROOT}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/.pth")
+    message("BigWham Python Library Path: ${pyenv_root_lib_path}")
     add_subdirectory(pybind11)
-    pybind11_add_module(py11_bigwham interfaces/python/src/bigwhamPybind.cpp)
-    target_link_libraries(py11_bigwham PRIVATE part)
-    # target_compile_definitions(cmake_example
-    #                        PRIVATE VERSION_INFO=${EXAMPLE_VERSION_INFO})
-    # add_subdirectory(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master)
-    # include_directories(${PROJECT_SOURCE_DIR}/interfaces/python/pybind11-master/include/  )
-    # or use
-    # find_package(pybind11 REQUIRED)
-    # add_library(bigwhamPybind MODULE interfaces/python/src/bigwhamPybind.cpp)
-    # target_link_libraries(bigwhamPybind PRIVATE pybind11::module part)
 
-    # this command is needed to copy the library bigwhamPybind to a specific location
-    # add_custom_command(TARGET bigwhamPybind POST_BUILD
-    #         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind> ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so
-    #         COMMENT "Created ${PROJECT_SOURCE_DIR}/interfaces/python/lib/bigwhamPybind.so")
+    if (APPLE)
+        set(PYTHON_EXECUTABLE "/Users/bricelecampion/opt/anaconda3/envs/python3.9/bin/python3.9")
+        set(PYTHON_LIBRARY "/Users/bricelecampion/opt/anaconda3/envs/python3.9/lib/libpython3.9.dylib ")
+    elseif(LINUX)
+        #set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
+        #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
+        #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
+    elseif(WINDOWS)
+        set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
+        set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8/libpython3.9.dylib ")
+    endif()
 
-    # if(COPY_TO_SPECIFIC_LOCATION)
-    #       # this command is needed to copy the library bigwhamPybind to a specific location
-    #       add_custom_command(TARGET bigwhamPybind POST_BUILD
-    #            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:bigwhamPybind>  ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so
-    #            COMMENT "Created ${BIGWHAM_PYBIND_DEST}/bigwhamPybind.so ")
-    # endif()
+    message("   -- The Python interpreter set by the user is : " ${PYTHON_EXECUTABLE})
+    message("   -- The Python Library set by the user is : " ${PYTHON_LIBRARY})
+    add_library(part SHARED  ${SOURCE_FILES})
+
+    add_subdirectory(interfaces/python)
+
 endif()
 
 

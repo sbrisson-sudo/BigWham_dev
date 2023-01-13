@@ -13,7 +13,7 @@
 ## Compile
 
 ```
-. /opt/intel/mkl/bin/mklvars.sh intel64; cd build; cmake -DCMAKE_CXX_COMPILER=g++ -DBUILD_GOOGLE_TESTS=1 -DBUILD_PYTHON_BINDINGS=0 -DUSE_INTEL=0 -DIL_OPENMP=1 -DIL_OPENBLAS=0 -DIL_MKL=1  ..; make -j2; cd ..
+source bigwham_venv/bin/activate;. /opt/intel/mkl/bin/mklvars.sh intel64; cd build; cmake -DCMAKE_CXX_COMPILER=g++ -DBUILD_GOOGLE_TESTS=1 -DBUILD_PYTHON_BINDINGS=0 -DUSE_INTEL=0 -DIL_OPENMP=1 -DIL_OPENBLAS=0 -DIL_MKL=1  ..; make -j2; cd ..
 ```
 
 
@@ -24,6 +24,15 @@
 
 - libraries in the `ld_library_path` can be identified using 
 `/sbin/ldconfig -N -v $(sed 's/:/ /g' <<< $LD_LIBRARY_PATH)`
+
+
+## Python interface
+
+### Make virtual env
+- python3 -m venv bigwham_venv
+- source bigwham_venv/bin/activate
+- python -m pip install pip -U
+- pip install jupyter scipy matplotlib numpy jupyterlab 
 
 
 ## Mathematica interface

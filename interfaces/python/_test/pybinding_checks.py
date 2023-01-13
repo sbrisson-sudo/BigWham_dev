@@ -16,8 +16,8 @@
 """
 
 import numpy as np
-from interfaces.python import bigwham4py # linear operator file
-from interfaces.python.lib.bigwhamPybind import Bigwhamio  #so file
+import bigwham4py # linear operator file
+from bigwhamPybind import Bigwhamio  #so file
 ################################
 # TESTING THE LINEAR OPERATOR  #
 ################################
@@ -46,7 +46,7 @@ eps_aca = 0.001
 
 
 #create an Hdot instance
-displHMAT = bigwhamPybind.Hmatrix(kernel, coor, conn, np.array([Young, PoissonRatio]), max_leaf_size, eta, eps_aca)
+displHMAT = bigwham4py.Hmatrix(kernel, coor, conn, np.array([Young, PoissonRatio]), max_leaf_size, eta, eps_aca)
 
 print("Testing the Hdot product for the displacement HMAT \n")
 res = displHMAT._matvec([1.,2.,3.,4.,5.,6.])
@@ -136,28 +136,28 @@ print(stresses[1:6])
 print("point 2 ")
 print(stresses[7:12])
 
-x,y,z,a,b,G,nu = [0.,0.,0.,1.,1.,200.,0.3]
-mystress = tractionHMAT.getInfluenceCoe(x,y,z,a,b,G,nu)
-print("\n ------------------ \n ")
-print(" Stress: \n ")
-print("DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  | ")
-print("DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  | ")
-print("DDy (normal) -> | sxx, syy, szz, sxy, sxz, syz  | ")
-print(mystress[0:6])
-print(mystress[6:12])
-print(mystress[12:18])
+# x,y,z,a,b,G,nu = [0.,0.,0.,1.,1.,200.,0.3]
+# mystress = tractionHMAT.getInfluenceCoe(x,y,z,a,b,G,nu)
+# print("\n ------------------ \n ")
+# print(" Stress: \n ")
+# print("DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  | ")
+# print("DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  | ")
+# print("DDy (normal) -> | sxx, syy, szz, sxy, sxz, syz  | ")
+# print(mystress[0:6])
+# print(mystress[6:12])
+# print(mystress[12:18])
 
-x,y,z,a,b,G,nu = [1.5,1.5,0.,2.5,2.,200.,0.3]
-mystress = tractionHMAT.getInfluenceCoe(x,y,z,a,b,G,nu)
-print("\n ------------------ \n ")
-print(" Stress: \n ")
-print("DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  | ")
-print("DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  | ")
-print("DDy (normal) -> | sxx, syy, szz, sxy, sxz, syz  | ")
-print(mystress[0:6])
-print(mystress[6:12])
-print(mystress[12:18])
-print(mystress)
+# x,y,z,a,b,G,nu = [1.5,1.5,0.,2.5,2.,200.,0.3]
+# mystress = tractionHMAT.getInfluenceCoe(x,y,z,a,b,G,nu)
+# print("\n ------------------ \n ")
+# print(" Stress: \n ")
+# print("DDx (shear)  -> | sxx, syy, szz, sxy, sxz, syz  | ")
+# print("DDy (shear)  -> | sxx, syy, szz, sxy, sxz, syz  | ")
+# print("DDy (normal) -> | sxx, syy, szz, sxy, sxz, syz  | ")
+# print(mystress[0:6])
+# print(mystress[6:12])
+# print(mystress[12:18])
+# print(mystress)
 
 mydisplacements = displacementHMAT.computeDisplacements(mysol, obsPoints, 2, properties, coor, conn, True)
 print("point 1 ")
