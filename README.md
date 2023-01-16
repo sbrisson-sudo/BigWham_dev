@@ -30,7 +30,7 @@ $pip install jupyter scipy matplotlib numpy jupyterlab
 - compile command assuming `${PROJECT_ROOR}/bigwham_venv` is python virtual env
   run the following from project_root
 ```
-source bigwham_venv/bin/activate;. /opt/intel/mkl/bin/mklvars.sh intel64; cd build; cmake -DPYENV_ROOT=${PWD}/bigwham_venv -DCMAKE_CXX_COMPILER=g++ -DBUILD_GOOGLE_TESTS=1 -DBUILD_PYTHON_BINDINGS=0 -DUSE_INTEL=0 -DIL_OPENMP=1 -DIL_OPENBLAS=0 -DIL_MKL=1  ..; make -j2; cd ..
+source bigwham_venv/bin/activate;. /opt/intel/mkl/bin/mklvars.sh intel64; cd build; cmake -DPYENV_ROOT=${PWD}/bigwham_venv -DMATHEMATICA_INTERFACE=1 -DCMAKE_CXX_COMPILER=g++ -DBUILD_GOOGLE_TESTS=1 -DBUILD_PYTHON_BINDINGS=0 -DUSE_INTEL=0 -DIL_OPENMP=1 -DIL_OPENBLAS=0 -DIL_MKL=1  ..; make -j2; cd ..
 ```
 
 ## Testing
@@ -38,6 +38,17 @@ source bigwham_venv/bin/activate;. /opt/intel/mkl/bin/mklvars.sh intel64; cd bui
 -`./build/BigWhamElastUnitTest`
 - `python interfaces/python/_test/pybinding_checks.py` # inside virthual env
 
+
+
+## Mathematica interface
+
+- Now mathematica interface is made in the build folder, for example `${PROJECT_ROOT}/build` is the root folder, then the paclet file will be at `${PROJECT_ROOT}/build/interfaces/mathematica`
+- All the variables will be already set if you compile the BigWham library correctly
+- Switch on compiler flag `-DMATHEMATICA_INTERFACE=1` while using cmake
+- We use `configure_file` in cmake to change the variables in `BigWhamSetting.m` file
+- cmake ensures that mathematica is always connected to the updated `bigwham.a` file
+
+### OLD WAY
 
 ## find lib paths in your system
 - use the following python script to find the file path
@@ -47,8 +58,6 @@ source bigwham_venv/bin/activate;. /opt/intel/mkl/bin/mklvars.sh intel64; cd bui
 `/sbin/ldconfig -N -v $(sed 's/:/ /g' <<< $LD_LIBRARY_PATH)`
 
 
-
-## Mathematica interface
 
 - `libmkl_intel_lp64.a`
 
