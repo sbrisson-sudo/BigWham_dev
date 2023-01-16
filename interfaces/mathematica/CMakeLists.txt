@@ -17,6 +17,8 @@ add_custom_target(copy_math_root ALL COMMAND ${CMAKE_COMMAND} -E
   copy_if_different ${src_math_root_files}
   ${CMAKE_BINARY_DIR}/interfaces/mathematica)
 
+add_dependencies(copy_math_root BigWham)
+
 ## library resource files
 set(src_math_libresources_files "${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink/LibraryResources/Source/HMatExpr.h"
                                 "${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink/LibraryResources/Source/Manager.h")
