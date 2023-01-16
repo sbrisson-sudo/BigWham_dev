@@ -84,7 +84,7 @@ If[Not@MemberQ[$LibraryPath, $libraryDirectory],
 
 (*-----------------------------------------------*)
 (* BigWham lib onject file *)
-$BigwhamLib=FileNameJoin[{$BigWhamDirectory,"/build/libBigWham.a"}];
+$BigwhamLib=FileNameJoin[{$BigWhamDirectory,"/libBigWham.a"}];
 
 (***** The library template specification*****)
 (* template Specification *)
@@ -133,14 +133,14 @@ template = LTemplate["HmatExpressions",
 incdir = {
    $MKLROOT <> "/include/",
    $TBBROOT <> "/include/",
-   $BigWhamDirectory,
-   FileNameJoin[{$BigWhamDirectory, "/src/"}],
-    FileNameJoin[{$BigWhamDirectory, "/il/"}]
+   "@CMAKE_SOURCE_DIR@",
+   FileNameJoin[{"@CMAKE_SOURCE_DIR@", "/src/"}],
+    FileNameJoin[{"@CMAKE_SOURCE_DIR@", "/il/"}]
    };
 
 (* lib files directory *)
 libdir = {
-	FileNameJoin[{$BigWhamDirectory, "/build/"}],
+	$BigWhamDirectory,
   $MKLROOT <> "/lib/", $TBBROOT <> "/lib/"
   }
 
@@ -154,7 +154,7 @@ $extraObjectFiles={$BigwhamLib,
     $MKLROOT <> "/lib/libmkl_core.a",
     $MKLROOT <> "/lib/libmkl_sequential.a"}
 ,"Linux-x86-64",
-$extraObjectFiles={$BigwhamLib,
+       $extraObjectFiles={$BigwhamLib,
     $MKLROOT <> "/lib/intel64/libmkl_intel_lp64.a",
     $MKLROOT <> "/lib/intel64/libmkl_core.a",
     $MKLROOT <> "/lib/intel64/libmkl_sequential.a"}

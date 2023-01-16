@@ -6,12 +6,12 @@
 
 (*- SPECIFYING MKL AND TBB ROOT here -- customize as needed *)
 Switch[$SystemID, "Linux-x86-64", {
-	$MKLROOT = "/opt/intel/compilers_and_libraries_2018.2.199/linux/mkl";
+	$MKLROOT = "@MKLROOT@";
   $TBBROOT = "/opt/intel/compilers_and_libraries_2018.2.199/linux/tbb";
   $TBBLIBPATH="/opt/intel/compilers_and_libraries_2018.2.199/linux/tbb/lib/intel64_lin/gcc4.7/libtbb.so.2";
   }
   , "MacOSX-x86-64", {
-  $MKLROOT = "/opt/intel/compilers_and_libraries_2020/mac/mkl";
+  $MKLROOT = "@MKLROOT@";
   $TBBROOT = "/opt/intel/compilers_and_libraries_2020/mac/tbb";
   $TBBLIBPATH= "/opt/intel/compilers_and_libraries_2020/mac/tbb/lib/libtbb.dylib";
       }];
@@ -19,7 +19,7 @@ Switch[$SystemID, "Linux-x86-64", {
 
 (* PATH of the BigWham root folder *)
 (* edit as see fit *)
-$BigWhamDirectory =  "${CMAKE_BINARY_DIR}";
+$BigWhamDirectory =  "@CMAKE_BINARY_DIR@";
 
 
 
