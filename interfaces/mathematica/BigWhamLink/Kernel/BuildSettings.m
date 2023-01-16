@@ -19,7 +19,7 @@ Switch[$SystemID, "Linux-x86-64", {
 
 (* PATH of the BigWham root folder *)
 (* edit as see fit *)
-$BigWhamDirectory =  "/home/ankit/geolab/BigWham/";
+$BigWhamDirectory =  "${CMAKE_BINARY_DIR}";
 
 
 

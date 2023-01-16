@@ -47,8 +47,8 @@ option(COPY_TO_SPECIFIC_LOCATION "bigwham copy to specific location" OFF) # --> 
 option(USE_INTEL "use intel" OFF)   # --> compiler option
 option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
-set(PYENV_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/bigwham_venv" CACHE PATH "root path of bigwham venv")
 
+option(MATHEMATICA_INTERFACE "make mathematica interface" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
 #####################################
 # optimization options              #
@@ -327,32 +327,40 @@ endif()
 message("BUILD_PYTHON_BINDINGS ${BUILD_PYTHON_BINDINGS}")
 
 if(BUILD_PYTHON_BINDINGS)
+    ## Set root of python virtual env
+    set(PYENV_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/bigwham_venv" CACHE PATH "root path of bigwham venv")
     find_package(Python COMPONENTS Interpreter Development)
     set(PYBIND11_PYTHON_VERSION 3.5)
+    message("The Python interpreter set by the user is : " ${Python_EXECUTABLE})
+    message("The Python Library set by the user is : " ${Python_LIBRARIES})
     set(pyenv_root_lib_path "${PYENV_ROOT}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/.pth")
     message("BigWham Python Library Path: ${pyenv_root_lib_path}")
     add_subdirectory(pybind11)
 
-    if (APPLE)
-        set(PYTHON_EXECUTABLE "/Users/bricelecampion/opt/anaconda3/envs/python3.9/bin/python3.9")
-        set(PYTHON_LIBRARY "/Users/bricelecampion/opt/anaconda3/envs/python3.9/lib/libpython3.9.dylib ")
-    elseif(LINUX)
-        #set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
-        #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
-        #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
-    elseif(WINDOWS)
-        set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
-        set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8/libpython3.9.dylib ")
-    endif()
+    # if (APPLE)
+    #     set(PYTHON_EXECUTABLE "/Users/bricelecampion/opt/anaconda3/envs/python3.9/bin/python3.9")
+    #     set(PYTHON_LIBRARY "/Users/bricelecampion/opt/anaconda3/envs/python3.9/lib/libpython3.9.dylib ")
+    # elseif(LINUX)
+    #     #set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
+    #     #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
+    #     #set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/lib/libpython3.8.so")
+    # elseif(WINDOWS)
+    #     set(PYTHON_EXECUTABLE "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8")
+    #     set(PYTHON_LIBRARY "/home/peruzzo/anaconda3/envs/PyFrac/bin/python3.8/libpython3.9.dylib ")
+    # endif()
 
-    message("   -- The Python interpreter set by the user is : " ${PYTHON_EXECUTABLE})
-    message("   -- The Python Library set by the user is : " ${PYTHON_LIBRARY})
     add_library(part SHARED  ${SOURCE_FILES})
-
     add_subdirectory(interfaces/python)
 
 endif()
 
+################################################################################
+# Mathematica interface
+################################################################################
+
+if(MATHEMATICA_INTERFACE)
+    add_subdirectory(interfaces/mathematica)
+endif()
 
 ################################################################################
 # For Unit Tests
@@ -402,3 +410,4 @@ if(BUILD_GOOGLE_TESTS)
     # be caught and checked.
     target_compile_options(BigWhamElastUnitTest PRIVATE "-DIL_UNIT_TEST")
 endif()
+
