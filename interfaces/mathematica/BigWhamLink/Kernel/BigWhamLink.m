@@ -12,7 +12,9 @@ BeginPackage["BigWhamLink`"]
 Hmat::usage = "Hmat is a symbol to which BigWhamLink messages are associated."
 
 (* Privately load LTemplate. Note the leading ` character!! *)
-Get["`LTemplate`LTemplatePrivate`"]
+(* Get["`LTemplate`LTemplatePrivate`"] *)
+Get["@LTemplateLibPath@/LTemplate.m"]
+Get["@LTemplateLibPath@/LTemplatePrivate.m"]
 
 (* ConfigureLTemplate[] must be called at this point. *)
 ConfigureLTemplate[
