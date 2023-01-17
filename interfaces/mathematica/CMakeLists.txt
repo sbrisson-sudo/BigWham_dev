@@ -17,7 +17,7 @@ add_custom_target(copy_math_root ALL COMMAND ${CMAKE_COMMAND} -E
   copy_if_different ${src_math_root_files}
   ${CMAKE_BINARY_DIR}/interfaces/mathematica)
 
-add_dependencies(copy_math_root BigWham)
+add_dependencies(copy_math_root make_math_kernel make_math_libresources make_math_root)
 
 ## library resource files
 set(src_math_libresources_files "${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink/LibraryResources/Source/HMatExpr.h"
@@ -61,4 +61,4 @@ configure_file(compile.m
 
 
 add_custom_target(CompileBigWhamMath ALL COMMAND wolframscript -print all -v -f compile.m)
-add_dependencies(CompileBigWhamMath BigWham)
+add_dependencies(CompileBigWhamMath BigWham copy_math_libresources copy_math_root)
