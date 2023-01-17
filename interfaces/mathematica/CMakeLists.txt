@@ -55,3 +55,10 @@ configure_file(BigWhamLink/Kernel/BuildSettings.m
 
 configure_file(BigWhamLink/Kernel/BigWhamLink.m
   ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/Kernel/BigWhamLink.m)
+
+configure_file(compile.m
+  ${CMAKE_BINARY_DIR}/interfaces/mathematica/compile.m)
+
+
+add_custom_target(CompileBigWhamMath ALL COMMAND wolframscript -print all -v -f compile.m)
+add_dependencies(CompileBigWhamMath BigWham)
