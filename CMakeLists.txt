@@ -30,7 +30,7 @@ set(CMAKE_CXX_STANDARD 14)
 #####################################
 # set options: False = 0, True = 1  #
 #####################################
-option(CMAKE_EXPORT_COMPILE_COMMANDS "Generate compile_commands.json" ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BUILD_PYTHON_BINDINGS "Build Pybind11 binding" ON)
 option(BUILD_STATIC_LIB "Build STATIC .a library" ON)
 option(BUILD_GOOGLE_TESTS "Build google tests" ON)
@@ -412,3 +412,10 @@ if(BUILD_GOOGLE_TESTS)
     target_compile_options(BigWhamElastUnitTest PRIVATE "-DIL_UNIT_TEST")
 endif()
 
+
+################################################################################
+# For running examples
+################################################################################
+
+add_library(bigwham_shared SHARED  ${SOURCE_FILES})
+add_subdirectory(src/examples)
