@@ -255,6 +255,8 @@ set(SOURCE_FILES
         # 2D source code
         src/core/Mesh2D.cpp src/core/Mesh2D.h
         src/core/SegmentData.h
+        src/core/SquareMatrixGenerator.h
+        src/core/BEMesh.h
         src/elasticity/2d/ElasticS3DP0_element.cpp
         src/elasticity/2d/Elastic2DP1_element.cpp
         src/elasticity/2d/ElasticHMatrix2DP0.h
@@ -263,6 +265,7 @@ set(SOURCE_FILES
         src/elasticity/PostProcessDDM_3d.cpp
         src/elasticity/2d/FullMatrixAssembly2D.cpp
         src/elasticity/2d/FullMatrixAssembly2D.h
+
         # 3D source code
         src/hmat/linearAlgebra/factorization/lowRankApproximation.cpp
         src/core/Mesh3D.cpp src/core/Mesh3D.h
@@ -287,7 +290,6 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h
         # BigWham Interface
         src/BigWham.h
-        src/hmat/hmatrix/LatticeHmat.h
         )
 
 
@@ -297,7 +299,7 @@ set(SOURCE_FILES
 
 if(BUILD_STATIC_LIB)
     set(CMAKE_POSITION_INDEPENDENT_CODE True)
-    add_library(BigWham STATIC ${SOURCE_FILES} )
+    add_library(BigWham STATIC ${SOURCE_FILES} src/core/BIE_Kernel.h src/core/BEMesh.h src/core/BoundaryElement.h src/elasticity/BIE_elastostatic.h src/elasticity/2d/BIE_elastostatic_segment_0_impls.h)
     
     if(IL_MKL)
         target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} )
@@ -406,7 +408,7 @@ if(BUILD_GOOGLE_TESTS)
             src/elasticity/_test/elastic3DR0_element_tests.cpp
             src/_test/elastic3DR0_element_benchmark.cpp
             src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-            )
+            src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator.cpp)
 
     add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 

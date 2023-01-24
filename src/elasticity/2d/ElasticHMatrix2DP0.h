@@ -16,7 +16,6 @@
 #include <src/core/Mesh2D.h>
 #include <src/core/ElasticProperties.h>
 #include <elasticity/2d/ElasticS3DP0_element.h>
-#include <elasticity/2d/FullMatrixAssembly2D.h>
 
 
 namespace bie {
@@ -28,12 +27,12 @@ class ElasticHMatrix2DP0 : public bie::MatrixGenerator<T> {
   double ker_opts_;
 
   il::Array<il::int_t> permutation_;
-  bie::Mesh mesh_;
+  bie::Mesh2D mesh_;
   bie::ElasticProperties elas_;
 
  public:
   ElasticHMatrix2DP0(const il::Array2D<double> &point,
-                     const il::Array<il::int_t> &permutation, bie::Mesh &mesh,
+                     const il::Array<il::int_t> &permutation, bie::Mesh2D &mesh,
                      bie::ElasticProperties &elas, double ker_opts);
   il::int_t size(il::int_t d) const override;
   il::int_t blockSize() const override;
@@ -44,8 +43,8 @@ class ElasticHMatrix2DP0 : public bie::MatrixGenerator<T> {
 
 template <typename T>
 ElasticHMatrix2DP0<T>::ElasticHMatrix2DP0(
-    const il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
-    bie::Mesh &mesh, bie::ElasticProperties &elas, double ker_opts)
+        const il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+        bie::Mesh2D &mesh, bie::ElasticProperties &elas, double ker_opts)
     : point_{point},
       permutation_{permutation},
       mesh_{mesh},

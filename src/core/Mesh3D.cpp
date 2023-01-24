@@ -37,7 +37,7 @@ namespace bie {
         this->interpolation_order_ = p;
         if (verbose) {
             // to be printed in the mma kernel shell
-            std::cout << " Mesh features" << "\n";
+            std::cout << " Mesh2D features" << "\n";
             std::cout << "  Number of vertices : " << this->numberVertices() << "\n";
             std::cout << "  Number of elements : " << this->numberOfElts() << "\n";
             std::cout << "  Number of collocation points : " << this->numberCollPts() << "\n";

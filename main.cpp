@@ -62,7 +62,7 @@ int test2DP1(){
    conn(i,1)=i+1;
  }
 
-  bie::Mesh test2(nodes,conn,1);
+  bie::Mesh2D test2(nodes, conn, 1);
   il::Array2D<double> coll_points = test2.getCollocationPoints();
 
   il::int_t leaf_size=32; //test->max_leaf_size;
@@ -201,7 +201,7 @@ int testS3DP0(){
     conn(i,0)=i;
     conn(i,1)=i+1;
   }
-  bie::Mesh Mesh0(nodes,conn,0);
+  bie::Mesh2D Mesh0(nodes, conn, 0);
 
   il::Array2D<double> coll_points = Mesh0.getCollocationPoints();
 
@@ -374,7 +374,7 @@ int testFullMat()
     conn(i,1)=i+1;
   }
 
-  bie::Mesh mesh(nodes,conn,1);
+  bie::Mesh2D mesh(nodes, conn, 1);
 
   bie::ElasticProperties elas(1.0,0.2);
 
@@ -491,7 +491,7 @@ int testHdot() {
   }
 
   std::cout << " N unknowns: " << 4*ne <<"\n";
-  bie::Mesh mesh(nodes,conn,1);
+  bie::Mesh2D mesh(nodes, conn, 1);
 
   bie::ElasticProperties elas(1.0,0.2);
   il::Array2D<double> coll_points = mesh.getCollocationPoints();
@@ -2466,7 +2466,7 @@ int testNewHmat() {
   }
 
   std::cout << " N unknowns: " << 4*ne <<"\n";
-  bie::Mesh mesh(nodes,conn,1);
+  bie::Mesh2D mesh(nodes, conn, 1);
 
   bie::ElasticProperties elas(1.0,0.2);
   il::Array2D<double> coll_points = mesh.getCollocationPoints();
@@ -2556,6 +2556,8 @@ int testNewHmat() {
   std::cout  << " n fb " <<  my_patt2.FRB_pattern.size(1) <<"\n";
   std::cout  << " n lrb " <<  my_patt2.LRB_pattern.size(1) <<"\n";
   tt.Reset();
+  my_patt2.nr=M.size(0);
+  my_patt2.nc=M.size(1);
 
   //
   bie::Hmat<double> hmt_(my_patt2);
@@ -2932,6 +2934,22 @@ int test3DT0_matrix_build(){
 /////////////////////////////////////////////////////////////////////////////////
 
 
+#include <string_view>
+#include <iostream>
+#include <string>
+
+//inline constexpr auto hash_djb2a(const std::string_view sv) {
+//    unsigned long hash{ 5381 };
+//    for (unsigned char c : sv) {
+//        hash = ((hash << 5) + hash) ^ c;
+//        }
+//    return hash;
+//}
+//
+//inline constexpr auto operator""_sh(const char *str, size_t len) {
+//   return hash_djb2a(std::string_view{ str, len });
+//}
+
 /////////////////////////////////////////////////////////////////////////////////
 int main() {
 
@@ -2941,17 +2959,17 @@ int main() {
 
   //test3DR0();
 
-  test3DR0modes2and3();
+//  test3DR0modes2and3();
 
-  test3DT0modes2and3();
+  //test3DT0modes2and3();
 
   //perf3DR0();
 
-  //test2DP1();
+ // test2DP1();
 
   //testS3DP0();
 
-  std::cout << "Mahcine epsilon " << std::numeric_limits<double>::epsilon() <<"\n";
+  //std::cout << "Mahcine epsilon " << std::numeric_limits<double>::epsilon() <<"\n";
 
   //testFullMat();
 
@@ -2976,7 +2994,30 @@ int main() {
    //std::string connectivity_file = "/Users/alexis/BigWhamLink/conn.csv";
    //test3DT0_PennyShaped(vertices_file,connectivity_file);
 
-  std::cout << "\n End of BigWham - exe " << "\n";
+    for (;;) {
+        std::cout << "Please enter one of: new, load, save, or quit:\n";
+        std::string option;
+        std::cin >> option;
+        switch(hash_djb2a(option)) {
+            case "new"_sh:
+                std::cout << "You entered \'new\'\n";
+                break;
+            case "load"_sh:
+                    std::cout << "You entered \'load\'\n";
+                    break;
+            case "save"_sh:
+                   std::cout << "You entered \'save\'\n";
+                    break;
+            case "quit"_sh:
+                   std::cout << "You entered \'quit\'\n";
+                   return 0;
+            default:
+                   std::cout << "Command not recognized!\n";
+                   break;
+        }
+    }
+
+    std::cout << "\n End of BigWham - exe " << "\n";
 
 }
 

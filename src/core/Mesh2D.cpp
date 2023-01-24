@@ -17,7 +17,7 @@ namespace bie {
 //          METHODS
 ////////////////////////////////////////////////////////////////////////////////
 
-il::Array2D<double> Mesh::getCollocationPoints() {
+il::Array2D<double> Mesh2D::getCollocationPoints() {
   il::Array2D<double> Xcol{(interpolation_order_ + 1), 2, 0.},
       colPoints{connectivity_.size(0) * (interpolation_order_ + 1), 2, 0};
 
@@ -37,7 +37,7 @@ il::Array2D<double> Mesh::getCollocationPoints() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Function returning the segment characteristic object for element ne
-bie::SegmentData Mesh::getElementData(const il::int_t ne) const {
+bie::SegmentData Mesh2D::getElementData(const il::int_t ne) const {
   il::StaticArray2D<double, 2, 2> Xs;
 
   Xs(0, 0) = this->coordinates_(this->connectivity_(ne, 0), 0);

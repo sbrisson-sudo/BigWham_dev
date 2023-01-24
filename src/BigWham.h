@@ -23,6 +23,9 @@
 #include <src/core/ElasticProperties.h>
 #include <src/core/Mesh2D.h>
 #include <src/core/Mesh3D.h>
+#include <src/core/BEMesh.h>
+#include <src/core/BIE_Kernel.h>
+
 #include <src/elasticity/PostProcessDDM_2d.h>
 #include <src/elasticity/PostProcessDDM_3d.h>
 
@@ -37,6 +40,88 @@
 #include <elasticity/3d/ElasticHMatrix3DT6.h>
 #include <elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h>
 #include <elasticity/3d/ElasticHMatrix3DT0_modes2and3.h>
+
+
+#include <string_view>
+#include <iostream>
+#include <string>
+
+// https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
+inline constexpr auto hash_djb2a(const std::string_view sv) {
+    unsigned long hash{ 5381 };
+    for (unsigned char c : sv) {
+        hash = ((hash << 5) + hash) ^ c;
+    }
+    return hash;
+}
+
+inline constexpr auto operator"" _sh(const char *str, size_t len) {
+    return hash_djb2a(std::string_view{ str, len });
+}
+
+//bie::BoundaryElementType createBE_API(std::string name,std::string kernel){
+//
+//    bie::BoundaryElementType my_be;
+//
+//    switch(hash_djb2a(name)) {
+//        case "2DP1"_sh:
+//            {
+//                bie::BoundaryElementType my_be(name,kernel,2,2,2,2,2);
+//                break;
+//            }
+//        case "S3DP0"_sh:
+//            {
+//                bie::BoundaryElementType my_be(name,kernel,2,2,2,2,1);
+//                break;
+//            }
+//        case "T0"_sh:
+//        {
+//            std::cout << "You entered \'save\'\n";
+//            break;
+//        }
+//        case "R0"_sh:
+//        {
+//            std::cout << "You entered \'quit\'\n";
+//            break;
+//        }
+//        default: {
+//            std::cout << "Command not recognized!\n";
+//            break;
+//        }
+//
+//    }
+//
+//    return my_be;
+//}
+
+//bie::BEMesh createMeshFromVect(int spatial_dimension,int n_vertex,int p,const std::vector<double>& coor, const std::vector<int>& conn){
+//
+//    il::int_t nvertex = coor.size() / spatial_dimension;
+//    il::int_t nelts = conn.size() / spatial_dimension;
+//    il::Array2D<double> Coor{nvertex, spatial_dimension, 0.};  // columm major order
+//    il::Array2D<il::int_t> Conn{nelts, n_vertex, 0};
+//    // populate mesh (loops could be optimized - passage row-major to
+//    // col-major)
+//    int index = 0;
+//    for (il::int_t i = 0; i < Coor.size(0); i++) {
+//        for (il::int_t j = 0; j < Coor.size(1); j++) {
+//            Coor(i, j) = coor[index];
+//            index++;
+//        }
+//    }
+//    index = 0;
+//    for (il::int_t i = 0; i < Conn.size(0); i++) {
+//        for (il::int_t j = 0; j < Conn.size(1); j++) {
+//            Conn(i, j) = conn[index];
+//            index++;
+//        }
+//    }
+//
+//    bie::BEMesh mesh(Coor, Conn, p,FALSE);
+//    return mesh;
+//}
+
+
 
 class Bigwhamio {
  private:
@@ -139,7 +224,7 @@ class Bigwhamio {
         }
       }
 
-      bie::Mesh mesh2d(Coor, Conn, p);
+      bie::Mesh2D mesh2d(Coor, Conn, p);
       std::cout << "... mesh done"  << "\n";
       std::cout << "Number elts " << mesh2d.numberOfElts() << "\n";
       collocationPoints_ = mesh2d.getCollocationPoints();
@@ -641,11 +726,11 @@ class Bigwhamio {
 
         std::cout << " compute stress - " << kernel_ << "\n";
         if (kernel_ == "2DP1") {
-          bie::Mesh mesh2d(Coor, Conn, p);
+          bie::Mesh2D mesh2d(Coor, Conn, p);
           stress = bie::computeStresses2D(pts, mesh2d, elas, solu,
                                           bie::point_stress_s2d_dp1_dd, 0.);
         } else if (kernel_ == "S3DP0") {
-          bie::Mesh mesh2d(Coor, Conn, p);
+          bie::Mesh2D mesh2d(Coor, Conn, p);
           stress = bie::computeStresses2D(pts, mesh2d, elas, solu,
                                           bie::point_stress_s3d_dp0_dd,
                                           properties[2]);
@@ -741,11 +826,11 @@ class Bigwhamio {
 
         std::cout << " compute displacement - " << kernel_ << "\n";
         if (kernel_ == "2DP1") {
-          bie::Mesh mesh2d(Coor, Conn, p);
+          bie::Mesh2D mesh2d(Coor, Conn, p);
           std::cout << "\n WARNING: not implemented !!\n";
           il::abort();
         } else if (kernel_ == "S3DP0") {
-          bie::Mesh mesh2d(Coor, Conn, p);
+          bie::Mesh2D mesh2d(Coor, Conn, p);
           std::cout << "\n WARNING: not implemented !!\n";
           il::abort();
         }

@@ -30,10 +30,10 @@ typedef il::StaticArray2D<double, 2, 2> (*vKernelCallNodal)(
 
 
 il::Array2D<double> serialFullMatrix2d(
-    Mesh &mesh, const ElasticProperties &elas, vKernelCallNodal KernelCall,
-    double ker_options);
+        Mesh2D &mesh, const ElasticProperties &elas, vKernelCallNodal KernelCall,
+        double ker_options);
 
-il::Array2D<double> parallelFullMatrix2d(Mesh &mesh,
+il::Array2D<double> parallelFullMatrix2d(Mesh2D &mesh,
                                          const ElasticProperties &elas,
                                          il::Array<il::int_t> &permutation,
                                          double ker_options,
@@ -46,7 +46,7 @@ il::Array2D<double> parallelFullMatrix2d(Mesh &mesh,
 struct BlockMat {
   il::Array2DEdit<double>  &Mat_;
 
-  const  bie::Mesh mesh_;
+  const  bie::Mesh2D mesh_;
   const bie::ElasticProperties elas_;
   const il::Array<il::int_t> permutation_;
   double opts_;
@@ -55,7 +55,7 @@ struct BlockMat {
   vKernelCallNodal KernelCall_;
 
   BlockMat(vKernelCallNodal KernelCall, double ker_opts,
-           const bie::ElasticProperties &elas, const bie::Mesh &mesh,
+           const bie::ElasticProperties &elas, const bie::Mesh2D &mesh,
            const il::Array<il::int_t> &permutation, il::int_t b0, il::int_t b1,
            il::Array2DEdit<double> &M)
       :

@@ -13,7 +13,6 @@
 #pragma once
 
 #include <il/Tree.h>
-#include <hmat/hmatrix/HMatrix.h>
 
 namespace bie{
 

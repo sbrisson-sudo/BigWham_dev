@@ -28,7 +28,7 @@ namespace bie {
             double ker_options);
 
     il::Array2D<double> computeStresses2D(il::Array2D<double> &observ_pts,
-                                        bie::Mesh &mesh,
+                                        bie::Mesh2D &mesh,
                                         bie::ElasticProperties &elas,
                                         il::Array<double> solution,
                                         vPPrCall PPrCall, double ker_options);

@@ -45,7 +45,7 @@ class SegmentData {
   // unit tangent to segment in global system of coordinates
   il::StaticArray<double, 2> s_;
   // segment mid points coordinates.
-  il::StaticArray<double, 2> Xmid_;
+  il::StaticArray<double, 2> xc_;
   // collocation points in global system of coordinates
   il::Array2D<double> CollocationPoints_;
 
@@ -53,15 +53,15 @@ class SegmentData {
 
   //////////////////////////////////////////////////////////////////////////////
   // constructor from segment end point coordinates matrix.
-  SegmentData(il::StaticArray2D<double, 2, 2>  Xs, il::int_t p) {
+  SegmentData(il::StaticArray2D<double, 2, 2>  xv, il::int_t p) {
 
     // compute element size
     il::StaticArray<double, 2> xdiff, s, n, xmean, xaux;
-    il::Array2D<double> Xcol{p + 1, 2, 0};
+    il::Array2D<double> x_col{p + 1, 2, 0};
     il::StaticArray2D<double, 2, 2> R;
 
-    xdiff[0] = Xs(1, 0) - Xs(0, 0);
-    xdiff[1] = Xs(1, 1) - Xs(0, 1);
+    xdiff[0] = xv(1, 0) - xv(0, 0);
+    xdiff[1] = xv(1, 1) - xv(0, 1);
 
 //    // Order the segment data such that the seg tangent vector is pointing 'to the right'
 //    // (from -90+\epsilon to +90)
@@ -92,22 +92,21 @@ class SegmentData {
     n_ = n;
 
     // mid point of the element
-    xmean[0] = (Xs(1, 0) + Xs(0, 0)) / 2.;
-    xmean[1] = (Xs(1, 1) + Xs(0, 1)) / 2.;
-    Xmid_ = xmean;
+    xmean[0] = (xv(1, 0) + xv(0, 0)) / 2.;
+    xmean[1] = (xv(1, 1) + xv(0, 1)) / 2.;
+    xc_ = xmean;
 
     switch (p) {
       case 1: {  // linear DD
-        Xcol(0, 0) = -1. / sqrt(2.);
-        Xcol(0, 1) = 0.;
-        Xcol(1, 0) = 1. / sqrt(2.);
-        Xcol(1, 1) = 0.;
+        x_col(0, 0) = -1. / sqrt(2.);
+          x_col(0, 1) = 0.;
+          x_col(1, 0) = 1. / sqrt(2.);
+          x_col(1, 1) = 0.;
       };
         break;
-
       case 0: {
-        Xcol(0, 0) = 0.;
-        Xcol(0, 1) = 0.;
+          x_col(0, 0) = 0.;
+          x_col(0, 1) = 0.;
       };
         break;
       default:std::cout << "error\n";  //  error
@@ -120,17 +119,17 @@ class SegmentData {
 
     for (int i = 0; i < p + 1; ++i) {
 
-      xaux[0] = (size_) * Xcol(i, 0) / 2.;
-      xaux[1] = (size_) * Xcol(i, 1) / 2.;
+      xaux[0] = (size_) * x_col(i, 0) / 2.;
+      xaux[1] = (size_) * x_col(i, 1) / 2.;
 
       xaux = il::dot(R, xaux);
 
-      Xcol(i, 0) = xaux[0] + xmean[0];
-      Xcol(i, 1) = xaux[1] + xmean[1];
+      x_col(i, 0) = xaux[0] + xmean[0];
+      x_col(i, 1) = xaux[1] + xmean[1];
 
     }
 
-    CollocationPoints_ = Xcol;
+    CollocationPoints_ = x_col;
 
   }
   //////////////////////////////////////////////////////////////////////////////
@@ -140,11 +139,11 @@ class SegmentData {
   double theta() const { return theta_;}
   il::StaticArray<double,2> n() const {return n_;};
   il::StaticArray<double,2> s() const {return s_;};
-  il::StaticArray<double, 2> Xmid() const { return Xmid_;};
+  il::StaticArray<double, 2> Centroid() const { return xc_;};
   il::Array2D<double> CollocationPoints() const { return CollocationPoints_;};
 
   double CollocationPoints(il::int_t i, il::int_t j) const { return CollocationPoints_(i,j);};
-  double Xmid(il::int_t i) const { return Xmid_[i];};
+  double Xmid(il::int_t i) const { return xc_[i];};
 
 };
 

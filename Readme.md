@@ -1,4 +1,4 @@
-#  BigWham : Boundary InteGral equations With HierArchical Matrix
+#  BigwHam : Boundary InteGral equations With HierArchical Matrix
 
 ## A C++ library for vectorial boundary integral equations with hierarchical matrix 
 
@@ -27,7 +27,7 @@
 - see instructions under the BigWhamLink folder
 
 #Contributors:
-- Brice Lecampion (2D and Simplified 3D kernels, 2D Mesh, wolfram API, Hmatrix algorithms etc.)  2015-
+- Brice Lecampion (2D and Simplified 3D kernels, 2D Mesh2D, wolfram API, Hmatrix algorithms etc.)  2015-
 - Francois Fayard  (inside loop lib, HMat C++ initial code) 2018
 - Dmitry Nikolskiy (3D Quadratic triangular DD element kernels) 2017-2019
 - Carlo Peruzzo (3D mesh, 3D kernels API, 3D constant Rectangular kernels, Python Bindings) 2019-

@@ -19,7 +19,7 @@
 namespace bie {
 
 il::Array2D<double> computeStresses2D(il::Array2D<double>& observ_pts,
-                                    bie::Mesh& mesh,
+                                    bie::Mesh2D& mesh,
                                     bie::ElasticProperties& elas,
                                     il::Array<double> solution,
                                     vPPrCall PPrCall, double ker_options) {
@@ -29,7 +29,7 @@ il::Array2D<double> computeStresses2D(il::Array2D<double>& observ_pts,
   // INPUTS:
   //
   // observ_pts : observation points coordinates (x, y)
-  // mesh : Mesh object (describing the boundary element mesh)
+  // mesh : Mesh2D object (describing the boundary element mesh)
   // elas :: elastic properties object
   // solution :: Array containing the DD on the mesh
   // ker_options : dummy argument for kernel options
