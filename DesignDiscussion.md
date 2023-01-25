@@ -77,21 +77,23 @@ effect of one node of the receiver element (or receiver points in the case of ob
   in addition, if the fundamental solution is for displacement, stress, eigenstress...
   + a boundary element can be in 3D but the underlying bie be scalar !    the spatial dimension is not necessarily equal to the dof_dimensions
   
-Proposal:
-  + have an enum for the set of implemented Boundary element type : {segment_0,segment_1,rectangle_0,triangle_0,triangle_2 ....}
-  + have an enum for the set of 'kernel_physics' implemented :{elastic_fs_iso,elastic_fs_iso_mode_1,elastic_fs_simplified3D,elastic_hs_iso, elastic_fs_TI ...}
-  + have an enum for the kernels implemented : {U,T,H,S,V}   - note depending on physics (we or we do not have everything implemented)
-  + have same signature for the corresponding influence functions (node of source element-> node of receiver element) 
-such that we can define their type them via typedef. 
-    + Typically, we will have 1 for scalar, 1 for 2D dofs, 1 for 3D dofs. 
-    + At the moment, the signatures use a type for the element data if the element geometry is 2D (SegmentData) or 3D (FaceData)
-      typedef il::StaticArray2D<double, 2, 2> (*vKernelCallNodal2x2)(
-      SegmentData &source_elt, SegmentData &receiver_elt, il::int_t s_col,  il::int_t i_col,
-      const ElasticProperties &Elas, double ker_options); 
-      + we shall find a way to have only one class for ElementData (templated with spatial dimension?) in order to have less virtual function type to define 
-  + use these type definition for the function in the MatrixGenerator 
-  + need of a kind of mapping for using the right influence function (to define the Matrix Generator) from the knowledge of the Boundary element type, 
-the kernel_physics type, and the kernels type.  Needs to use a std:variant to handle the different influence function signature ?
+Proposal / new implementation as 25.01.2023:
+  + Boundary Element class hieararchy with interpolation order as template parameter : {segment<0>,segment<1>,rectangle<0>,triangle<0>,triangle<2> ....}
+  + BIE_Kernel template class hierarchy with Boundary Element  as template parameters (for source + receiver possibly)
+  + i.e. the elasticity base derived class is BIE_elastostatic (some derived classses will be needed for dumb down case e.g. modeI only etc.)
+  + an enum for the kernels implemented : {U,T,H,S,V}   - note depending on physics (we or we do not have everything implemented)
+  + for a given Boundary Element + kernel {U,...} the influence function  must be implemented 
+  + the influence function has always the signature std::vector<T> influence<Element<p>,Element<p>,U> influence(source_Elt,i_s,receiver_Elt,i_r)
+    + see file BIE_elastostatic_segment_0_impls.h for an example
+  + SquareMatrixGenerator: templated with Type,Element class, BIE_kernel class/subclass
+    + mesh stored - so clean - up API. Should work for all kernels for BE problem (receiver mesh=source mesh)
+    + note - to be extended for rectangular matrix for observation mesh != source mesh etc.
+  + Hmat class->> discussion 
+  + it might still be better to separate the block-cluster tree / Hmat pattern creation with the full 
+hmat construction. Use case would be that one can "tune" the Hmat pattern (max_leaf + eta) for large problem size w.o populating the hmat. 
+  + in that way we can functions for square / rectangle  (receiver == or != source meshes cases) w.o. modification of the actual Hmat class
+  + which would work for both rectangle and square matrix generator.
+  + note - we keep permutation in the Matrix generator 
 
 Commenting Conventions:
 ------

@@ -16,8 +16,10 @@
 #pragma once
 #include <omp.h>
 
+#include <src/core/BEMesh.h>
 #include <hmat/hmatrix/LowRank.h>
 #include <hmat/hmatrix/toHPattern.h>
+
 #include <hmat/compression/adaptiveCrossApproximation.h>
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 
@@ -56,13 +58,13 @@ class Hmat {
        for (il::int_t i = 0; i < pattern_.n_LRB; i++) {
            this->low_rank_blocks_[i].reset();
        }
-
    };
 
    // simple constructor from pattern
    Hmat(const bie::HPattern& pattern){
      pattern_=pattern;
    };
+
 
    // -----------------------------------------------------------------------------
   void toHmat(const bie::MatrixGenerator<T>& matrix_gen,const bie::Cluster & cluster,const il::Array2D<double> & coll_points, double eta, double epsilon_aca){
@@ -284,8 +286,9 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
   return y;
   }
   //--------------------------------------------------------------------------
-  // H-Matrix vector multiplication with permutation
+  // H-Matrix vector multiplication with permutation for rectangular matrix cases (only 1 permutation)
   // in & out as std::vector
+  // todo : write another one for the case of 2 permutations (rect. mat cases (for source != receivers)
   std::vector<T> matvecOriginal(const il::Array<il::int_t> & permutation,const std::vector<T> & x){
 
     il::Array<T> z{static_cast<il::int_t>(x.size())};

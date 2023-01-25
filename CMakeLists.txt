@@ -290,6 +290,12 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h
         # BigWham Interface
         src/BigWham.h
+        #new
+        src/core/BIE_Kernel.h
+        src/core/BEMesh.h
+        src/core/BoundaryElement.h
+        src/elasticity/BIE_elastostatic.h
+        src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
         )
 
 
@@ -299,7 +305,7 @@ set(SOURCE_FILES
 
 if(BUILD_STATIC_LIB)
     set(CMAKE_POSITION_INDEPENDENT_CODE True)
-    add_library(BigWham STATIC ${SOURCE_FILES} src/core/BIE_Kernel.h src/core/BEMesh.h src/core/BoundaryElement.h src/elasticity/BIE_elastostatic.h src/elasticity/2d/BIE_elastostatic_segment_0_impls.h)
+    add_library(BigWham STATIC ${SOURCE_FILES} )
     
     if(IL_MKL)
         target_link_libraries(BigWham  ${CMAKE_MKL_LIBRARIES} )
@@ -406,7 +412,7 @@ if(BUILD_GOOGLE_TESTS)
             src/_test/penny_shaped_crack_analytical_sol.cpp
             src/core/_test/FaceData_tests.cpp
             src/elasticity/_test/elastic3DR0_element_tests.cpp
-            src/_test/elastic3DR0_element_benchmark.cpp
+            #src/_test/elastic3DR0_element_benchmark.cpp
             src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
             src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator.cpp)
 
