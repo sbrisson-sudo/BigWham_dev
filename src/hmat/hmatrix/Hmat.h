@@ -16,7 +16,7 @@
 #pragma once
 #include <omp.h>
 
-#include <src/core/BEMesh.h>
+//#include <src/core/BEMesh.h>
 #include <hmat/hmatrix/LowRank.h>
 #include <hmat/hmatrix/toHPattern.h>
 

@@ -296,7 +296,7 @@ set(SOURCE_FILES
         src/core/BoundaryElement.h
         src/elasticity/BIE_elastostatic.h
         src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
-        )
+        src/core/hierarchical_representation.h src/hmat/hmatrix/toHPattern.cpp)
 
 
 ################################################################################
@@ -414,7 +414,7 @@ if(BUILD_GOOGLE_TESTS)
             src/elasticity/_test/elastic3DR0_element_tests.cpp
             #src/_test/elastic3DR0_element_benchmark.cpp
             src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-            src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator.cpp)
+            src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator.cpp src/core/_test/hierarchical_representation_tests.cpp)
 
     add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 

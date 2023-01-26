@@ -36,7 +36,7 @@ public:
     BIE_Kernel()  {};
 
     // methods
-    virtual std::vector<T> influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r)  {};
+    virtual std::vector<T>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const =0 ;
 
     bool isLocalUnknowns() const {return local_unknowns_;};
     bool isLocalCoVariables() const {return local_co_variables_;};

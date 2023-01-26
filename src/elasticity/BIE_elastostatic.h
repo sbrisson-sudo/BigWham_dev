@@ -49,7 +49,7 @@ namespace bie{
             kernel_properties_=prop;
         }
 
-        virtual std::vector<double> influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const { } ;
+         std::vector<double>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const { } ;
 
     };
 

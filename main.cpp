@@ -522,8 +522,8 @@ int testHdot() {
   il::int_t nb=bie::nbBlocks(hmatrix_tree);
   std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
   //std::cin.ignore(); // pause while user do not enter return
-  il::int_t n_fullb=bie::nbFullBlocks(hmatrix_tree);
-  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
+//  il::int_t n_fullb=bie::nbFullBlocks(hmatrix_tree);
+//  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
 
   tt.Start();
   bie::HPattern my_patt=bie::createPattern(hmatrix_tree);
@@ -2536,8 +2536,8 @@ int testNewHmat() {
   //
   il::int_t nb=bie::nbBlocks(block_tree);
   std::cout << " Number of sub-matrix blocks: "  << nb <<  " \n";
-  il::int_t n_fullb=bie::nbFullBlocks(block_tree);
-  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
+//  il::int_t n_fullb=bie::nbFullBlocks(block_tree);
+//  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
 
 // creation of the hmatrix the new way....
   tt.Start();
