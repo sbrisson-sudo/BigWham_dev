@@ -10,12 +10,12 @@
 
 #include <il/math.h>
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
+#include <src/hmat/arrayFunctor/MatrixGenerator.h>
 
 // This an example of a Matrix Generator needed to code for the implementation of a
 // BIE kernel
 
-namespace il {
+namespace bie {
 
 template <typename T>
 class GaussianMatrix : public bie::MatrixGenerator<T> {
@@ -61,7 +61,6 @@ GaussianMatrix<T>::GaussianMatrix(il::int_t n, il::Range range0,
 template <typename T>
 il::int_t GaussianMatrix<T>::size(il::int_t d) const {
   IL_EXPECT_MEDIUM(d == 0 || d == 1);
-
   switch (d) {
     case 0:
       return range0_.end - range0_.begin;

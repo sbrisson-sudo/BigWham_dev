@@ -33,7 +33,7 @@ TEST(H_representation,mesh2d_square_1)
     }
     bie::Segment<0> seg0;
     bie::BEMesh<bie::Segment<0>> my_mesh(coor,conn,seg0);
-    bie::HRepresentation hr= h_representation_square_matrix<bie::Segment<0>>(my_mesh,32,1.0);
+    bie::HRepresentation hr= bie::h_representation_square_matrix<bie::Segment<0>>(my_mesh,32,1.0);
     ASSERT_TRUE(    hr.pattern_.n_FRB==1 && hr.pattern_.n_LRB==0);
 }
 
@@ -53,7 +53,7 @@ TEST(H_representation,mesh2d_square_2)
     }
     bie::Segment<0> seg0;
     bie::BEMesh<bie::Segment<0>> my_mesh(coor,conn,seg0);
-    bie::HRepresentation hr= h_representation_square_matrix<bie::Segment<0>>(my_mesh,50,0.0);
+    bie::HRepresentation hr= bie::h_representation_square_matrix<bie::Segment<0>>(my_mesh,50,0.0);
     ASSERT_TRUE(    hr.pattern_.n_FRB==4 && hr.pattern_.n_LRB==0);
 }
 
@@ -82,7 +82,7 @@ TEST(H_representation,mesh2d_square_3 )
     }
     bie::Segment<0> seg0;
     bie::BEMesh<bie::Segment<0>> my_mesh(coor,conn,seg0);
-    bie::HRepresentation hr= h_representation_square_matrix<bie::Segment<0>>(my_mesh,n_elts/2,4.0);
+    bie::HRepresentation hr= bie::h_representation_square_matrix<bie::Segment<0>>(my_mesh,n_elts/2,4.0);
     ASSERT_TRUE(    hr.pattern_.n_FRB==2 && hr.pattern_.n_LRB==2);
 }
 
@@ -115,10 +115,8 @@ TEST(H_representation,mesh2d_rectangle_1)
         conn_r(i,1)=i+1;
     }
     bie::BEMesh<bie::Segment<0>> receiver_mesh(coor_r,conn_r,seg0);
-
-    bie::HRepresentation hr= h_representation_rectangular_matrix<bie::Segment<0>>(source_mesh,receiver_mesh,60,14.0);
+    bie::HRepresentation hr= bie::h_representation_rectangular_matrix<bie::Segment<0>>(source_mesh,receiver_mesh,60,14.0);
 
     ASSERT_TRUE( hr.pattern_.n_FRB==0 && hr.pattern_.n_LRB==1    );
-
 }
 

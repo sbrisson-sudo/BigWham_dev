@@ -603,7 +603,7 @@ class Bigwhamio {
     IL_EXPECT_FAST(this->isBuilt_);
     IL_EXPECT_FAST(h_.size(0) == h_.size(1));
     IL_EXPECT_FAST(h_.size(1) == x.size());
-    std::vector<double> y=h_.matvec_stdvect(x);
+    std::vector<double> y= h_.matvec(x);
     return y;
   }
 

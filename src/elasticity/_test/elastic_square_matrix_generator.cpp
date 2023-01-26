@@ -108,13 +108,14 @@ TEST(SquareMatGen,segment_0_Hmat_1){
     ker.setKernelProperties(prop);
 
     il::int_t max_leaf_size=32;
-    bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, xcol);
-    il::Array<il::int_t> permutation =cluster.permutation;
-//
+//    bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, xcol);
+//    il::Array<il::int_t> permutation =cluster.permutation;
+////
+    bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,1.0);
+
     bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,ker);
-    M.set_permutation(permutation);
-    bie::Hmat<double>  h_;
-    h_.toHmat(M,cluster,xcol,1,1.e-3);
+    M.set_permutation(hr.permutation_0_);
+    bie::Hmat<double>  h_(M,hr,1.e-3);
 
     ASSERT_TRUE( h_.isBuilt() );//h_.isBuilt()
 }
@@ -143,17 +144,18 @@ TEST(SquareMatGen,segment_0_Hmat_2){
     ker.setKernelProperties(prop);
 
     il::int_t max_leaf_size=32;
-    bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, xcol);
-    il::Array<il::int_t> permutation =cluster.permutation;
+//    bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, xcol);
+//    il::Array<il::int_t> permutation =cluster.permutation;
 //
+    bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,1.0);
+
     bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,ker);
-    M.set_permutation(permutation);
-    bie::Hmat<double>  h_;
-    h_.toHmat(M,cluster,xcol,3,1.e-3);
+    M.set_permutation(hr.permutation_0_);
+    bie::Hmat<double>  h_(M,hr,1.e-3);
     //simple opening mode...
     il::Array<double> x{M.size(1),0.0},y{M.size(1),0.0};
     for(il::int_t i=0;i<M.sizeAsBlocks(0);i++){
-        x[2*permutation[i]+1]=4.0*sqrt(L*L-xcol(i,0)*xcol(i,0) );
+        x[2*hr.permutation_0_[i]+1]=4.0*sqrt(L*L-xcol(i,0)*xcol(i,0) );
     }
     y=h_.matvec(x);
     il::Array<double> rel_err{M.sizeAsBlocks(0),0.};

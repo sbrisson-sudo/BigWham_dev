@@ -2546,8 +2546,8 @@ int testNewHmat() {
   std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
   std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
   std::cout  << " n lrb " <<  my_patt.LRB_pattern.size(1) <<"\n";
-  my_patt.nr=M.size(0);
-  my_patt.nc=M.size(1);
+//  my_patt.nr=M.size(0);
+//  my_patt.nc=M.size(1);
   tt.Reset();
   tt.Start();
   bie::HPattern my_patt2=bie::createPattern(block_tree2);
@@ -2556,8 +2556,8 @@ int testNewHmat() {
   std::cout  << " n fb " <<  my_patt2.FRB_pattern.size(1) <<"\n";
   std::cout  << " n lrb " <<  my_patt2.LRB_pattern.size(1) <<"\n";
   tt.Reset();
-  my_patt2.nr=M.size(0);
-  my_patt2.nc=M.size(1);
+//  my_patt2.nr=M.size(0);
+//  my_patt2.nc=M.size(1);
 
   //
   bie::Hmat<double> hmt_(my_patt2);
@@ -2773,8 +2773,8 @@ int testPl3D(){
   std::cout << " Number of sub-matrix full blocks: "  << my_patt.n_FRB <<  " \n";
   std::cout  << " n fb " <<  my_patt.FRB_pattern.size(1) <<"\n";
   std::cout  << " n lrb " <<  my_patt.LRB_pattern.size(1) <<"\n";
-  my_patt.nr=M.size(0);
-  my_patt.nc=M.size(1);
+//  my_patt.nr=M.size(0);
+//  my_patt.nc=M.size(1);
   tt.Reset();
 
   //
