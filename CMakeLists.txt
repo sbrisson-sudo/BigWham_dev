@@ -427,5 +427,5 @@ endif()
 # For running examples
 ################################################################################
 
-add_library(bigwham_shared SHARED  ${SOURCE_FILES})
-add_subdirectory(src/examples)
+# add_library(bigwham_shared SHARED  ${SOURCE_FILES})
+# add_subdirectory(src/examples)
