@@ -6,6 +6,7 @@
 // See the LICENSE.TXT file for more details.
 //
 
+#pragma once
 #include <iostream>
 
 #include <gtest/gtest.h>
@@ -13,11 +14,9 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include <src/core/BoundaryElement.h>
-
+#include <src/core/elements/Segment.h>
 
 TEST(Segment, test_n_vert) {
-
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=1.0;
     bie::Segment<0> seg;

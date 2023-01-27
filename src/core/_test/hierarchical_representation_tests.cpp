@@ -12,7 +12,7 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 //
-#include <src/core/BoundaryElement.h>
+#include <src/core/elements/Segment.h>
 #include <src/core/BEMesh.h>
 #include <src/core/hierarchical_representation.h>
 

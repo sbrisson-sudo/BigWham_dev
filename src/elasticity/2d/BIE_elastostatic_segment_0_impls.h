@@ -8,8 +8,10 @@
 
 #ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_0_IMPLS_H
 #define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_0_IMPLS_H
+#pragma once
 
 #include <src/elasticity/BIE_elastostatic.h>
+#include <src/core/elements/Segment.h>
 namespace bie{
 
     template<> inline std::vector<double> BIE_elastostatic<Segment<0>,Segment<0>,H>::influence(Segment<0> source_elt,il::int_t i_s,Segment<0>  receiver_elt, il::int_t i_r) const {
