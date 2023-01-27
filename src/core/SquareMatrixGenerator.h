@@ -34,8 +34,6 @@ class SquareMatrixGenerator : public bie::MatrixGenerator<T> {
   il::int_t size_; // total square matrix of size_*size_
   il::int_t number_points_; // size_ / block_size_
 
-  bool has_permutation_= false;
-
   public:
     SquareMatrixGenerator(bie::BEMesh<El> & mesh, BIE_Kernel & bie_kernel,il::Array<il::int_t>& permutation);
     il::int_t size(il::int_t d) const override;
@@ -43,25 +41,18 @@ class SquareMatrixGenerator : public bie::MatrixGenerator<T> {
     il::int_t sizeAsBlocks(il::int_t d) const override;
     void set(il::int_t b0, il::int_t b1, il::io_t,il::Array2DEdit<T> M) const override;
 
-    void set_permutation(const il::Array<il::int_t> &permutation);
 };
 
 template <typename T,class El,class Bie_def>
 SquareMatrixGenerator<T,El,Bie_def>::SquareMatrixGenerator(bie::BEMesh<El> & mesh,Bie_def & bie_kernel,il::Array<il::int_t>& permutation) :
       mesh_{mesh},bie_kernel_{bie_kernel},permutation_{permutation}
       {
-          has_permutation_= true;
           number_points_= mesh_.numberCollocationPoints();
           dof_dim_ =bie_kernel.getDofDim() ;
           size_ = number_points_ * dof_dim_ ;
       };
 
-// todo - we probably can remove this method
-template <typename T,class El,class Bie_def>
-void SquareMatrixGenerator<T,El,Bie_def>::set_permutation(const il::Array<il::int_t> &permutation) {
-    permutation_=permutation;
-    has_permutation_=true;
-}
+
 
 template <typename T,class El,class Bie_def>
 il::int_t SquareMatrixGenerator<T,El,Bie_def>::size(il::int_t d) const {
@@ -87,7 +78,6 @@ void SquareMatrixGenerator<T,El,Bie_def>::set(il::int_t b0, il::int_t b1, il::io
   IL_EXPECT_MEDIUM(M.size(1) % blockSize() == 0);
   IL_EXPECT_MEDIUM(b0 + M.size(0) / blockSize() <= number_points_);
   IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= number_points_);
-  IL_EXPECT_FAST(has_permutation_);
 
   il::int_t jj=M.size(1) / blockSize();
 #pragma omp parallel if(M.size(1) / blockSize()>200)
