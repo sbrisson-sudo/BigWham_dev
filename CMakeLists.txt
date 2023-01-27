@@ -238,6 +238,8 @@ set(SOURCE_FILES
         # 2D source code
         src/core/Mesh2D.cpp src/core/Mesh2D.h
         src/core/SegmentData.h
+        src/core/SquareMatrixGenerator.h
+        src/core/BEMesh.h
         src/elasticity/2d/ElasticS3DP0_element.cpp
         src/elasticity/2d/Elastic2DP1_element.cpp
         src/elasticity/2d/ElasticHMatrix2DP0.h
@@ -246,6 +248,7 @@ set(SOURCE_FILES
         src/elasticity/PostProcessDDM_3d.cpp
         src/elasticity/2d/FullMatrixAssembly2D.cpp
         src/elasticity/2d/FullMatrixAssembly2D.h
+
         # 3D source code
         src/hmat/linearAlgebra/factorization/lowRankApproximation.cpp
         src/core/Mesh3D.cpp src/core/Mesh3D.h
@@ -259,6 +262,7 @@ set(SOURCE_FILES
         #  - T0 element
         src/elasticity/3d/Elastic3DT0_element.cpp
         src/elasticity/3d/ElasticHMatrix3DT0.h
+        src/elasticity/3d/ElasticHMatrix3DT0_modes2and3.h
         #  - R0 element
         src/elasticity/3d/Elastic3DR0_common.cpp
         src/elasticity/3d/Elastic3DR0_element.cpp
@@ -266,10 +270,16 @@ set(SOURCE_FILES
         src/elasticity/3d/ElasticHMatrix3DR0.h
         src/elasticity/3d/ElasticHMatrix3DR0displ.h
         src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
+        src/elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h
         # BigWham Interface
         src/BigWham.h
-        src/hmat/hmatrix/LatticeHmat.h
-        )
+        #new
+        src/core/BIE_Kernel.h
+        src/core/BEMesh.h
+        src/core/BoundaryElement.h
+        src/elasticity/BIE_elastostatic.h
+        src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
+        src/core/hierarchical_representation.h src/hmat/hmatrix/toHPattern.cpp src/core/elements/Segment.cpp src/core/elements/Segment.h src/core/elements/Triangle.cpp src/core/elements/Triangle.h src/core/elements/Rectangle.cpp src/core/elements/Rectangle.h)
 
 
 ################################################################################
@@ -378,9 +388,9 @@ if(BUILD_GOOGLE_TESTS)
             src/_test/penny_shaped_crack_analytical_sol.cpp
             src/core/_test/FaceData_tests.cpp
             src/elasticity/_test/elastic3DR0_element_tests.cpp
-            src/_test/elastic3DR0_element_benchmark.cpp
+            #src/_test/elastic3DR0_element_benchmark.cpp
             src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-            )
+            src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator.cpp src/core/_test/hierarchical_representation_tests.cpp src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp src/core/_test/triangle_tests.cpp src/core/_test/rectangle_tests.cpp)
 
     add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 

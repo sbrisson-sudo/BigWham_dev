@@ -32,7 +32,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,bie::Mesh3
       // INPUTS:
       //
       // observ_pts : observation points coordinates (x, y, z)
-      // mesh : Mesh object (describing the boundary element mesh)
+      // mesh : Mesh2D object (describing the boundary element mesh)
       // elas :: elastic properties object
       // solution :: Array containing the DD on the mesh
       //
@@ -107,7 +107,7 @@ il::Array2D<double> computeStresses3D(il::Array2D<double>& observ_pts,bie::Mesh3
         // INPUTS:
         //
         // observ_pts : observation points coordinates (x, y, z)
-        // mesh : Mesh object (describing the boundary element mesh)
+        // mesh : Mesh2D object (describing the boundary element mesh)
         // elas :: elastic properties object
         // solution :: Array containing the DD on the mesh
         //

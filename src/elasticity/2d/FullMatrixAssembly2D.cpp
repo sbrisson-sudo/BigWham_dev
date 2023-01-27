@@ -13,8 +13,8 @@
 namespace  bie{
 
 il::Array2D<double> serialFullMatrix2d(
-    Mesh &mesh, const ElasticProperties &elas, vKernelCallNodal KernelCall,
-    double ker_options) {
+        Mesh2D &mesh, const ElasticProperties &elas, vKernelCallNodal KernelCall,
+        double ker_options) {
 
   il::Array2D<double> M{mesh.numberCollocationPoints()*2,mesh.numberCollocationPoints()*2,0.};
 
@@ -67,7 +67,7 @@ il::Array2D<double> serialFullMatrix2d(
 
 /// parallelize assembly
 
-il::Array2D<double> parallelFullMatrix2d(Mesh& mesh,
+il::Array2D<double> parallelFullMatrix2d(Mesh2D& mesh,
                                          const ElasticProperties& elas,
                                          il::Array<il::int_t>& permutation,
                                          double ker_options,

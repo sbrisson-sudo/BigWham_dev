@@ -26,7 +26,7 @@
 namespace bie {
 
 ///// 1D mesh class
-class Mesh {  // class for   1D segment elements
+class Mesh2D {  // class for   1D segment elements
 
  private:
   // Coordinates of the nodes - size: number of nodes x problem dimension (2D)
@@ -45,15 +45,15 @@ class Mesh {  // class for   1D segment elements
 
   // todo: naming of the different entities are not consistent
 
-  //   Mesh()default;
-  Mesh(){};
-  ~Mesh(){};
+  //   Mesh2D()default;
+  Mesh2D(){};
+  ~Mesh2D(){};
 
   // Basic constructor with  coordinates and connectivity array and
   // interpolation order
-  Mesh(const il::Array2D<double> &Coordinates,
-       const il::Array2D<il::int_t> &Connectivity,
-       const il::int_t interpolationOrder) {
+  Mesh2D(const il::Array2D<double> &Coordinates,
+         const il::Array2D<il::int_t> &Connectivity,
+         const il::int_t interpolationOrder) {
     // check validity of inputs
 
     IL_EXPECT_FAST(Coordinates.size(0) > 1 && Coordinates.size(1) == 2);
@@ -65,10 +65,6 @@ class Mesh {  // class for   1D segment elements
     coordinates_ = Coordinates;
     connectivity_ = Connectivity;
     interpolation_order_ = interpolationOrder;
-
-    il::int_t  nelts=connectivity_.size(0);
-    il::int_t p=interpolationOrder;
-
 
   };
 
@@ -131,17 +127,6 @@ class Mesh {  // class for   1D segment elements
   il::int_t numberCollocationPoints() const {
     return (numberOfElts() * (interpolation_order_ + 1) );
   }
-
-//  il::int_t dofDD(il::int_t k, il::int_t i) // const
-//  {
-//    // coordinates k, dof i -> return global equation iD
-//    return dof_handle_dd_(k, i);  // element , dof dim.
-//  }
-
-//  il::Array2D<double> getNodes()
-//  {
-//
-//  }
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////
