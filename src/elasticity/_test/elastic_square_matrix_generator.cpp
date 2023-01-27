@@ -29,11 +29,12 @@ TEST(SquareMatGen,segment_0_1){
     bie::Segment<0> seg0;
     bie::BEMesh<bie::Segment<0>> my_mesh(xy,conn,seg0);
     bie::Segment<0> source;
-//    source.setSegment(xy);
+//    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<il::int_t> permutation{1,0};
-    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,test);
+    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,
+                                                                                                                                          test, permutation);
     ASSERT_TRUE(M.size(1)==2 && M.size(0)==2 );
 }
 
@@ -46,11 +47,12 @@ TEST(SquareMatGen,segment_0_2){
     bie::Segment<0> seg0;
     bie::BEMesh<bie::Segment<0>> my_mesh(xy,conn,seg0);
     bie::Segment<0> source;
-//    source.setSegment(xy);
+//    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<il::int_t> permutation{1,0};
-    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,test);
+    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,
+                                                                                                                                          test, permutation);
     ASSERT_TRUE(M.blockSize()==2 && M.sizeAsBlocks(0)==my_mesh.numberOfElts() );
 }
 
@@ -64,17 +66,16 @@ TEST(SquareMatGen,segment_0_3){
     bie::Segment<0> seg0;
     bie::BEMesh<bie::Segment<0>> my_mesh(xy,conn,seg0);
     bie::Segment<0> source;
-//    source.setSegment(xy);
+//    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
     test.setKernelProperties(prop);
     il::Array<il::int_t> permutation{1,0};
-    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,test);
-    M.set_permutation(permutation);
+    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,
+                                                                                                                                          test, permutation);
     il::Array2D<double> A{M.size(0),M.size(1),0.0};
     il::Array2DEdit<double> v=A.Edit();
-
     M.set(0,0,il::io,v);
     // check with known values of entry for that case
 // 0.34979115367667662
@@ -113,8 +114,9 @@ TEST(SquareMatGen,segment_0_Hmat_1){
 ////
     bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,1.0);
 
-    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,ker);
-    M.set_permutation(hr.permutation_0_);
+    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,
+                                                                                                                                          ker,hr.permutation_0_);
+//    M.set_permutation(hr.permutation_0_);
     bie::Hmat<double>  h_(M,hr,1.e-3);
 
     ASSERT_TRUE( h_.isBuilt() );//h_.isBuilt()
@@ -144,13 +146,10 @@ TEST(SquareMatGen,segment_0_Hmat_2){
     ker.setKernelProperties(prop);
 
     il::int_t max_leaf_size=32;
-//    bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, xcol);
-//    il::Array<il::int_t> permutation =cluster.permutation;
-//
     bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,1.0);
-
-    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,ker);
-    M.set_permutation(hr.permutation_0_);
+    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,
+                                                                                                                                          ker,hr.permutation_0_);
+   // M.set_permutation(hr.permutation_0_);
     bie::Hmat<double>  h_(M,hr,1.e-3);
     //simple opening mode...
     il::Array<double> x{M.size(1),0.0},y{M.size(1),0.0};

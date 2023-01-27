@@ -34,6 +34,7 @@ public:
     };
 
     BIE_Kernel()  {};
+    ~BIE_Kernel() {};
 
     // methods
     virtual std::vector<T>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const =0 ;
@@ -44,12 +45,6 @@ public:
     il::int_t getSpatialDimension() const {return dim_;};
 
 };
-//
-//    template<typename T, class Es, class Er>
-//    BIE_Kernel<T, Es, Er>::BIE_Kernel() = default;
-//
-//    template<typename T, class Es, class Er>
-//    BIE_Kernel<T, Es, Er>::~BIE_Kernel() =default;
 
 
 }

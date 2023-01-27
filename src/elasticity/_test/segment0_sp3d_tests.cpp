@@ -22,7 +22,7 @@ TEST(SP3D,test_seg_0_dof_dim){
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=1.0;
     bie::Segment<0> source;
-    source.setSegment(xy);
+    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     ASSERT_TRUE(test.getDofDim()==2);
@@ -32,7 +32,7 @@ TEST(SP3D,test_seg_0_dim){
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=1.0;
     bie::Segment<0> source;
-    source.setSegment(xy);
+    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     ASSERT_TRUE(test.getSpatialDimension()==2);
@@ -45,7 +45,7 @@ TEST(SP3D,test_seg_0_self){
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=1.0;
     bie::Segment<0> source;
-    source.setSegment(xy);
+    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
@@ -74,13 +74,13 @@ TEST(SP3D,test_seg_0_1){
     il::Array2D<double> xy{2,2,0.};
     xy(0,1)=2.4; xy(1,0)=3.0;
     bie::Segment<0> source;
-    source.setSegment(xy);
+    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
     std::cout << "test on inclined elt " << "\n";
     il::Array2D<double> xy_r{2,2,0.};
     xy_r(0,0)=1.0; xy_r(1,0)=5.0; xy_r(0,1)=1.0;xy_r(1,1)=0.0;
     bie::Segment<0> receiver;
-    receiver.setSegment(xy_r);
+    receiver.setElement(xy_r);
 
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};

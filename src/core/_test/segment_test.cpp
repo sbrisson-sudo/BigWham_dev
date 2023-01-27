@@ -20,7 +20,7 @@ TEST(Segment, test_n_vert) {
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=1.0;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     int n_vert = seg.getNumberOfVertices();
     ASSERT_TRUE(n_vert==2);
 }
@@ -30,7 +30,7 @@ TEST(Segment, test_centroid) {
     xy(1,0)=1.0;
 
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
 
     il::StaticArray<double,2> center = seg.getCentroid();
     std::cout << "center " << center[0] <<"\n";
@@ -43,7 +43,7 @@ TEST(Segment, test_size_1) {
     xy(1,0)=6.40;
 
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     double size=seg.getSize();
 
     ASSERT_TRUE(size==6.40);
@@ -52,7 +52,7 @@ TEST(Segment, test_n_s_1) {
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=6.40;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     il::StaticArray<double,2> normal = seg.getNormal();
     il::StaticArray<double,2> tang = seg.getTangent_1();
     ASSERT_TRUE(normal[0]==0.0 && normal[1]==1.0 && tang[0]==1. && tang[1]==0.);
@@ -63,7 +63,7 @@ TEST(Segment, test_size_2) { // 45 deg element
     xy(1,0)=1;
     xy(1,1)=1;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     double size=seg.getSize();
 
     ASSERT_TRUE(size==sqrt(2.0));
@@ -75,7 +75,7 @@ TEST(Segment, test_n_s_2) {
     xy(1,0)=1;
     xy(1,1)=1;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     il::StaticArray<double,2> normal = seg.getNormal();
     il::StaticArray<double,2> tang = seg.getTangent();
     ASSERT_TRUE(normal[0]==-1./sqrt(2)&& normal[1]==1./sqrt(2) && tang[0]==1./sqrt(2) && tang[1]==1./sqrt(2)); //
@@ -87,7 +87,7 @@ TEST(Segment, test_rotation_a) {
     xy(1,0)=1;
     xy(1,1)=1;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     il::StaticArray<double,2> normal = seg.getNormal();
     il::StaticArray<double,2> tang = seg.getTangent();
     il::StaticArray2D<double,2,2> rot=seg.rotationMatrix();
@@ -101,7 +101,7 @@ TEST(Segment, test_rotation_b) {
     xy(1,0)=1;
     xy(1,1)=1;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     il::StaticArray<double,2> tang = seg.getTangent();
     il::StaticArray2D<double,2,2> rot=seg.rotationMatrix();
     double theta = std::atan2(tang[1], tang[0]);
@@ -117,7 +117,7 @@ TEST(Segment, test_collocation0_1) {
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=4.;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     double size=seg.getSize();
     seg.setCollocationPoints();
     auto mycol = seg.getCollocationPoints();
@@ -130,7 +130,7 @@ TEST(Segment, test_collocation0_2) {
     il::Array2D<double> xy{2,2,5.};
     xy(1,0)=5.+4.;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     double size=seg.getSize();
     seg.setCollocationPoints();
     auto mycol = seg.getCollocationPoints();
@@ -142,7 +142,7 @@ TEST(Segment, test_collocation1_1) {
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=2.;
     bie::Segment<1> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     double size=seg.getSize();
    // seg.setCollocationPoints();
     auto mycol = seg.getCollocationPoints();
@@ -155,7 +155,7 @@ TEST(Segment, test_dim_0) {
     il::Array2D<double> xy{2,2,5.};
     xy(1,0)=5.+4.;
     bie::Segment<0> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     int mydim=seg.getSpatialDimension();
     ASSERT_TRUE(mydim==2);
 }
@@ -164,7 +164,7 @@ TEST(Segment, test_dim_1) {
     il::Array2D<double> xy{2,2,5.};
     xy(1,0)=5.+4.;
     bie::Segment<1> seg;
-    seg.setSegment(xy);
+    seg.setElement(xy);
     int mydim=seg.getSpatialDimension();
     ASSERT_TRUE(mydim==2);
 }

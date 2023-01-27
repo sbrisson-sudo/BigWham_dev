@@ -45,7 +45,6 @@ namespace bie {
         ~BoundaryElement();
 
         int getNumberOfVertices() const { return this->vertices_.size(0); };
-
         il::StaticArray<double, dim> getCentroid() const { return centroid_; };
         il::StaticArray<double, dim> getNormal() const { return n_; };
         il::StaticArray<double, dim> getTangent_1() const { return s_; };
@@ -53,7 +52,6 @@ namespace bie {
         il::StaticArray2D<double, dim, dim> rotationMatrix() const {
             il::StaticArray2D<double, dim, dim> R_{0.};
         };
-
         il::Array2D<double> getCollocationPoints() const { return collocation_points_; };
         virtual il::int_t getNumberOfCollocationPoints() const { return collocation_points_.size(0); };
         il::Array2D<double> getNodes() const { return nodes_; };

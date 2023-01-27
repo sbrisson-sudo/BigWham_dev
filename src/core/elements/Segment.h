@@ -29,8 +29,8 @@ namespace bie{
         Segment();
         ~Segment();
 
-        void setSegment(il::Array2D<double> xv){
-            //
+        void setElement(il::Array2D<double> xv){
+            IL_ASSERT(xv.size(0)==n_vertices_);
             for (il::int_t j = 0; j < spatial_dimension_; j++) {
                 this->centroid_[j] = 0; // always reset centroid when setting the coordinates
                 for (il::int_t i = 0; i < n_vertices_; i++) {
@@ -63,7 +63,6 @@ namespace bie{
         il::int_t getNumberOfNodes() const { return n_nodes_; };
         il::int_t getNumberOfCollocationPoints() const { return n_nodes_; };
         double getSize() const { return size_; };
-
         il::StaticArray<double, 2> getTangent() const { return this->s_; };
 
         il::StaticArray2D<double, 2, 2> rotationMatrix() {

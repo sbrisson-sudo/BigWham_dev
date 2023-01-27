@@ -10,6 +10,7 @@
 
 namespace bie{
 
+    // Zero order segment
     template<>
     void Segment<0>::setCollocationPoints() {
         // 0 order element: collocation at centroid
@@ -20,6 +21,7 @@ namespace bie{
         this->collocation_points_ = col;
     }
 
+    // Linear Segment
     template<>
     void Segment<1>::setCollocationPoints() {
         // on ref element x in [-1,1]   y=0

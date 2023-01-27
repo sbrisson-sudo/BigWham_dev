@@ -20,7 +20,6 @@
 #include <hmat/hmatrix/LowRank.h>
 #include <hmat/hmatrix/toHPattern.h>
 
-
 #include <hmat/compression/adaptiveCrossApproximation.h>
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 
@@ -36,12 +35,12 @@ class Hmat {
 
   bie::HPattern pattern_;
 
-  // shall we store the permutation(s) ?
+  // shall we store the permutation(s) in that object ?
 
   il::int_t dof_dimension_{}; //  dof per collocation points
   il::StaticArray<il::int_t,2> size_; // size of tot mat (row, cols)
 
-  std::vector<std::unique_ptr<bie::LowRank<T>>> low_rank_blocks_;
+  std::vector<std::unique_ptr<bie::LowRank<T>>> low_rank_blocks_; // vector of low rank blocks
   std::vector<std::unique_ptr<il::Array2D<T>>>  full_rank_blocks_; // vector of full rank blocks
 
   bool isBuilt_= false;
@@ -65,11 +64,12 @@ class Hmat {
        }
    };
 
-   // simple constructor from pattern
+   // simple constructor from pattern  -> todo remove
    Hmat(const bie::HPattern& pattern){
      pattern_=pattern;
    };
 
+   // Main constructor
    Hmat(const bie::MatrixGenerator<T>& matrix_gen,const bie::HRepresentation& h_r, double epsilon_aca){
        pattern_=h_r.pattern_;
        is_square_=h_r.is_square_;

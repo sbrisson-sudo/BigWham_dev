@@ -63,7 +63,6 @@ public:
         coordinates_ = Coordinates;
         connectivity_ = Connectivity;
         interpolation_order_ = element_def_.getInterpolationOrder();
-
         nodes_per_element_ = element_def_.getNumberOfNodes();
     };
 
@@ -130,7 +129,7 @@ public:
     void setCurrentElement(il::int_t ne)  {
         il::Array2D<double> xv{number_vertex_,spatial_dimension_,0,};
         xv = this->getVertices(ne);
-        this->element_def_.setSegment(xv);
+        this->element_def_.setElement(xv);
     }
 
     // method to return all collocation points of the mesh.
