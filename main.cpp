@@ -531,8 +531,8 @@ int testHdot() {
   std::cout << " root - " << hmatrix_tree.root().index << "\n";
   tt.Reset();
 
-  il::int_t nb = bie::nbBlocks(hmatrix_tree);
-  std::cout << " Number of sub-matrix blocks: " << nb << " \n";
+  // il::int_t nb = bie::nbBlocks(hmatrix_tree);
+  // std::cout << " Number of sub-matrix blocks: " << nb << " \n";
   // std::cin.ignore(); // pause while user do not enter return
   //  il::int_t n_fullb=bie::nbFullBlocks(hmatrix_tree);
   //  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
@@ -2725,8 +2725,8 @@ int testNewHmat() {
   tt.Reset();
 
   //
-  il::int_t nb = bie::nbBlocks(block_tree);
-  std::cout << " Number of sub-matrix blocks: " << nb << " \n";
+  // il::int_t nb = bie::nbBlocks(block_tree);
+  // std::cout << " Number of sub-matrix blocks: " << nb << " \n";
   //  il::int_t n_fullb=bie::nbFullBlocks(block_tree);
   //  std::cout << " Number of sub-matrix full blocks: "  << n_fullb <<  " \n";
 
@@ -3137,21 +3137,21 @@ int test3DT0_matrix_build() {
 }
 /////////////////////////////////////////////////////////////////////////////////
 
-// #include <string_view>
 #include <iostream>
 #include <string>
+// #include <string_view>
 
 // inline constexpr auto hash_djb2a(const std::string_view sv) {
-//    unsigned long hash{ 5381 };
-//    for (unsigned char c : sv) {
-//        hash = ((hash << 5) + hash) ^ c;
-//        }
-//    return hash;
-//}
-//
+//   unsigned long hash{5381};
+//   for (unsigned char c : sv) {
+//     hash = ((hash << 5) + hash) ^ c;
+//   }
+//   return hash;
+// }
+
 // inline constexpr auto operator""_sh(const char *str, size_t len) {
-//   return hash_djb2a(std::string_view{ str, len });
-//}
+//   return hash_djb2a(std::string_view{str, len});
+// }
 
 /////////////////////////////////////////////////////////////////////////////////
 int main() {
@@ -3201,28 +3201,28 @@ int main() {
   // std::string connectivity_file = "/Users/alexis/BigWhamLink/conn.csv";
   // test3DT0_PennyShaped(vertices_file,connectivity_file);
 
-  // for (;;) {
-  //   std::cout << "Please enter one of: new, load, save, or quit:\n";
-  //   std::string option;
-  //   std::cin >> option;
-  //   switch (hash_djb2a(option)) {
-  //   case "new"_sh:
-  //     std::cout << "You entered \'new\'\n";
-  //     break;
-  //   case "load"_sh:
-  //     std::cout << "You entered \'load\'\n";
-  //     break;
-  //   case "save"_sh:
-  //     std::cout << "You entered \'save\'\n";
-  //     break;
-  //   case "quit"_sh:
-  //     std::cout << "You entered \'quit\'\n";
-  //     return 0;
-  //   default:
-  //     std::cout << "Command not recognized!\n";
-  //     break;
-  //   }
-  // }
+  for (;;) {
+    std::cout << "Please enter one of: new, load, save, or quit:\n";
+    std::string option;
+    std::cin >> option;
+    switch (hash_djb2a(option)) {
+    case "new"_sh:
+      std::cout << "You entered \'new\'\n";
+      break;
+    case "load"_sh:
+      std::cout << "You entered \'load\'\n";
+      break;
+    case "save"_sh:
+      std::cout << "You entered \'save\'\n";
+      break;
+    case "quit"_sh:
+      std::cout << "You entered \'quit\'\n";
+      return 0;
+    default:
+      std::cout << "Command not recognized!\n";
+      break;
+    }
+  }
 
   std::cout << "\n End of BigWham - exe "
             << "\n";

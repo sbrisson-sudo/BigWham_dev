@@ -45,18 +45,18 @@
 #include <string>
 #include <string_view>
 
-// // https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
-// inline constexpr auto hash_djb2a(const std::string_view sv) {
-//     unsigned long hash{ 5381 };
-//     for (unsigned char c : sv) {
-//         hash = ((hash << 5) + hash) ^ c;
-//     }
-//     return hash;
-// }
+// https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
+inline constexpr auto hash_djb2a(const std::string_view sv) {
+  unsigned long hash{5381};
+  for (unsigned char c : sv) {
+    hash = ((hash << 5) + hash) ^ c;
+  }
+  return hash;
+}
 
-// inline constexpr auto operator"" _sh(const char *str, size_t len) {
-//     return hash_djb2a(std::string_view{ str, len });
-// }
+inline constexpr auto operator"" _sh(const char *str, size_t len) {
+  return hash_djb2a(std::string_view{str, len});
+}
 
 // bie::BoundaryElementType createBE_API(std::string name,std::string kernel){
 //
@@ -256,14 +256,14 @@ public:
         const bie::ElasticHMatrix2DP1<double> M{collocationPoints_,
                                                 permutation_, mesh2d, elas};
 
-        h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+        // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
 
       } else if (kernel_ == "S3DP0") {
         std::cout
             << "Kernel Isotropic ELasticity Simplified_3D (2D) P0 segment \n";
         const bie::ElasticHMatrix2DP0<double> M{
             collocationPoints_, permutation_, mesh2d, elas, properties[2]};
-        h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+        // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
       }
     } else if (kernel_ == "3DT6" || kernel_ == "3DR0_displ" ||
                kernel_ == "3DR0" || kernel_ == "3DT0" ||
@@ -381,7 +381,7 @@ public:
                   << collocationPoints_.size(1) << "\n";
         const bie::ElasticHMatrix3DT6<double> M{
             collocationPoints_, permutation_, mesh3d, elas, 0, 0};
-        h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+        // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
 
       } else if (kernel_ == "3DT0") {
         std::cout
@@ -391,7 +391,7 @@ public:
         const bie::ElasticHMatrix3DT0<double> M{
             collocationPoints_, permutation_, mesh3d, elas,
             0}; // local_global = 0 if local-local, 1 if global-global
-        h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+        // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
       } else if (kernel_ == "3DT0_displ") {
         std::cout << "Singular Kernel Isotropic Elasticity 3D T0  triangle \n";
         std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
@@ -399,7 +399,7 @@ public:
         const bie::ElasticHMatrix3DT0displ<double> M{
             collocationPoints_, permutation_, mesh3d, elas,
             0}; // local_global = 0 if local-local, 1 if global-global
-        h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+        // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
       } else if (kernel_ == "3DR0_displ" || kernel_ == "3DR0" ||
                  kernel_ == "3DR0opening" || kernel_ == "3DR0shear" ||
                  kernel_ == "3DT0shear") {
@@ -414,7 +414,7 @@ public:
                     << "\n  ";
           const bie::ElasticHMatrix3DR0<double> M{
               collocationPoints_, permutation_, mesh3d, elas, 0, 0};
-          h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+          // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
         } else if (kernel_ == "3DR0_displ") {
           // DD to displacement HMAT
           std::cout << "\n Kernel: " << kernel_ << " "
@@ -422,7 +422,7 @@ public:
                     << "\n  ";
           const bie::ElasticHMatrix3DR0displ<double> M{
               collocationPoints_, permutation_, mesh3d, elas, 0, 0};
-          h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+          // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
         } else if (kernel_ == "3DR0opening") {
           // DD to displacement HMAT
           std::cout << "\n Kernel: " << kernel_ << " "
@@ -430,7 +430,7 @@ public:
                     << "\n  ";
           const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{
               collocationPoints_, permutation_, mesh3d, elas};
-          h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+          // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
         } else if (kernel_ == "3DR0shear") {
           // DD to displacement HMAT
           std::cout << "\n Kernel: " << kernel_ << " "
@@ -438,7 +438,7 @@ public:
                     << "\n  ";
           const bie::ElasticHMatrix3DR0_modes2and3Cartesian<double> M{
               collocationPoints_, permutation_, mesh3d, elas, 0, 0};
-          h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+          // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
         } else if (kernel_ == "3DT0shear") {
           // DD to displacement HMAT
           std::cout << "\n Kernel: " << kernel_ << " "
@@ -446,7 +446,7 @@ public:
                     << "\n  ";
           const bie::ElasticHMatrix3DT0_modes2and3<double> M{
               collocationPoints_, permutation_, mesh3d, elas, 0};
-          h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
+          // h_.toHmat(M, cluster, collocationPoints_, eta_, epsilon_aca_);
         }
       }
 

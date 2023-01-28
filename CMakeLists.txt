@@ -25,7 +25,7 @@ project(BigWham VERSION 1.0
         DESCRIPTION "This is the library containing the wheels"
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 #####################################
 # set options: False = 0, True = 1  #
@@ -54,8 +54,8 @@ option(MATHEMATICA_INTERFACE "make mathematica interface" OFF)  # --> to add sta
 # optimization options              #
 #####################################
 
-set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG}   -std=c++14")
-set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++14 -O3  -mavx2")
+set(CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG}   -std=c++17")
+set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++17 -O3  -mavx2")
 #set(CMAKE_CXX_FLAGS_RELEASE   "${CMAKE_CXX_FLAGS_RELEASE}  -std=c++11 -Ofast -march=native -mtune=intel  -mavx2")
 
 if(USE_STATIC)
