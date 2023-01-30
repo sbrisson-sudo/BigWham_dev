@@ -26,8 +26,7 @@ TEST(SquareMatGen,segment_0_1){
     xy(1,0)=1.0;
     il::Array2D<il::int_t> conn{1,2,0};
     conn(0,1)=1;
-    bie::Segment<0> seg0;
-    bie::BEMesh<bie::Segment<0>> my_mesh(xy,conn,seg0);
+    bie::BEMesh<bie::Segment<0>> my_mesh(xy, conn);
     bie::Segment<0> source;
 //    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
@@ -44,8 +43,7 @@ TEST(SquareMatGen,segment_0_2){
     xy(1,0)=1.0;
     il::Array2D<il::int_t> conn{1,2,0};
     conn(0,1)=1;
-    bie::Segment<0> seg0;
-    bie::BEMesh<bie::Segment<0>> my_mesh(xy,conn,seg0);
+    bie::BEMesh<bie::Segment<0>> my_mesh(xy, conn);
     bie::Segment<0> source;
 //    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
@@ -63,8 +61,7 @@ TEST(SquareMatGen,segment_0_3){
     xy(1,0)=1.0;
     il::Array2D<il::int_t> conn{1,2,0};
     conn(0,1)=1;
-    bie::Segment<0> seg0;
-    bie::BEMesh<bie::Segment<0>> my_mesh(xy,conn,seg0);
+    bie::BEMesh<bie::Segment<0>> my_mesh(xy, conn);
     bie::Segment<0> source;
 //    source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
@@ -100,8 +97,7 @@ TEST(SquareMatGen,segment_0_Hmat_1){
         conn(i,0)= i;
         conn(i,1)=i+1;
     }
-    bie::Segment<0> seg0;
-    bie::BEMesh<bie::Segment<0>> my_mesh(coor,conn,seg0);
+    bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
     il::Array2D<double> xcol=my_mesh.getCollocationPoints();
     bie::ElasticProperties elas(1,0.3);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  ker(elas,coor.size(1));
@@ -137,14 +133,12 @@ TEST(SquareMatGen,segment_0_Hmat_2){
         conn(i,0)= i;
         conn(i,1)=i+1;
     }
-    bie::Segment<0> seg0;
-    bie::BEMesh<bie::Segment<0>> my_mesh(coor,conn,seg0);
+    bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
     il::Array2D<double> xcol=my_mesh.getCollocationPoints();
     bie::ElasticProperties elas(1,0.0);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  ker(elas,coor.size(1));
     il::Array<double> prop{1,1000.};
     ker.setKernelProperties(prop);
-
     il::int_t max_leaf_size=32;
     bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,1.0);
     bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,

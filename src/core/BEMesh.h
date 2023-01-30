@@ -49,8 +49,8 @@ public:
 
     // Basic constructor with  coordinates and connectivity array and
     // element type !
-     BEMesh( il::Array2D<double> &Coordinates, il::Array2D<il::int_t> &Connectivity,E& element) {
-        element_def_=element;
+    BEMesh(il::Array2D<double> &Coordinates, il::Array2D<il::int_t> &Connectivity) {
+        //element_def_=element;
         // check validity of inputs
         IL_EXPECT_FAST(Coordinates.size(1) == element_def_.getSpatialDimension() );
         spatial_dimension_ = element_def_.getSpatialDimension();
