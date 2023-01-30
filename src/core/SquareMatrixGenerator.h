@@ -28,6 +28,7 @@ class SquareMatrixGenerator : public bie::MatrixGenerator<T> {
 
   il::Array<il::int_t> permutation_;
   bie::BEMesh<El> mesh_;
+
   BIE_Kernel bie_kernel_;
 
   il::int_t dof_dim_; // unknowns per nodes

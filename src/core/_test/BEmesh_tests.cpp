@@ -33,8 +33,7 @@ TEST(bemesh_seg,seg_0_1){
             conn(i,1)=i+1;
             eltC(i,0)=(coor(i,0)+coor(i+1,0))/2.;
     }
-    bie::Segment<0> seg0;
-    bie::BEMesh<bie::Segment<0>> my_mesh(coor,conn,seg0);
+    bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
     il::Array2D<double> test=my_mesh.getCollocationPoints();
     bool t= true;
     for (int i=0;i<n_elts;i++){
@@ -60,8 +59,7 @@ TEST(bemesh_seg,seg_0_2){
         eltC(i,0)=(coor(i,0)+coor(i+1,0))/2.;
         eltC(i,1)=(coor(i,1)+coor(i+1,1))/2.;
     }
-    bie::Segment<0> seg0;
-    bie::BEMesh<bie::Segment<0>> my_mesh(coor,conn,seg0);
+    bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
     il::Array2D<double> test=my_mesh.getCollocationPoints();
     bool t= true;
     for (int i=0;i<n_elts;i++){
@@ -85,8 +83,7 @@ TEST(bemesh_seg,seg_1_1){
         conn(i,1)=i+1;
         eltC(i,0)=(coor(i,0)+coor(i+1,0))/2.;
     }
-    bie::Segment<1> seg1;
-    bie::BEMesh<bie::Segment<1>> my_mesh(coor,conn,seg1);
+    bie::BEMesh<bie::Segment<1>> my_mesh(coor, conn);
     il::Array2D<double> test=my_mesh.getCollocationPoints();
     bool t= true;
     for (int i=0;i<n_elts;i++){ // left col points
@@ -109,8 +106,7 @@ TEST(bemesh_triangle,triangle_0_1){
     il::Array2D<il::int_t> conn{2,3,0};
     conn(0,1)=1;conn(0,2)=2;
     conn(1,0)=2;conn(1,1)=1;conn(1,2)=3;
-    bie::Triangle<0> tri0;
-    bie::BEMesh<bie::Triangle<0>> my_mesh(xyz,conn,tri0);
+    bie::BEMesh<bie::Triangle<0>> my_mesh(xyz, conn);
     il::Array2D<double> test=my_mesh.getCollocationPoints();
     ASSERT_TRUE(test.size(0)==my_mesh.numberCollocationPoints()  &&  abs(test(0,2) ) <1.e-10 &&  abs(test(0,1) - 1./3.) <1.e-10 &&
                         abs(test(0,0) - 1./3.) <1.e-10 && abs(test(1,0) - 2./3.) <1.e-10 && abs(test(1,1) - 2./3.) <1.e-10 && abs(test(1,2) ) <1.e-10 );
@@ -125,8 +121,7 @@ TEST(bemesh_triangle,triangle_0_2){
     il::Array2D<il::int_t> conn{2,3,0};
     conn(0,1)=1;conn(0,2)=2;
     conn(1,0)=2;conn(1,1)=1;conn(1,2)=3;
-    bie::Triangle<0> tri0;
-    bie::BEMesh<bie::Triangle<0>> my_mesh(xyz,conn,tri0);
+    bie::BEMesh<bie::Triangle<0>> my_mesh(xyz, conn);
     il::Array2D<double> test=my_mesh.getCollocationPoints();
     bie::Triangle<0> tri_a;
     il::Array2D<double> xv=my_mesh.getVertices(0);
@@ -168,8 +163,7 @@ TEST(bemesh_rectangle,rect_0_1){
     for (il::int_t c=0;c<nelts;c++){
         std::cout << " elt #" << c<< " conn - " << conn(c,0) <<"-"<< conn(c,1) <<"-" <<conn(c,2) << "-" << conn(c,3) <<"\n";
     }
-    bie::Rectangle<0> rec0;
-    bie::BEMesh<bie::Rectangle<0>> my_mesh(coor,conn,rec0);
+    bie::BEMesh<bie::Rectangle<0>> my_mesh(coor, conn);
     il::Array2D<double> test=my_mesh.getCollocationPoints();
     bie::Rectangle<0> rec_a;
     il::Array2D<double> xv=my_mesh.getVertices(0);
