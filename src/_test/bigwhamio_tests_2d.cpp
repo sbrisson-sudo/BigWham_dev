@@ -75,8 +75,6 @@ TEST(bigwham_io_2d,Sp3D0_1_2){
     ASSERT_TRUE( my_io.getProblemDimension()==2 && my_io.getSpatialDimension()==2 );//h_.isBuilt()
 }
 
-
-
 TEST(bigwham_io_2d,Sp3D0_1_3){
     // create a simple mesh for a griffith crack -
     // use the bigwhamio interface.

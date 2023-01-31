@@ -40,328 +40,327 @@
 
 // TEST 2DP1
 // ///////////////////////////////////////////////////////////////////////////////
-int test2DP1() {
-
-  std::cout << "-------------- test2DP1 ---------------------\n";
-  // this routine is for testing different component of the library
-  //  here 2DP1 kernel.
-
-  // simple 1D mesh
-  il::int_t ne = 40;
-
-  il::Array2D<double> nodes{ne + 1, 2, 0.};
-  il::Array2D<il::int_t> conn{ne, 2};
-  for (il::int_t i = 0; i < ne + 1; i++) {
-    nodes(i, 0) = -1.0 + 2.0 * i / ne;
-    nodes(i, 1) = 0.;
-  }
-  for (il::int_t i = 0; i < ne; i++) {
-    conn(i, 0) = i;
-    conn(i, 1) = i + 1;
-  }
-
-  bie::Mesh2D test2(nodes, conn, 1);
-  il::Array2D<double> coll_points = test2.getCollocationPoints();
-
-  il::int_t leaf_size = 32; // test->max_leaf_size;
-  il::Timer tt;
-  tt.Start();
-  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
-
-  const il::Tree<bie::SubHMatrix, 4> hmatrix_tree =
-      bie::hmatrixTreeIxI(coll_points, cluster.partition, 0.0);
-  tt.Stop();
-
-  std::cout << "Time for cluster construction " << tt.time() << "\n";
-  tt.Reset();
-  std::cout << cluster.partition.depth() << "\n";
-
-  bie::ElasticProperties elas_aux(1.0, 0.2);
-
-  bie::HMatrix<double> h_;
-  const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
-                                          test2, elas_aux};
-
-  std::cout << " create h mat " << M.size(0) << "\n";
-
-  h_ = bie::toHMatrix(M, hmatrix_tree, 0.001);
-  std::cout << " create h mat ended " << h_.isBuilt() << "\n";
-  std::cout << " compression ratio " << bie::compressionRatio(h_) << "\n";
-
-  double Ep = 1.0 / (1.0 - 0.2 * 0.2);
-  double sig = 1.0;
-  double a = 1.0;
-  double coef = 4.0 * sig / (Ep);
-  // at collocation points
-  il::Array<double> wsol_coll{coll_points.size(0), 0.};
-  for (int i = 0; i < coll_points.size(0); ++i) {
-    if (std::abs(coll_points(i, 0)) < a) {
-      wsol_coll[i] = coef * sqrt(pow(a, 2) - pow(coll_points(i, 0), 2));
-    }
-  }
-  // at corresponding nodes - works here due to simple mesh....
-  il::Array<double> wsol_nodes{coll_points.size(0), 0.};
-  double aux_x = 0.;
-  int j = 0;
-  for (int i = 0; i < conn.size(0); ++i) {
-
-    aux_x = nodes(conn(i, 0), 0);
-    if (std::abs(aux_x) < a) {
-      wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
-    }
-    j++;
-    aux_x = nodes(conn(i, 1), 0);
-    if (std::abs(aux_x) < a) {
-      wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
-    }
-    j++;
-  }
-
-  il::Array<double> xx{coll_points.size(0) * 2};
-
-  for (il::int_t i = 0; i < xx.size() / 2; i++) {
-    xx[2 * i] = 0.0;
-    xx[2 * i + 1] = wsol_nodes[i];
-  }
-
-  il::Array<double> y = il::dot(h_, xx);
-
-  // now testing the Bigwhamio class...
-  Bigwhamio testbie;
-  // Bigwhamio *test = new Bigwhamio();
-
-  std::vector<double> f_coor;
-  f_coor.assign(2 * test2.numberOfNodes(), 0.);
-  for (il::int_t i = 0; i < test2.numberOfNodes(); i++) {
-    f_coor[2 * i] = test2.coordinates(i, 0);
-    f_coor[2 * i + 1] = test2.coordinates(i, 1);
-  }
-
-  std::vector<int> f_conn;
-  f_conn.assign(2 * test2.numberOfElts(), 0);
-  for (il::int_t i = 0; i < test2.numberOfElts(); i++) {
-    f_conn[2 * i] = test2.connectivity(i, 0);
-    f_conn[2 * i + 1] = test2.connectivity(i, 1);
-  }
-
-  std::vector<double> f_prop;
-  f_prop.assign(2, 0);
-  f_prop[0] = elas_aux.getE();
-  f_prop[1] = elas_aux.getNu();
-
-  std::string ker = "2DP1";
-
-  std::cout << " now setting things in bigwhamio obj \n";
-
-  testbie.set(f_coor, f_conn, ker, f_prop, leaf_size, 0., 0.001);
-
-  std::cout << " C R :" << testbie.getCompressionRatio() << "\n";
-
-  std::vector<double> x;
-  x.assign(xx.size(), 0.);
-  for (il::int_t i = 0; i < xx.size(); i++) {
-    x[i] = xx[i];
-  }
-
-  std::vector<double> y2 = testbie.matvect(x);
-  std::cout << " elastic dot product solution:: \n";
-  for (il::int_t i = 0; i < coll_points.size(0); i++) {
-    std::cout << " y " << i << " " << y[2 * i] << " - with obj - " << y2[2 * i]
-              << "\n";
-    std::cout << " y " << i << " " << y[2 * i + 1] << " - with obj - "
-              << y2[2 * i + 1] << "\n";
-  }
-
-  std::cout << "-------------- End of 2DP1 - tests ------------- "
-            << "\n";
-
-  return 0;
-}
+//int test2DP1() {
+//
+//  std::cout << "-------------- test2DP1 ---------------------\n";
+//  // this routine is for testing different component of the library
+//  //  here 2DP1 kernel.
+//
+//  // simple 1D mesh
+//  il::int_t ne = 40;
+//
+//  il::Array2D<double> nodes{ne + 1, 2, 0.};
+//  il::Array2D<il::int_t> conn{ne, 2};
+//  for (il::int_t i = 0; i < ne + 1; i++) {
+//    nodes(i, 0) = -1.0 + 2.0 * i / ne;
+//    nodes(i, 1) = 0.;
+//  }
+//  for (il::int_t i = 0; i < ne; i++) {
+//    conn(i, 0) = i;
+//    conn(i, 1) = i + 1;
+//  }
+//
+//  bie::Mesh2D test2(nodes, conn, 1);
+//  il::Array2D<double> coll_points = test2.getCollocationPoints();
+//
+//  il::int_t leaf_size = 32; // test->max_leaf_size;
+//  il::Timer tt;
+//  tt.Start();
+//  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
+//
+//  const il::Tree<bie::SubHMatrix, 4> hmatrix_tree =
+//      bie::hmatrixTreeIxI(coll_points, cluster.partition, 0.0);
+//  tt.Stop();
+//
+//  std::cout << "Time for cluster construction " << tt.time() << "\n";
+//  tt.Reset();
+//  std::cout << cluster.partition.depth() << "\n";
+//
+//  bie::ElasticProperties elas_aux(1.0, 0.2);
+//
+//  bie::HMatrix<double> h_;
+//  const bie::ElasticHMatrix2DP1<double> M{coll_points, cluster.permutation,
+//                                          test2, elas_aux};
+//
+//  std::cout << " create h mat " << M.size(0) << "\n";
+//
+//  h_ = bie::toHMatrix(M, hmatrix_tree, 0.001);
+//  std::cout << " create h mat ended " << h_.isBuilt() << "\n";
+//  std::cout << " compression ratio " << bie::compressionRatio(h_) << "\n";
+//
+//  double Ep = 1.0 / (1.0 - 0.2 * 0.2);
+//  double sig = 1.0;
+//  double a = 1.0;
+//  double coef = 4.0 * sig / (Ep);
+//  // at collocation points
+//  il::Array<double> wsol_coll{coll_points.size(0), 0.};
+//  for (int i = 0; i < coll_points.size(0); ++i) {
+//    if (std::abs(coll_points(i, 0)) < a) {
+//      wsol_coll[i] = coef * sqrt(pow(a, 2) - pow(coll_points(i, 0), 2));
+//    }
+//  }
+//  // at corresponding nodes - works here due to simple mesh....
+//  il::Array<double> wsol_nodes{coll_points.size(0), 0.};
+//  double aux_x = 0.;
+//  int j = 0;
+//  for (int i = 0; i < conn.size(0); ++i) {
+//
+//    aux_x = nodes(conn(i, 0), 0);
+//    if (std::abs(aux_x) < a) {
+//      wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
+//    }
+//    j++;
+//    aux_x = nodes(conn(i, 1), 0);
+//    if (std::abs(aux_x) < a) {
+//      wsol_nodes[j] = coef * sqrt(pow(a, 2) - pow(aux_x, 2));
+//    }
+//    j++;
+//  }
+//
+//  il::Array<double> xx{coll_points.size(0) * 2};
+//
+//  for (il::int_t i = 0; i < xx.size() / 2; i++) {
+//    xx[2 * i] = 0.0;
+//    xx[2 * i + 1] = wsol_nodes[i];
+//  }
+//
+//  il::Array<double> y = il::dot(h_, xx);
+//
+//  // now testing the Bigwhamio class...
+//  Bigwhamio testbie;
+//  // Bigwhamio *test = new Bigwhamio();
+//
+//  std::vector<double> f_coor;
+//  f_coor.assign(2 * test2.numberOfNodes(), 0.);
+//  for (il::int_t i = 0; i < test2.numberOfNodes(); i++) {
+//    f_coor[2 * i] = test2.coordinates(i, 0);
+//    f_coor[2 * i + 1] = test2.coordinates(i, 1);
+//  }
+//
+//  std::vector<int> f_conn;
+//  f_conn.assign(2 * test2.numberOfElts(), 0);
+//  for (il::int_t i = 0; i < test2.numberOfElts(); i++) {
+//    f_conn[2 * i] = test2.connectivity(i, 0);
+//    f_conn[2 * i + 1] = test2.connectivity(i, 1);
+//  }
+//
+//  std::vector<double> f_prop;
+//  f_prop.assign(2, 0);
+//  f_prop[0] = elas_aux.getE();
+//  f_prop[1] = elas_aux.getNu();
+//
+//  std::string ker = "2DP1";
+//
+//  std::cout << " now setting things in bigwhamio obj \n";
+//
+//  testbie.set(f_coor, f_conn, ker, f_prop, leaf_size, 0., 0.001);
+//
+//  std::cout << " C R :" << testbie.getCompressionRatio() << "\n";
+//
+//  std::vector<double> x;
+//  x.assign(xx.size(), 0.);
+//  for (il::int_t i = 0; i < xx.size(); i++) {
+//    x[i] = xx[i];
+//  }
+//
+//  std::vector<double> y2 = testbie.matvect(x);
+//  std::cout << " elastic dot product solution:: \n";
+//  for (il::int_t i = 0; i < coll_points.size(0); i++) {
+//    std::cout << " y " << i << " " << y[2 * i] << " - with obj - " << y2[2 * i]
+//              << "\n";
+//    std::cout << " y " << i << " " << y[2 * i + 1] << " - with obj - "
+//              << y2[2 * i + 1] << "\n";
+//  }
+//
+//  std::cout << "-------------- End of 2DP1 - tests ------------- "
+//            << "\n";
+//
+//  return 0;
+//}
 ///////////////////////////////////////////////////////////////////////////////
 
-// TEST 2DP1
-// ///////////////////////////////////////////////////////////////////////////////
-int testS3DP0() {
-  // testing the S3DP0 kernel implementation on griffith crack
-  std::cout << "-------------- testS3DP0 ---------------------\n";
-
-  std::cout << " testing the S3DP0 kernel implementation on griffith crack"
-            << "\n";
-  // simple 1D mesh
-  il::int_t ne = 140;
-
-  il::Array2D<double> nodes{ne + 1, 2, 0.};
-  il::Array2D<il::int_t> conn{ne, 2};
-
-  for (il::int_t i = 0; i < ne + 1; i++) {
-    nodes(i, 0) = -1.0 + 2.0 * i / ne;
-    nodes(i, 1) = 0.;
-  }
-
-  for (il::int_t i = 0; i < ne; i++) {
-    conn(i, 0) = i;
-    conn(i, 1) = i + 1;
-  }
-  bie::Mesh2D Mesh0(nodes, conn, 0);
-
-  il::Array2D<double> coll_points = Mesh0.getCollocationPoints();
-
-  il::int_t leaf_size = 12;
-  il::Timer tt;
-  tt.Start();
-  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
-
-  const il::Tree<bie::SubHMatrix, 4> hmatrix_tree =
-      bie::hmatrixTreeIxI(coll_points, cluster.partition, 10.0);
-  tt.Stop();
-  std::cout << "Time for cluster construction " << tt.time() << "\n";
-  tt.Reset();
-  std::cout << cluster.partition.depth() << "\n";
-
-  bie::ElasticProperties elas_aux(1.0, 0.2);
-
-  bie::HMatrix<double> h_;
-  const bie::ElasticHMatrix2DP0<double> M{coll_points, cluster.permutation,
-                                          Mesh0, elas_aux, 10000.};
-
-  //  std::cout << " in set h mat 2 " << cluster.permutation.size() << " e aca "
-  //  << test->epsilon_aca <<"\n";
-
-  std::cout << " create h mat " << M.size(0) << "\n";
-  h_ = bie::toHMatrix(M, hmatrix_tree, 0.001);
-  std::cout << " create h mat ended " << h_.isBuilt() << "\n";
-  std::cout << " compression ratio " << bie::compressionRatio(h_) << "\n";
-
-  double Ep = 1.0 / (1.0 - 0.2 * 0.2);
-  double sig = 1.0;
-  double a = 1.0;
-
-  double coef = 4.0 * sig / (Ep);
-
-  // compute analyticla solution at collocation points
-  il::Array<double> wsol_coll{coll_points.size(0), 0.};
-
-  for (int i = 0; i < coll_points.size(0); ++i) {
-    if (std::abs(coll_points(i, 0)) < a) {
-      wsol_coll[i] = coef * sqrt(pow(a, 2) - pow(coll_points(i, 0), 2));
-    }
-  }
-  // at corresponding nodes - works here due to simple mesh....
-
-  il::Array<double> xx{coll_points.size(0) * 2};
-
-  for (il::int_t i = 0; i < xx.size() / 2; i++) {
-    xx[2 * i] = 0.0;
-    xx[2 * i + 1] = wsol_coll[i];
-  }
-
-  il::Array<double> y = il::dot(h_, xx);
-
-  std::cout << " Now creating similar BigWham instance \n";
-  std::string kernelname = "S3DP0";
-
-  // now testing the Bigwhamio class...
-  Bigwhamio testbie;
-  // Bigwhamio *test = new Bigwhamio();
-
-  std::vector<double> f_coor;
-  f_coor.assign(2 * Mesh0.numberOfNodes(), 0.);
-  for (il::int_t i = 0; i < Mesh0.numberOfNodes(); i++) {
-    f_coor[2 * i] = Mesh0.coordinates(i, 0);
-    f_coor[2 * i + 1] = Mesh0.coordinates(i, 1);
-  }
-
-  std::vector<int> f_conn;
-  f_conn.assign(2 * Mesh0.numberOfElts(), 0);
-  for (il::int_t i = 0; i < Mesh0.numberOfElts(); i++) {
-    f_conn[2 * i] = Mesh0.connectivity(i, 0);
-    f_conn[2 * i + 1] = Mesh0.connectivity(i, 1);
-  }
-
-  std::vector<double> f_prop;
-  f_prop.assign(3, 0);
-  f_prop[0] = elas_aux.getE();
-  f_prop[1] = elas_aux.getNu();
-  f_prop[2] = 1000.;
-
-  std::cout << " now setting things in bigwhamio obj \n";
-
-  testbie.set(f_coor, f_conn, kernelname, f_prop, 22, 0.4, 0.001);
-
-  std::cout << " C R :" << testbie.getCompressionRatio() << "\n";
-
-  std::vector<double> x;
-  x.assign(xx.size(), 0.);
-  for (il::int_t i = 0; i < xx.size(); i++) {
-    x[i] = xx[i];
-  }
-
-  std::vector<double> y2 = testbie.matvect(x);
-  std::cout << " elastic dot product solution:: \n";
-  for (il::int_t i = 0; i < coll_points.size(0); i++) {
-    std::cout << " y " << i << " " << y[2 * i] << " - with obj - " << y2[2 * i]
-              << "\n";
-    std::cout << " y " << i << " " << y[2 * i + 1] << " - with obj - "
-              << y2[2 * i + 1] << "\n";
-  }
-
-  std::cout << " build ?" << testbie.isBuilt()
-            << " CR :" << testbie.getCompressionRatio() << " CR   "
-            << "\n";
-
-  il::Array2D<il::int_t> pat_SPOT = bie::output_hmatPattern(h_);
-
-  std::cout << "n blocks "
-            << " / " << pat_SPOT.size(1) << "\n";
-
-  int k = 0;
-  for (il::int_t i = 0; i < pat_SPOT.size(1); i++) {
-    il::spot_t s(pat_SPOT(0, i));
-    k = 2;
-    if (h_.isFullRank(s)) {
-      k = 0;
-      il::Array2DView<double> A = h_.asFullRank(s);
-      std::cout << "block :" << i << " | " << pat_SPOT(1, i) << ","
-                << pat_SPOT(2, i) << "/ " << pat_SPOT(1, i) + A.size(0) - 1
-                << "," << pat_SPOT(2, i) + A.size(1) - 1 << " -   " << k
-                << " - " << A.size(0) * A.size(1) << "\n";
-    } else if (h_.isLowRank(s)) {
-      k = 1;
-      il::Array2DView<double> A = h_.asLowRankA(s);
-      il::Array2DView<double> B = h_.asLowRankB(s);
-      std::cout << "block :" << i << " | " << pat_SPOT(1, i) << ","
-                << pat_SPOT(2, i) << "/ " << pat_SPOT(1, i) + A.size(0) - 1
-                << "," << pat_SPOT(2, i) + B.size(0) - 1 << " - " << k << " - "
-                << A.size(0) * A.size(1) + B.size(0) * B.size(1) << "\n";
-    }
-    std::cout << " block " << i << " :: " << pat_SPOT(0, i) << " - "
-              << h_.isHierarchical(s) << "\n";
-  }
-
-  std::vector<double> val_list;
-  std::vector<int> pos_list;
-
-  testbie.getFullBlocks(val_list, pos_list);
-
-  std::cout << "n full block entry" << val_list.size() << "\n";
-  std::cout << " hmat size " << testbie.matrixSize(0) << "\n";
-
-  il::Array2D<double> mypts{3, 2, 0.};
-  mypts(0, 0) = 1.5;
-  mypts(1, 0) = 2.;
-  mypts(2, 0) = 2.5;
-
-  il::Array2D<double> stress = bie::computeStresses2D(
-      mypts, Mesh0, elas_aux, xx, bie::point_stress_s3d_dp0_dd, 1000.);
-  for (il::int_t i = 0; i < 3; i++) {
-    std::cout << "stresses " << stress(i, 0) << " - " << stress(i, 1) << " - "
-              << stress(i, 2) << "\n";
-  }
-  std::cout << "----------end of S3DP0 test ---------------------\n";
-
-  return 0;
-}
-///////////////////////////////////////////////////////////////////////////////
+// TEST
+//// ///////////////////////////////////////////////////////////////////////////////
+//int testS3DP0() {
+//  // testing the S3DP0 kernel implementation on griffith crack
+//  std::cout << "-------------- testS3DP0 ---------------------\n";
+//
+//  std::cout << " testing the S3DP0 kernel implementation on griffith crack"
+//            << "\n";
+//  // simple 1D mesh
+//  il::int_t ne = 140;
+//
+//  il::Array2D<double> nodes{ne + 1, 2, 0.};
+//  il::Array2D<il::int_t> conn{ne, 2};
+//
+//  for (il::int_t i = 0; i < ne + 1; i++) {
+//    nodes(i, 0) = -1.0 + 2.0 * i / ne;
+//    nodes(i, 1) = 0.;
+//  }
+//
+//  for (il::int_t i = 0; i < ne; i++) {
+//    conn(i, 0) = i;
+//    conn(i, 1) = i + 1;
+//  }
+//  bie::Mesh2D Mesh0(nodes, conn, 0);
+//
+//  il::Array2D<double> coll_points = Mesh0.getCollocationPoints();
+//
+//  il::int_t leaf_size = 12;
+//  il::Timer tt;
+//  tt.Start();
+//  const bie::Cluster cluster = bie::cluster(leaf_size, il::io, coll_points);
+//
+//  const il::Tree<bie::SubHMatrix, 4> hmatrix_tree =
+//      bie::hmatrixTreeIxI(coll_points, cluster.partition, 10.0);
+//  tt.Stop();
+//  std::cout << "Time for cluster construction " << tt.time() << "\n";
+//  tt.Reset();
+//  std::cout << cluster.partition.depth() << "\n";
+//
+//  bie::ElasticProperties elas_aux(1.0, 0.2);
+//
+//  bie::HMatrix<double> h_;
+//  const bie::ElasticHMatrix2DP0<double> M{coll_points, cluster.permutation,
+//                                          Mesh0, elas_aux, 10000.};
+//
+//  //  std::cout << " in set h mat 2 " << cluster.permutation.size() << " e aca "
+//  //  << test->epsilon_aca <<"\n";
+//
+//  std::cout << " create h mat " << M.size(0) << "\n";
+//  h_ = bie::toHMatrix(M, hmatrix_tree, 0.001);
+//  std::cout << " create h mat ended " << h_.isBuilt() << "\n";
+//  std::cout << " compression ratio " << bie::compressionRatio(h_) << "\n";
+//
+//  double Ep = 1.0 / (1.0 - 0.2 * 0.2);
+//  double sig = 1.0;
+////  double a = 1.0;
+////  double coef = 4.0 * sig / (Ep);
+////
+////  // compute analyticla solution at collocation points
+////  il::Array<double> wsol_coll{coll_points.size(0), 0.};
+////
+////  for (int i = 0; i < coll_points.size(0); ++i) {
+////    if (std::abs(coll_points(i, 0)) < a) {
+////      wsol_coll[i] = coef * sqrt(pow(a, 2) - pow(coll_points(i, 0), 2));
+////    }
+////  }
+////  // at corresponding nodes - works here due to simple mesh....
+////
+////  il::Array<double> xx{coll_points.size(0) * 2};
+////
+////  for (il::int_t i = 0; i < xx.size() / 2; i++) {
+////    xx[2 * i] = 0.0;
+////    xx[2 * i + 1] = wsol_coll[i];
+////  }
+////
+////  il::Array<double> y = il::dot(h_, xx);
+////
+////  std::cout << " Now creating similar BigWham instance \n";
+////  std::string kernelname = "S3DP0";
+////
+////  // now testing the Bigwhamio class...
+////  Bigwhamio testbie;
+////  // Bigwhamio *test = new Bigwhamio();
+////
+////  std::vector<double> f_coor;
+////  f_coor.assign(2 * Mesh0.numberOfNodes(), 0.);
+////  for (il::int_t i = 0; i < Mesh0.numberOfNodes(); i++) {
+////    f_coor[2 * i] = Mesh0.coordinates(i, 0);
+////    f_coor[2 * i + 1] = Mesh0.coordinates(i, 1);
+////  }
+////
+////  std::vector<int> f_conn;
+////  f_conn.assign(2 * Mesh0.numberOfElts(), 0);
+////  for (il::int_t i = 0; i < Mesh0.numberOfElts(); i++) {
+////    f_conn[2 * i] = Mesh0.connectivity(i, 0);
+////    f_conn[2 * i + 1] = Mesh0.connectivity(i, 1);
+////  }
+////
+////  std::vector<double> f_prop;
+////  f_prop.assign(3, 0);
+////  f_prop[0] = elas_aux.getE();
+////  f_prop[1] = elas_aux.getNu();
+////  f_prop[2] = 1000.;
+////
+////  std::cout << " now setting things in bigwhamio obj \n";
+////
+////  testbie.set(f_coor, f_conn, kernelname, f_prop, 22, 0.4, 0.001);
+////
+////  std::cout << " C R :" << testbie.getCompressionRatio() << "\n";
+////
+////  std::vector<double> x;
+////  x.assign(xx.size(), 0.);
+////  for (il::int_t i = 0; i < xx.size(); i++) {
+////    x[i] = xx[i];
+////  }
+////
+////  std::vector<double> y2 = testbie.matvect(x);
+////  std::cout << " elastic dot product solution:: \n";
+////  for (il::int_t i = 0; i < coll_points.size(0); i++) {
+////    std::cout << " y " << i << " " << y[2 * i] << " - with obj - " << y2[2 * i]
+////              << "\n";
+////    std::cout << " y " << i << " " << y[2 * i + 1] << " - with obj - "
+////              << y2[2 * i + 1] << "\n";
+////  }
+////
+////  std::cout << " build ?" << testbie.isBuilt()
+////            << " CR :" << testbie.getCompressionRatio() << " CR   "
+////            << "\n";
+////
+////  il::Array2D<il::int_t> pat_SPOT = bie::output_hmatPattern(h_);
+////
+////  std::cout << "n blocks "
+////            << " / " << pat_SPOT.size(1) << "\n";
+////
+////  int k = 0;
+////  for (il::int_t i = 0; i < pat_SPOT.size(1); i++) {
+////    il::spot_t s(pat_SPOT(0, i));
+////    k = 2;
+////    if (h_.isFullRank(s)) {
+////      k = 0;
+////      il::Array2DView<double> A = h_.asFullRank(s);
+////      std::cout << "block :" << i << " | " << pat_SPOT(1, i) << ","
+////                << pat_SPOT(2, i) << "/ " << pat_SPOT(1, i) + A.size(0) - 1
+////                << "," << pat_SPOT(2, i) + A.size(1) - 1 << " -   " << k
+////                << " - " << A.size(0) * A.size(1) << "\n";
+////    } else if (h_.isLowRank(s)) {
+////      k = 1;
+////      il::Array2DView<double> A = h_.asLowRankA(s);
+////      il::Array2DView<double> B = h_.asLowRankB(s);
+////      std::cout << "block :" << i << " | " << pat_SPOT(1, i) << ","
+////                << pat_SPOT(2, i) << "/ " << pat_SPOT(1, i) + A.size(0) - 1
+////                << "," << pat_SPOT(2, i) + B.size(0) - 1 << " - " << k << " - "
+////                << A.size(0) * A.size(1) + B.size(0) * B.size(1) << "\n";
+////    }
+////    std::cout << " block " << i << " :: " << pat_SPOT(0, i) << " - "
+////              << h_.isHierarchical(s) << "\n";
+////  }
+////
+////  std::vector<double> val_list;
+////  std::vector<int> pos_list;
+////
+////  testbie.getFullBlocks(val_list, pos_list);
+////
+////  std::cout << "n full block entry" << val_list.size() << "\n";
+////  std::cout << " hmat size " << testbie.matrixSize(0) << "\n";
+////
+////  il::Array2D<double> mypts{3, 2, 0.};
+////  mypts(0, 0) = 1.5;
+////  mypts(1, 0) = 2.;
+////  mypts(2, 0) = 2.5;
+////
+////  il::Array2D<double> stress = bie::computeStresses2D(
+////      mypts, Mesh0, elas_aux, xx, bie::point_stress_s3d_dp0_dd, 1000.);
+////  for (il::int_t i = 0; i < 3; i++) {
+////    std::cout << "stresses " << stress(i, 0) << " - " << stress(i, 1) << " - "
+////              << stress(i, 2) << "\n";
+////  }
+////  std::cout << "----------end of S3DP0 test ---------------------\n";
+////
+////  return 0;
+////}
+/////////////////////////////////////////////////////////////////////////////////
 
 // TEST FULL MAT
 // /////////////////////////////////////////////////////////////////////////////
@@ -655,17 +654,17 @@ int testHdot() {
 
   tt.Reset();
   tt.Start();
-
-  il::Array<double> y3 = il::dotwithpattern(h_, fr_patt, lr_patt, xx);
-  tt.Stop();
-  std::cout << " time for Non-recursive hdot (parallel_invoke) " << tt.time()
-            << "\n";
-  std::cout << " norm y1 " << il::norm(y1, il::Norm::L2) << " y2 "
-            << il::norm(y2, il::Norm::L2) << " y3 "
-            << il::norm(y3, il::Norm::L2) << "\n";
-
-  std::cout << " n FR blocks " << fr_patt.size(1) << "  n LR block "
-            << lr_patt.size(1) << "\n";
+//
+//  il::Array<double> y3 = il::dotwithpattern(h_, fr_patt, lr_patt, xx);
+//  tt.Stop();
+//  std::cout << " time for Non-recursive hdot (parallel_invoke) " << tt.time()
+//            << "\n";
+//  std::cout << " norm y1 " << il::norm(y1, il::Norm::L2) << " y2 "
+//            << il::norm(y2, il::Norm::L2) << " y3 "
+//            << il::norm(y3, il::Norm::L2) << "\n";
+//
+//  std::cout << " n FR blocks " << fr_patt.size(1) << "  n LR block "
+//            << lr_patt.size(1) << "\n";
 
   std::cout << "----------end of test hdot  ---------------------\n";
 
@@ -717,27 +716,26 @@ int test3DR0() {
   // compute stresses at a set of observation points
   std::vector<double> coorobsp = {-10., -10., 0., 20., -20., 0.};
   std::vector<double> mysol = {1., 1., 1., 1., 1., 1.};
-  std::vector<double> bb = tractionHMAT.computeStresses(
-      mysol, coorobsp, 2, properties, coor, conn, true);
-
-  for (int i = 0; i < bb.size() / 6; ++i) {
-    std::cout << "\n stress at point #" << i << "\n ";
-    for (int j = 0; j < 6; ++j) {
-      std::cout << bb[i * 6 + j] << " ";
-    }
-  }
-
-  // compute displacements at a set of observation points
-
-  std::vector<double> cc = displacementHMAT.computeDisplacements(
-      mysol, coorobsp, 2, properties, coor, conn, true);
-
-  for (int i = 0; i < cc.size() / 3; ++i) {
-    std::cout << "\n displacement at point #" << i << "\n ";
-    for (int j = 0; j < 3; ++j) {
-      std::cout << cc[i * 3 + j] << " ";
-    }
-  }
+ // std::vector<double> bb = tractionHMAT.computeStresses(mysol, coorobsp, 2, properties, coor, conn, true);
+//
+//  for (int i = 0; i < bb.size() / 6; ++i) {
+//    std::cout << "\n stress at point #" << i << "\n ";
+//    for (int j = 0; j < 6; ++j) {
+//      std::cout << bb[i * 6 + j] << " ";
+//    }
+//  }
+//
+//  // compute displacements at a set of observation points
+//
+//  std::vector<double> cc = displacementHMAT.computeDisplacements(
+//      mysol, coorobsp, 2, properties, coor, conn, true);
+//
+//  for (int i = 0; i < cc.size() / 3; ++i) {
+//    std::cout << "\n displacement at point #" << i << "\n ";
+//    for (int j = 0; j < 3; ++j) {
+//      std::cout << cc[i * 3 + j] << " ";
+//    }
+//  }
 
   std::cout << "\n----------end of test 3DR0  ---------------------\n";
   return 0;
@@ -2052,16 +2050,16 @@ int test3DT0_PennyShaped(std::string &vertices_file,
             << "\n";
 
   std::vector<double> obsPts{0.0, 0.0, 1.0}; //+2.22045e-16
-
-  std::vector<double> stress_tensor = test.computeStresses(
-      dd_analytical_std, obsPts, 1, properties, nodes_flat, conn_flat, true);
-
-  std::cout << "s11 = " << stress_tensor[0] << "\n";
-  std::cout << "s22 = " << stress_tensor[1] << "\n";
-  std::cout << "s33 = " << stress_tensor[2] << "\n";
-  std::cout << "s12 = " << stress_tensor[3] << "\n";
-  std::cout << "s13 = " << stress_tensor[4] << "\n";
-  std::cout << "s23 = " << stress_tensor[5] << "\n";
+//
+//  std::vector<double> stress_tensor = test.computeStresses(
+//      dd_analytical_std, obsPts, 1, properties, nodes_flat, conn_flat, true);
+//
+//  std::cout << "s11 = " << stress_tensor[0] << "\n";
+//  std::cout << "s22 = " << stress_tensor[1] << "\n";
+//  std::cout << "s33 = " << stress_tensor[2] << "\n";
+//  std::cout << "s12 = " << stress_tensor[3] << "\n";
+//  std::cout << "s13 = " << stress_tensor[4] << "\n";
+//  std::cout << "s23 = " << stress_tensor[5] << "\n";
 
   std::cout
       << "-------------- End of 3DT0 - Penny-shaped crack test ------------- "
@@ -2793,90 +2791,90 @@ int testNewHmat() {
   }
 
   int np = 10;
-
-  tt.Start();
-  il::Array<double> y1 = il::dot(h_, xx);
-  for (int i = 0; i < np; i++) {
-    y1 = il::dot(h_, xx);
-  }
-  tt.Stop();
-  std::cout << " time for recursive hdot " << tt.time() / (np + 1) << "\n";
-  tt.Reset();
-  tt.Start();
-  il::Array<double> y2 = il::dotwithpattern_serial(h_, pattern, xx);
-  for (int i = 0; i < np; i++) {
-    y2 = il::dotwithpattern_serial(h_, pattern, xx);
-  }
-  tt.Stop();
-  std::cout << " time for Non-recursive hdot serial " << tt.time() / (np + 1)
-            << "\n";
-
-  il::Array2D<il::int_t> lr_patt{pattern.size(0), 0};
-  il::Array2D<il::int_t> fr_patt{pattern.size(0), 0};
-  il::Array2D<il::int_t> fr_patt2{pattern.size(0) + 2, 0};
-
-  lr_patt.Reserve(3, pattern.size(1));
-  fr_patt.Reserve(3, pattern.size(1));
-  fr_patt2.Reserve(5, pattern.size(1));
-
-  il::int_t nfb = 0;
-  il::int_t nlb = 0;
-  for (il::int_t i = 0; i < pattern.size(1); i++) {
-    il::spot_t s(pattern(0, i));
-    if (h_.isFullRank(s)) {
-
-      fr_patt.Resize(3, nfb + 1);
-      fr_patt(0, nfb) = pattern(0, i);
-      fr_patt(1, nfb) = pattern(1, i);
-      fr_patt(2, nfb) = pattern(2, i);
-
-      fr_patt2.Resize(5, nfb + 1);
-      fr_patt2(0, nfb) = pattern(0, i);
-      fr_patt2(1, nfb) = pattern(1, i);
-      fr_patt2(2, nfb) = pattern(2, i);
-      const bie::SubHMatrix info = block_tree.value(s);
-      fr_patt2(3, nfb) = info.range0.end;
-      fr_patt2(4, nfb) = info.range1.end;
-
-      nfb++;
-    } else if (h_.isLowRank(s)) {
-
-      lr_patt.Resize(3, nlb + 1);
-      lr_patt(0, nlb) = pattern(0, i);
-      lr_patt(1, nlb) = pattern(1, i);
-      lr_patt(2, nlb) = pattern(2, i);
-      nlb++;
-    } else {
-      std::cout << "error in pattern !\n";
-      il::abort();
-    }
-  }
-  tt.Reset();
-
-  tt.Start();
-  il::Array<double> y3 = il::dotwithpattern(h_, fr_patt, lr_patt, xx);
-  for (int i = 0; i < np; i++) {
-    y3 = il::dotwithpattern(h_, fr_patt, lr_patt, xx);
-  }
-  tt.Stop();
-  std::cout << " time for Non-recursive hdot (parallel_invoke) "
-            << tt.time() / (np + 1) << "\n";
-
-  tt.Reset();
-
-  tt.Start();
-  il::Array<double> y4 = hmt_.matvec(xx);
-  for (int i = 0; i < np; i++) {
-    y4 = hmt_.matvec(xx);
-  }
-  tt.Stop();
-  std::cout << " time for Non-recursive hdot .. new way "
-            << tt.time() / (np + 1) << "\n";
-  std::cout << " norm y1 " << il::norm(y1, il::Norm::L2) << " y2 "
-            << il::norm(y2, il::Norm::L2) << " y3 "
-            << il::norm(y3, il::Norm::L2) << " y4 "
-            << il::norm(y4, il::Norm::L2) << "\n";
-  std::cout << "----------end of test hdot  ---------------------\n";
+//
+//  tt.Start();
+//  il::Array<double> y1 = il::dot(h_, xx);
+//  for (int i = 0; i < np; i++) {
+//    y1 = il::dot(h_, xx);
+//  }
+//  tt.Stop();
+//  std::cout << " time for recursive hdot " << tt.time() / (np + 1) << "\n";
+//  tt.Reset();
+//  tt.Start();
+//  il::Array<double> y2 = il::dotwithpattern_serial(h_, pattern, xx);
+//  for (int i = 0; i < np; i++) {
+//    y2 = il::dotwithpattern_serial(h_, pattern, xx);
+//  }
+//  tt.Stop();
+//  std::cout << " time for Non-recursive hdot serial " << tt.time() / (np + 1)
+//            << "\n";
+//
+//  il::Array2D<il::int_t> lr_patt{pattern.size(0), 0};
+//  il::Array2D<il::int_t> fr_patt{pattern.size(0), 0};
+//  il::Array2D<il::int_t> fr_patt2{pattern.size(0) + 2, 0};
+//
+//  lr_patt.Reserve(3, pattern.size(1));
+//  fr_patt.Reserve(3, pattern.size(1));
+//  fr_patt2.Reserve(5, pattern.size(1));
+//
+//  il::int_t nfb = 0;
+//  il::int_t nlb = 0;
+//  for (il::int_t i = 0; i < pattern.size(1); i++) {
+//    il::spot_t s(pattern(0, i));
+//    if (h_.isFullRank(s)) {
+//
+//      fr_patt.Resize(3, nfb + 1);
+//      fr_patt(0, nfb) = pattern(0, i);
+//      fr_patt(1, nfb) = pattern(1, i);
+//      fr_patt(2, nfb) = pattern(2, i);
+//
+//      fr_patt2.Resize(5, nfb + 1);
+//      fr_patt2(0, nfb) = pattern(0, i);
+//      fr_patt2(1, nfb) = pattern(1, i);
+//      fr_patt2(2, nfb) = pattern(2, i);
+//      const bie::SubHMatrix info = block_tree.value(s);
+//      fr_patt2(3, nfb) = info.range0.end;
+//      fr_patt2(4, nfb) = info.range1.end;
+//
+//      nfb++;
+//    } else if (h_.isLowRank(s)) {
+//
+//      lr_patt.Resize(3, nlb + 1);
+//      lr_patt(0, nlb) = pattern(0, i);
+//      lr_patt(1, nlb) = pattern(1, i);
+//      lr_patt(2, nlb) = pattern(2, i);
+//      nlb++;
+//    } else {
+//      std::cout << "error in pattern !\n";
+//      il::abort();
+//    }
+//  }
+//  tt.Reset();
+//
+//  tt.Start();
+//  il::Array<double> y3 = il::dotwithpattern(h_, fr_patt, lr_patt, xx);
+//  for (int i = 0; i < np; i++) {
+//    y3 = il::dotwithpattern(h_, fr_patt, lr_patt, xx);
+//  }
+//  tt.Stop();
+//  std::cout << " time for Non-recursive hdot (parallel_invoke) "
+//            << tt.time() / (np + 1) << "\n";
+//
+//  tt.Reset();
+//
+//  tt.Start();
+//  il::Array<double> y4 = hmt_.matvec(xx);
+//  for (int i = 0; i < np; i++) {
+//    y4 = hmt_.matvec(xx);
+//  }
+//  tt.Stop();
+//  std::cout << " time for Non-recursive hdot .. new way "
+//            << tt.time() / (np + 1) << "\n";
+//  std::cout << " norm y1 " << il::norm(y1, il::Norm::L2) << " y2 "
+//            << il::norm(y2, il::Norm::L2) << " y3 "
+//            << il::norm(y3, il::Norm::L2) << " y4 "
+//            << il::norm(y4, il::Norm::L2) << "\n";
+//  std::cout << "----------end of test hdot  ---------------------\n";
 
   return 0;
 }
@@ -2954,91 +2952,91 @@ int testPl3D() {
   std::cout << " binary cluster depth ..." << block_tree.depth() << "\n";
   std::cout << " root - " << block_tree.root().index << "\n";
   tt.Reset();
-
-  // the matrix generator
-  bie::HMatrix<double> h_;
-  const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{
-      coll_points, cluster.permutation, mesh, elas};
-
-  // creation of the hmatrix the new way....
-  tt.Start();
-  bie::HPattern my_patt = bie::createPattern(block_tree);
-  std::cout << "Time for pattern construction " << tt.time() << "\n";
-  std::cout << " Number of sub-matrix full blocks: " << my_patt.n_FRB << " \n";
-  std::cout << " n fb " << my_patt.FRB_pattern.size(1) << "\n";
-  std::cout << " n lrb " << my_patt.LRB_pattern.size(1) << "\n";
-  //  my_patt.nr=M.size(0);
-  //  my_patt.nc=M.size(1);
-  tt.Reset();
-
-  //
-  const il::int_t pp = M.blockSize();
-  bie::Hmat<double> hmt_(my_patt);
-  tt.Start();
-  hmt_.build(M, epsilon_aca);
-  tt.Stop();
-  std::cout << "Creation hmat new way new in " << tt.time() << "\n";
-  tt.Reset();
-  std::cout << "Compression ratio new way " << hmt_.compressionRatio() << "\n";
-
-  // some hdot speed
-  il::Array<double> xx{mesh.numberOfElts(), 0.};
-  il::Array<double> y{mesh.numberOfElts(), 1.};
-  xx[0] = 1.;
-  tt.Start();
-  y = hmt_.matvec(xx);
-  tt.Stop();
-  std::cout << "Hdot new way " << tt.time() << il::norm(y, il::Norm::L2)
-            << "\n";
-
-  // using bigwhamio2
-  const std::vector<double> properties = {
-      elas.getE(), elas.getNu()}; // Young Modulus , Poisson's ratio
-
-  const std::string kernel_name = "3DR0opening";
-bie:
-  Bigwhamio testb{};
-  // convert to std vectors
-  std::vector<double> nodes_flat;
-  nodes_flat.reserve(3 * coor.size(0));
-  for (int i = 0; i < coor.size(0); i++) {
-    for (int j = 0; j < coor.size(1); j++) {
-      nodes_flat.push_back(coor(i, j));
-    }
-  }
-  std::vector<int> conn_flat;
-  conn_flat.reserve(3 * conn.size(0));
-  for (int i = 0; i < conn.size(0); i++) {
-    for (int j = 0; j < conn.size(1); j++) {
-      conn_flat.push_back(conn(i, j));
-    }
-  }
-  testb.set(nodes_flat, conn_flat, kernel_name, properties,
-            static_cast<int>(max_leaf_size), eta, epsilon_aca);
-  std::vector<double> xs;
-  xs.reserve(xx.size());
-  for (int i = 0; i < xx.size(); i++) {
-    xs.push_back(xx[i]);
-  }
-  tt.Start();
-  std::vector<double> y4 = testb.matvect(xs);
-  tt.Stop();
-  for (int i = 0; i < xx.size(); i++) {
-    y[i] = y4[i];
-  }
-  std::cout << "Hdot new bigwhamio " << tt.time() << " E.x norm "
-            << il::norm(y, il::Norm::L2) << "\n";
-  std::cout << " val " << y4[0] << "\n";
-  std::vector<double> val;
-  std::vector<int> pos;
-  testb.getFullBlocks(val, pos);
-  for (il::int_t i = 0; i < 10; i++) {
-    std::cout << " val " << val[i] << "  pos size" << pos[2 * i] << "-"
-              << pos[2 * i + 1] << "\n";
-  }
-  std::cout << " val " << val[val.size() - 1] << "  pos size"
-            << pos[2 * (val.size() - 1)] << "-" << pos[2 * (val.size() - 1) + 1]
-            << "\n";
+//
+//  // the matrix generator
+//  bie::HMatrix<double> h_;
+//  const bie::ElasticHMatrix3DR0_mode1Cartesian<double> M{
+//      coll_points, cluster.permutation, mesh, elas};
+//
+//  // creation of the hmatrix the new way....
+//  tt.Start();
+//  bie::HPattern my_patt = bie::createPattern(block_tree);
+//  std::cout << "Time for pattern construction " << tt.time() << "\n";
+//  std::cout << " Number of sub-matrix full blocks: " << my_patt.n_FRB << " \n";
+//  std::cout << " n fb " << my_patt.FRB_pattern.size(1) << "\n";
+//  std::cout << " n lrb " << my_patt.LRB_pattern.size(1) << "\n";
+//  //  my_patt.nr=M.size(0);
+//  //  my_patt.nc=M.size(1);
+//  tt.Reset();
+//
+//  //
+//  const il::int_t pp = M.blockSize();
+//  bie::Hmat<double> hmt_(my_patt);
+//  tt.Start();
+//  hmt_.build(M, epsilon_aca);
+//  tt.Stop();
+//  std::cout << "Creation hmat new way new in " << tt.time() << "\n";
+//  tt.Reset();
+//  std::cout << "Compression ratio new way " << hmt_.compressionRatio() << "\n";
+//
+//  // some hdot speed
+//  il::Array<double> xx{mesh.numberOfElts(), 0.};
+//  il::Array<double> y{mesh.numberOfElts(), 1.};
+//  xx[0] = 1.;
+//  tt.Start();
+//  y = hmt_.matvec(xx);
+//  tt.Stop();
+//  std::cout << "Hdot new way " << tt.time() << il::norm(y, il::Norm::L2)
+//            << "\n";
+//
+//  // using bigwhamio2
+//  const std::vector<double> properties = {
+//      elas.getE(), elas.getNu()}; // Young Modulus , Poisson's ratio
+//
+//  const std::string kernel_name = "3DR0opening";
+//bie:
+//  Bigwhamio testb{};
+//  // convert to std vectors
+//  std::vector<double> nodes_flat;
+//  nodes_flat.reserve(3 * coor.size(0));
+//  for (int i = 0; i < coor.size(0); i++) {
+//    for (int j = 0; j < coor.size(1); j++) {
+//      nodes_flat.push_back(coor(i, j));
+//    }
+//  }
+//  std::vector<int> conn_flat;
+//  conn_flat.reserve(3 * conn.size(0));
+//  for (int i = 0; i < conn.size(0); i++) {
+//    for (int j = 0; j < conn.size(1); j++) {
+//      conn_flat.push_back(conn(i, j));
+//    }
+//  }
+//  testb.set(nodes_flat, conn_flat, kernel_name, properties,
+//            static_cast<int>(max_leaf_size), eta, epsilon_aca);
+//  std::vector<double> xs;
+//  xs.reserve(xx.size());
+//  for (int i = 0; i < xx.size(); i++) {
+//    xs.push_back(xx[i]);
+//  }
+//  tt.Start();
+//  std::vector<double> y4 = testb.matvect(xs);
+//  tt.Stop();
+//  for (int i = 0; i < xx.size(); i++) {
+//    y[i] = y4[i];
+//  }
+//  std::cout << "Hdot new bigwhamio " << tt.time() << " E.x norm "
+//            << il::norm(y, il::Norm::L2) << "\n";
+//  std::cout << " val " << y4[0] << "\n";
+//  std::vector<double> val;
+//  std::vector<int> pos;
+//  testb.getFullBlocks(val, pos);
+//  for (il::int_t i = 0; i < 10; i++) {
+//    std::cout << " val " << val[i] << "  pos size" << pos[2 * i] << "-"
+//              << pos[2 * i + 1] << "\n";
+//  }
+//  std::cout << " val " << val[val.size() - 1] << "  pos size"
+//            << pos[2 * (val.size() - 1)] << "-" << pos[2 * (val.size() - 1) + 1]
+//            << "\n";
   return 0;
 }
 /////////////////////////////////////////////////////////////////////////////////

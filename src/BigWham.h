@@ -40,16 +40,14 @@
 //#include <src/elasticity/PostProcessDDM_3d.h>
 //
 // kernels.
-#include <elasticity/2d/ElasticHMatrix2DP0.h>
-#include <elasticity/2d/ElasticHMatrix2DP1.h>
-#include <elasticity/3d/ElasticHMatrix3DR0.h>
-#include <elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h>
-#include <elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h>
-#include <elasticity/3d/ElasticHMatrix3DR0displ.h>
-#include <elasticity/3d/ElasticHMatrix3DT0.h>
-#include <elasticity/3d/ElasticHMatrix3DT0_modes2and3.h>
-#include <elasticity/3d/ElasticHMatrix3DT0displ.h>
-#include <elasticity/3d/ElasticHMatrix3DT6.h>
+//#include <elasticity/3d/ElasticHMatrix3DR0.h>
+//#include <elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h>
+//#include <elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h>
+//#include <elasticity/3d/ElasticHMatrix3DR0displ.h>
+//#include <elasticity/3d/ElasticHMatrix3DT0.h>
+//#include <elasticity/3d/ElasticHMatrix3DT0_modes2and3.h>
+//#include <elasticity/3d/ElasticHMatrix3DT0displ.h>
+//#include <elasticity/3d/ElasticHMatrix3DT6.h>
 
 
 // https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
