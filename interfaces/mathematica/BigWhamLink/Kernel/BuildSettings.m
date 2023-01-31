@@ -27,7 +27,7 @@ $BigWhamDirectory =  "@CMAKE_BINARY_DIR@";
 Switch[$OperatingSystem,
   "MacOSX", (* Compilation settings for OS X *)
   $buildSettings = {
-    "CompileOptions" -> {(* "-std=c++14", "-mmacosx-version-min=10.9" *)}
+    "CompileOptions" -> {(* "-std=c++17", "-mmacosx-version-min=10.9" *)}
 
     (*
     , "IncludeDirectories" -> {}
@@ -37,7 +37,7 @@ Switch[$OperatingSystem,
 
   "Unix", (* Compilation settings for Linux *)
   $buildSettings = {
-    "CompileOptions" -> {(* "-std=c++14" *)}
+    "CompileOptions" -> {(* "-std=c++17" *)}
 
     (*
     , "IncludeDirectories" -> {}

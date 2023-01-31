@@ -139,14 +139,14 @@ public:
         il::Array2D<double> Xcol{nodes_per_element_, spatial_dimension_, 0.},
                 colPoints{n_elts_ * nodes_per_element_, spatial_dimension_, 0};
         il::int_t j = 0;
-        std::cout << " number of elemts" << n_elts_  << " nodes_per el " << nodes_per_element_  << "saptial dim " << spatial_dimension_<<"\n";
+        std::cout << " number of elemts" << n_elts_  << " nodes_per el: " << nodes_per_element_  << " spatial dim: " << spatial_dimension_<<"\n";
         std::cout << "number of vertex per element " << number_vertex_ <<"\n";
         for (il::int_t e = 0; e < n_elts_; e++) {
             this->setCurrentElement(e);
             Xcol = this->element_def_.getCollocationPoints();
             auto centro = this->element_def_.getCentroid();
             std::cout << "centro  " << e << "  centroid " << centro[0]  <<" -" << centro[1]   <<"\n";
-            std::cout << "xcol  " << e << "size " << Xcol.size(0) <<"-" <<Xcol.size(1) <<"\n";
+            std::cout << "xcol  " << e << "size " << Xcol(0,0) <<"-" << Xcol(0,1) <<"\n";
             for (il::int_t k=0;k<spatial_dimension_;k++){
                 for (il::int_t j1 = 0; j1 < nodes_per_element_; j1++) {
                     colPoints(j+j1, k) = Xcol(j1, k);

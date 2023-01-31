@@ -149,7 +149,7 @@ libdir = {
 
 $linkerOptions={"-ltbb", "-ldl", "-lpthread", "-lm"};
 
-$compilerOptions={"-std=c++14","-m64", "-DIL_MKL", "-DIL_BLAS"};
+$compilerOptions={"-std=c++17","-m64", "-DIL_MKL", "-DIL_BLAS"};
 
 Switch[$SystemID,"MacOSX-x86-64",
 $extraObjectFiles={$BigwhamLib,

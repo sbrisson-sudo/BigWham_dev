@@ -83,7 +83,7 @@ namespace bie{
             return R;
         }
 
-        virtual void setCollocationPoints() {};
+        void setCollocationPoints() ;
 
         void setNodes() {
             this->nodes_ = this->collocation_points_; // by default nodes = collocation points for 0 element
@@ -98,6 +98,10 @@ namespace bie{
 
     template<int p>
     Segment<p>::~Segment() = default;
+
+    template<int p>
+    void Segment<p>::setCollocationPoints() {}  ;
+
 
 }
 

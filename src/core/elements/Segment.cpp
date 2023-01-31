@@ -16,7 +16,7 @@ namespace bie{
     template<>
     void Segment<0>::setCollocationPoints() {
         // 0 order element: collocation at centroid
-        std::cout << " in set collo \n";
+        std::cout << " in set collo ! \n";
         il::Array2D<double> col{1, 2, 0.};
         for (il::int_t j = 0; j < 2; j++) {
             col(0, j) = this->centroid_[j];
