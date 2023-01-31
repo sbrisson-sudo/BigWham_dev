@@ -29,8 +29,7 @@ class HMatExpr {
 
  public:
     
-    HMatExpr() {
-        mma::print(" constructor called "); }
+    HMatExpr() {mma::print(" constructor called "); }
     ~HMatExpr() { mma::print(" destructor called ");   }
 
     // Set the value of the vector

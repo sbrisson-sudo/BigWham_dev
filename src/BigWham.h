@@ -31,8 +31,11 @@
 #include <src/core/BIE_Kernel.h>
 #include <src/elasticity/BIE_elastostatic.h>
 #include <src/core/SquareMatrixGenerator.h>
+#include <src/elasticity/2d/BIE_elastostatic_segment_0_impls.h>
+#include <src/elasticity/2d/BIE_elastostatic_segment_1_impls.h>
 
 #include <src/core/ElasticProperties.h>
+
 //#include <src/core/Mesh2D.h>
 //#include <src/core/Mesh3D.h>
 
@@ -141,7 +144,6 @@ public:
     eta_ = eta;
     epsilon_aca_ = eps_aca;
     bie::ElasticProperties elas(properties[0], properties[1]);
-
     std::cout << " Now setting things for kernel ... " << kernel_ <<" prop si" << properties.size()<<  "\n";
     il::Timer tt;
     if (kernel_ == "S3DP0") {
@@ -179,9 +181,10 @@ public:
               break;
           }
           case "2DP1"_sh :{
-              dimension_ = 2; const int p=1;
+              dimension_ = 2;
+              using EltType = bie::Segment<1>;
               int  nvertices_per_elt_=dimension_;
-              bie::BEMesh<bie::Segment<p>> mesh=createMeshFromVect<bie::Segment<p>>(dimension_,nvertices_per_elt_,coor, conn);
+              bie::BEMesh<EltType> mesh=createMeshFromVect<EltType>(dimension_,nvertices_per_elt_,coor, conn);
               tt.Start();
               bie::HRepresentation hr=bie::h_representation_square_matrix(mesh,max_leaf_size,eta);
               tt.Stop();
@@ -189,9 +192,8 @@ public:
               collocationPoints_=mesh.getCollocationPoints(); // be careful returning it in original ordering.  note this is only for the output function getCollocationPoints ... could be deleted possibly
               h_representation_time_=tt.time();tt.Reset();tt.Start();
               const auto ker_type = bie::ElasticKernelType::H;
-              using el_type = bie::Segment<p>;
-              bie::BIE_elastostatic<el_type,el_type,ker_type>  ker(elas,dimension_);
-              bie::SquareMatrixGenerator<double,el_type,bie::BIE_elastostatic<el_type,el_type,ker_type>> M(mesh,ker,hr.permutation_0_);
+              bie::BIE_elastostatic<EltType,EltType,ker_type> ker(elas,dimension_);
+              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
               h_.toHmat(M,hr,epsilon_aca_);
               tt.Stop();
               permutation_=hr.permutation_0_;
@@ -209,12 +211,12 @@ public:
               collocationPoints_=mesh.getCollocationPoints(); // be careful returning it in original ordering.  note this is only for the output function getCollocationPoints ... could be deleted possibly
               h_representation_time_=tt.time();tt.Reset();tt.Start();
               const auto ker_type = bie::ElasticKernelType::H;
-              bie::BIE_elastostatic<EltType,EltType,ker_type>  ker(elas,dimension_);
-              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
-              h_.toHmat(M,hr,epsilon_aca_);
-              tt.Stop();
-              permutation_=hr.permutation_0_;
-              hmat_time_=tt.time();
+//              bie::BIE_elastostatic<EltType,EltType,ker_type>  ker(elas,dimension_);
+//              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
+//              h_.toHmat(M,hr,epsilon_aca_);
+//              tt.Stop();
+//              permutation_=hr.permutation_0_;
+//              hmat_time_=tt.time();
               break;
           }
           default:

@@ -53,9 +53,9 @@ namespace bie {
             il::StaticArray2D<double, dim, dim> R_{0.};
         };
         il::Array2D<double> getCollocationPoints() const { return collocation_points_; };
-        virtual il::int_t getNumberOfCollocationPoints() const { return collocation_points_.size(0); };
+        il::int_t getNumberOfCollocationPoints() const { return collocation_points_.size(0); };
         il::Array2D<double> getNodes() const { return nodes_; };
-        virtual il::int_t getNumberOfNodes() const { return nodes_.size(0); };
+        il::int_t getNumberOfNodes() const { return nodes_.size(0); };
         il::int_t getSpatialDimension() const { return spatial_dimension_; };
         il::int_t getInterpolationOrder() const { return interpolation_order_; };
     };
