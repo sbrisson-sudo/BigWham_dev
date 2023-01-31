@@ -33,8 +33,8 @@
 #include <src/core/SquareMatrixGenerator.h>
 
 #include <src/core/ElasticProperties.h>
-#include <src/core/Mesh2D.h>
-#include <src/core/Mesh3D.h>
+//#include <src/core/Mesh2D.h>
+//#include <src/core/Mesh3D.h>
 
 //#include <src/elasticity/PostProcessDDM_2d.h>
 //#include <src/elasticity/PostProcessDDM_3d.h>
@@ -68,9 +68,10 @@ bie::BEMesh<El> createMeshFromVect(int spatial_dimension,int n_vertex_elt,const
  std::vector<double>& coor, const std::vector<int>& conn){
     il::int_t npoints = coor.size() / spatial_dimension;
     il::int_t nelts = conn.size() / spatial_dimension;
-    il::Array2D<double> Coor{npoints, spatial_dimension, 0.};  // columm major order
+    il::Array2D<double> Coor{npoints, spatial_dimension, 0.};  //
     il::Array2D<il::int_t> Conn{nelts, n_vertex_elt, 0};
     // populate mesh  ...
+    std::cout << "in create mesh \n";
     int index = 0;
     for (il::int_t i = 0; i < Coor.size(0); i++) {
         for (il::int_t j = 0; j < Coor.size(1); j++) {
@@ -86,6 +87,8 @@ bie::BEMesh<El> createMeshFromVect(int spatial_dimension,int n_vertex_elt,const
         }
     }
     bie::BEMesh<El> mesh(Coor,Conn);
+    std::cout << "in create mesh - done "  << "\n";
+
     return mesh;
 }
 ////////////////////////////
@@ -150,19 +153,25 @@ public:
    switch(hash_djb2a(kernel_)) {
           case "S3DP0"_sh:{
               dimension_ = 2; const int p=0;
+              using EltType = bie::Segment<0>;
               int  nvertices_per_elt_=dimension_;
-              bie::BEMesh<bie::Segment<p>> mesh=createMeshFromVect<bie::Segment<p>>(dimension_,nvertices_per_elt_,coor, conn);
-              tt.Start();
-              bie::HRepresentation hr=bie::h_representation_square_matrix(mesh,max_leaf_size_,eta_);
-              tt.Stop();
+              std::cout << " in S3DP0 " << coor.size() << "-" << conn.size();
+              bie::BEMesh<EltType> mesh=createMeshFromVect<bie::Segment<p>>(dimension_,nvertices_per_elt_,coor, conn);
+              auto tes=mesh.getVertices(0);
+              mesh.setCurrentElement(0);
+              std::cout << " ELement vertices " << tes(0,0) << "- " <<tes(0,1) << tes(1,0) << "- " <<tes(1,1)<<"\n";
               collocationPoints_=mesh.getCollocationPoints(); // be careful returning it in original ordering.  note this is only for the output function getCollocationPoints ... could be deleted possibly
+              std::cout << " mesh - done - n_elts" << mesh.numberOfElts() << "\n";
+              //tt.Start();
+              bie::HRepresentation hr=bie::h_representation_square_matrix(mesh,max_leaf_size_,eta_);
+              std::cout << " pattern created \n";
+              //tt.Stop();
               h_representation_time_=tt.time();tt.Reset();tt.Start();
               const auto ker_type = bie::ElasticKernelType::H;
-              bie::BIE_elastostatic<bie::Segment<p>,bie::Segment<p>,ker_type>  ker(elas,dimension_);
+              bie::BIE_elastostatic<EltType,EltType,ker_type>  ker(elas,dimension_);
               il::Array<double> prop{1,properties[2]}; // for the SP3D0
               ker.setKernelProperties(prop);
-              using el_type = bie::Segment<p>;
-              bie::SquareMatrixGenerator<double,el_type,bie::BIE_elastostatic<el_type,el_type,ker_type>> M(mesh,ker,hr.permutation_0_);
+              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
               h_.toHmat(M,hr,epsilon_aca_);
               tt.Stop();
               permutation_=hr.permutation_0_;
@@ -176,6 +185,7 @@ public:
               tt.Start();
               bie::HRepresentation hr=bie::h_representation_square_matrix(mesh,max_leaf_size,eta);
               tt.Stop();
+              std::cout << " pattern created \n";
               collocationPoints_=mesh.getCollocationPoints(); // be careful returning it in original ordering.  note this is only for the output function getCollocationPoints ... could be deleted possibly
               h_representation_time_=tt.time();tt.Reset();tt.Start();
               const auto ker_type = bie::ElasticKernelType::H;
@@ -189,18 +199,18 @@ public:
               break;
           }
           case "3DT0"_sh :{
-              dimension_ = 3; const int p=0;
+              dimension_ = 3;
               int  nvertices_per_elt_=3;
-              bie::BEMesh<bie::Triangle<p>> mesh=createMeshFromVect<bie::Triangle<p>>(dimension_,nvertices_per_elt_,coor, conn);
+              using EltType = bie::Triangle<0>;
+              bie::BEMesh<EltType> mesh=createMeshFromVect<EltType>(dimension_,nvertices_per_elt_,coor, conn);
               tt.Start();
               bie::HRepresentation hr=bie::h_representation_square_matrix(mesh,max_leaf_size,eta);
               tt.Stop();
               collocationPoints_=mesh.getCollocationPoints(); // be careful returning it in original ordering.  note this is only for the output function getCollocationPoints ... could be deleted possibly
               h_representation_time_=tt.time();tt.Reset();tt.Start();
               const auto ker_type = bie::ElasticKernelType::H;
-              using el_type = bie::Triangle<p>;
-              bie::BIE_elastostatic<el_type,el_type,ker_type>  ker(elas,dimension_);
-              bie::SquareMatrixGenerator<double,el_type,bie::BIE_elastostatic<el_type,el_type,ker_type>> M(mesh,ker,hr.permutation_0_);
+              bie::BIE_elastostatic<EltType,EltType,ker_type>  ker(elas,dimension_);
+              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
               h_.toHmat(M,hr,epsilon_aca_);
               tt.Stop();
               permutation_=hr.permutation_0_;
@@ -217,8 +227,9 @@ public:
       isBuilt_ = true;
       dof_dimension_=h_.dofDimension();
       std::cout << "HMAT --> built \n";
-      std::cout << "H mat set : CR = " << h_.compressionRatio() << " eps_aca "     << epsilon_aca_ << " eta " << eta_ << "\n";
-      std::cout << "H-mat construction time = :  " << hmat_time_ << "\n";
+      double test_cr=h_.compressionRatio();
+      std::cout << "H mat set " << " CR = " <<  test_cr << " eps_aca "     << epsilon_aca_ << " eta " << eta_ << "\n";
+      //std::cout << "H-mat construction time = :  " << hmat_time_ << "\n";
     } else {
       isBuilt_ = false;
     }

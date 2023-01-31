@@ -55,7 +55,7 @@ namespace bie{
             // normal;
             this->n_[0] = -1. * this->s_[1];
             this->n_[1] = this->s_[0];
-
+            std::cout << " in set \n";
             this->setCollocationPoints();
             this->setNodes();
         };
@@ -83,9 +83,7 @@ namespace bie{
             return R;
         }
 
-        void setCollocationPoints() {
-            IL_ASSERT(p == 0 || p == 1);
-        };
+        virtual void setCollocationPoints() {};
 
         void setNodes() {
             this->nodes_ = this->collocation_points_; // by default nodes = collocation points for 0 element

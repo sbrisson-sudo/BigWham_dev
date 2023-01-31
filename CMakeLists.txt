@@ -47,8 +47,7 @@ option(COPY_TO_SPECIFIC_LOCATION "bigwham copy to specific location" OFF) # --> 
 option(USE_INTEL "use intel" OFF)   # --> compiler option
 option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
-
-option(MATHEMATICA_INTERFACE "make mathematica interface" ON)  # --> to add static option to CMAKE_CXX_FLAGS
+set(MATHEMATICA_INTERFACE "make mathematica interface" ON)  # --> to add static option to CMAKE_CXX_FLAGS
 
 #####################################
 # optimization options              #
@@ -242,8 +241,6 @@ set(SOURCE_FILES
         src/core/BEMesh.h
         src/elasticity/2d/ElasticS3DP0_element.cpp
         src/elasticity/2d/Elastic2DP1_element.cpp
-        src/elasticity/2d/ElasticHMatrix2DP0.h
-        src/elasticity/2d/ElasticHMatrix2DP1.h
         src/elasticity/PostProcessDDM_2d.cpp
         src/elasticity/PostProcessDDM_3d.cpp
         src/elasticity/2d/FullMatrixAssembly2D.cpp
@@ -278,7 +275,7 @@ set(SOURCE_FILES
         src/core/BoundaryElement.h
         src/elasticity/BIE_elastostatic.h
         src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
-        src/core/hierarchical_representation.h src/hmat/hmatrix/toHPattern.cpp src/core/elements/Segment.cpp src/core/elements/Segment.h src/core/elements/Triangle.cpp src/core/elements/Triangle.h src/core/elements/Rectangle.cpp src/core/elements/Rectangle.h)
+        src/core/hierarchical_representation.h src/hmat/hmatrix/toHPattern.cpp src/core/elements/Segment.cpp src/core/elements/Segment.h src/core/elements/Triangle.cpp src/core/elements/Triangle.h src/core/elements/Rectangle.cpp src/core/elements/Rectangle.h src/elasticity/2d/BIE_elastostatic_segment_1_impls.h)
 
 
 ################################################################################

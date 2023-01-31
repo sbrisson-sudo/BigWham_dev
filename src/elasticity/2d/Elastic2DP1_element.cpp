@@ -361,10 +361,10 @@ il::StaticArray<double, 4> stresses_kernel_dp1_dd_nodal(il::int_t local_node_i,
 
     // switch back to the segment [-h/2,h/2]
     //  we put directly here the constant -E'/(4Pi)
-    Stress[0] = Elascoef * overhalfh * sxxs1;  // Sxx due to shear opening
-    Stress[1] = Elascoef * overhalfh * sxys1;  // Sxx due to normal opening
-    Stress[2] = Elascoef * overhalfh * syys1;  // Syy due to shear opening
-    Stress[3] = Elascoef * overhalfh * syyn1;
+    Stress[0] = Elascoef * overhalfh * sxxs1;  // Sxx due to shear  dd
+    Stress[1] = Elascoef * overhalfh * sxys1;  // Sxx due to normal  dd
+    Stress[2] = Elascoef * overhalfh * syys1;  // Syy due to shear  dd
+    Stress[3] = Elascoef * overhalfh * syyn1;  // Syy due to normal  dd
   };
 
   if (local_node_i == 1) {  // node 2 in C convention

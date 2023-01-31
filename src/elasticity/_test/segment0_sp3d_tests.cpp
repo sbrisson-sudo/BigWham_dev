@@ -55,7 +55,7 @@ TEST(SP3D,test_seg_0_self){
     for (int i=0;i<4;i++){
         std::cout << test_self[i]  <<"\n";
     }
-// old way
+// old way // would have to be removed at some point !
     il::StaticArray2D<double,2,2> xys{0.};
     xys(1,0)=1.0;
     bie::SegmentData  auxi(xys,0);
@@ -67,9 +67,7 @@ TEST(SP3D,test_seg_0_self){
 }
 
 
-
 TEST(SP3D,test_seg_0_1){
-
     il::Array2D<double> xy{2,2,0.};
     xy(0,1)=2.4; xy(1,0)=3.0;
     bie::Segment<0> source;
@@ -80,12 +78,11 @@ TEST(SP3D,test_seg_0_1){
     xy_r(0,0)=1.0; xy_r(1,0)=5.0; xy_r(0,1)=1.0;xy_r(1,1)=0.0;
     bie::Segment<0> receiver;
     receiver.setElement(xy_r);
-
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
     test.setKernelProperties(prop);
     std::vector<double> test_self = test.influence(source,0,receiver,0);
-// old way
+// old way ..... // would have to be removed at some point !
     il::StaticArray2D<double,2,2> xys{0.},xys_r{0.};
     for (int i=0;i<2;i++){
         xys(i,0)=xy(i,0); xys(i,1)=xy(i,1);

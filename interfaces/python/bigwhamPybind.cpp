@@ -144,16 +144,16 @@ PYBIND11_MODULE(bigwhamPybind, m) {
           " dot product between hmat and a vector x", py::arg("x"),
           py::return_value_policy::reference)
 
-      //.def("hdotProduct",            &Bigwhamio::hdotProduct, " dot product
+      //.def("hdotProduct",            &Bigwhamio::matvect, " dot product
       // between hmat and a vector x",py::arg("x"))
-      // I change the previous binding of hdotProduct to return a numpy array!!
+      // I change the previous binding of matvect to return a numpy array!!
       // todo: is it possible to move the result of the dot product to an
       // std::array? the array is contiguous in memory but not the vector!!!!!!
       // CP
       .def(
-          "hdotProduct",
+          "matvect",
           [](Bigwhamio &self, const std::vector<double> &x) -> decltype(auto) {
-            auto v = new std::vector<double>(self.hdotProduct(x));
+            auto v = new std::vector<double>(self.matvect(x));
             auto capsule = py::capsule(v, [](void *v) {
               delete reinterpret_cast<std::vector<double> *>(v);
             });
@@ -162,12 +162,12 @@ PYBIND11_MODULE(bigwhamPybind, m) {
           " dot product between hmat and a vector x", py::arg("x"),
           py::return_value_policy::reference)
 
-      .def("computeStresses", &Bigwhamio::computeStresses,
-           "function to compute the stress at a given set of points")
-      .def("computeDisplacements", &Bigwhamio::computeDisplacements)
-      .def("getHmatTime", &Bigwhamio::getHmatTime)
-      .def("getBlockClstrTime", &Bigwhamio::getBlockClstrTime)
-      .def("getBinaryClstrTime", &Bigwhamio::getBinaryClstrTime);
+//      .def("computeStresses", &Bigwhamio::computeStresses,
+//           "function to compute the stress at a given set of points")
+//      .def("computeDisplacements", &Bigwhamio::computeDisplacements)
+      .def("getHmatTime", &Bigwhamio::getHmatTime);
+//      .def("getBlockClstrTime", &Bigwhamio::getBlockClstrTime)
+//      .def("getBinaryClstrTime", &Bigwhamio::getBinaryClstrTime);
 
   py::class_<pyGetFullBlocks>(m, "pyGetFullBlocks")
       .def(py::init<>())

@@ -97,7 +97,7 @@ class HMatExpr {
     
     // get permutation of points
     mma::IntTensorRef getPermutation(){
-        std::vector<int> permutation=bie_obj_.getPermutation();
+        std::vector<long> permutation=bie_obj_.getPermutation();
         return mma::makeVector<mint>(permutation.size(), permutation.data());
     }
     
@@ -111,7 +111,7 @@ class HMatExpr {
 
     // get hPattern
     mma::IntTensorRef getHpattern(){
-          std::vector<int> pattern=bie_obj_.getHpattern();
+          std::vector<long> pattern=bie_obj_.getHpattern();
           int nblocks = pattern.size()/6;
           return mma::makeMatrix<mint>(nblocks, 6, pattern.data());
     }
@@ -128,7 +128,7 @@ class HMatExpr {
         std::vector<double> x;
         x.assign(xv.begin(), xv.end());
         // needs to put here some checks on size to avoid kernel crash
-        std::vector<double> y=bie_obj_.hdotProduct(x);
+        std::vector<double> y=bie_obj_.matvect(x);
         return mma::makeVector<double>(y.size(), y.data());
     }
 
@@ -141,133 +141,133 @@ class HMatExpr {
 //      return mma::makeVector<double>(y.size(), y.data());
 //    }
 
-    // compute stresses
-    mma::RealTensorRef computeStresses(
-            const mma::RealTensorRef sol,
-            const mma::RealMatrixRef obsPts,
-            const mint nPts,
-            const mma::RealTensorRef properties,
-            const mma::RealMatrixRef coor,
-            const mma::IntMatrixRef conn,
-            const mbool areDDglobal)   {
-
-        dimension_ = coor.cols(); //spatial dimension
-
-        // solution vector
-        std::vector<double> solu;
-        solu.assign(sol.begin(), sol.end());
-
-        // properties vector
-        std::vector<double> prop;
-        prop.assign(properties.begin(),properties.end());
-
-        // flatten the tensors ....
-
-        // observation points
-        std::vector<double> flat_obsPts;
-        flat_obsPts.assign(obsPts.rows()*obsPts.cols(), 0.);
-        for (int i=0;i<obsPts.rows();i++){
-            for (int j=0; j<dimension_;j++){
-                flat_obsPts[dimension_*i+j]=obsPts(i,j); // row major format
-            }
-        }
-
-        // vertices(nodes) coordinates
-        std::vector<double> flat_coor;
-        flat_coor.assign(coor.rows()*coor.cols(), 0.);
-        for (int i=0;i<coor.rows();i++){
-            for (int j=0; j<dimension_;j++){
-                flat_coor[dimension_*i+j]=coor(i,j); // row major format
-            }
-        }
-
-        // connectivity
-        int nvert_elts= conn.cols();
-        std::vector<int> flat_con;
-        flat_con.assign(conn.rows()*nvert_elts, 0);
-        for (int i=0;i<conn.rows();i++){
-            for (int j=0; j<nvert_elts;j++){
-                flat_con[nvert_elts*i+j]=conn(i,j); // row major format
-            }
-        }
-
-        mma::print(" calling compute stress function ... ");
-
-        // calling function
-        std::vector<double> stressTensor = bie_obj_.computeStresses(solu,flat_obsPts,nPts,prop,flat_coor,flat_con,areDDglobal);
-
-        mma::print(" finished! ");
-
-        int nCompStress = stressTensor.size()/nPts;
-
-        return mma::makeMatrix<double>(nPts, nCompStress, stressTensor.data());
-
-    }
-    
-   
-    // compute displacements
-    mma::RealTensorRef computeDisplacements(
-            const mma::RealTensorRef sol,
-            const mma::RealMatrixRef obsPts,
-            const mint nPts,
-            const mma::RealTensorRef properties,
-            const mma::RealMatrixRef coor,
-            const mma::IntMatrixRef conn,
-            const mbool areDDglobal)   {
-
-        dimension_ = coor.cols(); //spatial dimension
-
-        // solution vector
-        std::vector<double> solu;
-        solu.assign(sol.begin(), sol.end());
-
-        // properties vector
-        std::vector<double> prop;
-        prop.assign(properties.begin(),properties.end());
-
-        // flatten the tensors ....
-
-        // observation points
-        std::vector<double> flat_obsPts;
-        flat_obsPts.assign(obsPts.rows()*obsPts.cols(), 0.);
-        for (int i=0;i<obsPts.rows();i++){
-            for (int j=0; j<dimension_;j++){
-                flat_obsPts[dimension_*i+j]=obsPts(i,j); // row major format
-            }
-        }
-
-        // vertices(nodes) coordinates
-        std::vector<double> flat_coor;
-        flat_coor.assign(coor.rows()*coor.cols(), 0.);
-        for (int i=0;i<coor.rows();i++){
-            for (int j=0; j<dimension_;j++){
-                flat_coor[dimension_*i+j]=coor(i,j); // row major format
-            }
-        }
-
-        // connectivity
-        int nvert_elts= conn.cols();
-        std::vector<int> flat_con;
-        flat_con.assign(conn.rows()*nvert_elts, 0);
-        for (int i=0;i<conn.rows();i++){
-            for (int j=0; j<nvert_elts;j++){
-                flat_con[nvert_elts*i+j]=conn(i,j); // row major format
-            }
-        }
-
-        mma::print(" calling compute displacement function ... ");
-
-        // calling function
-        std::vector<double> dispVector = bie_obj_.computeDisplacements(solu,flat_obsPts,nPts,prop,flat_coor,flat_con,areDDglobal);
-
-        mma::print(" finished computing displacement ! ");
-
-        int nCompStress = dispVector.size()/nPts;
-
-        return mma::makeMatrix<double>(nPts, nCompStress, dispVector.data());
-
-    }
-    
+//    // compute stresses
+//    mma::RealTensorRef computeStresses(
+//            const mma::RealTensorRef sol,
+//            const mma::RealMatrixRef obsPts,
+//            const mint nPts,
+//            const mma::RealTensorRef properties,
+//            const mma::RealMatrixRef coor,
+//            const mma::IntMatrixRef conn,
+//            const mbool areDDglobal)   {
+//
+//        dimension_ = coor.cols(); //spatial dimension
+//
+//        // solution vector
+//        std::vector<double> solu;
+//        solu.assign(sol.begin(), sol.end());
+//
+//        // properties vector
+//        std::vector<double> prop;
+//        prop.assign(properties.begin(),properties.end());
+//
+//        // flatten the tensors ....
+//
+//        // observation points
+//        std::vector<double> flat_obsPts;
+//        flat_obsPts.assign(obsPts.rows()*obsPts.cols(), 0.);
+//        for (int i=0;i<obsPts.rows();i++){
+//            for (int j=0; j<dimension_;j++){
+//                flat_obsPts[dimension_*i+j]=obsPts(i,j); // row major format
+//            }
+//        }
+//
+//        // vertices(nodes) coordinates
+//        std::vector<double> flat_coor;
+//        flat_coor.assign(coor.rows()*coor.cols(), 0.);
+//        for (int i=0;i<coor.rows();i++){
+//            for (int j=0; j<dimension_;j++){
+//                flat_coor[dimension_*i+j]=coor(i,j); // row major format
+//            }
+//        }
+//
+//        // connectivity
+//        int nvert_elts= conn.cols();
+//        std::vector<int> flat_con;
+//        flat_con.assign(conn.rows()*nvert_elts, 0);
+//        for (int i=0;i<conn.rows();i++){
+//            for (int j=0; j<nvert_elts;j++){
+//                flat_con[nvert_elts*i+j]=conn(i,j); // row major format
+//            }
+//        }
+//
+//        mma::print(" calling compute stress function ... ");
+//
+//        // calling function
+//        std::vector<double> stressTensor = bie_obj_.computeStresses(solu,flat_obsPts,nPts,prop,flat_coor,flat_con,areDDglobal);
+//
+//        mma::print(" finished! ");
+//
+//        int nCompStress = stressTensor.size()/nPts;
+//
+//        return mma::makeMatrix<double>(nPts, nCompStress, stressTensor.data());
+//
+//    }
+//
+//
+//    // compute displacements
+//    mma::RealTensorRef computeDisplacements(
+//            const mma::RealTensorRef sol,
+//            const mma::RealMatrixRef obsPts,
+//            const mint nPts,
+//            const mma::RealTensorRef properties,
+//            const mma::RealMatrixRef coor,
+//            const mma::IntMatrixRef conn,
+//            const mbool areDDglobal)   {
+//
+//        dimension_ = coor.cols(); //spatial dimension
+//
+//        // solution vector
+//        std::vector<double> solu;
+//        solu.assign(sol.begin(), sol.end());
+//
+//        // properties vector
+//        std::vector<double> prop;
+//        prop.assign(properties.begin(),properties.end());
+//
+//        // flatten the tensors ....
+//
+//        // observation points
+//        std::vector<double> flat_obsPts;
+//        flat_obsPts.assign(obsPts.rows()*obsPts.cols(), 0.);
+//        for (int i=0;i<obsPts.rows();i++){
+//            for (int j=0; j<dimension_;j++){
+//                flat_obsPts[dimension_*i+j]=obsPts(i,j); // row major format
+//            }
+//        }
+//
+//        // vertices(nodes) coordinates
+//        std::vector<double> flat_coor;
+//        flat_coor.assign(coor.rows()*coor.cols(), 0.);
+//        for (int i=0;i<coor.rows();i++){
+//            for (int j=0; j<dimension_;j++){
+//                flat_coor[dimension_*i+j]=coor(i,j); // row major format
+//            }
+//        }
+//
+//        // connectivity
+//        int nvert_elts= conn.cols();
+//        std::vector<int> flat_con;
+//        flat_con.assign(conn.rows()*nvert_elts, 0);
+//        for (int i=0;i<conn.rows();i++){
+//            for (int j=0; j<nvert_elts;j++){
+//                flat_con[nvert_elts*i+j]=conn(i,j); // row major format
+//            }
+//        }
+//
+//        mma::print(" calling compute displacement function ... ");
+//
+//        // calling function
+//        std::vector<double> dispVector = bie_obj_.computeDisplacements(solu,flat_obsPts,nPts,prop,flat_coor,flat_con,areDDglobal);
+//
+//        mma::print(" finished computing displacement ! ");
+//
+//        int nCompStress = dispVector.size()/nPts;
+//
+//        return mma::makeMatrix<double>(nPts, nCompStress, dispVector.data());
+//
+//    }
+//
   // get fullBlocks
     mma::SparseMatrixRef<double> getFullBlocks(){
         

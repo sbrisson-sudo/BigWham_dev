@@ -17,6 +17,8 @@
 #include <src/core/SquareMatrixGenerator.h>
 #include <src/hmat/cluster/cluster.h>
 #include <src/elasticity/2d/BIE_elastostatic_segment_0_impls.h>
+#include <src/elasticity/2d/BIE_elastostatic_segment_1_impls.h>
+
 #include <src/elasticity/2d/ElasticS3DP0_element.h>
 #include <src/hmat/hmatrix/Hmat.h>
 
@@ -159,3 +161,258 @@ TEST(SquareMatGen,segment_0_Hmat_2){
     std::cout << "Mean rel error " << il::mean(rel_err) <<"\n";
     ASSERT_TRUE( il::mean(rel_err)<0.05 );//h_.isBuilt()
 }
+
+
+/// test for Segment P1
+TEST(SquareMatGen,segment_1_Hmat_1_segs_45_a1) {
+    // two segments at 90 degree from one another
+    // oriented 45 degree from the axis e_x
+    //
+    //        /\        //
+
+    il::Array2D<double> xy{3, 2, 0.};
+    xy(0, 0) = -1.;
+    xy(0, 1) = 0.;
+    xy(1, 0) = 0.;
+    xy(1, 1) = 1.;
+    xy(2, 0) = 1.;
+    xy(2, 1) = 0.;
+
+    il::Array2D<il::int_t> ien{2, 2, 0};
+    ien(0, 0) = 0;
+    ien(0, 1) = 1;
+    ien(1, 0) = 1;
+    ien(1, 1) = 2;
+
+    bie::BEMesh<bie::Segment<1>> mesh(xy, ien);
+    bie::ElasticProperties elas(1., 0.);
+    bie::BIE_elastostatic<bie::Segment<1>,bie::Segment<1>,bie::ElasticKernelType::H>  ker(elas,xy.size(1));
+    il::int_t max_leaf_size=320;double eta=0.0;
+    bie::HRepresentation hr=bie::h_representation_square_matrix(mesh,max_leaf_size,eta);
+    using el_type = bie::Segment<1>;
+    bie::SquareMatrixGenerator<double,el_type,bie::BIE_elastostatic<el_type,el_type,bie::ElasticKernelType::H>> M(mesh,
+                                                                                                                  ker,hr.permutation_0_);
+    double eps_aca=1.e-3;
+    bie::Hmat<double>  h_(M,hr,eps_aca);
+/// analytical results from mathematica integration for that particular case
+    // we compare the results of the assembly w.t the mma code
+    il::Array2D<double> Kmma{8, 8, 0.};
+    ;
+    Kmma(0, 0) = 0.483423;
+    Kmma(0, 1) = -1.20657e-16;
+    Kmma(0, 2) = -0.0332652;
+    Kmma(0, 3) = 2.07014e-17;
+    Kmma(0, 4) = 0.00824514;
+    Kmma(0, 5) = -0.0381383;
+    Kmma(0, 6) = -0.0133572;
+    Kmma(0, 7) = -0.0321492;
+
+    Kmma(1, 0) = -2.27998e-16;
+    Kmma(1, 1) = 0.483423;
+    Kmma(1, 2) = 2.80878e-17;
+    Kmma(1, 3) = -0.0332652;
+    Kmma(1, 4) = -0.00355156;
+    Kmma(1, 5) = -0.00824514;
+    Kmma(1, 6) = 0.00954068;
+    Kmma(1, 7) = 0.0133572;
+
+    Kmma(2, 0) = -0.0332652;
+    Kmma(2, 1) = 1.4713e-33;
+    Kmma(2, 2) = 0.483423;
+    Kmma(2, 3) = 0.;
+    Kmma(2, 4) = -0.0536082;
+    Kmma(2, 5) = -0.376167;
+    Kmma(2, 6) = 0.000833234;
+    Kmma(2, 7) = -0.0157962;
+
+    Kmma(3, 0) = 7.38637e-18;
+    Kmma(3, 1) = -0.0332652;
+    Kmma(3, 2) = -1.07342e-16;
+    Kmma(3, 3) = 0.483423;
+    Kmma(3, 4) = 0.23189;
+    Kmma(3, 5) = 0.0536082;
+    Kmma(3, 6) = 0.128481;
+    Kmma(3, 7) = -0.000833234;
+
+    Kmma(4, 0) = 0.000833234;
+    Kmma(4, 1) = 0.0157962;
+    Kmma(4, 2) = -0.0536082;
+    Kmma(4, 3) = 0.376167;
+    Kmma(4, 4) = 0.483423;
+    Kmma(4, 5) = 0.;
+    Kmma(4, 6) = -0.0332652;
+    Kmma(4, 7) = 0.;
+
+    Kmma(5, 0) = -0.128481;
+    Kmma(5, 1) = -0.000833234;
+    Kmma(5, 2) = -0.23189;
+    Kmma(5, 3) = 0.0536082;
+    Kmma(5, 4) = 1.07342e-16;
+    Kmma(5, 5) = 0.483423;
+    Kmma(5, 6) = -7.38637e-18;
+    Kmma(5, 7) = -0.0332652;
+
+    Kmma(6, 0) = -0.0133572;
+    Kmma(6, 1) = 0.0321492;
+    Kmma(6, 2) = 0.00824514;
+    Kmma(6, 3) = 0.0381383;
+    Kmma(6, 4) = -0.0332652;
+    Kmma(6, 5) = -2.07014e-17;
+    Kmma(6, 6) = 0.483423;
+    Kmma(6, 7) = 1.20657e-16;
+
+    Kmma(7, 0) = -0.00954068;
+    Kmma(7, 1) = 0.0133572;
+    Kmma(7, 2) = 0.00355156;
+    Kmma(7, 3) = -0.00824514;
+    Kmma(7, 4) = -2.80878e-17;
+    Kmma(7, 5) = -0.0332652;
+    Kmma(7, 6) = 2.27998e-16;
+    Kmma(7, 7) = 0.483423;
+
+    const il::Array<il::int_t> permutation=hr.permutation_0_;
+    il::Array<double> val_list;il::Array<int> pos_list;
+    h_.fullBlocksOriginal(permutation,il::io,val_list,pos_list);
+
+    double my_sum = 0.;
+    int k=0;
+    for (il::int_t j = 0.; j < Kmma.size(1); j++) {
+        for (il::int_t i = 0; i < Kmma.size(0); i++) {
+            my_sum += abs(val_list[k] - Kmma(i, j));
+            k++;
+        }
+    }
+
+    std::cout << "SUMMA: " <<my_sum << "\n";
+
+    ASSERT_NEAR(my_sum, 0., 1.e-5);
+
+ //   ASSERT_TRUE(M.sizeAsBlocks(0)==mesh.numberCollocationPoints() && M.size(0)==8 && M.size(1)==8);
+
+}
+
+
+TEST(SquareMatGen,segment_1_Hmat_1_two_adjacent_segs) {
+// two adjacents straight segments
+    // just one DD is mobilised
+    //        ._._.        //
+
+    il::Array2D<double> xy{3, 2, 0.};
+    xy(0, 0) = -1.;
+    xy(0, 1) = 0.;
+    xy(1, 0) = 0.;
+    xy(1, 1) = 0.;
+    xy(2, 0) = 1.;
+    xy(2, 1) = 0.;
+
+    il::Array2D<il::int_t> ien{2, 2, 0};
+    ien(0, 0) = 0;
+    ien(0, 1) = 1;
+    ien(1, 0) = 1;
+    ien(1, 1) = 2;
+
+
+    bie::BEMesh<bie::Segment<1>> mesh(xy, ien);
+    bie::ElasticProperties elas(1., 0.);
+    bie::BIE_elastostatic<bie::Segment<1>,bie::Segment<1>,bie::ElasticKernelType::H>  ker(elas,xy.size(1));
+    il::int_t max_leaf_size=320;double eta=0.0;
+    bie::HRepresentation hr=bie::h_representation_square_matrix(mesh,max_leaf_size,eta);
+    using el_type = bie::Segment<1>;
+    bie::SquareMatrixGenerator<double,el_type,bie::BIE_elastostatic<el_type,el_type,bie::ElasticKernelType::H>> M(mesh,
+                                                                                                                  ker,hr.permutation_0_);
+    double eps_aca=1.e-3;
+    bie::Hmat<double>  h_(M,hr,eps_aca);
+/// analytical results from mathematica integration for that particular case
+    // we compare the results of the assembly w.t the mma code
+    il::Array2D<double> Kmma{8, 8, 0.};
+    ;
+    Kmma(0, 0) = -0.683664;
+    Kmma(0, 1) = 0.;
+    Kmma(0, 2) = 0.0470442;
+    Kmma(0, 3) = 0.;
+    Kmma(0, 4) = 0.0943392;
+    Kmma(0, 5) = 0.;
+    Kmma(0, 6) = 0.0187761;
+    Kmma(0, 7) = 0.;
+
+    Kmma(1, 0) = 0.;
+    Kmma(1, 1) = -0.683664;
+    Kmma(1, 2) = 0.;
+    Kmma(1, 3) = 0.0470442;
+    Kmma(1, 4) = 0.;
+    Kmma(1, 5) = 0.0943392;
+    Kmma(1, 6) = 0.;
+    Kmma(1, 7) = 0.0187761;
+
+    Kmma(2, 0) = 0.0470442;
+    Kmma(2, 1) = 0.;
+    Kmma(2, 2) = -0.683664;
+    Kmma(2, 3) = 0.;
+    Kmma(2, 4) = 0.379637;
+    Kmma(2, 5) = 0.;
+    Kmma(2, 6) = 0.0315223;
+    Kmma(2, 7) = 0.;
+
+    Kmma(3, 0) = 0.;
+    Kmma(3, 1) = 0.0470442;
+    Kmma(3, 2) = 0.;
+    Kmma(3, 3) = -0.683664;
+    Kmma(3, 4) = 0.;
+    Kmma(3, 5) = 0.379637;
+    Kmma(3, 6) = 0.;
+    Kmma(3, 7) = 0.0315223;
+
+    Kmma(4, 0) = 0.0315223;
+    Kmma(4, 1) = 0.;
+    Kmma(4, 2) = 0.379637;
+    Kmma(4, 3) = 0.;
+    Kmma(4, 4) = -0.683664;
+    Kmma(4, 5) = 0.;
+    Kmma(4, 6) = 0.0470442;
+    Kmma(4, 7) = 0.;
+
+    Kmma(5, 0) = 0.;
+    Kmma(5, 1) = 0.0315223;
+    Kmma(5, 2) = 0.;
+    Kmma(5, 3) = 0.379637;
+    Kmma(5, 4) = 0.;
+    Kmma(5, 5) = -0.683664;
+    Kmma(5, 6) = 0.;
+    Kmma(5, 7) = 0.0470442;
+
+    Kmma(6, 0) = 0.0187761;
+    Kmma(6, 1) = 0.;
+    Kmma(6, 2) = 0.0943392;
+    Kmma(6, 3) = 0.;
+    Kmma(6, 4) = 0.0470442;
+    Kmma(6, 5) = 0.;
+    Kmma(6, 6) = -0.683664;
+    Kmma(6, 7) = 0.;
+
+    Kmma(7, 0) = 0.;
+    Kmma(7, 1) = 0.0187761;
+    Kmma(7, 2) = 0.;
+    Kmma(7, 3) = 0.0943392;
+    Kmma(7, 4) = 0.;
+    Kmma(7, 5) = 0.0470442;
+    Kmma(7, 6) = 0.;
+    Kmma(7, 7) = -0.683664;
+
+    const il::Array<il::int_t> permutation=hr.permutation_0_;
+    il::Array<double> val_list;il::Array<int> pos_list;
+    h_.fullBlocksOriginal(permutation,il::io,val_list,pos_list);
+
+    double my_sum = 0.;
+    int k=0;
+    for (il::int_t j = 0.; j < Kmma.size(1); j++) {
+        for (il::int_t i = 0; i < Kmma.size(0); i++) {
+            my_sum +=  val_list[k] + Kmma(i, j) ;   // note the change here
+            k++;
+        }
+    }
+
+    std::cout << "SUMMA: " <<my_sum << "\n";
+
+    ASSERT_NEAR(my_sum, 0., 1.e-5);
+}
+

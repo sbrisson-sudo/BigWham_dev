@@ -56,10 +56,7 @@ namespace bie{
 
         double n1s2pn2s1 = n[0] * s[1] + n[1] * s[0];
 
-        //  il::StaticArray2D<double, 2, 2> St;
-
-        std::vector<double> stnl;
-        stnl.assign(4,0.);
+        std::vector<double> stnl(4,0.);
 
         // shear stress
         //  effect of shear dd
@@ -82,7 +79,6 @@ namespace bie{
                  n2n2 * stress_l(1, 2);
 
         return stnl;
-
     }
 
 }

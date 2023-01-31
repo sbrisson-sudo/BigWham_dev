@@ -29,12 +29,15 @@ namespace bie {
 
     template<class El>
     bie::HRepresentation h_representation_square_matrix(bie::BEMesh<El> &mesh, il::int_t max_leaf_size, double eta) {
+        std::cout << " Pattern construction ...."<< "\n";
         bie::HRepresentation hr;
         hr.is_square_ = true;
         // creation of the cluster
         // first get all collocation points in the mesh
-        il::Timer tt;
+        std::cout << " before call to getCollocationPoints() ...."<< "\n";
         il::Array2D<double> Xcol = mesh.getCollocationPoints();
+        std::cout << " got col points construction ...."<< "\n";
+        il::Timer tt;
         tt.Start();
         bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, Xcol);
         std::cout << "Cluster tree creation time :  " << tt.time() << "\n";

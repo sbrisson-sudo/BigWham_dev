@@ -117,13 +117,14 @@ template = LTemplate["HmatExpressions",
 (*      LFun["hdotRec", {{Real, 1, "Constant"}}, {Real, 1}],*)
       LFun["getSize", {}, {Integer, 1}],
       LFun["getProblemDimension", {}, Integer],
-      LFun["getFullBlocks", {}, LType[SparseArray, Real]],
+      LFun["getFullBlocks", {}, LType[SparseArray, Real]]
+(*)      ,
       LFun["computeStresses", {{Real, 1, "Constant"},{Real, 2, "Constant"},
         Integer,{Real, 1, "Constant"},{Real, 2, "Constant"},{Integer, 2, "Constant"}, 
         "Boolean"}, {Real, 2}],
         LFun["computeDisplacements", {{Real, 1, "Constant"},{Real, 2, "Constant"},
           Integer,{Real, 1, "Constant"},{Real, 2, "Constant"},{Integer, 2, "Constant"},
-          "Boolean"}, {Real, 2}]
+          "Boolean"}, {Real, 2}] *)
        (*[sol,obsPts,nPts,prop,coor,conn,areDDglobal];*)
       }
      ]
