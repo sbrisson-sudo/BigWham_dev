@@ -13,7 +13,6 @@
 
 #include <src/core/BoundaryElement.h>
 
-
 namespace bie {
 
 // Class for Boundary element mesh
@@ -145,8 +144,8 @@ public:
             this->setCurrentElement(e);
             Xcol = this->element_def_.getCollocationPoints();
             auto centro = this->element_def_.getCentroid();
-            std::cout << "centro  " << e << "  centroid " << centro[0]  <<" -" << centro[1]   <<"\n";
-            std::cout << "xcol  " << e << "size " << Xcol(0,0) <<"-" << Xcol(0,1) <<"\n";
+          //  std::cout << "centro  " << e << "  centroid " << centro[0]  <<" -" << centro[1]   <<"\n";
+           // std::cout << "xcol  " << e << "size " << Xcol(0,0) <<"-" << Xcol(0,1) <<"\n";
             for (il::int_t k=0;k<spatial_dimension_;k++){
                 for (il::int_t j1 = 0; j1 < nodes_per_element_; j1++) {
                     colPoints(j+j1, k) = Xcol(j1, k);

@@ -55,7 +55,6 @@ namespace bie{
             // normal;
             this->n_[0] = -1. * this->s_[1];
             this->n_[1] = this->s_[0];
-            std::cout << " in set \n";
             this->setCollocationPoints();
             this->setNodes();
         };
