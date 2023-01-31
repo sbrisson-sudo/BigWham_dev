@@ -109,12 +109,9 @@ TEST(SquareMatGen,segment_0_Hmat_1){
 //    il::Array<il::int_t> permutation =cluster.permutation;
 ////
     bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,1.0);
-
     bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,
                                                                                                                                           ker,hr.permutation_0_);
-//    M.set_permutation(hr.permutation_0_);
     bie::Hmat<double>  h_(M,hr,1.e-3);
-
     ASSERT_TRUE( h_.isBuilt() );//h_.isBuilt()
 }
 
@@ -139,12 +136,13 @@ TEST(SquareMatGen,segment_0_Hmat_2){
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  ker(elas,coor.size(1));
     il::Array<double> prop{1,1000.};
     ker.setKernelProperties(prop);
-    il::int_t max_leaf_size=32;
-    bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,1.0);
-    bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,
-                                                                                                                                          ker,hr.permutation_0_);
-   // M.set_permutation(hr.permutation_0_);
-    bie::Hmat<double>  h_(M,hr,1.e-3);
+    il::int_t max_leaf_size=32;double eta=2.0;
+    bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,eta);
+    using el_type = bie::Segment<0>;
+    bie::SquareMatrixGenerator<double,el_type,bie::BIE_elastostatic<el_type,el_type,bie::ElasticKernelType::H>> M(my_mesh,
+                                                                                                                  ker,hr.permutation_0_);
+    double eps_aca=1.e-3;
+    bie::Hmat<double>  h_(M,hr,eps_aca);
     //simple opening mode...
     il::Array<double> x{M.size(1),0.0},y{M.size(1),0.0};
     for(il::int_t i=0;i<M.sizeAsBlocks(0);i++){

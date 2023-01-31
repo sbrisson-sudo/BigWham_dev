@@ -27,8 +27,6 @@
 
 #include <hmat/hmatrix/HMatrix.h>
 #include <hmat/hmatrix/HMatrixUtils.h>
-#include <hmat/linearAlgebra/blas/hdot.h>
-//#include <hmat/linearAlgebra/factorization/luDecomposition.h>
 #include <_test/elastic3DR0_element_benchmark.h>
 #include <core/ElasticProperties.h>
 #include <core/FaceData.cpp>
@@ -165,7 +163,7 @@ int test2DP1() {
     x[i] = xx[i];
   }
 
-  std::vector<double> y2 = testbie.hdotProduct(x);
+  std::vector<double> y2 = testbie.matvect(x);
   std::cout << " elastic dot product solution:: \n";
   for (il::int_t i = 0; i < coll_points.size(0); i++) {
     std::cout << " y " << i << " " << y[2 * i] << " - with obj - " << y2[2 * i]
@@ -298,7 +296,7 @@ int testS3DP0() {
     x[i] = xx[i];
   }
 
-  std::vector<double> y2 = testbie.hdotProduct(x);
+  std::vector<double> y2 = testbie.matvect(x);
   std::cout << " elastic dot product solution:: \n";
   for (il::int_t i = 0; i < coll_points.size(0); i++) {
     std::cout << " y " << i << " " << y[2 * i] << " - with obj - " << y2[2 * i]
@@ -707,12 +705,12 @@ int test3DR0() {
   const std::vector<double> xx = {1., 2., 3., 4., 5., 6.};
   std::vector<double> x;
   std::cout << "Traction HMAT dot product \n";
-  x = tractionHMAT.hdotProduct(xx);
+  x = tractionHMAT.matvect(xx);
   for (int i = 0; i < x.size(); ++i)
     std::cout << x[i] << " ";
   std::cout << "\n";
   std::cout << "Displacement HMAT dot product \n";
-  x = displacementHMAT.hdotProduct(xx);
+  x = displacementHMAT.matvect(xx);
   for (int i = 0; i < x.size(); ++i)
     std::cout << x[i] << ' ';
 
@@ -778,7 +776,7 @@ int test3DR0modes2and3() {
   const std::vector<double> xx = {1., 2., 0., 4., 5., 0.};
   std::vector<double> x;
   std::cout << "Traction HMAT dot product \n";
-  x = tractionHMAT.hdotProduct(xx);
+  x = tractionHMAT.matvect(xx);
   for (int i = 0; i < x.size(); ++i)
     std::cout << x[i] << " ";
   std::cout << "\n";
@@ -786,7 +784,7 @@ int test3DR0modes2and3() {
   const std::vector<double> xxRed = {1., 2., 4., 5.};
   std::vector<double> xRed;
   std::cout << "Traction HMAT dot product \n";
-  xRed = tractionHMAT_shearONLY.hdotProduct(xxRed);
+  xRed = tractionHMAT_shearONLY.matvect(xxRed);
   for (int i = 0; i < xRed.size(); ++i)
     std::cout << xRed[i] << " ";
   std::cout << "\n";
@@ -830,7 +828,7 @@ int test3DT0modes2and3() {
                                   6., 7., 0., 8., 9., 0.};
   std::vector<double> x;
   std::cout << "Traction HMAT dot product \n";
-  x = tractionHMAT.hdotProduct(xx);
+  x = tractionHMAT.matvect(xx);
   for (int i = 0; i < x.size(); ++i)
     std::cout << x[i] << " ";
   std::cout << "\n";
@@ -838,7 +836,7 @@ int test3DT0modes2and3() {
   const std::vector<double> xxRed = {1., 2., 4., 5., 6., 7., 8., 9.};
   std::vector<double> xRed;
   std::cout << "Traction HMAT dot product \n";
-  xRed = tractionHMAT_shearONLY.hdotProduct(xxRed);
+  xRed = tractionHMAT_shearONLY.matvect(xxRed);
   for (int i = 0; i < xRed.size(); ++i)
     std::cout << xRed[i] << " ";
   std::cout << "\n";
@@ -2022,7 +2020,7 @@ int test3DT0_PennyShaped(std::string &vertices_file,
   std::vector<double> traction_numerical;
   std::cout << "Doing hmat dot product \n";
 
-  traction_numerical = test.hdotProduct(dd_analytical_std);
+  traction_numerical = test.matvect(dd_analytical_std);
 
   // output tractions
 
@@ -2383,7 +2381,7 @@ int test3DT6_PennyShaped(std::string &vertices_file,
   std::vector<double> traction_numerical;
   std::cout << "Doing hmat dot product \n";
 
-  traction_numerical = test.hdotProduct(dd_analytical_std);
+  traction_numerical = test.matvect(dd_analytical_std);
 
   // output tractions
 
@@ -2416,7 +2414,7 @@ int test3DT6_PennyShaped(std::string &vertices_file,
   //    for(int i=0; i<x.size(); ++i) std::cout << x[i] << " ";
   //    std::cout << "\n" ;
   //    std::cout << "Displacement HMAT dot product \n" ;
-  //    x = displacementHMAT.hdotProduct(xx);
+  //    x = displacementHMAT.matvect(xx);
   //    for(int i=0; i<x.size(); ++i) std::cout << x[i] << ' ';
   //
   //    // compute stresses at a set of observation points
@@ -2587,7 +2585,7 @@ int check3DR0() {
   //    std::cout<<"\n NoE: " << conn_flat.size()/4;
   //    std::vector<double>  xx(3*conn_flat.size()/4);
   //    for(int i=0; i<xx.size(); ++i) xx[i]=1.;
-  //    std::vector<double> res = test.hdotProduct(xx);
+  //    std::vector<double> res = test.matvect(xx);
   //
   //    std::cout << "Traction HMAT dot product \n" ;
   //    for(int i=0; i<xx.size(); ++i) std::cout << res[i] << " ";
@@ -3023,7 +3021,7 @@ bie:
     xs.push_back(xx[i]);
   }
   tt.Start();
-  std::vector<double> y4 = testb.hdotProduct(xs);
+  std::vector<double> y4 = testb.matvect(xs);
   tt.Stop();
   for (int i = 0; i < xx.size(); i++) {
     y[i] = y4[i];

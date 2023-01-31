@@ -48,7 +48,7 @@ option(USE_INTEL "use intel" OFF)   # --> compiler option
 option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
 
-option(MATHEMATICA_INTERFACE "make mathematica interface" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
+option(MATHEMATICA_INTERFACE "make mathematica interface" ON)  # --> to add static option to CMAKE_CXX_FLAGS
 
 #####################################
 # optimization options              #
@@ -250,7 +250,6 @@ set(SOURCE_FILES
         src/elasticity/2d/FullMatrixAssembly2D.h
 
         # 3D source code
-        src/hmat/linearAlgebra/factorization/lowRankApproximation.cpp
         src/core/Mesh3D.cpp src/core/Mesh3D.h
         src/core/FaceData.cpp
         #  - T6 element
@@ -368,7 +367,7 @@ endif()
 ################################################################################
 # Mathematica interface
 ################################################################################
-
+message("THis is the mma interface flag", ${MATHEMATICA_INTERFACE})
 if(MATHEMATICA_INTERFACE)
     add_subdirectory(interfaces/mathematica)
 endif()
@@ -390,7 +389,7 @@ if(BUILD_GOOGLE_TESTS)
             src/elasticity/_test/elastic3DR0_element_tests.cpp
             #src/_test/elastic3DR0_element_benchmark.cpp
             src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-            src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator_tests.cpp src/core/_test/hierarchical_representation_tests.cpp src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp src/core/_test/triangle_tests.cpp src/core/_test/rectangle_tests.cpp)
+            src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator_tests.cpp src/core/_test/hierarchical_representation_tests.cpp src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp src/core/_test/triangle_tests.cpp src/core/_test/rectangle_tests.cpp src/_test/bigwhamio_tests_2d.cpp)
 
     add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 

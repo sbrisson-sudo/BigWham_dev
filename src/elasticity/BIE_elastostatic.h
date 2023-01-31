@@ -35,13 +35,13 @@ namespace bie{
 
         BIE_elastostatic(bie::ElasticProperties &elas,il::int_t dim) : BIE_Kernel<double, Es, Er>() {
             elas_=elas;
-            this->dof_dim_=dim;
+            this->dof_dimension_=dim;
             this->dim_=dim;
         };
 
         BIE_elastostatic(bie::ElasticProperties &elas ,il::int_t dim,bool local_unknowns,bool local_co_variables)  : BIE_Kernel<double, Es, Er>(local_unknowns,local_co_variables)  {
             elas_=elas;
-            this->dof_dim_=dim;
+            this->dof_dimension_=dim;
             this->dim_=dim;
         };
 

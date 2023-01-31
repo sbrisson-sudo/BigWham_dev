@@ -48,8 +48,6 @@ namespace bie {
         std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
         std::cout << " binary cluster tree depth =" << block_tree.depth() << "\n";
         hr.pattern_ = bie::createPattern(block_tree);
-//        hr.pattern_.nr = mesh.numberCollocationPoints();
-//        hr.pattern_.nc = mesh.numberCollocationPoints();
 
         std::cout << " Number of blocks =" << hr.pattern_.n_B << "\n";
         std::cout << " Number of full blocks =" << hr.pattern_.n_FRB << "\n";

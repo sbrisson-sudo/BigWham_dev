@@ -47,6 +47,8 @@ private:
 
 public:
 
+    BEMesh(){};
+
     // Basic constructor with  coordinates and connectivity array and
     // element type !
     BEMesh(il::Array2D<double> &Coordinates, il::Array2D<il::int_t> &Connectivity) {

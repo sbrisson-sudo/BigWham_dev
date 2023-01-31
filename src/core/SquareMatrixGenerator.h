@@ -49,7 +49,7 @@ SquareMatrixGenerator<T,El,Bie_def>::SquareMatrixGenerator(bie::BEMesh<El> & mes
       mesh_{mesh},bie_kernel_{bie_kernel},permutation_{permutation}
       {
           number_points_= mesh_.numberCollocationPoints();
-          dof_dim_ =bie_kernel.getDofDim() ;
+          dof_dim_ = bie_kernel.getDofDimension() ;
           size_ = number_points_ * dof_dim_ ;
       };
 

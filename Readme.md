@@ -1,37 +1,89 @@
-#  BigwHam : Boundary InteGral equations With HierArchical Matrix
 
-## A C++ library for vectorial boundary integral equations with hierarchical matrix 
+## Prerequisites
 
-## V0.0.1-alpha  
+- Install Intel MKL
+-- https://github.com/eddelbuettel/mkl4deb.git
+-- directly run the script given in the above link
+   
+- Integrating cmake and intel MKL
+-- https://cmake.org/cmake/help/latest/module/FindBLAS.html#intel-mkl
+-- keep it in your bashrc
+`. /opt/intel/mkl/bin/mklvars.sh intel64`
 
-## Current capabilities: 
+## making python venv
 
-- Fracture problems in elasto-statics (2D,3D) using hyper-singular kernels (displacement discontinuities elements)
-- Collocation BEM
-- Hierarchical matrix
-- Currently available elastic kernels:
-    + 2D Full-space P1 discontinuous element
-    + Full-space Simplified3D / 2D  P0 element
-    + Full-space 3D T0 element 
-    + Full-space 3D T6 element
-    + Full-space 3D R0 element 
-    + Full-space 3D R0 pure mode I element
+```
+$sudo apt install python3-venv 
 
-## Interfaces
-### Python
- -  to compile the binding use python >= 3.7                                      
- -  the interpreter for the .py script should be the same as compile time
- -  add to PYTHONPATH  "YOUR_PATH_TO_BIGWHAM base folder" 
-### Wolfram language
-- via LTemplate and Wolfram LibraryLink
-- see instructions under the BigWhamLink folder
+$python3 –m venv bigwham_venv 
 
-#Contributors:
-- Brice Lecampion (2D and Simplified 3D kernels, 2D Mesh2D, wolfram API, Hmatrix algorithms etc.)  2015-
-- Francois Fayard  (inside loop lib, HMat C++ initial code) 2018
-- Dmitry Nikolskiy (3D Quadratic triangular DD element kernels) 2017-2019
-- Carlo Peruzzo (3D mesh, 3D kernels API, 3D constant Rectangular kernels, Python Bindings) 2019-
-- Alexis Saez (3D mesh, 3D constant triangular DD elements kernels) 2020-
-- Federico Ciardo (2D code parts, 2D static crack benchmarks) 2016-2019
-- Lisa Gordeliy (Static crack problems benchmarks)  2019
-- Stéphanie Chaillat-Loiseuille (HMat algorithms) 2018
+$source bigwham_venv/bin/activate 
+
+$pip install jupyter scipy matplotlib numpy jupyterlab 
+```
+
+## Compile
+
+- add pybind11 submodule
+  `git submodule update --init`
+
+- compile command assuming `${PROJECT_ROOR}/bigwham_venv` is python virtual env
+  run the following from project_root
+```
+source bigwham_venv/bin/activate;. /opt/intel/mkl/bin/mklvars.sh intel64; cd build; cmake -DPYENV_ROOT=${PWD}/bigwham_venv -DMATHEMATICA_INTERFACE=1 -DCMAKE_CXX_COMPILER=g++ -DBUILD_GOOGLE_TESTS=1 -DBUILD_PYTHON_BINDINGS=0 -DUSE_INTEL=0 -DIL_OPENMP=1 -DIL_OPENBLAS=0 -DIL_MKL=1  ..; make -j2; cd ..
+```
+
+## Testing
+
+-`./build/BigWhamElastUnitTest`
+- `python interfaces/python/_test/pybinding_checks.py` # inside virthual env
+
+
+
+## Mathematica interface
+
+- Now mathematica interface is made in the build folder, for example `${PROJECT_ROOT}/build` is the root folder, then the paclet file will be at `${PROJECT_ROOT}/build/interfaces/mathematica`
+- All the variables will be already set if you compile the BigWham library correctly
+- Switch on compiler flag `-DMATHEMATICA_INTERFACE=1` while using cmake
+- We use `configure_file` in cmake to change the variables in `BigWhamSetting.m` file
+- cmake ensures that mathematica is always connected to the updated `bigwham.a` file
+
+### OLD WAY
+
+## find lib paths in your system
+- use the following python script to find the file path
+ https://github.com/albertz/system-tools/blob/master/bin/find-lib-in-path.py
+
+- libraries in the `ld_library_path` can be identified using 
+`/sbin/ldconfig -N -v $(sed 's/:/ /g' <<< $LD_LIBRARY_PATH)`
+
+
+
+- `libmkl_intel_lp64.a`
+
+`/opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_intel_lp64.a`
+
+- `libmkl_core.a`
+
+`/opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_core.a`
+
+- `libmkl_sequential.a`
+
+`/opt/intel/compilers_and_libraries_2018.2.199/linux/mkl/lib/intel64_lin/libmkl_sequential.a`
+
+
+- `-ltbb, -ldl, -lpthread, -lm`
+
+- `-m64`
+
+- `/opt/intel/compilers_and_libraries_2018.2.199/linux/tbb/lib/intel64_lin/gcc4.7/libtbb.so.2`
+
+### modify file `BuildSettings.m`
+- modify `$MKLROOT` in line 9
+- modify `$TBBROOT` in line 10
+- modify `$TBBLIBPATH` in line 11 
+- modify `$BigWhamDirectory` in line 22
+
+### modify file `BigWhamLink.m`
+- modify build folder in `$BigwhamLib` in line 87
+- modify build folder in `libdir` in line 143

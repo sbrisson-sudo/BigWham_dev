@@ -37,7 +37,7 @@ class Hmat {
 
   // shall we store the permutation(s) in that object ?
 
-  il::int_t dof_dimension_{}; //  dof per collocation points
+  il::int_t dof_dimension_; //  dof per collocation points
   il::StaticArray<il::int_t,2> size_; // size of tot mat (row, cols)
 
   std::vector<std::unique_ptr<bie::LowRank<T>>> low_rank_blocks_; // vector of low rank blocks
@@ -64,12 +64,12 @@ class Hmat {
        }
    };
 
-   // simple constructor from pattern  -> todo remove
-   Hmat(const bie::HPattern& pattern){
-     pattern_=pattern;
-   };
+//   // simple constructor from pattern  -> todo remove
+//   Hmat(const bie::HPattern& pattern){
+//     pattern_=pattern;
+//   };
 
-   // Main constructor
+   // direct constructor
    Hmat(const bie::MatrixGenerator<T>& matrix_gen,const bie::HRepresentation& h_r, double epsilon_aca){
        pattern_=h_r.pattern_;
        is_square_=h_r.is_square_;
@@ -82,17 +82,18 @@ class Hmat {
        std::cout << "Hmat object - built " << "\n";
    }
 
-   // -----------------------------------------------------------------------------
-   // todo remove toHmat...
-  void toHmat(const bie::MatrixGenerator<T>& matrix_gen, double epsilon_aca){
-       il::Timer tt;
-       // construction directly
-     tt.Start();
-     this->build(matrix_gen,epsilon_aca);
-     tt.Stop();
-     std::cout << "Creation of hmat done in "  << tt.time() <<"\n";std::cout << "Compression ratio - " << this->compressionRatio() <<"\n";
-     std::cout << "Hmat object - built " << "\n";
-   };
+    // Main constructor
+    void toHmat(const bie::MatrixGenerator<T>& matrix_gen,const bie::HRepresentation& h_r,const double epsilon_aca){
+        pattern_=h_r.pattern_;
+        is_square_=h_r.is_square_;
+        // construction directly
+        il::Timer tt;
+        tt.Start();
+        this->build(matrix_gen,epsilon_aca);
+        tt.Stop();
+        std::cout << "Creation of hmat done in "  << tt.time() <<"\n";std::cout << "Compression ratio - " << this->compressionRatio() <<"\n";
+        std::cout << "Hmat object - built " << "\n";
+    }
 
    // -----------------------------------------------------------------------------
    void buildFR(const bie::MatrixGenerator<T>& matrix_gen){
@@ -194,20 +195,20 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     isBuilt_= isBuilt_FR_ && isBuilt_LR_;
   }
   //-----------------------------------------------------------------------------
-  bool isBuilt(){return isBuilt_;};
+  bool isBuilt() const {return isBuilt_;};
 //
-  il::int_t size(int k){return size_[k];};
+  il::int_t size(int k) const {return size_[k];};
 //
   bie::HPattern pattern(){return pattern_;}; //returning the Hmat pattern
+
+  il::int_t dofDimension() const {return dof_dimension_;};
 
 //-----------------------------------------------------------------------------
   // getting the nb of entries of the hmatrix
   il::int_t nbOfEntries(){
     IL_EXPECT_FAST(isBuilt_);
     il::int_t n=0;
-
     for (il::int_t i=0;i<pattern_.n_FRB;i++){
-
       il::Array2DView<double> a = (*full_rank_blocks_[i]).view();
       n+=a.size(0)*a.size(1);
     }
@@ -322,11 +323,12 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     return y;
   }
 
+/////-----------------------------------------------------------------
   std::vector<T> diagonal(){
+      // return diagonal in permutted state....
       IL_EXPECT_FAST(isBuilt_FR_);
       il::int_t diag_size = il::max(size_[0],size_[1]);
-      std::vector<T> diag;
-      diag.reserve(static_cast<long>(diag_size));
+      std::vector<T> diag(static_cast<long>(diag_size),0.);
 
       for (il::int_t k = 0;k < pattern_.n_FRB; k++) {
           il::Array2D<double> aux = *full_rank_blocks_[k];
@@ -338,7 +340,6 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
           //
           bool in_lower = (i0 > j0) && (i0 > jend) && (iend > j0) && (iend > jend);
           bool in_upper = (i0 < j0) && (i0 < jend) && (iend < j0) && (iend < jend);
-
           if ( (!in_lower) && (!in_upper) ) // this fb intersect the diagonal....
           {
               for (il::int_t j = 0; j < aux.size(1); j++) {
@@ -352,6 +353,22 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
       }
     return diag;
   }
+/////
+  std::vector<T> diagonalOriginal(const il::Array<il::int_t> & permutation){
+      // return diagonal in original state....
+      il::int_t diag_size = il::max(size_[0],size_[1]);
+      il::int_t ncolpoints= diag_size/dof_dimension_;
+      std::vector<T> diag_raw=this->diagonal();
+      std::vector<T> diag(diag_raw.size(), 0.);
+      // permut back
+      for (il::int_t i = 0; i < ncolpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                diag[dof_dimension_ * permutation[i] + j] = diag_raw[dof_dimension_ * i + j];
+            }
+        }
+      return diag;
+  }
+
 
   //--------------------------------------------------------------------------
   void fullBlocksOriginal(const il::Array<il::int_t> & permutation, il::io_t, il::Array<T> &val_list,
@@ -400,8 +417,6 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
               << " n^2 " << (this->size_[0]) * (this->size_[1]) << "\n";
   }
 };
-
-
 
 }
 #endif

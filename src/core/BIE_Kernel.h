@@ -23,7 +23,7 @@ class BIE_Kernel {
 protected:
     bool local_unknowns_ {true};
     bool local_co_variables_{true};
-    il::int_t dof_dim_{1};
+    il::int_t dof_dimension_{1};
     il::int_t dim_{2};
 
 public:
@@ -41,7 +41,7 @@ public:
 
     bool isLocalUnknowns() const {return local_unknowns_;};
     bool isLocalCoVariables() const {return local_co_variables_;};
-    il::int_t getDofDim() const  {return dof_dim_;};
+    il::int_t getDofDimension() const  {return dof_dimension_;};
     il::int_t getSpatialDimension() const {return dim_;};
 
 };

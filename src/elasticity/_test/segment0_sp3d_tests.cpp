@@ -25,7 +25,7 @@ TEST(SP3D,test_seg_0_dof_dim){
     source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
-    ASSERT_TRUE(test.getDofDim()==2);
+    ASSERT_TRUE(test.getDofDimension() == 2);
 }
 
 TEST(SP3D,test_seg_0_dim){
@@ -64,7 +64,6 @@ TEST(SP3D,test_seg_0_self){
         std::cout << stnl(i,0) <<"-"  <<stnl(i,1)  <<"\n";
     }
     ASSERT_TRUE( abs(stnl(0,0)-test_self[0])<1.e-5 && abs(stnl(1,0)-test_self[1])<1.e-5 &&  abs(stnl(0,1)-test_self[2])<1.e-5 &&  abs(stnl(1,1)-test_self[3])<1.e-5)  ;
-
 }
 
 
