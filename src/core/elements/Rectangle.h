@@ -109,5 +109,31 @@ namespace bie{
     template<int p>
     Rectangle<p>::~Rectangle() = default;
 
+
+    /////////////////////////////////////////////////////////////////
+    //   Rectangle 0
+    template<>
+    inline Rectangle<0>::Rectangle() { n_nodes_=1; area_=0; };
+
+    template<>
+    inline void Rectangle<0>::setNodes()  {
+        // 0 order element: collocation at centroid
+        il::Array2D<double> col{1, 3, 0.};
+        for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
+            col(0, j) = this->centroid_[j] ;
+        }
+        this->nodes_ = col;
+    }
+
+    template<>
+    inline void Rectangle<0>::setCollocationPoints()   {
+        // 0 order element: collocation at centroid
+        il::Array2D<double> col{1, 3, 0.};
+        for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
+            col(0, j) = this->centroid_[j] ;
+        }
+        this->collocation_points_ = col;
+    }
+
 }
 #endif //BIGWHAM_RECTANGLE_H

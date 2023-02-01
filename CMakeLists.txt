@@ -277,11 +277,8 @@ set(SOURCE_FILES
 
         src/core/hierarchical_representation.h
         src/hmat/hmatrix/toHPattern.cpp
-        src/core/elements/Segment.cpp
         src/core/elements/Segment.h
-        src/core/elements/Triangle.cpp
         src/core/elements/Triangle.h
-        src/core/elements/Rectangle.cpp
         src/core/elements/Rectangle.h
         src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
         src/elasticity/2d/BIE_elastostatic_segment_1_impls.h)
