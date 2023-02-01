@@ -31,28 +31,15 @@
 #include <src/core/BIE_Kernel.h>
 #include <src/elasticity/BIE_elastostatic.h>
 #include <src/core/SquareMatrixGenerator.h>
+
 #include <src/elasticity/2d/BIE_elastostatic_segment_0_impls.h>
 #include <src/elasticity/2d/BIE_elastostatic_segment_1_impls.h>
+#include <src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h>
 
 #include <src/core/ElasticProperties.h>
 
-//#include <src/core/Mesh2D.h>
-//#include <src/core/Mesh3D.h>
 
-//#include <src/elasticity/PostProcessDDM_2d.h>
-//#include <src/elasticity/PostProcessDDM_3d.h>
-//
-// kernels.
-//#include <elasticity/3d/ElasticHMatrix3DR0.h>
-//#include <elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h>
-//#include <elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h>
-//#include <elasticity/3d/ElasticHMatrix3DR0displ.h>
-//#include <elasticity/3d/ElasticHMatrix3DT0.h>
-//#include <elasticity/3d/ElasticHMatrix3DT0_modes2and3.h>
-//#include <elasticity/3d/ElasticHMatrix3DT0displ.h>
-//#include <elasticity/3d/ElasticHMatrix3DT6.h>
-
-
+// utilities for switch with string in C++17
 // https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
 inline constexpr auto hash_djb2a(const std::string_view sv) {
   unsigned long hash{5381};
@@ -74,7 +61,6 @@ bie::BEMesh<El> createMeshFromVect(int spatial_dimension,int n_vertex_elt,const
     il::Array2D<double> Coor{npoints, spatial_dimension, 0.};  //
     il::Array2D<il::int_t> Conn{nelts, n_vertex_elt, 0};
     // populate mesh  ...
-    std::cout << "in create mesh \n";
     int index = 0;
     for (il::int_t i = 0; i < Coor.size(0); i++) {
         for (il::int_t j = 0; j < Coor.size(1); j++) {
@@ -91,10 +77,9 @@ bie::BEMesh<El> createMeshFromVect(int spatial_dimension,int n_vertex_elt,const
     }
     bie::BEMesh<El> mesh(Coor,Conn);
     std::cout << "in create mesh - done "  << "\n";
-
     return mesh;
 }
-////////////////////////////
+//////////////////////////// the 'infamous' Bigwhamio class
 class Bigwhamio {
 private:
   bie::Hmat<double> h_{}; // the  Hmat object
@@ -154,11 +139,11 @@ public:
 
    switch(hash_djb2a(kernel_)) {
           case "S3DP0"_sh:{
-              dimension_ = 2; const int p=0;
+              dimension_ = 2;
               using EltType = bie::Segment<0>;
               int  nvertices_per_elt_=dimension_;
               std::cout << " in S3DP0 " << coor.size() << "-" << conn.size();
-              bie::BEMesh<EltType> mesh=createMeshFromVect<bie::Segment<p>>(dimension_,nvertices_per_elt_,coor, conn);
+              bie::BEMesh<EltType> mesh=createMeshFromVect<EltType>(dimension_,nvertices_per_elt_,coor, conn);
               auto tes=mesh.getVertices(0);
               mesh.setCurrentElement(0);
               std::cout << " ELement vertices " << tes(0,0) << "- " <<tes(0,1) << tes(1,0) << "- " <<tes(1,1)<<"\n";
@@ -211,12 +196,12 @@ public:
               collocationPoints_=mesh.getCollocationPoints(); // be careful returning it in original ordering.  note this is only for the output function getCollocationPoints ... could be deleted possibly
               h_representation_time_=tt.time();tt.Reset();tt.Start();
               const auto ker_type = bie::ElasticKernelType::H;
-//              bie::BIE_elastostatic<EltType,EltType,ker_type>  ker(elas,dimension_);
-//              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
-//              h_.toHmat(M,hr,epsilon_aca_);
-//              tt.Stop();
-//              permutation_=hr.permutation_0_;
-//              hmat_time_=tt.time();
+              bie::BIE_elastostatic<EltType,EltType,ker_type>  ker(elas,dimension_);
+              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
+              h_.toHmat(M,hr,epsilon_aca_);
+              tt.Stop();
+              permutation_=hr.permutation_0_;
+              hmat_time_=tt.time();
               break;
           }
           default:

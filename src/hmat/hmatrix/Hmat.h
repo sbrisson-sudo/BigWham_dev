@@ -140,6 +140,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
     dof_dimension_=matrix_gen.blockSize();
     std::cout << " Loop on low rank blocks construction  \n";
     std::cout << " N low rank blocks "<< pattern_.n_LRB << " \n";
+    std::cout << "dof_dimension: "<< dof_dimension_ <<"\n";
 #pragma omp parallel
     {
       std::vector<std::unique_ptr<bie::LowRank<T>>> private_low_rank_blocks;

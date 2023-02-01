@@ -15,6 +15,7 @@
 #include <src/core/elements/Segment.h>
 
 namespace bie{
+
 // FOR NOW THIS IS THE SP3DP0 element !
     template<> inline std::vector<double> BIE_elastostatic<Segment<0>,Segment<0>,H>::influence(Segment<0> source_elt,il::int_t i_s,Segment<0>  receiver_elt, il::int_t i_r) const {
         //  return tractions - Hypersingular elastic kernel - Segment 0 element - note use of simplified3D kernel here

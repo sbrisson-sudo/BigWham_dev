@@ -70,6 +70,58 @@ TEST(triangle,triangle_0_5){
 }
 
 
+TEST(triangle,triangle_0_6){
+    // check vertices
+    il::Array2D<double> xyz{3,3,0.0};
+    xyz(1,0)=1.;
+    xyz(2,1)=1.;
+    bie::Triangle<0> tri0;
+    tri0.setElement(xyz);
+    auto x= tri0.getVertices();
+    ASSERT_TRUE(x(0,0)==xyz(0,0) && x(0,1)==xyz(0,1) && x(0,2)==xyz(0,2) );
+}
+
+
+
+TEST(triangle,triangle_0_7){
+    // check normal
+    il::Array2D<double> xyz{3,3,0.0};
+    xyz(1,0)=1.;
+    xyz(2,1)=1.;
+    bie::Triangle<0> tri0;
+    tri0.setElement(xyz);
+    auto x= tri0.getNormal();
+    ASSERT_TRUE(x[0]==0 && x[1]==0 && x[2]==1 );
+}
+
+
+TEST(triangle,triangle_0_8){
+    // check tangent 1
+    il::Array2D<double> xyz{3,3,0.0};
+    xyz(1,0)=1.;
+    xyz(2,1)=1.;
+    bie::Triangle<0> tri0;
+    tri0.setElement(xyz);
+    auto x= tri0.getTangent_1();
+    ASSERT_TRUE(x[0]==1 && x[1]==0 && x[2]==0 );
+}
+
+
+TEST(triangle,triangle_0_9){
+    // check tangent 2
+    il::Array2D<double> xyz{3,3,0.0};
+    xyz(1,0)=1.;
+    xyz(2,1)=1.;
+    bie::Triangle<0> tri0;
+    tri0.setElement(xyz);
+    auto x= tri0.getTangent_2();
+    ASSERT_TRUE(x[0]==0 && x[1]==1 && x[2]==0 );
+}
+
+
+
+
+
 
 TEST(triangle,triangle_2_0){
     // check # nodes

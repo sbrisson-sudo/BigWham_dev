@@ -52,6 +52,8 @@ namespace bie {
         il::StaticArray2D<double, dim, dim> rotationMatrix() const {
             il::StaticArray2D<double, dim, dim> R_{0.};
         };
+
+        il::StaticArray2D<double, nvert, dim> getVertices() const {return vertices_;};
         il::Array2D<double> getCollocationPoints() const { return collocation_points_; };
         il::int_t getNumberOfCollocationPoints() const { return collocation_points_.size(0); };
         il::Array2D<double> getNodes() const { return nodes_; };

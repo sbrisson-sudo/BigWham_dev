@@ -14,8 +14,8 @@
 
 #include <src/core/BoundaryElement.h>
 #include <src/elasticity/2d/BIE_elastostatic_segment_0_impls.h>
-
 #include <src/elasticity/2d/ElasticS3DP0_element.h>
+
 
 TEST(SP3D,test_seg_0_dof_dim){
 

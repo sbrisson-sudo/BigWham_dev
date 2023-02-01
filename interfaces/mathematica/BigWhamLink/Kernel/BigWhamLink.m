@@ -235,14 +235,15 @@ GetKernel[id_?(testHmatExpr)]=id@"getKernel"[];
 (* get problem vector dimension  *)
 GetProblemDimension[id_?(testHmatExpr)]:=id@"getProblemDimension"[];
 
-GetCollocationPoints[id_?(testHmatExpr)]:=Module[{permut,xycolPermut,dim,xycol},
+GetCollocationPoints[id_?(testHmatExpr)]:=id@"getCollocationPoints"[];
+(*)Module[{permut,xycolPermut,dim,xycol},
   permut=id@"getPermutation"[] + 1;
   xycolPermut=id@"getCollocationPoints"[];
   dim=GetProblemDimension[id];
   xycol=ConstantArray[0.,{Length[xycolPermut],dim}];
   xycol[[permut]]=xycolPermut;
   xycol
-]; (* return in the original state *)
+];*) (* return in the original state *)
 
 
 getPermuttedDOF[id_?(testHmatExpr)]:=Module[{dim,permut},

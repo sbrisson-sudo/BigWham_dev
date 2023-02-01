@@ -31,7 +31,7 @@ class SquareMatrixGenerator : public bie::MatrixGenerator<T> {
 
   BIE_Kernel bie_kernel_;
 
-  il::int_t dof_dim_; // unknowns per nodes
+  il::int_t dof_dimension_; // unknowns per nodes
   il::int_t size_; // total square matrix of size_*size_
   il::int_t number_points_; // size_ / block_size_
 
@@ -49,8 +49,8 @@ SquareMatrixGenerator<T,El,Bie_def>::SquareMatrixGenerator(bie::BEMesh<El> & mes
       mesh_{mesh},bie_kernel_{bie_kernel},permutation_{permutation}
       {
           number_points_= mesh_.numberCollocationPoints();
-          dof_dim_ = bie_kernel.getDofDimension() ;
-          size_ = number_points_ * dof_dim_ ;
+          dof_dimension_ = bie_kernel.getDofDimension() ;
+          size_ = number_points_ * dof_dimension_ ;
       };
 
 
@@ -63,7 +63,7 @@ il::int_t SquareMatrixGenerator<T,El,Bie_def>::size(il::int_t d) const {
 
 template <typename T,class El,class Bie_def>
 il::int_t SquareMatrixGenerator<T,El,Bie_def>::blockSize() const {
-  return dof_dim_;
+  return dof_dimension_;
 }
 
 template  <typename T,class El,class Bie_def>
@@ -103,18 +103,18 @@ void SquareMatrixGenerator<T,El,Bie_def>::set(il::int_t b0, il::int_t b1, il::io
         il::int_t e_k0 = mesh_.inElement(old_k0);  //  receiver element
         il::int_t ir_l = mesh_.localCollocationPointId(old_k0);
         receiver_elt.setElement(mesh_.getVertices(e_k0));
-        std::vector<double> st=bie_kernel_.influence(source_elt,is_l,receiver_elt,ir_l);
+        std::vector<double> st=bie_kernel_.influence(source_elt,is_l,receiver_elt,ir_l); //column major
+        IL_EXPECT_FAST(st.size()==dof_dimension_*dof_dimension_);
         il::int_t k=0;
-        for (il::int_t j = 0; j < dof_dim_; j++) {
-          for (il::int_t i = 0; i <  dof_dim_; i++) {
-            M(j0 * dof_dim_ + i, j1 * dof_dim_ + j) = st[k];
+        for (il::int_t j = 0; j < dof_dimension_; j++) {
+          for (il::int_t i = 0; i < dof_dimension_; i++) {
+            M(j0 * dof_dimension_ + i, j1 * dof_dimension_ + j) = st[k];
             k++;
           }
         }
       }
     }
   }
-
 }
 
 }

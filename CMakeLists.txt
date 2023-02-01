@@ -243,8 +243,6 @@ set(SOURCE_FILES
         src/elasticity/2d/Elastic2DP1_element.cpp
         src/elasticity/PostProcessDDM_2d.cpp
         src/elasticity/PostProcessDDM_3d.cpp
-        src/elasticity/2d/FullMatrixAssembly2D.cpp
-        src/elasticity/2d/FullMatrixAssembly2D.h
 
         # 3D source code
         src/core/Mesh3D.cpp src/core/Mesh3D.h
@@ -281,7 +279,7 @@ set(SOURCE_FILES
         src/core/elements/Triangle.h
         src/core/elements/Rectangle.h
         src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
-        src/elasticity/2d/BIE_elastostatic_segment_1_impls.h)
+        src/elasticity/2d/BIE_elastostatic_segment_1_impls.h src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h)
 
 
 ################################################################################
@@ -392,7 +390,7 @@ if(BUILD_GOOGLE_TESTS)
             src/elasticity/_test/elastic3DR0_element_tests.cpp
             #src/_test/elastic3DR0_element_benchmark.cpp
             src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-            src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator_tests.cpp src/core/_test/hierarchical_representation_tests.cpp src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp src/core/_test/triangle_tests.cpp src/core/_test/rectangle_tests.cpp src/_test/bigwhamio_tests_2d.cpp)
+            src/core/_test/segment_test.cpp src/elasticity/BIE_elastostatic.h src/elasticity/_test/segment0_sp3d_tests.cpp src/core/_test/BEmesh_tests.cpp src/elasticity/_test/elastic_square_matrix_generator_tests.cpp src/core/_test/hierarchical_representation_tests.cpp src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp src/core/_test/triangle_tests.cpp src/core/_test/rectangle_tests.cpp src/_test/bigwhamio_tests_2d.cpp src/elasticity/_test/triangle0_tests.cpp)
 
     add_executable(BigWhamElastUnitTest ${TESTED_SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp )
 

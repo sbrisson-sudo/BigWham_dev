@@ -79,13 +79,15 @@ namespace bie{
             this->setNodes();
         }
 
-        void setCollocationPoints(){};
+        void setCollocationPoints();
+
         void setNodes() {
             this->nodes_ = this->collocation_points_; // by default nodes = collocation points for 0 element
         };
 
         il::int_t getNumberOfNodes() const { return n_nodes_; };
         il::int_t getNumberOfCollocationPoints() const { return n_nodes_; };
+        il::StaticArray2D<double, 3, 3> getVertices() const {return vertices_;};
 
         il::StaticArray2D<double, 3, 3> rotationMatrix() {
             il::StaticArray2D<double, 3, 3> R;
@@ -115,7 +117,7 @@ namespace bie{
 
     template<int p>
     Triangle<p>::~Triangle() = default;
-    
+
 //   Triangle 0
     template<>
     inline Triangle<0>::Triangle() { n_nodes_=1; };

@@ -18,6 +18,7 @@
 #include <src/hmat/cluster/cluster.h>
 #include <src/elasticity/2d/BIE_elastostatic_segment_0_impls.h>
 #include <src/elasticity/2d/BIE_elastostatic_segment_1_impls.h>
+#include <src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h>
 
 #include <src/elasticity/2d/ElasticS3DP0_element.h>
 #include <src/hmat/hmatrix/Hmat.h>
@@ -107,9 +108,6 @@ TEST(SquareMatGen,segment_0_Hmat_1){
     ker.setKernelProperties(prop);
 
     il::int_t max_leaf_size=32;
-//    bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, xcol);
-//    il::Array<il::int_t> permutation =cluster.permutation;
-////
     bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,1.0);
     bie::SquareMatrixGenerator<double,bie::Segment<0>,bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>> M(my_mesh,
                                                                                                                                           ker,hr.permutation_0_);
@@ -416,3 +414,51 @@ TEST(SquareMatGen,segment_1_Hmat_1_two_adjacent_segs) {
     ASSERT_NEAR(my_sum, 0., 1.e-5);
 }
 
+TEST(SquareMatGen,Triangle_0_1) {
+    // 2 triangles on the same plane making a square of size 1 by 1
+    //
+    il::Array2D<double> coor{4,3,0.};
+
+    coor(1,0)=1.;
+    coor(2,1)=1.;
+    coor(3,0)=1.;coor(3,1)=1.;
+
+    il::Array2D<il::int_t> conn{2,3,0};
+    conn(0,1)=1; conn(0,2)=2;
+    conn(1,0)=2; conn(1,1)=1; conn(1,2)=3;
+
+    using El_type = bie::Triangle<0>;
+    bie::BEMesh<El_type> my_mesh(coor, conn);
+    il::Array2D<double> xcol=my_mesh.getCollocationPoints();
+    bie::ElasticProperties elas(1,0.0);
+    bie::BIE_elastostatic<El_type,El_type,bie::ElasticKernelType::H>  ker(elas,coor.size(1));
+    il::Array<double> prop{1,1000.};
+    ker.setKernelProperties(prop);
+    il::int_t max_leaf_size=32;double eta=2.0;
+    bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,eta);
+
+    bie::SquareMatrixGenerator<double,El_type,bie::BIE_elastostatic<El_type,El_type,bie::ElasticKernelType::H>> M(my_mesh,
+                                                                                                                  ker,hr.permutation_0_);
+    double eps_aca=1.e-3;
+    bie::Hmat<double>  h_(M,hr,eps_aca);
+    const il::Array<il::int_t> permutation=hr.permutation_0_;
+    il::Array<double> val_list;il::Array<int> pos_list;
+    h_.fullBlocksOriginal(permutation,il::io,val_list,pos_list);
+    for (int i=0;i<9;i++){
+        std::cout << val_list[i] <<"\n";
+    }
+    ASSERT_TRUE(h_.isBuilt());
+    //simple opening mode...
+//    il::Array<double> x{M.size(1),0.0},y{M.size(1),0.0};
+//    for(il::int_t i=0;i<M.sizeAsBlocks(0);i++){
+//        x[2*hr.permutation_0_[i]+1]=4.0*sqrt(L*L-xcol(i,0)*xcol(i,0) );
+//    }
+//    y=h_.matvec(x);
+//    il::Array<double> rel_err{M.sizeAsBlocks(0),0.};
+//    for (il::int_t i=0;i<M.sizeAsBlocks(0);i++){
+//        rel_err[i]=sqrt((y[2*i+1]-1.)*(y[2*i+1]-1.));
+//        //std::cout << "rel x: " << rel_err[i] << "\n";
+//    }
+
+
+}
