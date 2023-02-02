@@ -60,5 +60,5 @@ configure_file(compile.m
   ${CMAKE_BINARY_DIR}/interfaces/mathematica/compile.m)
 
 
-add_custom_target(CompileBigWhamMath ALL COMMAND wolframscript -print all -v -f compile.m)
-add_dependencies(CompileBigWhamMath BigWham copy_math_libresources copy_math_root)
+# add_custom_target(CompileBigWhamMath ALL COMMAND wolframscript -print all -v -f compile.m)
+# add_dependencies(CompileBigWhamMath BigWham copy_math_libresources copy_math_root)

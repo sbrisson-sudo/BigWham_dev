@@ -250,6 +250,11 @@ endif()
 
 
 set(SOURCE_FILES
+  # ## CNPY
+  # src/examples/cnpy.cpp
+        ## IL
+        # il/il/io/numpy/numpy.cpp
+        ## hmat
         src/hmat/cluster/cluster.h
         src/hmat/cluster/cluster.cpp
         # 2D source code
@@ -439,4 +444,4 @@ endif()
 ################################################################################
 
 # add_library(bigwham_shared SHARED  ${SOURCE_FILES})
-# add_subdirectory(src/examples)
+add_subdirectory(src/examples)
