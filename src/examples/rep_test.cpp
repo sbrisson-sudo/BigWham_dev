@@ -29,13 +29,6 @@ int main(int argc, char *argv[]) {
   std::string f_coord = "mesh_coords.npy";
   std::string f_conn = "mesh_conn.npy";
 
-  // il::Status load_status{};
-  // auto load_helper_real = il::LoadHelper<Real2D>();
-  // Real2D coord = load_helper_real.load(f_coord, il::io, load_status);
-
-  // auto load_helper_int = il::LoadHelper<Int2D>();
-  // Int2D conn = load_helper_int.load(f_conn, il::io, load_status);
-
   auto coord_npy = cnpy::npy_load(f_coord);
   auto conn_npy = cnpy::npy_load(f_conn);
 
@@ -48,8 +41,6 @@ int main(int argc, char *argv[]) {
   for (uint i = 0; i < conn_npy.num_vals; i++) {
     conn.Data()[i] = conn_npy.data<il::int_t>()[i];
   }
-
-  // std::cout << coord.shape[0] << coord.shape[1] << std::endl;
 
   std::cout << print_array(coord) << std::endl;
   std::cout << print_array(conn) << std::endl;
