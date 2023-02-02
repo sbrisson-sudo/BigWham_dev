@@ -27,6 +27,11 @@ project(BigWham VERSION 1.0
 
 set(CMAKE_CXX_STANDARD 17)
 
+if ( NOT CMAKE_BUILD_TYPE )
+    message( "Build Type not set, defaulting to Release..." )
+    set( CMAKE_BUILD_TYPE Release)
+endif()
+
 #####################################
 # set options: False = 0, True = 1  #
 #####################################
@@ -48,6 +53,19 @@ option(USE_INTEL "use intel" OFF)   # --> compiler option
 option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
 set(MATHEMATICA_INTERFACE "make mathematica interface" ON)  # --> to add static option to CMAKE_CXX_FLAGS
+
+if(BUILD_PYTHON_BINDINGS)
+  message("Building Python Binding")
+    ## Set root of python virtual env
+    set(PYENV_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/bigwham_venv" CACHE PATH "root path of bigwham venv")
+    find_package(Python COMPONENTS Interpreter Development)
+    set(PYBIND11_PYTHON_VERSION 3.5)
+    # message("The Python interpreter set by the user is : " ${Python_EXECUTABLE})
+    # message("The Python Library set by the user is : " ${Python_LIBRARIES})
+    set(pyenv_root_lib_path "${PYENV_ROOT}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/.pth")
+    message("BigWham Python Library Path: ${pyenv_root_lib_path}")
+    add_subdirectory(pybind11)
+endif()
 
 #####################################
 # optimization options              #
@@ -338,15 +356,6 @@ endif()
 message("BUILD_PYTHON_BINDINGS ${BUILD_PYTHON_BINDINGS}")
 
 if(BUILD_PYTHON_BINDINGS)
-    ## Set root of python virtual env
-    set(PYENV_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/bigwham_venv" CACHE PATH "root path of bigwham venv")
-    find_package(Python COMPONENTS Interpreter Development)
-    set(PYBIND11_PYTHON_VERSION 3.5)
-    # message("The Python interpreter set by the user is : " ${Python_EXECUTABLE})
-    # message("The Python Library set by the user is : " ${Python_LIBRARIES})
-    set(pyenv_root_lib_path "${PYENV_ROOT}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/.pth")
-    message("BigWham Python Library Path: ${pyenv_root_lib_path}")
-    add_subdirectory(pybind11)
 
     # if (APPLE)
     #     set(PYTHON_EXECUTABLE "/Users/bricelecampion/opt/anaconda3/envs/python3.9/bin/python3.9")
@@ -368,8 +377,9 @@ endif()
 ################################################################################
 # Mathematica interface
 ################################################################################
-message("THis is the mma interface flag", ${MATHEMATICA_INTERFACE})
+# message("THis is the mma interface flag ${MATHEMATICA_INTERFACE}")
 if(MATHEMATICA_INTERFACE)
+  message("Building Mathematica Interface")
     add_subdirectory(interfaces/mathematica)
 endif()
 
@@ -378,6 +388,7 @@ endif()
 ################################################################################
 if(BUILD_GOOGLE_TESTS)
 
+  message("Building Google Tests")
    # set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DIL_FOLDER='\"${IL_FOLDER}\"'")
     set(TESTED_SOURCE_FILES ${SOURCE_FILES})
