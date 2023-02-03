@@ -47,12 +47,13 @@ void copy_array2D(il::Array2D<T> &, const cnpy::NpyArray &);
 
 int main(int argc, char *argv[]) {
 
-  // std::string f_coord = "../../../src/examples/mesh_coords.npy";
-  // std::string f_conn = "../../../src/examples/mesh_conn.npy";
+  std::string f_coord = "../../../src/examples/mesh_coords.npy";
+  std::string f_conn = "../../../src/examples/mesh_conn.npy";
 
-  std::string f_coord =
-      "/home/ankit/geolab/bigwham_examples/src/mesh_coords.npy";
-  std::string f_conn = "/home/ankit/geolab/bigwham_examples/src/mesh_conn.npy";
+  // std::string f_coord =
+  //     "/home/ankit/geolab/bigwham_examples/src/mesh_coords.npy";
+  // std::string f_conn =
+  // "/home/ankit/geolab/bigwham_examples/src/mesh_conn.npy";
 
   auto coord_npy = cnpy::npy_load(f_coord);
   auto conn_npy = cnpy::npy_load(f_conn);
