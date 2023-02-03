@@ -18,7 +18,6 @@
 #include "src/core/SquareMatrixGenerator.h"
 #include "src/core/elements/Triangle.h"
 #include "src/core/hierarchical_representation.h"
-#include <src/elasticity/BIE_elastostatic.h>
 #include "src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
 #include "src/hmat/hmatrix/Hmat.h"
 #include <algorithm>
@@ -27,6 +26,7 @@
 #include <iostream>
 #include <math.h>
 #include <memory>
+#include <src/elasticity/BIE_elastostatic.h>
 #include <string>
 #include <vector>
 
@@ -74,8 +74,8 @@ int main(int argc, char *argv[]) {
   copy_array2D(coord, coord_npy);
   copy_array2D(conn, conn_npy);
 
-  std::cout << print_array2D(coord) << std::endl;
-  std::cout << print_array2D(conn) << std::endl;
+  // std::cout << print_array2D(coord) << std::endl;
+  // std::cout << print_array2D(conn) << std::endl;
 
   Mesh my_mesh(coord, conn);
   Real2D xcol = my_mesh.getCollocationPoints();
@@ -83,6 +83,9 @@ int main(int argc, char *argv[]) {
   KernelH ker(elas, coord.size(1));
   Real1D prop{1, 1000.};
   ker.setKernelProperties(prop);
+
+  std::cout << "Number of Collocation points  = " << xcol.size(0) << " X "
+            << xcol.size(1) << std::endl;
 
   bie::HRepresentation hr =
       bie::h_representation_square_matrix(my_mesh, max_leaf_size, eta);
@@ -93,26 +96,36 @@ int main(int argc, char *argv[]) {
   Real1D cos{M.size(1), 0.0}, trac_perm{M.size(0), 0.0};
   double pre_fac = (8 * (1 - nu * nu)) / (pi * E);
 
+  // std::cout << print_array1D(hr.permutation_1_) << std::endl;
   double rsq;
+
   for (il::int_t i = 0; i < M.sizeAsBlocks(1); i++) {
     rsq = xcol(i, 0) * xcol(i, 0) + xcol(i, 1) * xcol(i, 1);
-    cos[hr.permutation_1_[i] + 2] = pre_fac * std::sqrt(radius * radius - rsq);
+    cos[dim * hr.permutation_1_[i] + 2] =
+        pre_fac * std::sqrt(radius * radius - rsq);
   }
+
+  // std::cout << "COS \n " << cos.size() << std::endl;
+  // std::cout << print_array1D(cos) << std::endl;
+
   trac_perm = h_.matvec(cos);
   Real1D trac = trac_perm;
 
+  // std::cout << "Traction Perm \n " << print_array1D(trac_perm) << std::endl;
+
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
     for (uint d = 0; d < dim; d++) {
-      trac[hr.permutation_0_[i] + d] = trac_perm[i + d];
+      trac[dim * hr.permutation_0_[i] + d] = trac_perm[dim * i + d];
     }
   }
   std::cout << "Traction \n " << print_array1D(trac) << std::endl;
 
   Real1D rel_err{M.sizeAsBlocks(0), 0.};
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
-    rel_err[i] += trac[i + 0] * trac[i + 0];
-    rel_err[i] += trac[i + 1] * trac[i + 1] - pressure * pressure;
-    rel_err[i] += trac[i + 2] * trac[i + 2];
+    rel_err[i] += trac[dim * i + 0] * trac[dim * i + 0];
+    rel_err[i] += trac[dim * i + 1] * trac[dim * i + 1];
+    rel_err[i] +=
+        (trac[dim * i + 2] - pressure) * (trac[dim * i + 2] - pressure);
     rel_err[i] = std::sqrt(rel_err[i]);
     // std::cout << "rel x: " << rel_err[i] << "\n";
   }
@@ -147,7 +160,7 @@ void copy_array2D(il::Array2D<T> &A, const cnpy::NpyArray &B) {
 }
 
 template <typename T> std::string print_array1D(const il::Array<T> &instance) {
-  std::string t1 = "Size : " + std::to_string(instance.size());
+  std::string t1 = "Size : " + std::to_string(instance.size()) + "\n\n";
   std::string t2 = "";
   for (il::int_t i = 0; i < instance.size(); ++i) {
     t2 += std::to_string(instance[i]) + " ";

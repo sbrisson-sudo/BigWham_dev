@@ -2,10 +2,12 @@ import sys
 import pygmsh as pgm
 import numpy as np
 
+
 def usage():
     print("Usage:")
     print(sys.argv[0] + " h")
     exit(1)
+
 
 def plot(points, triangles):
     from matplotlib import pyplot as plt
@@ -19,6 +21,7 @@ def plot(points, triangles):
     plt.axis("off")
 
     plt.savefig("mesh.png", transparent=True)
+
 
 ##
 # Triangluar mesh in radius 1 penny shape crack
@@ -45,14 +48,12 @@ with pgm.geo.Geometry() as geom:
     # geom.add_physical(c.plane_surface, "super disk")
     mesh = geom.generate_mesh()
 
-
 print("Number of points", mesh.points.shape[0])
 print("Number of Elements", mesh.get_cells_type("triangle").shape[0])
 plot(mesh.points, mesh.get_cells_type("triangle"))
 
-
 points = np.asfortranarray(mesh.points)
 triangles = np.asfortranarray(mesh.get_cells_type("triangle"))
 
-np.save("mesh_coords",points )
+np.save("mesh_coords", points)
 np.save("mesh_conn", triangles)
