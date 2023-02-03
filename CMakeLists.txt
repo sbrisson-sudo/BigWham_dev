@@ -129,6 +129,7 @@ endif()
 
 # For OpenMP
 if(IL_OPENMP)
+  message("OPENMP ENABLED")
     if(APPLE)
         if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
             MESSAGE("   -- OPENMP ENABLED")

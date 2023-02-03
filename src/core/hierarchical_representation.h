@@ -44,6 +44,7 @@ namespace bie {
         tt.Stop();
         tt.Reset();
         hr.permutation_0_ = cluster.permutation;
+        hr.permutation_1_ = cluster.permutation;
 
         tt.Start();
         const il::Tree<bie::SubHMatrix, 4> block_tree = bie::hmatrixTreeIxI(Xcol, cluster.partition, eta);

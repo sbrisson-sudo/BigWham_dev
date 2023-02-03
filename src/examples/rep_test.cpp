@@ -18,7 +18,8 @@
 #include "src/core/SquareMatrixGenerator.h"
 #include "src/core/elements/Triangle.h"
 #include "src/core/hierarchical_representation.h"
-#include "src/elasticity/BIE_elastostatic.h"
+#include <src/elasticity/BIE_elastostatic.h>
+#include "src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
 #include "src/hmat/hmatrix/Hmat.h"
 #include <algorithm>
 #include <cmath>
@@ -46,8 +47,8 @@ void copy_array2D(il::Array2D<T> &, const cnpy::NpyArray &);
 
 int main(int argc, char *argv[]) {
 
-  std::string f_coord = "mesh_coords.npy";
-  std::string f_conn = "mesh_conn.npy";
+  std::string f_coord = "../../../src/examples/mesh_coords.npy";
+  std::string f_conn = "../../../src/examples/mesh_conn.npy";
 
   auto coord_npy = cnpy::npy_load(f_coord);
   auto conn_npy = cnpy::npy_load(f_conn);
@@ -56,6 +57,7 @@ int main(int argc, char *argv[]) {
   Int2D conn;
 
   // Penby shape geometery
+  uint dim = 3;
   double radius = 1.0;
   double pressure = 1.0;
 
@@ -68,13 +70,12 @@ int main(int argc, char *argv[]) {
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
   double eps_aca = 1.e-3;
-  uint dim = 3;
 
   copy_array2D(coord, coord_npy);
   copy_array2D(conn, conn_npy);
 
-  // std::cout << print_array2D(coord) << std::endl;
-  // std::cout << print_array2D(conn) << std::endl;
+  std::cout << print_array2D(coord) << std::endl;
+  std::cout << print_array2D(conn) << std::endl;
 
   Mesh my_mesh(coord, conn);
   Real2D xcol = my_mesh.getCollocationPoints();

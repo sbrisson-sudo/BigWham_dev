@@ -104,6 +104,8 @@ void SquareMatrixGenerator<T,El,Bie_def>::set(il::int_t b0, il::int_t b1, il::io
         il::int_t ir_l = mesh_.localCollocationPointId(old_k0);
         receiver_elt.setElement(mesh_.getVertices(e_k0));
         std::vector<double> st=bie_kernel_.influence(source_elt,is_l,receiver_elt,ir_l); //column major
+        // std::cout << "kernel size =" << st.size() << std::endl; 
+        // std::cout << "DOF dimension =" << dof_dimension_ << std::endl; 
         IL_EXPECT_FAST(st.size()==dof_dimension_*dof_dimension_);
         il::int_t k=0;
         for (il::int_t j = 0; j < dof_dimension_; j++) {
