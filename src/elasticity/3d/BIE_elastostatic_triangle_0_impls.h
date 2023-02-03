@@ -34,7 +34,7 @@ namespace bie{
 
         il::StaticArray<double,3> receiver_coor{0};
         for (int i=0;i<3;i++){
-            receiver_coor[i]=el_cp_r(i_r,i);
+            receiver_coor[i]=el_cp_r(i_r,i)+ std::numeric_limits<double>::epsilon();
         }
 
         // get coordinates vertices of triangular source element
@@ -55,9 +55,6 @@ namespace bie{
         for (int i = 0; i < 3; ++i)
         { //loop over the rows of Stress, i.e., over each DD component effect
             // definition of temporary stress tensor
-//            for (int l=0;l<6;l++){
-//                std::cout << "stress " << Stress(i,l) <<"\n";
-//            }
 
             sigma_temp(0,0) = Stress(i,0); // S11
             sigma_temp(0,1) = Stress(i,3); // S12
@@ -92,7 +89,6 @@ namespace bie{
         for (int j=0;j<3;j++){
             for (int i=0;i<3;i++){
                 stnl[k]=A_rotated(i,j);
-
                 k++;
             }
         }
