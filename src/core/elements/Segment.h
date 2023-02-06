@@ -10,7 +10,7 @@
 #define BIGWHAM_SEGMENT_H
 
 #include <il/Array2D.h>
-#include <src/core/BoundaryElement.h>
+#include "core/BoundaryElement.h"
 
 namespace bie{
 

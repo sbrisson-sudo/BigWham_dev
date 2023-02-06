@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-#include <src/core/DomainMesh.h>
+#include "core/DomainMesh.h"
 
 
 TEST(domain_Mesh_Test,t1) {

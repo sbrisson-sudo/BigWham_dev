@@ -11,8 +11,8 @@
 #define BIGWHAM_EXE_ELASTIC3DT0_ELEMENT_H
 
 #include <il/StaticArray2D.h>
-#include <src/core/FaceData.h>
-#include <src/core/ElasticProperties.h>
+#include "core/FaceData.h"
+#include "core/ElasticProperties.h"
 
 namespace bie {
 //

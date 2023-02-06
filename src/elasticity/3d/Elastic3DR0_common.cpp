@@ -12,7 +12,7 @@
 #include <iostream>
 #include <il/linearAlgebra.h>
 #include <il/blas.h>
-#include <src/elasticity/3d/Elastic3DR0_common.h>
+#include "elasticity/3d/Elastic3DR0_common.h"
 
 
 namespace bie{

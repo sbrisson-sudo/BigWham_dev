@@ -12,8 +12,8 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include <src/core/BoundaryElement.h>
-#include <src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h>
+#include "core/BoundaryElement.h"
+#include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
 
 
 TEST(Triangle0,test_H_1){

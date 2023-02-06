@@ -14,8 +14,8 @@
 #include <il/StaticArray2D.h>
 #include <il/linearAlgebra.h>
 #include <il/linearAlgebra/dense/norm.h>
-#include <src/elasticity/3d/constants.h>
-#include <src/core/element_utilities.h>
+#include "elasticity/3d/constants.h"
+#include "core/element_utilities.h"
 
 namespace bie {
 

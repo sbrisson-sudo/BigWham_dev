@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <src/core/BoundaryElement.h>
+#include "core/BoundaryElement.h"
 
 namespace bie {
 

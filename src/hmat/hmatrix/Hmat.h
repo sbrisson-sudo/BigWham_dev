@@ -16,7 +16,7 @@
 #pragma once
 #include <omp.h>
 
-#include <src/core/hierarchical_representation.h>
+#include "core/hierarchical_representation.h"
 #include <hmat/hmatrix/LowRank.h>
 #include <hmat/hmatrix/toHPattern.h>
 

@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <math.h>
-#include <src/_test/penny_shaped_crack_analytical_sol.h>
+#include "_test/penny_shaped_crack_analytical_sol.h"
 #include <vector>
 
 namespace bie{

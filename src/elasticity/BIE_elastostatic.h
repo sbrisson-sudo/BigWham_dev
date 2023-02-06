@@ -9,11 +9,11 @@
 #ifndef BIGWHAM_BIE_ELASTOSTATIC_H
 #define BIGWHAM_BIE_ELASTOSTATIC_H
 
-#include <src/core/BIE_Kernel.h>
-#include <src/core/ElasticProperties.h>
-#include <src/core/BoundaryElement.h>
+#include "core/BIE_Kernel.h"
+#include "core/ElasticProperties.h"
+#include "core/BoundaryElement.h"
 
-#include <src/elasticity/2d/ElasticS3DP0_element.h>
+#include "elasticity/2d/ElasticS3DP0_element.h"
 
 namespace bie{
 
@@ -49,8 +49,7 @@ namespace bie{
             kernel_properties_=prop;
         }
 
-         virtual std::vector<double>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const {} ;
-
+         [[noreturn]] virtual std::vector<double>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const {} ;
     };
 
 

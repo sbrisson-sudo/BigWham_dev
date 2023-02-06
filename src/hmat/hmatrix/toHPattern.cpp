@@ -6,7 +6,7 @@
 // See the LICENSE.TXT file for more details.
 //
 
-#include <src/hmat/hmatrix/toHPattern.h>
+#include "hmat/hmatrix/toHPattern.h"
 
 namespace bie{
 

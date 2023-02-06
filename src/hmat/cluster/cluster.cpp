@@ -6,10 +6,10 @@
 // Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
-
+#include "cluster/cluster.h"
 #include <limits>
 #include <il/Tree.h>
-#include <src/hmat/cluster/cluster.h>
+
 
 namespace bie {
 

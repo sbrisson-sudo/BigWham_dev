@@ -11,9 +11,9 @@
 #pragma once
 
 #include <il/linearAlgebra/dense/blas/dot.h>
-#include <src/elasticity/BIE_elastostatic.h>
-#include <src/core/elements/Triangle.h>
-#include <src/elasticity/3d/Elastic3DT0_element.h>
+#include "elasticity/BIE_elastostatic.h"
+#include "core/elements/Triangle.h"
+#include "elasticity/3d/Elastic3DT0_element.h"
 
 namespace bie{
 

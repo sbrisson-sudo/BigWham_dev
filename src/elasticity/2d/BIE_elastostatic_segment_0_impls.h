@@ -11,8 +11,8 @@
 #pragma once
 
 
-#include <src/elasticity/BIE_elastostatic.h>
-#include <src/core/elements/Segment.h>
+#include "elasticity/BIE_elastostatic.h"
+#include "core/elements/Segment.h"
 
 namespace bie{
 

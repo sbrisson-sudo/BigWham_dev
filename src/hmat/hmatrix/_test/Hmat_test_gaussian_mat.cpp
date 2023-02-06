@@ -5,19 +5,16 @@
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland, Geo-Energy Laboratory, 2016-2023.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
-
-
-#pragma once
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/math.h>
 //
-#include <src/hmat/cluster/cluster.h>
-#include <src/hmat/hmatrix/toHPattern.h>
-#include <src/hmat/hmatrix/Hmat.h>
+#include "hmat/cluster/cluster.h"
+#include "hmat/hmatrix/toHPattern.h"
+#include "hmat/hmatrix/Hmat.h"
 
-#include <src/hmat/arrayFunctor/GaussianMatrix.h>
+#include "hmat/arrayFunctor/GaussianMatrix.h"
 
 TEST(hmat,gaussian_1){
     il::int_t n=100;

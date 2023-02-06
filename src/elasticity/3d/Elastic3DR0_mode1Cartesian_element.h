@@ -9,8 +9,8 @@
 
 
 #include <il/StaticArray2D.h>
-#include <src/core/FaceData.h>
-#include <src/core/ElasticProperties.h>
+#include "core/FaceData.h"
+#include "core/ElasticProperties.h"
 
 
 namespace bie{

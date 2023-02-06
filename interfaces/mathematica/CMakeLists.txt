@@ -1,64 +1,71 @@
 ## Make directories
-add_custom_target(make_math_root ALL COMMAND ${CMAKE_COMMAND} -E 
-  make_directory
-  ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink)
-add_custom_target(make_math_libresources ALL COMMAND ${CMAKE_COMMAND} -E 
-  make_directory
-  ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/LibraryResources/Source)
-add_custom_target(make_math_kernel ALL COMMAND ${CMAKE_COMMAND} -E 
-  make_directory
-  ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/Kernel)
+add_custom_target(copy_math_root ALL
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/LibraryResources/Source
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/Kernel
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/PacletInfo.m ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/"BigWhamLink/LibraryResources/Source/HMatExpr.h"
+                                                ${CMAKE_CURRENT_SOURCE_DIR}/"BigWhamLink/LibraryResources/Source/Manager.h"
+                                                ${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/LibraryResources/Source
+)
 
-## Root files
-set(src_math_root_files "${CMAKE_CURRENT_SOURCE_DIR}/PacletInfo.m")
-                        # "${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink.nb"
-                        # "${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink-RunTests.nb")
-add_custom_target(copy_math_root ALL COMMAND ${CMAKE_COMMAND} -E 
-  copy_if_different ${src_math_root_files}
-  ${CMAKE_BINARY_DIR}/interfaces/mathematica)
+set(_il_compile_definitions)
+foreach(_flags ${IL_COMPILE_DEFINITIONS})
+  list(APPEND _il_compile_definitions "-D${_flags}")
+endforeach()
 
-add_dependencies(copy_math_root make_math_kernel make_math_libresources make_math_root)
-
-## library resource files
-set(src_math_libresources_files "${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink/LibraryResources/Source/HMatExpr.h"
-                                "${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink/LibraryResources/Source/Manager.h")
-add_custom_target(copy_math_libresources ALL COMMAND ${CMAKE_COMMAND} -E 
-  copy_if_different ${src_math_libresources_files}
-  ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/LibraryResources/Source)
-
-# ## copy ltemplate 
-# add_custom_target(copy_math_ltemplate ALL COMMAND ${CMAKE_COMMAND} -E 
-#   copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink/Kernel/LTemplate
-#   ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/Kernel/LTemplate)
-
-# ## copy tests
-# add_custom_target(copy_math_tests ALL COMMAND ${CMAKE_COMMAND} -E 
-#   copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink/Tests
-#   ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/Tests)
+set(_il_link_options)
+set(_il_link_dirs)
+foreach(_flag ${IL_LINK_OPTIONS})
+  if(NOT ${_flag} MATCHES "-Wl")
+    if(EXISTS ${_flag})
+      get_filename_component(_blas_library_dir "${_flag}" DIRECTORY)
+      get_filename_component(_blas_library "${_flag}" NAME_WE)
+      string(REPLACE ${CMAKE_SHARED_LIBRARY_PREFIX} "-l" _blas_library_flag "${_blas_library}")
+      message("${_blas_library} ${_blas_library_flag}")
+      list(APPEND _il_link_dirs ${_blas_library_dir})
+      list(APPEND _il_link_options "${_blas_library_flag}")
+    else()
+      list(APPEND _il_link_options "${_flag}")
+    endif()
+  endif()
+endforeach()
+list(REMOVE_DUPLICATES _il_link_dirs)
 
 
-# ## copy Examples
-# add_custom_target(copy_math_examples ALL COMMAND ${CMAKE_COMMAND} -E 
-#   copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/BigWhamLink/Examples
-#   ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/Examples)
+quote_arguments(MMA_COMPILER_OPTIONS "-std=c++17" ${IL_COMPILE_OPTIONS} ${_il_compile_definitions})
+quote_arguments(MMA_LINKER_OPTIONS ${_il_link_options})
+quote_arguments(MMA_LIBRARY_DIRS ${_il_link_dirs})
+quote_arguments(MMA_INCLUDE_DIRS ${IL_INCLUDE_DIRS} ${BIGWHAM_INCLUDE_DIRS})
 
-# #
-# set(BLA_STATIC ON)
-# message(${BLA_STATIC})
-# find_package(BLAS REQUIRED)
+message("LTEMPLATE_DIR: ${LTEMPLATE_DIR}")
+message("MMA_COMPILER_OPTIONS: ${MMA_COMPILER_OPTIONS}")
+message("MMA_LINKER_OPTIONS: ${MMA_LINKER_OPTIONS}")
+message("MMA_INCLUDE_DIRS: ${MMA_INCLUDE_DIRS}")
+message("MMA_LIBRARY_DIRS: ${MMA_LIBRARY_DIRS}")
+# This is a bit hacky, since I cannot retreive link informations from the
 
-# 
-set(LTemplateLibPath "${CMAKE_SOURCE_DIR}/LTemplate/LTemplate")
 configure_file(BigWhamLink/Kernel/BuildSettings.m
-  ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/Kernel/BuildSettings.m)
-
-
+  ${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/Kernel/BuildSettings.m
+  @ONLY)
 configure_file(BigWhamLink/Kernel/BigWhamLink.m
-  ${CMAKE_BINARY_DIR}/interfaces/mathematica/BigWhamLink/Kernel/BigWhamLink.m)
-
+  ${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/Kernel/BigWhamLink.m
+  @ONLY)
 configure_file(compile.m
-  ${CMAKE_BINARY_DIR}/interfaces/mathematica/compile.m)
+  ${CMAKE_CURRENT_BINARY_DIR}/compile.m
+  @ONLY)
 
+find_file(WOLFRAMSCRIPT_EXE wolframscript REQUIRED)
 
-# add_custom_target(CompileBigWhamMath ALL COMMAND wolframscript -print all -v -f compile.m)
-# add_dependencies(CompileBigWhamMath BigWham copy_math_libresources copy_math_root)
+mark_as_advanced(WOLFRAMSCRIPT_EXE)
+
+set(MMA_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/LibraryResources/${CMAKE_HOST_SYSTEM_NAME}-x86-64/HmatExpressions.so")
+message("  OUTPUT ${MMA_OUTPUT}")
+add_custom_command(
+  OUTPUT "${MMA_OUTPUT}"
+  COMMAND ${WOLFRAMSCRIPT_EXE} -print all -v -f compile.m
+  DEPENDS BigWhamStatic copy_math_root
+  COMMENT "Building the Matematica Interface"
+  )
+add_custom_target(MathematicaInterface ALL
+  DEPENDS ${MMA_OUTPUT})

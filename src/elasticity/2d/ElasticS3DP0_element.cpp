@@ -16,8 +16,8 @@
 
 // Inclusion from the project
 #include <elasticity/2d/ElasticS3DP0_element.h>
-#include <src/core/ElasticProperties.h>
-#include <src/core/Mesh2D.h>
+#include "core/ElasticProperties.h"
+#include "core/Mesh2D.h"
 
 // contains fundamental plane-strain elasticity kernels.
 // for fracture segment with linear variation of displacement discontinuities

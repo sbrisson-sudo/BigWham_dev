@@ -5,18 +5,15 @@
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland, Geo-Energy Laboratory, 2016-2023.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
-
-#pragma once
-
 #include <gtest/gtest.h>
 
 #include <il/Array.h>
 #include <il/Array2D.h>
 
-#include <src/core/BEMesh.h>
-#include <src/core/elements/Segment.h>
-#include <src/core/elements/Triangle.h>
-#include <src/core/elements/Rectangle.h>
+#include "core/BEMesh.h"
+#include "core/elements/Segment.h"
+#include "core/elements/Triangle.h"
+#include "core/elements/Rectangle.h"
 
 //// 2D mesh test
 TEST(bemesh_seg,seg_0_1){

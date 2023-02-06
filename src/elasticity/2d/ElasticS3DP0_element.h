@@ -16,9 +16,9 @@
 #include <il/StaticArray.h>
 
 // Inclusion from the project
-#include <src/core/ElasticProperties.h>
-#include <src/core/Mesh2D.h>
-#include <src/core/SegmentData.h>
+#include "core/ElasticProperties.h"
+#include "core/Mesh2D.h"
+#include "core/SegmentData.h"
 
 namespace bie {
 

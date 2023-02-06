@@ -6,10 +6,10 @@
 // Geo-Energy Laboratory, 2016-2021.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
-#include <il/gtest/gtest/gtest.h>
+#include <gtest/gtest.h>
 #include <iostream>
 #include <il/Array2D.h>
-#include <src/elasticity/3d/Elastic3DR0_element.h>
+#include "elasticity/3d/Elastic3DR0_element.h"
 
 
 //--------------------------------------------------------------------------
