@@ -34,7 +34,7 @@ namespace bie{
 
         il::StaticArray<double,3> receiver_coor{0};
         for (int i=0;i<3;i++){
-            receiver_coor[i]=el_cp_r(i_r,i)+ std::numeric_limits<double>::epsilon();
+            receiver_coor[i]=el_cp_r(i_r,i)+ sqrt(std::numeric_limits<double>::epsilon());
         }
 
         // get coordinates vertices of triangular source element
