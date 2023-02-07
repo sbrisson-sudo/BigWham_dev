@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <il/Array2D.h>
-#include <src/elasticity/3d/Elastic3DR0_element.h>
+#include "elasticity/3d/Elastic3DR0_element.h"
 
 //----------------------------------------------------------------
 //  THIS FILE CONTAINS ONLY MESHES TO BE USED IN THE BENCHMARKS

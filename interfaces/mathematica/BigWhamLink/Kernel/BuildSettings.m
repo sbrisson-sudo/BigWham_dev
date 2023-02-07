@@ -2,26 +2,9 @@
 
 (* Specify build settings such as compiler and linker flags, libraries to be linked, etc. here *)
 
-
-
-(*- SPECIFYING MKL AND TBB ROOT here -- customize as needed *)
-Switch[$SystemID, "Linux-x86-64", {
-	$MKLROOT = "@MKLROOT@";
-  $TBBROOT = "/opt/intel/compilers_and_libraries_2018.2.199/linux/tbb";
-  $TBBLIBPATH="/opt/intel/compilers_and_libraries_2018.2.199/linux/tbb/lib/intel64_lin/gcc4.7/libtbb.so.2";
-  }
-  , "MacOSX-x86-64", {
-  $MKLROOT = "@MKLROOT@";
-  $TBBROOT = "/opt/intel/compilers_and_libraries_2020/mac/tbb";
-  $TBBLIBPATH= "/opt/intel/compilers_and_libraries_2020/mac/tbb/lib/libtbb.dylib";
-      }];
-
-
 (* PATH of the BigWham root folder *)
 (* edit as see fit *)
-$BigWhamDirectory =  "@CMAKE_BINARY_DIR@";
-
-
+$BigWhamDirectory =  "@PROJECT_BINARY_DIR@";
 
 (*
 Switch[$OperatingSystem,

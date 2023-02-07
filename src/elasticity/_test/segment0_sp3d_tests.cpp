@@ -12,9 +12,9 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include <src/core/BoundaryElement.h>
-#include <src/elasticity/2d/BIE_elastostatic_segment_0_impls.h>
-#include <src/elasticity/2d/ElasticS3DP0_element.h>
+#include "core/BoundaryElement.h"
+#include "elasticity/2d/BIE_elastostatic_segment_0_impls.h"
+#include "elasticity/2d/ElasticS3DP0_element.h"
 
 
 TEST(SP3D,test_seg_0_dof_dim){

@@ -22,21 +22,21 @@
 #include <hmat/cluster/cluster.h>
 #include <hmat/hmatrix/Hmat.h>
 
-#include <src/core/BEMesh.h>
-#include <src/core/BoundaryElement.h>
-#include <src/core/elements/Segment.h>
-#include <src/core/elements/Triangle.h>
-#include <src/core/elements/Rectangle.h>
+#include "core/BEMesh.h"
+#include "core/BoundaryElement.h"
+#include "core/elements/Segment.h"
+#include "core/elements/Triangle.h"
+#include "core/elements/Rectangle.h"
 
-#include <src/core/BIE_Kernel.h>
-#include <src/elasticity/BIE_elastostatic.h>
-#include <src/core/SquareMatrixGenerator.h>
+#include "core/BIE_Kernel.h"
+#include "elasticity/BIE_elastostatic.h"
+#include "core/SquareMatrixGenerator.h"
 
-#include <src/elasticity/2d/BIE_elastostatic_segment_0_impls.h>
-#include <src/elasticity/2d/BIE_elastostatic_segment_1_impls.h>
-#include <src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h>
+#include "elasticity/2d/BIE_elastostatic_segment_0_impls.h"
+#include "elasticity/2d/BIE_elastostatic_segment_1_impls.h"
+#include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
 
-#include <src/core/ElasticProperties.h>
+#include "core/ElasticProperties.h"
 
 
 // utilities for switch with string in C++17

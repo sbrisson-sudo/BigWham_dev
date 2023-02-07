@@ -21,7 +21,7 @@
 #include <il/linearAlgebra/dense/norm.h>
 
 // Inclusion from bie
-#include <src/core/SegmentData.h>
+#include "core/SegmentData.h"
 
 namespace bie {
 

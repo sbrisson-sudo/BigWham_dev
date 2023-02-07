@@ -71,7 +71,7 @@ struct AbortException {
   AbortException() { (void)0; }
 };
 
-inline void abort() { std::abort(); }
+[[noreturn]] inline void abort() { std::abort(); }
 
 }  // namespace il
 

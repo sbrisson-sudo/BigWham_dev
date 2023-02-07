@@ -21,7 +21,7 @@
 
 // Inclusion from the project
 #include <elasticity/2d/Elastic2DP1_element.h>
-#include <src/core/ElasticProperties.h>
+#include "core/ElasticProperties.h"
 
 namespace bie {
 

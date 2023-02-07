@@ -13,7 +13,7 @@
 #include <il/Array.h>
 #include <il/Array2D.h>
 
-#include <src/core/Mesh2D.h>
+#include "core/Mesh2D.h"
 
 /// TEST 1
 TEST(Mesh, test_ribbon) {

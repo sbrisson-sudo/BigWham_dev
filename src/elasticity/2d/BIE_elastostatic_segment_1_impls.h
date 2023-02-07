@@ -9,9 +9,9 @@
 #ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS_H
 #define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS_H
 
-#include <src/elasticity/BIE_elastostatic.h>
-#include <src/core/elements/Segment.h>
-#include <src/elasticity/2d/Elastic2DP1_element.h>
+#include "elasticity/BIE_elastostatic.h"
+#include "core/elements/Segment.h"
+#include "elasticity/2d/Elastic2DP1_element.h"
 
 namespace bie {
 

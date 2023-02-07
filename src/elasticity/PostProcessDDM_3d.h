@@ -15,9 +15,9 @@
 #include <il/Array2D.h>
 
 // Inclusion from the project
-#include <src/core/ElasticProperties.h>
-#include <src/core/Mesh3D.h>
-#include <src/core/FaceData.h>
+#include "core/ElasticProperties.h"
+#include "core/Mesh3D.h"
+#include "core/FaceData.h"
 
 namespace bie {
     // The typedef is used to define a new type of function pointer.

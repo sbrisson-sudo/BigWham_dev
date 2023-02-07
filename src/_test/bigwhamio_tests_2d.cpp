@@ -5,23 +5,20 @@
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland, Geo-Energy Laboratory, 2016-2023.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
-
-
-#pragma once
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include <src/BigWham.h>
+#include "BigWham.h"
 
-#include <src/core/BoundaryElement.h>
-#include <src/core/BEMesh.h>
-#include <src/core/SquareMatrixGenerator.h>
-#include <src/hmat/cluster/cluster.h>
-#include <src/elasticity/2d/BIE_elastostatic_segment_0_impls.h>
-#include <src/elasticity/2d/ElasticS3DP0_element.h>
-#include <src/hmat/hmatrix/Hmat.h>
+#include "core/BoundaryElement.h"
+#include "core/BEMesh.h"
+#include "core/SquareMatrixGenerator.h"
+#include "hmat/cluster/cluster.h"
+#include "elasticity/2d/BIE_elastostatic_segment_0_impls.h"
+#include "elasticity/2d/ElasticS3DP0_element.h"
+#include "hmat/hmatrix/Hmat.h"
 
 
 TEST(bigwham_io_2d,Sp3D0_1_1){

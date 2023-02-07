@@ -5,15 +5,12 @@
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland, Geo-Energy Laboratory, 2016-2023.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
-
-
-#pragma once
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include <src/core/elements/Triangle.h>
+#include "core/elements/Triangle.h"
 
 TEST(triangle,triangle_0_1){
 

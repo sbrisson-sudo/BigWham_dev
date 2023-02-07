@@ -8,8 +8,8 @@
 
 #include <il/blas.h>
 #include <il/linearAlgebra.h>
-#include <src/elasticity/3d/Elastic3DR0_common.h>
-#include <src/elasticity/3d/Elastic3DR0_mode1Cartesian_element.h>
+#include "elasticity/3d/Elastic3DR0_common.h"
+#include "elasticity/3d/Elastic3DR0_mode1Cartesian_element.h"
 #include <cmath>
 #include <iostream>
 #include <limits>

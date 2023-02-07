@@ -13,18 +13,18 @@ Hmat::usage = "Hmat is a symbol to which BigWhamLink messages are associated."
 
 (* Privately load LTemplate. Note the leading ` character!! *)
 (* Get["`LTemplate`LTemplatePrivate`"] *)
-Get["@LTemplateLibPath@/LTemplate.m"]
-Get["@LTemplateLibPath@/LTemplatePrivate.m"]
+Get["@LTEMPLATE_DIR@/LTemplate/LTemplate.m"]
+Get["@LTEMPLATE_DIR@/LTemplate/LTemplatePrivate.m"]
 
 (* ConfigureLTemplate[] must be called at this point. *)
 ConfigureLTemplate[
-	(* You should also supply a symbol from the MyApp` context (called Hmat here) to
-       associate LTemplate's standard ::error, ::warning, etc. messages with. *)
-	"MessageSymbol" -> Hmat, 
-	(* If lazy loading is enabled, functions are loaded only on first use.
-	   This improves package loading performance, but it is not convenient
-	   during development and debugging. *)
-	"LazyLoading" -> False
+  (* You should also supply a symbol from the MyApp` context (called Hmat here) to
+   associate LTemplate's standard ::error, ::warning, etc. messages with. *)
+  "MessageSymbol" -> Hmat,
+  (* If lazy loading is enabled, functions are loaded only on first use.
+   This improves package loading performance, but it is not convenient
+   during development and debugging. *)
+  "LazyLoading" -> False
 ]
 
 Print[LClassContext[]];
@@ -63,7 +63,7 @@ packageAbort[] := (End[]; EndPackage[]; Abort[])
 
 (*-----------------------------------------------*)
 
-$BigWhamVersion  = "1.2.2";
+$BigWhamVersion  = "@PROJECT_VERSION@";
 
 $packageDirectory  = DirectoryName[$InputFileName];
 $libraryDirectory  = FileNameJoin[{$packageDirectory, "../LibraryResources", $SystemID}];
@@ -74,9 +74,6 @@ $buildSettingsFile = FileNameJoin[{$packageDirectory, "BuildSettings.m"}];
 $buildSettings = None;
 If[FileExistsQ[$buildSettingsFile], Get[$buildSettingsFile] ]
 
-(* loading the tbb manually - seems to fix things on some OS*)
-LibraryLoad[$TBBLIBPATH];
-
 (* Add $libraryDirectory to $LibraryPath in case the package 
    is not installed in $UserBaseDirectory/Applications. 
  *)
@@ -85,7 +82,7 @@ If[Not@MemberQ[$LibraryPath, $libraryDirectory],
 ];
 
 (*-----------------------------------------------*)
-(* BigWham lib onject file *)
+(* BigWham lib object file *)
 $BigwhamLib=FileNameJoin[{$BigWhamDirectory,"/libBigWham.a"}];
 
 (***** The library template specification*****)
@@ -118,7 +115,7 @@ template = LTemplate["HmatExpressions",
       LFun["getSize", {}, {Integer, 1}],
       LFun["getProblemDimension", {}, Integer],
       LFun["getFullBlocks", {}, LType[SparseArray, Real]]
-(*)      ,
+(*      ,
       LFun["computeStresses", {{Real, 1, "Constant"},{Real, 2, "Constant"},
         Integer,{Real, 1, "Constant"},{Real, 2, "Constant"},{Integer, 2, "Constant"}, 
         "Boolean"}, {Real, 2}],
@@ -134,64 +131,45 @@ template = LTemplate["HmatExpressions",
 (***** Compilation, loading and initialization *****)
 (* include directory files *)
 incdir = {
-   $MKLROOT <> "/include/",
-   $TBBROOT <> "/include/",
-   "@CMAKE_SOURCE_DIR@",
-   FileNameJoin[{"@CMAKE_SOURCE_DIR@", "/src/"}],
-    FileNameJoin[{"@CMAKE_SOURCE_DIR@", "/il/"}]
+   @MMA_INCLUDE_DIRS@
    };
 
 (* lib files directory *)
 libdir = {
-	$BigWhamDirectory,
-  $MKLROOT <> "/lib/", $TBBROOT <> "/lib/"
+  @MMA_LIBRARY_DIRS@
   }
 
-$linkerOptions={"-ltbb", "-ldl", "-lpthread", "-lm"};
+$linkerOptions={@MMA_LINKER_OPTIONS@};
+$compilerOptions={@MMA_COMPILER_OPTIONS@};
 
-$compilerOptions={"-std=c++17","-m64", "-DIL_MKL", "-DIL_BLAS"};
-
-Switch[$SystemID,"MacOSX-x86-64",
-$extraObjectFiles={$BigwhamLib,
-    $MKLROOT <> "/lib/libmkl_intel_lp64.a",
-    $MKLROOT <> "/lib/libmkl_core.a",
-    $MKLROOT <> "/lib/libmkl_sequential.a"}
-,"Linux-x86-64",
-       $extraObjectFiles={$BigwhamLib,
-    $MKLROOT <> "/lib/intel64/libmkl_intel_lp64.a",
-    $MKLROOT <> "/lib/intel64/libmkl_core.a",
-    $MKLROOT <> "/lib/intel64/libmkl_sequential.a"}
-]
- 
 compileBigWhamLink[] := 
-	Module[{res},
-		      (* create directory for binary if it doesn't exist yet *)
-      	If[Not@DirectoryQ[$libraryDirectory],
-        	CreateDirectory[$libraryDirectory]
-      	];
-		 
-		SetDirectory[$sourceDirectory];
-		res = CompileTemplate[template, "IncludeDirectories" -> incdir ,
-  		"LibraryDirectories" -> libdir , 
-  		"ExtraObjectFiles" -> $extraObjectFiles,
-   		"CompileOptions" -> $compilerOptions,
-  		"LinkerOptions" -> $linkerOptions,
-   		"ShellOutputFunction" -> Print, "TargetDirectory" -> $libraryDirectory];
+  Module[{res},
+         (* create directory for binary if it doesn't exist yet *)
+         If[Not@DirectoryQ[$libraryDirectory],
+            CreateDirectory[$libraryDirectory]
+        ];
 
-		ResetDirectory[];
-		res
-	];
-	
+         SetDirectory[$sourceDirectory];
+         res = CompileTemplate[template, "IncludeDirectories" -> incdir ,
+                               "LibraryDirectories" -> libdir ,
+                               "CompileOptions" -> $compilerOptions,
+                               "LinkerOptions" -> $linkerOptions,
+                               "ShellOutputFunction" -> Print,
+                               "TargetDirectory" -> $libraryDirectory];
+         ResetDirectory[];
+         res
+    ];
+
 Switch[$SystemID, "Linux-x86-64",	
 $HmatExpLib=FileNameJoin[{$libraryDirectory,"HmatExpressions.so"}],
-"MacOSX-x86-64",
-$HmatExpLib=FileNameJoin[{$libraryDirectory,"HmatExpressions.dylib"}]
+       "MacOSX-x86-64",
+       $HmatExpLib=FileNameJoin[{$libraryDirectory,"HmatExpressions.dylib"}]
 ]
 
 If[FileExistsQ[$HmatExpLib],
-	LoadTemplate[template];,
-	compileBigWhamLink[];
-	LoadTemplate[template];
+   LoadTemplate[template];,
+   compileBigWhamLink[];
+   LoadTemplate[template];
 ]
 
 (*------------------------------------------*)

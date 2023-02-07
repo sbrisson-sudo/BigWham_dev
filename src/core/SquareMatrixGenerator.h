@@ -12,8 +12,8 @@
 #include <string>
 
 #include <hmat/arrayFunctor/MatrixGenerator.h>
-#include <src/core/BEMesh.h>
-#include <src/core/ElasticProperties.h>
+#include "core/BEMesh.h"
+#include "core/ElasticProperties.h"
 
 namespace bie {
 

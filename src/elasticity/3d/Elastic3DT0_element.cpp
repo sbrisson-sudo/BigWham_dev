@@ -11,7 +11,7 @@
 #include <il/linearAlgebra/dense/norm.h>
 #include <il/linearAlgebra/dense/blas/dot.h>
 
-#include <src/elasticity/3d/Elastic3DT0_element.h>
+#include "elasticity/3d/Elastic3DT0_element.h"
 
 namespace bie {
 

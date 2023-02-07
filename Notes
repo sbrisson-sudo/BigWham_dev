@@ -20,7 +20,7 @@ Hmat-Lib:
     - tidy up the 3D mesh object
     - tidy up the 3DT6 implementation
 - re-write google tests for basic operations of the C++ code, leave more intrincate benchmarks and physics verification on the mma side.
-  ---> #include <src/elasticity/AssemblyDDM.h> the file does not exist anymore
+  ---> #include "elasticity/AssemblyDDM.h" the file does not exist anymore
 
 
 

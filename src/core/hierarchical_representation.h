@@ -14,9 +14,9 @@
 #include <il/Timer.h>
 #include <il/Array.h>
 
-#include <src/core/BEMesh.h>
-#include <src/hmat/hmatrix/toHPattern.h>
-#include <src/hmat/cluster/cluster.h>
+#include "core/BEMesh.h"
+#include "hmat/hmatrix/toHPattern.h"
+#include "hmat/cluster/cluster.h"
 
 namespace bie {
 

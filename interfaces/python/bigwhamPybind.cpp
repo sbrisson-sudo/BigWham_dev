@@ -18,9 +18,9 @@
 #include <BigWham.h>
 #include <omp.h>
 
-#include <src/core/BEMesh.h>
-#include <src/core/BoundaryElement.h>
-#include <src/core/elements/Segment.h>
+#include "core/BEMesh.h"
+#include "core/BoundaryElement.h"
+#include "core/elements/Segment.h"
 
 namespace py = pybind11;
 

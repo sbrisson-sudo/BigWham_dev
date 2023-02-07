@@ -15,7 +15,7 @@
 
 #include <il/Tree.h>
 #include <il/Array2D.h>
-#include <src/hmat/hmatrix/HMatrixType.h>
+#include "hmat/hmatrix/HMatrixType.h"
 
 namespace bie{
 
