@@ -23,6 +23,8 @@
 #include <hmat/compression/adaptiveCrossApproximation.h>
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 
+#include <vector>
+
 namespace bie {
 
 template <typename T>

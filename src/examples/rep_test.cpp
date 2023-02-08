@@ -15,18 +15,18 @@
 #include "cnpy.h"
 #include "core/BEMesh.h"
 #include "core/ElasticProperties.h"
-#include "src/core/SquareMatrixGenerator.h"
-#include "src/core/elements/Triangle.h"
-#include "src/core/hierarchical_representation.h"
-#include "src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
-#include "src/hmat/hmatrix/Hmat.h"
+#include "core/SquareMatrixGenerator.h"
+#include "core/elements/Triangle.h"
+#include "core/hierarchical_representation.h"
+#include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
+#include "hmat/hmatrix/Hmat.h"
 #include <algorithm>
 #include <cmath>
 #include <il/Array2D.h>
 #include <iostream>
 #include <math.h>
 #include <memory>
-#include <src/elasticity/BIE_elastostatic.h>
+#include <elasticity/BIE_elastostatic.h>
 #include <string>
 #include <vector>
 
