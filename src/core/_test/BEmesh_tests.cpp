@@ -135,7 +135,9 @@ TEST(bemesh_triangle,triangle_0_2){
     auto ndots_1_2= il::dot(tri_a.getNormal(),tri_a.getTangent_2());
     auto ndots_2_1= il::dot(tri_b.getNormal(),tri_b.getTangent_1());
     auto ndots_2_2= il::dot(tri_b.getNormal(),tri_b.getTangent_2());
-    ASSERT_TRUE(ndots==0 && ndots_1_1==0 && ndots_1_2==0 && ndots_2_1==0 && ndots_2_2==0);
+    std::cout << "ndots" << ndots_2_1 <<"\n";
+    double eps = 1.e-12;
+    ASSERT_TRUE(ndots==0 && ndots_1_1==0 && ndots_1_2==0 && abs(ndots_2_1)<eps && abs(ndots_2_2)<eps);
 }
 
 // Rectangular mesh

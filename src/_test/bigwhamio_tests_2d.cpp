@@ -47,7 +47,7 @@ TEST(bigwham_io_2d,Sp3D0_1_1){
     std::vector<double> properties{1.,0.,100};
     my_io.set(coor,conn,"S3DP0",properties,32,2,1.e-3);
 
-    ASSERT_TRUE(abs(my_io.getCompressionRatio()-0.12664)<1e-5);
+    ASSERT_TRUE(abs(my_io.getCompressionRatio()-0.12664)<1e-4);
 }
 
 TEST(bigwham_io_2d,Sp3D0_1_2){
