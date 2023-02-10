@@ -155,10 +155,10 @@ public:
               //tt.Stop();
               h_representation_time_=tt.time();tt.Reset();tt.Start();
               const auto ker_type = bie::ElasticKernelType::H;
-              bie::BIE_elastostatic<EltType,EltType,ker_type>  ker(elas,dimension_);
+              bie::BIE_elastostatic_sp3d<EltType,EltType,ker_type>  ker(elas,dimension_);
               il::Array<double> prop{1,properties[2]}; // for the SP3D0
               ker.setKernelProperties(prop);
-              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
+              bie::SquareMatrixGenerator<double,EltType,bie::BIE_elastostatic_sp3d<EltType,EltType,ker_type>> M(mesh,ker,hr.permutation_0_);
               h_.toHmat(M,hr,epsilon_aca_);
               tt.Stop();
               permutation_=hr.permutation_0_;

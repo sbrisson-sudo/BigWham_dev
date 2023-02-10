@@ -28,7 +28,7 @@ namespace bie {
         double x1_2 = x1 * x1;
         double x2_2 = x2 * x2;
         // coef
-        double beta_u = 1. / (8. * il::pi * G * (1 - nu));
+        double beta_u = overhalfh / (8. * il::pi * G * (1 - nu));
 
         double three_4_nu = 3 - 4 * nu;
         double x1m1 = x1 - 1.;
@@ -64,7 +64,7 @@ namespace bie {
         double x1_2 = x1 * x1;
         double x2_2 = x2 * x2;
         // coef
-        double beta_s = 1. / (4. * il::pi * (1 - nu));
+        double beta_s = overhalfh / (4. * il::pi * (1 - nu));
 
         double x1m1 = x1 - 1.;
         double x1p1 = x1 + 1.;
@@ -117,7 +117,7 @@ namespace bie {
         double x1_2 = x1 * x1;
         double x2_2 = x2 * x2;
         // coef
-        double beta_v = G / (2. * il::pi * (1 - nu));
+        double beta_v = G*overhalfh / (2. * il::pi * (1 - nu));
 
         double x12m1 = (-1 + x1_2)*(-1 + x1_2);
         double x1p1 = x1 + 1.;
