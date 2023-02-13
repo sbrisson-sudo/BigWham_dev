@@ -109,6 +109,15 @@ namespace bie {
             }
             return Rt;
         }
+
+        il::StaticArray<double,3> to_local(il::StaticArray<double,3>  x ){
+            return il::dot(this->rotationMatrix(),x);
+        }
+
+        il::StaticArray<double,3> to_global(il::StaticArray<double,3>  x ){
+            return il::dot(this->rotationMatrix_T(),x);
+        }
+
     };
 
     template<int p>
