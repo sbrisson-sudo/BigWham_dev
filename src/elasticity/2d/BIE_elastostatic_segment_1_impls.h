@@ -34,22 +34,24 @@ namespace bie {
         // first row shear traction  (effect of shear and opening DD)
         // second row normal traction (effect of shear and opening DD)
 
+        il::StaticArray2D<double, 2, 2> R = source_elt.rotationMatrix();
+
+//        il::StaticArray2D<double, 2, 2> Rt = R; // transpose rotation matrix
+//        Rt(0, 1) = R(1, 0);
+//        Rt(1, 0) = R(0, 1);
+        il::StaticArray2D<double, 2, 2> Rt = source_elt.rotationMatrix_T();
         il::StaticArray<double, 2> xe;
         auto Xmid = source_elt.getCentroid();
         auto r_col = receiver_elt.getCollocationPoints();
         for (int i = 0; i < 2; ++i) {
             xe[i] = r_col(i_r, i) - Xmid[i];
         }
-        xe = source_elt.to_local(xe);
+        xe =source_elt.to_local(xe);// il::dot(Rt, xe);
+
+        il::StaticArray<double, 2> n =source_elt.to_local(receiver_elt.getNormal()); //il::dot(Rt, receiver_elt.getNormal());
+        il::StaticArray<double, 2> s =source_elt.to_local(receiver_elt.getTangent());// il::dot(Rt, );
 
         double h = source_elt.getSize();
-
-        // columns sxxs, sxys, syys, syyn
-        // (knowing that sxxn and sxyn are respectively equal to sxys and syys )
-        il::StaticArray<double, 4> stress_l = stresses_kernel_dp1_dd_nodal(i_s, h, this->elas_.getEp(), xe[0], xe[1]);
-
-        il::StaticArray<double, 2> n = source_elt.to_local(receiver_elt.getNormal());
-        il::StaticArray<double, 2> s = source_elt.to_local(receiver_elt.getTangent());
 
         double n1n1 = n[0] * n[0];
         double n2n2 = n[1] * n[1];
@@ -58,6 +60,10 @@ namespace bie {
         double n2s2 = n[1] * s[1];
 
         double n1s2pn2s1 = n[0] * s[1] + n[1] * s[0];
+
+        // columns sxxs, sxys, syys, syyn
+        // (knowing that sxxn and sxyn are respectively equal to sxys and syys )
+        il::StaticArray<double, 4> stress_l = stresses_kernel_dp1_dd_nodal(i_s, h, this->elas_.getEp(), xe[0], xe[1]);
 
         // shear traction
         // shear dd
@@ -72,6 +78,7 @@ namespace bie {
         double sns = n1n1 * stress_l[0] + 2 * n1n2 * stress_l[1] + n2n2 * stress_l[2];
         // normal dd
         double snn = n1n1 * stress_l[1] + 2 * n1n2 * stress_l[2] + n2n2 * stress_l[3];
+
 
         // output the desired stress components induced either by normal or shear dd
         // of the 2 nodes of the linear DD segment.

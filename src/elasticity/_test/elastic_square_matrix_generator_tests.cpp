@@ -167,7 +167,7 @@ TEST(SquareMatGen,segment_1_Hmat_1_segs_45_a1) {
     // two segments at 90 degree from one another
     // oriented 45 degree from the axis e_x
     //
-    //        /\        //
+    //        /\
 
     il::Array2D<double> xy{3, 2, 0.};
     xy(0, 0) = -1.;
@@ -277,18 +277,13 @@ TEST(SquareMatGen,segment_1_Hmat_1_segs_45_a1) {
     int k=0;
     for (il::int_t j = 0.; j < Kmma.size(1); j++) {
         for (il::int_t i = 0; i < Kmma.size(0); i++) {
-            std::cout << " val_list[k]; " << val_list[k] <<" -  " << Kmma(i,j) <<"\n";
+       //     std::cout << " val_list[k]; " << val_list[k] <<" -  " << Kmma(i,j) <<"\n";
             my_sum += abs(val_list[k] - Kmma(i, j));
             k++;
         }
     }
-
     std::cout << "SUMMA: " <<my_sum << "\n";
-
     ASSERT_NEAR(my_sum, 0., 1.e-5);
-
- //   ASSERT_TRUE(M.sizeAsBlocks(0)==mesh.numberCollocationPoints() && M.size(0)==8 && M.size(1)==8);
-
 }
 
 
@@ -310,7 +305,6 @@ TEST(SquareMatGen,segment_1_Hmat_1_two_adjacent_segs) {
     ien(0, 1) = 1;
     ien(1, 0) = 1;
     ien(1, 1) = 2;
-
 
     bie::BEMesh<bie::Segment<1>> mesh(xy, ien);
     bie::ElasticProperties elas(1., 0.);
@@ -438,7 +432,6 @@ TEST(SquareMatGen,Triangle_0_1) {
     ker.setKernelProperties(prop);
     il::int_t max_leaf_size=32;double eta=2.0;
     bie::HRepresentation hr=bie::h_representation_square_matrix(my_mesh,max_leaf_size,eta);
-
     bie::SquareMatrixGenerator<double,El_type,bie::BIE_elastostatic<El_type,El_type,bie::ElasticKernelType::H>> M(my_mesh,
                                                                                                                   ker,hr.permutation_0_);
     double eps_aca=1.e-3;
