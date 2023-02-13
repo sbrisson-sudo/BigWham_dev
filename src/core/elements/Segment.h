@@ -17,7 +17,7 @@ namespace bie{
     /////////////////////////////////////////////////////////////
     //   2D segment !
     template<int p>
-    class Segment : public BoundaryElement<2, 2, p> {
+    class Segment : public BoundaryElement< 2, p> {
     private:
         int spatial_dimension_ = 2;
     protected:
@@ -25,6 +25,7 @@ namespace bie{
         int n_nodes_ = p + 1;
         il::StaticArray2D<double, 2, 2> vertices_;
         double size_;
+
     public:
         Segment();
         ~Segment();
@@ -59,16 +60,18 @@ namespace bie{
             this->setNodes();
         };
 
+        int getNumberOfVertices() const { return n_vertices_; };
         il::int_t getNumberOfNodes() const { return n_nodes_; };
         il::int_t getNumberOfCollocationPoints() const { return n_nodes_; };
         double getSize() const { return size_; };
         il::StaticArray<double, 2> getTangent() const { return this->s_; };
 
+        // rotation matrix from e_i to e'_i is by definition R_ij= e'_i . e_j
         il::StaticArray2D<double, 2, 2> rotationMatrix() {
             il::StaticArray2D<double, 2, 2> R;
             for (il::int_t i = 0; i < spatial_dimension_; i++) {
-                R(i, 0) = this->s_[i];
-                R(i, 1) = this->n_[i];
+                R(0, i) = this->s_[i];
+                R(1, i) = this->n_[i];
             }
             return R;
         }
@@ -76,15 +79,23 @@ namespace bie{
         il::StaticArray2D<double, 2, 2> rotationMatrix_T() {
             il::StaticArray2D<double, 2, 2> R;
             for (il::int_t i = 0; i < spatial_dimension_; i++) {
-                R(0 ,i) = this->s_[i];
-                R( 1,i) = this->n_[i];
+                R(i ,0) = this->s_[i];
+                R(i,1) = this->n_[i];
             }
             return R;
         }
 
-        void setCollocationPoints() ;
+        il::StaticArray<double,2> to_local(il::StaticArray<double,2>  x ){
+            return il::dot(this->rotationMatrix(),x);
+        }
 
-        void setNodes() {
+        il::StaticArray<double,2> to_global(il::StaticArray<double,2>  x ){
+            return il::dot(this->rotationMatrix_T(),x);
+        }
+
+        virtual void setCollocationPoints() ;
+
+        virtual void setNodes() {
             this->nodes_ = this->collocation_points_; // by default nodes = collocation points for 0 element
         }
 

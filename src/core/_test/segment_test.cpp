@@ -90,7 +90,7 @@ TEST(Segment, test_rotation_a) {
     seg.setElement(xy);
     il::StaticArray<double,2> normal = seg.getNormal();
     il::StaticArray<double,2> tang = seg.getTangent();
-    il::StaticArray2D<double,2,2> rot=seg.rotationMatrix();
+    il::StaticArray2D<double,2,2> rot=seg.rotationMatrix_T();
 
     ASSERT_TRUE(rot(0,0)==1./sqrt(2) && rot(1,0)==1./sqrt(2) && rot(0,1)==-1./sqrt(2) && rot(1,1)==1./sqrt(2) ); //
 }
@@ -103,7 +103,7 @@ TEST(Segment, test_rotation_b) {
     bie::Segment<0> seg;
     seg.setElement(xy);
     il::StaticArray<double,2> tang = seg.getTangent();
-    il::StaticArray2D<double,2,2> rot=seg.rotationMatrix();
+    il::StaticArray2D<double,2,2> rot=seg.rotationMatrix_T();
     double theta = std::atan2(tang[1], tang[0]);
 
     ASSERT_TRUE((abs(rot(0,0)-std::cos(theta)) < 1.e-12)
@@ -112,6 +112,25 @@ TEST(Segment, test_rotation_b) {
           && (abs(rot(1,1)-std::cos(theta)) < 1.e-12)
     ); //
 }
+
+
+TEST(Segment, test_rotation_c) {
+    il::Array2D<double> xy{2,2,0.};
+    xy(1,0)=1;
+    xy(1,1)=1;
+    bie::Segment<0> seg;
+    seg.setElement(xy);
+    il::StaticArray<double,2> tang = seg.getTangent();
+    il::StaticArray2D<double,2,2> rot=seg.rotationMatrix();
+    double theta = std::atan2(tang[1], tang[0]);
+
+    ASSERT_TRUE((abs(rot(0,0)-std::cos(theta)) < 1.e-12)
+                && (abs(rot(0,1)-std::sin(theta)) < 1.e-12)
+                && (abs(rot(1,0)+std::sin(theta)) < 1.e-12)
+                && (abs(rot(1,1)-std::cos(theta)) < 1.e-12)
+    ); //
+}
+
 
 TEST(Segment, test_collocation0_1) {
     il::Array2D<double> xy{2,2,0.};

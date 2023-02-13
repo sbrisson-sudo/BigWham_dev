@@ -302,7 +302,7 @@ set(SOURCE_FILES
         src/core/elements/Triangle.h
         src/core/elements/Rectangle.h
         src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
-        src/elasticity/2d/BIE_elastostatic_segment_1_impls.h src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h src/elasticity/2d/Elastic2D_segment.cpp src/elasticity/2d/Elastic2D_segment.h)
+        src/elasticity/2d/BIE_elastostatic_segment_1_impls.h src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h src/elasticity/2d/Elastic2D_segment.cpp src/elasticity/2d/Elastic2D_segment.h src/core/elements/Polygon.h)
 
 
 ################################################################################

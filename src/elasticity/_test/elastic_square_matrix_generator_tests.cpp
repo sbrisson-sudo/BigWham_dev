@@ -196,7 +196,7 @@ TEST(SquareMatGen,segment_1_Hmat_1_segs_45_a1) {
 /// analytical results from mathematica integration for that particular case
     // we compare the results of the assembly w.t the mma code
     il::Array2D<double> Kmma{8, 8, 0.};
-    ;
+
     Kmma(0, 0) = 0.483423;
     Kmma(0, 1) = -1.20657e-16;
     Kmma(0, 2) = -0.0332652;
@@ -277,6 +277,7 @@ TEST(SquareMatGen,segment_1_Hmat_1_segs_45_a1) {
     int k=0;
     for (il::int_t j = 0.; j < Kmma.size(1); j++) {
         for (il::int_t i = 0; i < Kmma.size(0); i++) {
+            std::cout << " val_list[k]; " << val_list[k] <<" -  " << Kmma(i,j) <<"\n";
             my_sum += abs(val_list[k] - Kmma(i, j));
             k++;
         }

@@ -45,7 +45,7 @@ namespace bie{
 
         // normal vector at the receiver location in the reference system of the source element
         il::StaticArray2D<double, 3, 3>  R_T_source = source_elt.rotationMatrix_T();
-        il::StaticArray<double, 3> nr = receiver_elt.getNormal();
+        il::StaticArray<double, 3> nr =receiver_elt.getNormal();
         nr = il::dot(R_T_source,nr);
         // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source element
         // in the reference system of the source element
