@@ -28,6 +28,8 @@ namespace bie{
     protected:
         il::Array<double> kernel_properties_{};
         bie::ElasticProperties elas_;
+        bool local_unknowns_ {true};
+        bool local_co_variables_{true};
 
     public :
 
@@ -39,17 +41,22 @@ namespace bie{
             this->dim_=dim;
         };
 
-        BIE_elastostatic(bie::ElasticProperties &elas ,il::int_t dim,bool local_unknowns,bool local_co_variables)  : BIE_Kernel<double, Es, Er>(local_unknowns,local_co_variables)  {
+        BIE_elastostatic(bie::ElasticProperties &elas ,il::int_t dim,bool local_unknowns,bool local_co_variables)  : BIE_Kernel<double, Es, Er>()  {
             elas_=elas;
             this->dof_dimension_=dim;
             this->dim_=dim;
+            local_unknowns_=local_unknowns;
+            local_co_variables_=local_co_variables;
         };
 
         void setKernelProperties( il::Array<double> &prop) {
             kernel_properties_=prop;
         }
 
-         virtual std::vector<double>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const {} ;
+        bool isLocalUnknowns() const {return local_unknowns_;};
+        bool isLocalCoVariables() const {return local_co_variables_;};
+
+        virtual std::vector<double>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const {} ;
 
     };
 
@@ -68,11 +75,13 @@ namespace bie{
                 this->dim_=dim;
         };
 
-        BIE_elastostatic_sp3d(bie::ElasticProperties &elas ,il::int_t dim,bool local_unknowns,bool local_co_variables)  : BIE_elastostatic<Es, Er,k>(local_unknowns,local_co_variables)  {
+        BIE_elastostatic_sp3d(bie::ElasticProperties &elas ,il::int_t dim,bool local_unknowns,bool local_co_variables)  : BIE_elastostatic<Es, Er,k>()  {
             IL_EXPECT_FAST(dim==2);
             this->elas_=elas;
             this->dof_dimension_=dim;
             this->dim_=dim;
+            this->local_unknowns_=local_unknowns;
+            this->local_co_variables_=local_co_variables;
         };
 
         virtual std::vector<double>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const {} ;
