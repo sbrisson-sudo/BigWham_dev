@@ -116,12 +116,14 @@ int main(int argc, char *argv[]) {
   }
 
   cnpy::npy_save("perm1.npy", hr.permutation_1_.Data(),
-                 {hr.permutation_1_.size()});
+                 {static_cast<unsigned long>(hr.permutation_1_.size())});
   cnpy::npy_save("perm0.npy", hr.permutation_0_.Data(),
-                 {hr.permutation_0_.size()});
-  cnpy::npy_save("collocation.npy", xcol.Data(), {xcol.size(0) * xcol.size(1)});
-  cnpy::npy_save("dd.npy", dd.Data(), {dd.size()});
-  cnpy::npy_save("dd_perm.npy", dd_perm.Data(), {dd_perm.size()});
+                 {static_cast<unsigned long>(hr.permutation_0_.size())});
+  cnpy::npy_save("collocation.npy", xcol.Data(),
+                 {static_cast<unsigned long>(xcol.size(0) * xcol.size(1))});
+  cnpy::npy_save("dd.npy", dd.Data(), {static_cast<unsigned long>(dd.size())});
+  cnpy::npy_save("dd_perm.npy", dd_perm.Data(),
+                 {static_cast<unsigned long>(dd_perm.size())});
 
   // std::cout << "COS \n " << cos.size() << std::endl;
   // std::cout << print_array1D(cos) << std::endl;
@@ -136,8 +138,10 @@ int main(int argc, char *argv[]) {
     }
   }
   // std::cout << "Traction \n " << print_array1D(trac) << std::endl;
-  cnpy::npy_save("trac.npy", trac.Data(), {trac.size()});
-  cnpy::npy_save("trac_perm.npy", trac_perm.Data(), {trac_perm.size()});
+  cnpy::npy_save("trac.npy", trac.Data(),
+                 {static_cast<unsigned long>(trac.size())});
+  cnpy::npy_save("trac_perm.npy", trac_perm.Data(),
+                 {static_cast<unsigned long>(trac_perm.size())});
 
   Real1D rel_err{M.sizeAsBlocks(0), 0.};
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
