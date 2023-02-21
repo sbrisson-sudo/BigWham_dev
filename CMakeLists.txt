@@ -120,8 +120,9 @@ set_target_properties(BigWham PROPERTIES
     POSITION_INDEPENDENT_CODE ON)
 target_include_directories(BigWham PUBLIC src src/hmat)
 
+add_library(BigWhamShared SHARED $<TARGET_OBJECTS:BigWham>)
+add_library(BigWhamStatic STATIC $<TARGET_OBJECTS:BigWham>)
 foreach(tgt BigWhamShared BigWhamStatic)
-    add_library(${tgt} STATIC $<TARGET_OBJECTS:BigWham>)
     target_link_libraries(${tgt} PUBLIC BigWham)
     set_target_properties(${tgt} PROPERTIES OUTPUT_NAME BigWham)
 endforeach()
