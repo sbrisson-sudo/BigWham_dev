@@ -15,18 +15,18 @@
 #include "cnpy.h"
 #include "core/BEMesh.h"
 #include "core/ElasticProperties.h"
-#include "src/core/SquareMatrixGenerator.h"
-#include "src/core/elements/Triangle.h"
-#include "src/core/hierarchical_representation.h"
-#include "src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
-#include "src/hmat/hmatrix/Hmat.h"
+#include "core/SquareMatrixGenerator.h"
+#include "core/elements/Triangle.h"
+#include "core/hierarchical_representation.h"
+#include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
+#include "elasticity/BIE_elastostatic.h"
+#include "hmat/hmatrix/Hmat.h"
 #include <algorithm>
 #include <cmath>
 #include <il/Array2D.h>
 #include <iostream>
 #include <math.h>
 #include <memory>
-#include <src/elasticity/BIE_elastostatic.h>
 #include <string>
 #include <vector>
 
@@ -47,13 +47,8 @@ void copy_array2D(il::Array2D<T> &, const cnpy::NpyArray &);
 
 int main(int argc, char *argv[]) {
 
-  std::string f_coord = "../../../src/examples/mesh_coords.npy";
-  std::string f_conn = "../../../src/examples/mesh_conn.npy";
-
-  // std::string f_coord =
-  //     "/home/ankit/geolab/bigwham_examples/src/mesh_coords.npy";
-  // std::string f_conn =
-  // "/home/ankit/geolab/bigwham_examples/src/mesh_conn.npy";
+  std::string f_coord = "mesh_coords.npy";
+  std::string f_conn = "mesh_conn.npy";
 
   auto coord_npy = cnpy::npy_load(f_coord);
   auto conn_npy = cnpy::npy_load(f_conn);
