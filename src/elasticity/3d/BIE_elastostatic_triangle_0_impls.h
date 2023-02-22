@@ -44,7 +44,6 @@ namespace bie{
         il::StaticArray2D<double, 3, 6> Stress= StressesKernelT0(receiver_coor,el_vertices_s,G,nu);
 
         // normal vector at the receiver location in the reference system of the source element
-
         il::StaticArray<double, 3> nr =source_elt.to_local(receiver_elt.getNormal());// il::dot(R_T_source,nr);
 
         // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source element
