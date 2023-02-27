@@ -69,6 +69,7 @@ find_path(CBLAS_INCLUDE_DIR NAMES cblas.h mkl_cblas.h
     HINTS ${CBLAS_LIBRARY_DIRS}/..
           MKLROOT ENV MKLROOT
     PATH_SUFFIXES include .
+    NO_DEFAULT_PATH
     REQUIRED
     )
 mark_as_advanced(CBLAS_INCLUDE_DIR)
