@@ -141,7 +141,6 @@ include(BigWhamTools)
 
 message(STATUS "Building python interface: ${BIGWHAM_PYTHON_INTERFACE}")
 if(BIGWHAM_PYTHON_INTERFACE)
-    message(STATUS "BigWham Python Library Path: ${pyenv_root_lib_path}")
     add_external_package(pybind11 VERSION 2.2.4 CONFIG)
     add_subdirectory(interfaces/python)
 endif()

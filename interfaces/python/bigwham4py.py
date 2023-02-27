@@ -80,7 +80,7 @@ class Hmatrix(LinearOperator):
         :param v: vector expected to be of size self.HMAT_size_
         :return: HMAT.v
         """
-        return self.H_.hdotProduct(v)
+        return self.H_.matvect(v)
 
     @property
     def _init_shape(self):
