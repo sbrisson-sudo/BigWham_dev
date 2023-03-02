@@ -12,7 +12,6 @@ BeginPackage["BigWhamLink`"]
 Hmat::usage = "Hmat is a symbol to which BigWhamLink messages are associated."
 
 (* Privately load LTemplate. Note the leading ` character!! *)
-(* Get["`LTemplate`LTemplatePrivate`"] *)
 Get["@LTEMPLATE_DIR@/LTemplate/LTemplate.m"]
 Get["@LTEMPLATE_DIR@/LTemplate/LTemplatePrivate.m"]
 
@@ -130,16 +129,11 @@ template = LTemplate["HmatExpressions",
 
 (***** Compilation, loading and initialization *****)
 (* include directory files *)
-incdir = {
-   @MMA_INCLUDE_DIRS@
-   };
+incdir = {@MMA_INCLUDE_DIRS@};
 
 (* lib files directory *)
-libdir = {
-  @MMA_LIBRARY_DIRS@
-  }
-
-$linkerOptions={@MMA_LINKER_OPTIONS@};
+libdir = {@MMA_LIBRARY_DIRS@}
+  $linkerOptions={@MMA_LINKER_OPTIONS@, $BigwhamLib};
 $compilerOptions={@MMA_COMPILER_OPTIONS@};
 
 compileBigWhamLink[] := 
@@ -150,20 +144,21 @@ compileBigWhamLink[] :=
         ];
 
          SetDirectory[$sourceDirectory];
-         res = CompileTemplate[template, "IncludeDirectories" -> incdir ,
+         res = CompileTemplate[template,
+			       "IncludeDirectories" -> incdir ,
                                "LibraryDirectories" -> libdir ,
                                "CompileOptions" -> $compilerOptions,
                                "LinkerOptions" -> $linkerOptions,
                                "ShellOutputFunction" -> Print,
+			       "Debug" -> True,
                                "TargetDirectory" -> $libraryDirectory];
          ResetDirectory[];
          res
     ];
 
-Switch[$SystemID, "Linux-x86-64",	
-$HmatExpLib=FileNameJoin[{$libraryDirectory,"HmatExpressions.so"}],
-       "MacOSX-x86-64",
-       $HmatExpLib=FileNameJoin[{$libraryDirectory,"HmatExpressions.dylib"}]
+Switch[$SystemID,
+       "Linux-x86-64", $HmatExpLib=FileNameJoin[{$libraryDirectory,"HmatExpressions.so"}],
+       "MacOSX-x86-64", $HmatExpLib=FileNameJoin[{$libraryDirectory,"HmatExpressions.dylib"}]
 ]
 
 If[FileExistsQ[$HmatExpLib],

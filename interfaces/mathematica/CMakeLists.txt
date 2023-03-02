@@ -21,8 +21,8 @@ foreach(_flag ${IL_LINK_OPTIONS})
     if(EXISTS ${_flag})
       get_filename_component(_blas_library_dir "${_flag}" DIRECTORY)
       get_filename_component(_blas_library "${_flag}" NAME_WE)
-      string(REPLACE ${CMAKE_SHARED_LIBRARY_PREFIX} "-l" _blas_library_flag "${_blas_library}")
-      message("${_blas_library} ${_blas_library_flag}")
+      string(REPLACE ${CMAKE_SHARED_LIBRARY_SUFFIX} "${CMAKE_STATIC_LIBRARY_SUFFIX}" _blas_library_flag "${_flag}")
+      #message("${_blas_library} ${_blas_library_flag}")
       list(APPEND _il_link_dirs ${_blas_library_dir})
       list(APPEND _il_link_options "${_blas_library_flag}")
     else()
@@ -38,11 +38,11 @@ quote_arguments(MMA_LINKER_OPTIONS ${_il_link_options})
 quote_arguments(MMA_LIBRARY_DIRS ${_il_link_dirs})
 quote_arguments(MMA_INCLUDE_DIRS ${IL_INCLUDE_DIRS} ${BIGWHAM_INCLUDE_DIRS})
 
-message("LTEMPLATE_DIR: ${LTEMPLATE_DIR}")
-message("MMA_COMPILER_OPTIONS: ${MMA_COMPILER_OPTIONS}")
-message("MMA_LINKER_OPTIONS: ${MMA_LINKER_OPTIONS}")
-message("MMA_INCLUDE_DIRS: ${MMA_INCLUDE_DIRS}")
-message("MMA_LIBRARY_DIRS: ${MMA_LIBRARY_DIRS}")
+#message("LTEMPLATE_DIR: ${LTEMPLATE_DIR}")
+#message("MMA_COMPILER_OPTIONS: ${MMA_COMPILER_OPTIONS}")
+#message("MMA_LINKER_OPTIONS: ${MMA_LINKER_OPTIONS}")
+#message("MMA_INCLUDE_DIRS: ${MMA_INCLUDE_DIRS}")
+#message("MMA_LIBRARY_DIRS: ${MMA_LIBRARY_DIRS}")
 # This is a bit hacky, since I cannot retreive link informations from the
 
 configure_file(BigWhamLink/Kernel/BuildSettings.m
@@ -60,7 +60,7 @@ find_file(WOLFRAMSCRIPT_EXE wolframscript REQUIRED)
 mark_as_advanced(WOLFRAMSCRIPT_EXE)
 
 set(MMA_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/LibraryResources/${CMAKE_HOST_SYSTEM_NAME}-x86-64/HmatExpressions.so")
-message("  OUTPUT ${MMA_OUTPUT}")
+#message("  OUTPUT ${MMA_OUTPUT}")
 add_custom_command(
   OUTPUT "${MMA_OUTPUT}"
   COMMAND ${WOLFRAMSCRIPT_EXE} -print all -v -f compile.m

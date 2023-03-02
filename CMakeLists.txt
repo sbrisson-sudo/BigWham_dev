@@ -12,10 +12,17 @@ project(BigWham VERSION 1.0
         DESCRIPTION "This is the library containing the wheels"
         LANGUAGES CXX)
 
-if ( NOT CMAKE_BUILD_TYPE )
-    message( "Build Type not set, defaulting to Release..." )
-    set( CMAKE_BUILD_TYPE Release)
-endif()
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "cmake build type")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    Release
+    Debug
+    RelWithDebInfo
+    )
+
+#if(NOT CMAKE_BUILD_TYPE)
+#    message(STATUS "Build Type not set, defaulting to Release..." )
+#    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build Type")
+#endif()
 
 # set options: False = 0, True = 1  #
 #####################################
@@ -26,7 +33,7 @@ option(BIGWHAM_PYTHON_INTERFACE "Build Pybind11 binding" ON)
 option(BIGWHAM_MATHEMATICA_INTERFACE "make mathematica interface" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 option(BIGWHAM_TESTING "Build google tests" OFF)
 
-option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
+#option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
 #####################################
 # optimization options              #
@@ -40,9 +47,9 @@ endif()
 set(CMAKE_CXX_FLAGS_RELEASE "${_optimization_flags}" CACHE STRING "Flags used by the compiler during release builds" FORCE)
 
 
-if(USE_STATIC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
-endif()
+#if(USE_STATIC)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
+#endif()
 
 ################################################################################
 # set compiler: clang, gcc, intel etc.
@@ -51,9 +58,8 @@ message(STATUS "Detecting the compiler:")
 message(STATUS "  The compiler is:  ${CMAKE_CXX_COMPILER}")
 
 if(BIGWHAM_MATHEMATICA_INTERFACE)
-    set(BLA_STATIC ON)
-    set(IL_MATH_VENDOR "MKL_sequential")
-    set(IL_OPENMP ON CACHE INTERNAL "")
+  set(IL_MATH_VENDOR "MKL_sequential" CACHE INTERNAL "" FORCE)
+  set(IL_OPENMP OFF CACHE INTERNAL "" FORCE)
 endif()
 
 add_subdirectory(il)
@@ -141,6 +147,7 @@ include(BigWhamTools)
 
 message(STATUS "Building python interface: ${BIGWHAM_PYTHON_INTERFACE}")
 if(BIGWHAM_PYTHON_INTERFACE)
+    set(PYBIND11_PYTHON_VERSION 3)
     add_external_package(pybind11 VERSION 2.2.4 CONFIG)
     add_subdirectory(interfaces/python)
 endif()

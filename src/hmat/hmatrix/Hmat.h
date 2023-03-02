@@ -14,7 +14,9 @@
 #define BIGWHAM_HMAT_H
 
 #pragma once
-#include <omp.h>
+#if defined(_OPENMP)
+#  include <omp.h>
+#endif
 
 #include "core/hierarchical_representation.h"
 #include <hmat/hmatrix/LowRank.h>

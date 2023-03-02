@@ -76,9 +76,10 @@ mark_as_advanced(CBLAS_INCLUDE_DIR)
 
 # OpenMP handling
 if(IL_OPENMP)
-    find_package(OpenMP REQUIRED)
+  find_package(OpenMP REQUIRED)
 endif()
 
+set(_il_compile_definitions)
 
 # Define the library
 add_library(InsideLoop INTERFACE)
@@ -92,23 +93,32 @@ set_property(TARGET InsideLoop APPEND PROPERTY
 
 target_link_libraries(InsideLoop INTERFACE BLAS::BLAS)
 target_include_directories(InsideLoop SYSTEM INTERFACE ${CBLAS_INCLUDE_DIR})
-target_compile_definitions(InsideLoop INTERFACE IL_BLAS)
+list(APPEND _il_compile_definitions IL_BLAS)
 if(IL_MATH_VENDOR MATCHES "MKL")
-    target_compile_definitions(InsideLoop INTERFACE IL_MKL)
+  list(APPEND _il_compile_definitions IL_MKL)
 elseif(IL_MATH_VENDOR MATCHES "OpenBLAS")
-    target_compile_definitions(InsideLoop INTERFACE IL_OPENBLAS)
+  list(APPEND _il_compile_definitions IL_OPENBLAS)
 endif()
 
 if(TARGET OpenMP::OpenMP_CXX)
     target_link_libraries(InsideLoop INTERFACE OpenMP::OpenMP_CXX)
-    target_compile_definitions(InsideLoop INTERFACE IL_OPENMP)
+    list(APPEND _il_compile_definitions IL_OPENMP)
 endif()
 
+target_compile_definitions(InsideLoop INTERFACE ${_il_compile_definitions})
 # Setting variables to help with external interfaces
-get_target_property(_il_compile_definitions InsideLoop INTERFACE_COMPILE_DEFINITIONS)
 set(IL_COMPILE_DEFINITIONS "${_il_compile_definitions}" CACHE INTERNAL "Internal InsideLoop compiler flags")
-set(IL_COMPILE_OPTIONS "${OpenMP_CXX_FLAGS}" CACHE INTERNAL "Internal InsideLoop compiler flags")
-set(IL_LINK_OPTIONS "${BLAS_LIBRARIES};${OpenMP_CXX_FLAGS}" CACHE INTERNAL "Internal InsideLoop linker flags")
+if (IL_OPENMP)
+  set(IL_COMPILE_OPTIONS "${OpenMP_CXX_FLAGS}" CACHE INTERNAL "Internal InsideLoop compiler flags")
+else()
+  set(IL_COMPILE_OPTIONS "" CACHE INTERNAL "Internal InsideLoop compiler flags")
+endif()
+if (IL_OPENMP)
+  set(il_openmp_link_options ${OpenMP_CXX_FLAGS})
+else()
+  set(il_openmp_link_options)
+endif()
+set(IL_LINK_OPTIONS "${BLAS_LIBRARIES};${il_openmp_link_options}" CACHE INTERNAL "Internal InsideLoop linker flags")
 set(IL_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR};${CBLAS_INCLUDE_DIR}" CACHE INTERNAL "Internal InsideLoop include directories")
 
 if(NOT INSIDELOOP_TARGETS_EXPORT)
