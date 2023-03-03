@@ -14,7 +14,7 @@
 #define BIGWHAM_HMAT_H
 
 #pragma once
-#if defined(_OPENMP)
+#if defined(IL_OPENMP)
 #  include <omp.h>
 #endif
 
@@ -123,7 +123,7 @@ class Hmat {
       matrix_gen.set(i0, j0, il::io, (*a).Edit());
       private_full_rank_blocks.push_back(std::move(a));
     }
-#ifdef _OPENMP
+#ifdef IL_OPENMP
 #pragma omp for schedule(static) ordered
     for(int i=0; i<omp_get_num_threads(); i++) {
 #pragma omp ordered
@@ -177,7 +177,7 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
         private_low_rank_blocks.push_back(std::move(lra_p)); // lra_p does not exist after such call
       }
 
-#ifdef _OPENMP
+#ifdef IL_OPENMP
 #pragma omp for schedule(static) ordered
       for(int i=0; i<omp_get_num_threads(); i++) {
 #pragma omp ordered
