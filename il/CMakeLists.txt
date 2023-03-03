@@ -62,13 +62,17 @@ set(CBLAS_LIBRARY_DIRS)
 foreach(_lib ${BLAS_LIBRARIES})
     if(EXISTS "${_lib}")
         get_filename_component(_blas_library_dir "${_lib}" DIRECTORY)
-        list(APPEND CBLAS_LIBRARY_DIRS "${_blas_library_dir}")
+        get_filename_component(_parent_dir "${_blas_library_dir}" DIRECTORY)
+        list(APPEND _cblas_potential_include_dir ${_parent_dir})
+        if (_parent_dir MATCHES "/usr/lib")
+            list(APPEND _cblas_potential_include_dir "/usr")
+        endif()
     endif()
 endforeach()
 find_path(CBLAS_INCLUDE_DIR NAMES cblas.h mkl_cblas.h
-    HINTS ${CBLAS_LIBRARY_DIRS}/..
+    HINTS ${_cblas_potential_include_dir}
           MKLROOT ENV MKLROOT
-    PATH_SUFFIXES include .
+    PATH_SUFFIXES include include/intel64
     NO_DEFAULT_PATH
     REQUIRED
     )
