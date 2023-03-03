@@ -69,10 +69,11 @@ foreach(_lib ${BLAS_LIBRARIES})
         endif()
     endif()
 endforeach()
+
 find_path(CBLAS_INCLUDE_DIR NAMES cblas.h mkl_cblas.h
     HINTS ${_cblas_potential_include_dir}
           MKLROOT ENV MKLROOT
-    PATH_SUFFIXES include include/intel64
+    PATH_SUFFIXES include include/intel64 include/x86_64-linux-gnu
     NO_DEFAULT_PATH
     REQUIRED
     )
