@@ -56,6 +56,7 @@ elseif(IL_MATH_VENDOR MATCHES "OpenBLAS")
 endif()
 
 find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
 #set_target_properties(BLAS::BLAS PROPERTIES IMPORTED_GLOBAL TRUE)
 
 set(CBLAS_LIBRARY_DIRS)
@@ -98,7 +99,7 @@ target_include_directories(InsideLoop
 set_property(TARGET InsideLoop APPEND PROPERTY
   INTERFACE_INCLUDE_DIRECTORIES $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>)
 
-target_link_libraries(InsideLoop INTERFACE BLAS::BLAS)
+target_link_libraries(InsideLoop INTERFACE BLAS::BLAS LAPACK::LAPACK)
 target_include_directories(InsideLoop SYSTEM INTERFACE ${CBLAS_INCLUDE_DIR})
 list(APPEND _il_compile_definitions IL_BLAS)
 if(IL_MATH_VENDOR MATCHES "MKL")
