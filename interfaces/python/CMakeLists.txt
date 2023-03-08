@@ -1,5 +1,11 @@
 pybind11_add_module(bigwhamPybind bigwhamPybind.cpp)
 target_link_libraries(bigwhamPybind PRIVATE BigWhamShared)
+set_target_properties(bigwhamPybind
+  PROPERTIES
+    INSTALL_RPATH_USE_LINK_PATH ON
+    INSTALL_RPATH "${CBLAS_LIBRARY_DIRS};${CMAKE_INSTALL_PREFIX}/lib"
+    BUILD_RPATH "${CBLAS_LIBRARY_DIRS};${PROJECT_BINARY_DIR}"
+)
 
 set(SRC_PYBIND11 "${CMAKE_CURRENT_SOURCE_DIR}/bigwham4py.py"
                  "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py")

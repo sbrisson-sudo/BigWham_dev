@@ -64,6 +64,13 @@ endif()
 
 add_subdirectory(il)
 
+set(CMAKE_MACOSX_RPATH ON)
+set(CMAKE_SKIP_BUILD_RPATH OFF)
+#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CBLAS_LIBRARY_DIRS}")
+#set(CMAKE_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${CBLAS_LIBRARY_DIRS}")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+
+
 ################################################################################
 # file definitions
 ################################################################################
@@ -160,10 +167,6 @@ if(BIGWHAM_MATHEMATICA_INTERFACE)
     add_external_package(ltemplate VERSION 0.5.4)
     add_subdirectory(interfaces/mathematica)
 endif()
-
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ################################################################################
 # For Unit Tests

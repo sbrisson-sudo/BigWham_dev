@@ -65,6 +65,10 @@ foreach(_lib ${BLAS_LIBRARIES})
         list(APPEND CBLAS_LIBRARY_DIRS "${_blas_library_dir}")
     endif()
 endforeach()
+list(REMOVE_DUPLICATES CBLAS_LIBRARY_DIRS)
+set(CBLAS_LIBRARY_DIRS ${CBLAS_LIBRARY_DIRS} PARENT_SCOPE)
+
+
 find_path(CBLAS_INCLUDE_DIR NAMES cblas.h mkl_cblas.h
     HINTS ${CBLAS_LIBRARY_DIRS}/..
           MKLROOT ENV MKLROOT
@@ -274,8 +278,8 @@ if(IL_TESTING)
     target_link_libraries(InsideLoopExe PRIVATE InsideLoop)
     #target_include_directories(InsideLoopExe PRIVATE ${CMAKE_SOURCE_DIR} /opt/eigen-3.3.2 /opt/blaze-3.0 /opt/cuda-8.0/include)
 
-    set(CMAKE_SKIP_BUILD_RPATH FALSE)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+#    set(CMAKE_SKIP_BUILD_RPATH FALSE)
+#    set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
     set(IL_FOLDER "${CMAKE_SOURCE_DIR}/il")
 
