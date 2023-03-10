@@ -15,7 +15,7 @@ project(BigWham VERSION 1.0
 # This is only for pybind11 to behave properly
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "cmake build type")
+set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "cmake build type")
 set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
     Release
     Debug
