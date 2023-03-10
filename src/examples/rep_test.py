@@ -7,7 +7,7 @@ import subprocess
 # subprocess.call("python generate_penny_mesh.py 0.5", shell=True)
 
 radius = 1.0
-pressure = 1.0;
+pressure = 1.0
 
 G = 1.0
 nu = 0.25
@@ -22,19 +22,19 @@ conn = np.load("mesh_conn.npy")
 
 # Create H-matrix
 kernel = "3DT0"
-hmat = Hmatrix(kernel, coord, conn, np.array([E, nu]), max_leaf_size, eta,
-               eps_aca)
+hmat = Hmatrix(kernel, coord, conn, np.array([E, nu]), max_leaf_size, eta, eps_aca)
 
-col_pts = hmat.getCollocationPoints()
+col_pts = hmat.getMeshCollocationPoints()
 
 pre_fac = (8 * (1 - nu * nu)) / (np.pi * E)
 dd = np.zeros(col_pts.shape)
-dd[:, 2] = pre_fac * np.sqrt(radius*radius - np.linalg.norm(dd[:, :2], axis=1))
+dd[:, 2] = pre_fac * np.sqrt(radius * radius - np.linalg.norm(col_pts[:, :2], axis=1)**2)
+
 
 # calculate tractions
-t = hmat @ dd.flatten()
+t = hmat.matvec(dd.flatten())
 
 t_anal = np.zeros(col_pts.shape)
 t_anal[:, 2] = pressure
 
-print("Rel error {}".format(np.linalg.norm(t-t_anal.flatten())))
+print("L2 Rel error {}".format(np.linalg.norm(t - t_anal.flatten())))

@@ -96,6 +96,16 @@ class Hmatrix(LinearOperator):
     def getPermutation(self):
         return np.asarray(self.H_.getPermutation())
 
+    def getMeshCollocationPoints(self):
+        """
+        Get collocation points from mesh (no permutations ....)
+        return: (no_collo_pts, dim) array from mesh
+        """
+        dim = self.H_.getSpatialDimension()
+        return np.asarray(self.H_.getCollocationPoints()).reshape(
+            (self.matvec_size_ // dim, dim)
+        )
+
     def getCollocationPoints(self):
         n = self.H_.getSpatialDimension()
         aux = np.asarray(self.H_.getCollocationPoints())

@@ -156,6 +156,7 @@ int main(int argc, char *argv[]) {
   // <<"\n"; std::cout << "L2 rel error " << il::norm(rel_err,il::Norm::L2)
   // <<"\n";
   std::cout << "Mean rel error " << il::mean(rel_err) << std::endl;
+  std::cout << "L2 rel error " << il::norm(rel_err, il::Norm::L2) << std::endl;
 
   return 0;
 }
