@@ -19,7 +19,6 @@
 #include "core/elements/Triangle.h"
 #include "core/hierarchical_representation.h"
 #include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
-#include "elasticity/BIE_elastostatic.h"
 #include "hmat/hmatrix/Hmat.h"
 #include <algorithm>
 #include <cmath>

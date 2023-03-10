@@ -21,22 +21,24 @@ namespace bie {
 
  Class Square Matrix generator for BIE - note that the element type of the source and receiver elements should be the same!
 
+ El: Element Type, Triangle<0>
+ Bie_def: Kernel Type, BIE_elastostatic<Tri0, Tri0, bie::ElasticKernelType::H>
 */
-template <typename T,class El,class BIE_Kernel>
+template <typename T,class El,class Bie_def>
 class SquareMatrixGenerator : public bie::MatrixGenerator<T> {
  private:
 
   il::Array<il::int_t> permutation_;
   bie::BEMesh<El> mesh_;
 
-  BIE_Kernel bie_kernel_;
+  Bie_def bie_kernel_;
 
   il::int_t dof_dimension_; // unknowns per nodes
   il::int_t size_; // total square matrix of size_*size_
   il::int_t number_points_; // size_ / block_size_
 
   public:
-    SquareMatrixGenerator(bie::BEMesh<El> & mesh, BIE_Kernel & bie_kernel,il::Array<il::int_t>& permutation);
+    SquareMatrixGenerator(bie::BEMesh<El> & mesh, Bie_def & bie_kernel,il::Array<il::int_t>& permutation);
     il::int_t size(il::int_t d) const override;
     il::int_t blockSize() const override;
     il::int_t sizeAsBlocks(il::int_t d) const override;
@@ -86,7 +88,8 @@ void SquareMatrixGenerator<T,El,Bie_def>::set(il::int_t b0, il::int_t b1, il::io
 #pragma omp for
     for (il::int_t j1 = 0; j1 < M.size(1) / blockSize(); ++j1) {
 
-      El source_elt{},receiver_elt{};
+      El source_elt = El();
+      El receiver_elt = El();
       il::int_t k1 = b1 + j1;
       // j1 source node
       // from k1 - permute back to original mesh ordering using permutation of the clusters.

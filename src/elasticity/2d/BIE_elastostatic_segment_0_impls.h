@@ -13,6 +13,7 @@
 
 #include "elasticity/BIE_elastostatic.h"
 #include "core/elements/Segment.h"
+#include "elasticity/2d/ElasticS3DP0_element.h"
 
 namespace bie{
 

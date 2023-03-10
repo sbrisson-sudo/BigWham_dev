@@ -13,12 +13,18 @@
 #include "core/ElasticProperties.h"
 #include "core/BoundaryElement.h"
 
-#include "elasticity/2d/ElasticS3DP0_element.h"
-
 namespace bie{
 
     enum ElasticKernelType {U,T,H,S,V};
 
+
+/*
+
+ Class Square Matrix generator for BIE - note that the element type of the source and receiver elements should be the same!
+
+ Es, Er: Element Type, Triangle<0>
+ ElasticKernelType: ElasticKernelType {U,T,H,S,V};
+*/
     template<class Es,class Er,ElasticKernelType k>
     class BIE_elastostatic : public BIE_Kernel<double,Es,Er> {
 // generic class for uniform  elasticity - isotopric - full-space.
