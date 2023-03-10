@@ -129,7 +129,7 @@ public:
     eta_ = eta;
     epsilon_aca_ = eps_aca;
     bie::ElasticProperties elas(properties[0], properties[1]);
-    std::cout << " Now setting things for kernel ... " << kernel_ <<" prop si" << properties.size()<<  "\n";
+    std::cout << " Now setting things for kernel ... " << kernel_ <<" prop size " << properties.size()<<  "\n";
     il::Timer tt;
     if (kernel_ == "S3DP0") {
           IL_ASSERT(properties.size() == 3);

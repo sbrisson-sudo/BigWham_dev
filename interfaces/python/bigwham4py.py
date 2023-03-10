@@ -24,7 +24,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
 
-from bigwhamPybind import *
+from bigwhamPybind import Bigwhamio, pyGetFullBlocks
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection

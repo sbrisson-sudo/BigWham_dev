@@ -4,14 +4,18 @@ from bigwham4py import Hmatrix  # linear operator file
 import numpy as np
 import subprocess
 
-subprocess.call("python generate_penny_mesh.py 0.5", shell=True)
+# subprocess.call("python generate_penny_mesh.py 0.5", shell=True)
 
-E = 1.e3
-nu = 0.2
+radius = 1.0
+pressure = 1.0;
 
-max_leaf_size = 1
-eta = 0.
-eps_aca = 0.001
+G = 1.0
+nu = 0.25
+E = (2 * G) * (1 + nu)
+
+max_leaf_size = 16
+eta = 3.0
+eps_aca = 1e-4
 
 coord = np.load("mesh_coords.npy")
 conn = np.load("mesh_conn.npy")
@@ -20,3 +24,17 @@ conn = np.load("mesh_conn.npy")
 kernel = "3DT0"
 hmat = Hmatrix(kernel, coord, conn, np.array([E, nu]), max_leaf_size, eta,
                eps_aca)
+
+col_pts = hmat.getCollocationPoints()
+
+pre_fac = (8 * (1 - nu * nu)) / (np.pi * E)
+dd = np.zeros(col_pts.shape)
+dd[:, 2] = pre_fac * np.sqrt(radius*radius - np.linalg.norm(dd[:, :2], axis=1))
+
+# calculate tractions
+t = hmat @ dd.flatten()
+
+t_anal = np.zeros(col_pts.shape)
+t_anal[:, 2] = pressure
+
+print("Rel error {}".format(np.linalg.norm(t-t_anal.flatten())))
