@@ -20,7 +20,7 @@
 #include <il/math.h>
 
 // Inclusion from the project
-#include <elasticity/2d/Elastic2DP1_element.h>
+#include "elasticity/2d/Elastic2DP1_element.h"
 #include "core/ElasticProperties.h"
 
 namespace bie {

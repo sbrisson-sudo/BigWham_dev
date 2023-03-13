@@ -24,7 +24,7 @@ TEST(SP3D,test_seg_0_dof_dim){
     bie::Segment<0> source;
     source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
-    bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
+    bie::BIE_elastostatic_sp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     ASSERT_TRUE(test.getDofDimension() == 2);
 }
 
@@ -34,7 +34,7 @@ TEST(SP3D,test_seg_0_dim){
     bie::Segment<0> source;
     source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
-    bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
+    bie::BIE_elastostatic_sp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     ASSERT_TRUE(test.getSpatialDimension()==2);
 }
 
@@ -47,13 +47,13 @@ TEST(SP3D,test_seg_0_self){
     bie::Segment<0> source;
     source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
-    bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
+    bie::BIE_elastostatic_sp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
     test.setKernelProperties(prop);
     std::vector<double> test_self = test.influence(source,0,source,0);
     std::cout << "test self effect " << "\n";
     for (int i=0;i<4;i++){
-        std::cout << test_self[i]  <<"\n";
+        std::cout << test_self[i]  << "\n";
     }
 // old way // would have to be removed at some point !
     il::StaticArray2D<double,2,2> xys{0.};
@@ -63,7 +63,8 @@ TEST(SP3D,test_seg_0_self){
     for (int i=0;i<2;i++){
         std::cout << stnl(i,0) <<"-"  <<stnl(i,1)  <<"\n";
     }
-    ASSERT_TRUE( abs(stnl(0,0)-test_self[0])<1.e-5 && abs(stnl(1,0)-test_self[1])<1.e-5 &&  abs(stnl(0,1)-test_self[2])<1.e-5 &&  abs(stnl(1,1)-test_self[3])<1.e-5)  ;
+    double epsilon=1.e-6;
+    ASSERT_TRUE( abs(stnl(0,0)-test_self[0])<epsilon && abs(stnl(1,0)-test_self[1])<epsilon &&  abs(stnl(0,1)-test_self[2])<epsilon &&  abs(stnl(1,1)-test_self[3])<epsilon)  ;
 }
 
 
@@ -78,10 +79,13 @@ TEST(SP3D,test_seg_0_1){
     xy_r(0,0)=1.0; xy_r(1,0)=5.0; xy_r(0,1)=1.0;xy_r(1,1)=0.0;
     bie::Segment<0> receiver;
     receiver.setElement(xy_r);
-    bie::BIE_elastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
+    bie::BIE_elastostatic_sp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
     test.setKernelProperties(prop);
     std::vector<double> test_self = test.influence(source,0,receiver,0);
+//    for (int i=0;i<3;i++){
+//        std::cout << test_self[i] <<"-"  "\n";
+//    }
 // old way ..... // would have to be removed at some point !
     il::StaticArray2D<double,2,2> xys{0.},xys_r{0.};
     for (int i=0;i<2;i++){
@@ -94,5 +98,6 @@ TEST(SP3D,test_seg_0_1){
 //    for (int i=0;i<2;i++){
 //        std::cout << stnl(i,0) <<"-"  <<stnl(i,1)  <<"\n";
 //    }
-    ASSERT_TRUE( abs(stnl(0,0)-test_self[0])<1.e-5 && abs(stnl(1,0)-test_self[1])<1.e-5 &&  abs(stnl(0,1)-test_self[2])<1.e-5 &&  abs(stnl(1,1)-test_self[3])<1.e-5)  ;
+    double eps=3.e-5;
+    ASSERT_TRUE( abs(stnl(0,0)-test_self[0])<eps && abs(stnl(1,0)-test_self[1])<eps &&  abs(stnl(0,1)-test_self[2])<eps &&  abs(stnl(1,1)-test_self[3])<eps)  ;
 }

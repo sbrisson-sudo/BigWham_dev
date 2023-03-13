@@ -37,12 +37,15 @@ namespace bie{
             IL_ASSERT(xv.size(0)==n_vertices_);
             //
             for (il::int_t j = 0; j < spatial_dimension_; j++) {
-                this->centroid_[j] = 0; // always reset centroid when setting the coordinates
                 for (il::int_t i = 0; i < n_vertices_; i++) {
                     this->vertices_(i, j) = xv(i, j);
                 }
             }
+//            this->centroid_[0] = (xv(0, 0) + xv(1, 0) + xv(2, 0)) / 3.;
+//            this->centroid_[1] = (xv(0, 1) + xv(1, 1) + xv(2, 1)) / 3.;
+//            this->centroid_[2] = (xv(0, 2) + xv(1, 2) + xv(2, 2)) / 3.;
             for (il::int_t j = 0; j < spatial_dimension_; j++) {
+                this->centroid_[j] = 0.0; // always reset centroid when setting the coordinates
                 for (il::int_t i = 0; i < n_vertices_; i++) {
                     this->centroid_[j] = this->centroid_[j] + vertices_(i, j) / n_vertices_;
                 }
@@ -126,7 +129,7 @@ namespace bie{
         // 0 order element: collocation at centroid
         il::Array2D<double> col{1, 3, 0.};
         for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
-            col(0, j) = this->centroid_[j] + std::numeric_limits<double>::epsilon();
+            col(0, j) = this->centroid_[j] ;
         }
         this->nodes_ = col;
     }
@@ -136,7 +139,7 @@ namespace bie{
         // 0 order element: collocation at centroid
         il::Array2D<double> col{1, 3, 0.};
         for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
-            col(0, j) = this->centroid_[j] + std::numeric_limits<double>::epsilon();
+            col(0, j) = this->centroid_[j] ;
         }
         this->collocation_points_ = col;
     }

@@ -127,6 +127,7 @@ set(SOURCE_FILES
     src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
     src/elasticity/2d/BIE_elastostatic_segment_1_impls.h
     src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h
+    src/elasticity/2d/Elastic2D_segment.cpp
     )
 
 add_library(BigWham OBJECT ${SOURCE_FILES})
@@ -149,12 +150,11 @@ mark_as_advanced(BIGWHAM_INCLUDE_DIRS)
 
 add_executable(BigWham_exe  main.cpp)
 target_link_libraries(BigWham_exe BigWhamShared)
+include(BigWhamTools)
 
 ################################################################
 # Pybind --->use with PYTHON version >=3.7
 ################################################################
-include(BigWhamTools)
-
 message(STATUS "Building python interface: ${BIGWHAM_PYTHON_INTERFACE}")
 if(BIGWHAM_PYTHON_INTERFACE)
     set(PYBIND11_PYTHON_VERSION 3)
@@ -196,7 +196,10 @@ if(BIGWHAM_TESTING)
         src/core/_test/triangle_tests.cpp
         src/core/_test/rectangle_tests.cpp
         src/_test/bigwhamio_tests_2d.cpp
-        src/elasticity/_test/triangle0_tests.cpp)
+        src/elasticity/_test/triangle0_tests.cpp
+        src/elasticity/2d/_test/plane_elasticity_segment.cpp
+        src/elasticity/_test/segment0_kernels.cpp
+      )
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)
