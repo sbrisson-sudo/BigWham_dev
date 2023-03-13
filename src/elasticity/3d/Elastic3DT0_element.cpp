@@ -1046,7 +1046,7 @@ namespace bie {
                 double z1 = (d / p1) / p1;
                 double z2 = (d / p2) / p2;
                 chi[i] = log(
-                        abs(p2 / p1) * ((1.0 - 0.25 * z1 * (1.0 - 0.5 * z1)) / (1.0 - 0.25 * z2 * (1.0 - 0.5 * z2))));
+                             std::abs(p2 / p1) * ((1.0 - 0.25 * z1 * (1.0 - 0.5 * z1)) / (1.0 - 0.25 * z2 * (1.0 - 0.5 * z2))));
             } else {
                 // if any of the log arguments is zero
                 chi[i] = 0.0;
@@ -1161,7 +1161,7 @@ namespace bie {
                             (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
                        - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
                               (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
-        } else if (abs(q[0]) < eps_tol) {
+        } else if (std::abs(q[0]) < eps_tol) {
             // if the projected source/receiver point lies on the edge 1 or its prolongation (in both directions)
             // the limit is needed only for the case eta = 0. However, for eta =! 0, the value of gamma1 is the same
             // as the limit (=zero), so that's why I don't make the difference
@@ -1178,7 +1178,7 @@ namespace bie {
                             (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
                        - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
                               (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
-        } else if (abs(q[1]) < eps_tol) {
+        } else if (std::abs(q[1]) < eps_tol) {
             // if the projected source/receiver point lies on the edge 2 or its prolongation (in both directions)
             // the limit is needed only for the case eta = 0. However, for eta =! 0, the value of gamma2 is the same
             // as the limit (=zero), so that's why I don't make the difference
@@ -1195,7 +1195,7 @@ namespace bie {
                             (pow(q[i], 2.0) * pow(rho[i], 2.0) - pow(p(i, i), 2.0) * pow(eta, 2.0)))
                        - atan((-2.0 * p(i, i1) * q[i] * eta * rho[i1]) /
                               (pow(q[i], 2.0) * pow(rho[i1], 2.0) - pow(p(i, i1), 2.0) * pow(eta, 2.0)));
-        } else if (abs(q[2]) < eps_tol) {
+        } else if (std::abs(q[2]) < eps_tol) {
             // if the projected source/receiver point lies on the edge 3 or its prolongation (in both directions)
             // the limit is needed only for the case eta = 0. However, for eta =! 0, the value of gamma3 is the same
             // as the limit (=zero), so that's why I don't make the difference
