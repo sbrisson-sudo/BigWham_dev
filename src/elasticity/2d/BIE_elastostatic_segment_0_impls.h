@@ -8,7 +8,6 @@
 
 #ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_0_IMPLS_H
 #define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_0_IMPLS_H
-#pragma once
 
 
 #include "elasticity/BIE_elastostatic.h"

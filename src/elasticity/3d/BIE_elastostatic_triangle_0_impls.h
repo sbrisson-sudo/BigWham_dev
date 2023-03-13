@@ -8,7 +8,6 @@
 
 #ifndef BIGWHAM_BIE_ELASTOSTATIC_TRIANGLE_0_IMPLS_H
 #define BIGWHAM_BIE_ELASTOSTATIC_TRIANGLE_0_IMPLS_H
-#pragma once
 
 #include <il/linearAlgebra/dense/blas/dot.h>
 #include "elasticity/BIE_elastostatic.h"

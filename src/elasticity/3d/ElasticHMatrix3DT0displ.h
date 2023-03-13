@@ -10,7 +10,6 @@
 #define BIGWHAM_ELASTICHMATRIX3DT0DISPL_H
 
 
-#pragma once
 
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 #include <elasticity/3d/Elastic3DT0_element.h>

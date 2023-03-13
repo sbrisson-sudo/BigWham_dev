@@ -10,7 +10,6 @@
 #ifndef BIGWHAM_TOHPATTERN_H
 #define BIGWHAM_TOHPATTERN_H
 
-#pragma once
 
 
 #include <il/Tree.h>

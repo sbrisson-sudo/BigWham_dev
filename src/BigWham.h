@@ -8,7 +8,8 @@
 //
 // last modifications ::January 31. 2023 - cleaning up and using the new code interface.
 
-#pragma once
+#ifndef BIGWHAM_BIGWHAMIO_H
+#define BIGWHAM_BIGWHAMIO_H
 
 #include <iostream>
 #include <string>
@@ -397,3 +398,5 @@ public:
 
 
 }; // end class bigwhamio
+
+#endif //BIGWHAM_BIGWHAM_H

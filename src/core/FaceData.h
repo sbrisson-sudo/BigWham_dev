@@ -10,7 +10,6 @@
 #ifndef BIE_FACEDATA_H
 #define BIE_FACEDATA_H
 
-#pragma once
 
 #include <il/Array.h>
 #include <il/StaticArray.h>

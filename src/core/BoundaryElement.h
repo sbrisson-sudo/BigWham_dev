@@ -9,7 +9,6 @@
 #ifndef BIGWHAM_BOUNDARYELEMENT_H
 #define BIGWHAM_BOUNDARYELEMENT_H
 
-#pragma
 
 #include <limits>
 

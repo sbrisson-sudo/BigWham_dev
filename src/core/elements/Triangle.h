@@ -9,7 +9,6 @@
 #ifndef BIGWHAM_TRIANGLE_H
 #define BIGWHAM_TRIANGLE_H
 
-#pragma once
 #include "core/BoundaryElement.h"
 
 namespace bie{

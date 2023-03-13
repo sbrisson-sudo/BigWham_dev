@@ -9,7 +9,6 @@
 
 #ifndef BIGWHAM_BIE_KERNEL_H
 #define BIGWHAM_BIE_KERNEL_H
-#pragma once
 
 #include <string>
 

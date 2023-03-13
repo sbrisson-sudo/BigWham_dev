@@ -7,7 +7,10 @@
 // See the LICENSE.TXT file for more details.
 //
 //
-#pragma once
+
+
+#ifndef BIGWHAM_SQMATGENERATOR_H
+#define BIGWHAM_SQMATGENERATOR_H
 
 #include <string>
 
@@ -123,3 +126,5 @@ void SquareMatrixGenerator<T,El,Bie_def>::set(il::int_t b0, il::int_t b1, il::io
 }
 
 }
+
+#endif //BIGWHAM_SQMATGENERATOR_H

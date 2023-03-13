@@ -10,7 +10,6 @@
 #ifndef HFP_PLANESTRAININFINITE_H
 #define HFP_PLANESTRAININFINITE_H
 
-#pragma once
 
 #include <il/StaticArray2D.h>
 #include <il/StaticArray.h>

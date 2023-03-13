@@ -9,7 +9,6 @@
 #ifndef BIGWHAM_BEMESH_H
 #define BIGWHAM_BEMESH_H
 
-#pragma once
 
 #include "core/BoundaryElement.h"
 

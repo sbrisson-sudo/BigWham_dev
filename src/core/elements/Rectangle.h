@@ -8,7 +8,6 @@
 
 #ifndef BIGWHAM_RECTANGLE_H
 #define BIGWHAM_RECTANGLE_H
-#pragma once
 
 #include "core/BoundaryElement.h"
 

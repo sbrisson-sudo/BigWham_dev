@@ -7,16 +7,16 @@
 // file for more details.
 //
 // last modifications 5.2.21: Moving to std::unique_ptr (C. Peruzzo)
+
+#if defined(__clang__) && !defined(FMT_ICC_VERSION)
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "openmp-use-default-none"
+#endif
 
 #ifndef BIGWHAM_HMAT_H
 #define BIGWHAM_HMAT_H
 
-#pragma once
-#if defined(IL_OPENMP)
-#  include <omp.h>
-#endif
+#include <omp.h>
 
 #include "core/hierarchical_representation.h"
 #include <hmat/hmatrix/LowRank.h>
@@ -426,4 +426,6 @@ void buildLR(const bie::MatrixGenerator<T>& matrix_gen,const double epsilon){
 }
 #endif
 
+#if defined(__clang__) && !defined(FMT_ICC_VERSION)
 #pragma clang diagnostic pop
+#endif
