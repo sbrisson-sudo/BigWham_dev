@@ -8,16 +8,14 @@
 //
 // last modifications :: Jan. 12 2021
 
+#include <pybind11/pybind11.h>
 #include <pybind11/chrono.h>
 #include <pybind11/complex.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
-#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <BigWham.h>
-#include <omp.h>
-
 #include "core/BEMesh.h"
 #include "core/BoundaryElement.h"
 #include "core/elements/Segment.h"

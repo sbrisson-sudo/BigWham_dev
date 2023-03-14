@@ -20,7 +20,9 @@
 
 #include <random>
 
+#ifdef IL_OPENMP
 #include <omp.h>
+#endif
 
 #include <il/Array.h>
 
@@ -187,6 +189,7 @@ il::Array2D<float> kmeans_clustering_2(const il::Array2D<float>& point,
   IL_EXPECT_FAST(nb_point >= nb_cluster);
   IL_EXPECT_FAST(nb_iteration >= 0);
 
+#ifdef IL_OPENMP
   const int nb_thread{omp_get_max_threads()};
 
   Group group{nb_cluster};
@@ -273,6 +276,7 @@ il::Array2D<float> kmeans_clustering_2(const il::Array2D<float>& point,
   }
 
   return group.centroid;
+  #endif
 }
 
 il::Array2D<float> kmeans_clustering_3(const il::Array2D<float>& point,
@@ -282,6 +286,7 @@ il::Array2D<float> kmeans_clustering_3(const il::Array2D<float>& point,
   IL_EXPECT_FAST(nb_point >= nb_cluster);
   IL_EXPECT_FAST(nb_iteration >= 0);
 
+#ifdef IL_OPENMP
   const int nb_thread{omp_get_max_threads()};
 
   Group group{nb_cluster};
@@ -385,6 +390,7 @@ il::Array2D<float> kmeans_clustering_3(const il::Array2D<float>& point,
   }
 
   return group.centroid;
+  #endif
 }
 
 void fix_clusters(const il::Array2C<float>& point, il::io_t,

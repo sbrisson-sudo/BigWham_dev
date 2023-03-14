@@ -27,7 +27,9 @@
 #include <il/Array.h>
 #include <il/Array2D.h>
 
+#ifdef IL_OPENMP
 #include <omp.h>
+#endif
 
 namespace il {
 
@@ -488,6 +490,7 @@ double kmeans_clustering_6(int nb_point, int nb_cluster, int nb_iteration) {
   PixelVector centroid(nb_cluster);
   std::vector<int> point_per_cluster(nb_cluster);
 
+#ifdef IL_OPENMP
   int nb_thread = omp_get_max_threads();
   PixelVector local_centroid(nb_cluster * nb_thread);
   std::vector<int> local_point_per_cluster(nb_cluster * nb_thread);
@@ -578,6 +581,7 @@ double kmeans_clustering_6(int nb_point, int nb_cluster, int nb_iteration) {
       std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
   return time;
+#endif
 }
 
 struct Group {
@@ -588,6 +592,8 @@ struct Group {
 };
 
 double kmeans_clustering_il(int nb_point, int nb_cluster, int nb_iteration) {
+
+#ifdef IL_OPENMP
   const int nb_thread = omp_get_max_threads();
 
   Group group{nb_cluster};
@@ -595,5 +601,6 @@ double kmeans_clustering_il(int nb_point, int nb_cluster, int nb_iteration) {
   il::Array<int> cluster{nb_point};
 
   return 0.0;
+#endif
 }
 }  // namespace il
