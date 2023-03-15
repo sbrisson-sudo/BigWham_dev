@@ -4,6 +4,7 @@ cmake-build-debug/
 interfaces/python/lib/
 CMakeLists.txt
 local_computation/
+.dir-locals.el
 
 build/
 .clangd/
