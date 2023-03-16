@@ -22,6 +22,8 @@ class ElasticAxiSymmRingKernel
     : public BIE_elastostatic<ElemType, ElemType, H> {
 
 public:
+  ElasticAxiSymmRingKernel(ElasticProperties &elas, il::int_t dim)
+      : BIE_elastostatic<ElemType, ElemType, H>(elas, dim){};
   std::vector<double> influence(ElemType, il::int_t, ElemType, il::int_t) const;
 
 private:
