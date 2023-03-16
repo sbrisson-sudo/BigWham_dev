@@ -79,8 +79,8 @@ bie::BEMesh<El> createMeshFromVect(int spatial_dimension, int n_vertex_elt,
     }
   }
   bie::BEMesh<El> mesh(Coor, Conn);
-  std::cout << "in create mesh - done "
-            << "\n";
+  // std::cout << "in create mesh - done "
+  //           << "\n";
   return mesh;
 }
 
@@ -135,8 +135,8 @@ public:
     eta_ = eta;
     epsilon_aca_ = eps_aca;
     bie::ElasticProperties elas(properties[0], properties[1]);
-    std::cout << " Now setting things for kernel ... " << kernel_ << " prop si"
-              << properties.size() << "\n";
+    std::cout << " Now setting things for kernel ... " << kernel_
+              << " with properties size " << properties.size() << "\n";
     il::Timer tt;
     if (kernel_ == "S3DP0") {
       IL_ASSERT(properties.size() == 3);
@@ -283,23 +283,22 @@ public:
       dimension_ = 2;
       using EltType = bie::Segment<0>;
       int nvertices_per_elt_ = dimension_;
-      std::cout << " in Axi3DP0 " << coor.size() << "-" << conn.size();
+      std::cout << "In Axi3DP0 " << coor.size() << "   " << conn.size() << "\n";
       bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
           dimension_, nvertices_per_elt_, coor, conn);
       auto tes = mesh.getVertices(0);
       mesh.setCurrentElement(0);
-      std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
-                << tes(1, 0) << "- " << tes(1, 1) << "\n";
+      std::cout << "Element vertices " << tes(0, 0) << "  " << tes(0, 1)
+                << "  " << tes(1, 0) << "  " << tes(1, 1) << "\n";
       collocationPoints_ =
           mesh.getCollocationPoints(); // be careful returning it in original
                                        // ordering.  note this is only for the
                                        // output function getCollocationPoints
                                        // ... could be deleted possibly
-      std::cout << " mesh - done - n_elts" << mesh.numberOfElts() << "\n";
+      std::cout << "Mesh Done ...... N_elts" << mesh.numberOfElts() << "\n";
       // tt.Start();
       bie::HRepresentation hr =
           bie::h_representation_square_matrix(mesh, max_leaf_size_, eta_);
-      std::cout << " pattern created \n";
       // tt.Stop();
       h_representation_time_ = tt.time();
       tt.Reset();
@@ -324,15 +323,15 @@ public:
       dof_dimension_ = h_.dofDimension();
       std::cout << "HMAT --> built \n";
       double test_cr = h_.compressionRatio();
-      std::cout << "H mat set "
-                << " CR = " << test_cr << " eps_aca " << epsilon_aca_ << " eta "
+      std::cout << "HMAT set"
+                << ", CR = " << test_cr << ", eps_aca = " << epsilon_aca_ << ", eta = "
                 << eta_ << "\n";
       // std::cout << "H-mat construction time = :  " << hmat_time_ << "\n";
     } else {
       isBuilt_ = false;
     }
 
-    std::cout << "end of set() of bigwhamio object set \n";
+    std::cout << "BigWhamIO ENDED\n";
   }
 
   bool isBuilt() { return isBuilt_; };
@@ -352,16 +351,7 @@ public:
 
   std::vector<double> getCollocationPoints() {
     IL_EXPECT_FAST(isBuilt_);
-    std::cout << "beginning of getCollocationPoints bigwham \n";
-    std::cout << " Spatial dim :" << dimension_
-              << " collocation dim size :" << collocationPoints_.size(1)
-              << "\n";
-    std::cout << " collocation npoints :" << collocationPoints_.size(0) << "\n";
-    std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
-              << collocationPoints_.size(1) << "\n";
-
     IL_EXPECT_FAST(collocationPoints_.size(1) == dimension_);
-
     il::int_t npoints = collocationPoints_.size(0);
     std::vector<double> flat_col;
     flat_col.assign(npoints * dimension_, 0.);
@@ -372,15 +362,12 @@ public:
         index++;
       }
     }
-    std::cout << "end of getCollocationPoints bigwham \n";
     return flat_col;
   };
 
   //---------------------------------------------------------------------------
   std::vector<long> getPermutation() {
     IL_EXPECT_FAST(isBuilt_);
-    std::cout << "coll points dim " << collocationPoints_.size(0) << " - "
-              << collocationPoints_.size(1) << "\n";
     std::vector<long> permut;
     permut.assign(permutation_.size(), 0);
     for (il::int_t i = 0; i < permutation_.size(); i++) {

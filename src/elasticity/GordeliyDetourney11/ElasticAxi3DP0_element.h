@@ -38,12 +38,16 @@ ElasticAxiSymmRingKernel::influence(ElemType src_el, il::int_t src_colid,
   // get constitutive parameters. NOTE:   Poisson's ratio is taken as zero
   double G = this->elas_.getG();
 
-  auto src_nodes = src_el.getNodes();
+  auto src_vertices = src_el.getVertices();
 
-  double rExt = std::sqrt(src_nodes(1, 0) * src_nodes(1, 0) +
-                          src_nodes(1, 1) * src_nodes(1, 1));
-  double rInt = std::sqrt(src_nodes(0, 0) * src_nodes(0, 0) +
-                          src_nodes(0, 1) * src_nodes(0, 1));
+  // std::cout << src_vertices.size(0) << "  " <<  src_vertices.size(1) << "\n";
+
+  double rExt = std::sqrt(src_vertices(1, 0) * src_vertices(1, 0) +
+                          src_vertices(1, 1) * src_vertices(1, 1));
+  double rInt = std::sqrt(src_vertices(0, 0) * src_vertices(0, 0) +
+                          src_vertices(0, 1) * src_vertices(0, 1));
+
+  // std::cout << "Vertices good \n";
 
   // double rExt = source_elt.Xmid(0) + source_elt.size() / 2.0;
   // double rInt = source_elt.Xmid(0) - source_elt.size() / 2.0;
@@ -51,6 +55,8 @@ ElasticAxiSymmRingKernel::influence(ElemType src_el, il::int_t src_colid,
   auto rec_colpts = rec_el.getCollocationPoints();
   double rObs = std::sqrt(rec_colpts(0, 0) * rec_colpts(0, 0) +
                           rec_colpts(0, 1) * rec_colpts(0, 1));
+
+  // std::cout << "Collocation good \n";
 
   // double rObs = receiver_elt.Xmid(0);
 
