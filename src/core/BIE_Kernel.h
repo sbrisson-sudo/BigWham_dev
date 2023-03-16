@@ -20,26 +20,19 @@ namespace bie{
 template<typename T,class Es,class Er>
 class BIE_Kernel {
 protected:
-    bool local_unknowns_ {true};
-    bool local_co_variables_{true};
+
     il::int_t dof_dimension_{1};
     il::int_t dim_{2};
 
 public:
 
     //  constructor
-    BIE_Kernel(bool local_unknowns,bool local_co_variables)  {
-        local_unknowns_=local_unknowns;local_co_variables_=local_co_variables;
-    };
-
     BIE_Kernel()  {};
     ~BIE_Kernel() {};
 
     // methods
     virtual std::vector<T>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const =0 ;
 
-    bool isLocalUnknowns() const {return local_unknowns_;};
-    bool isLocalCoVariables() const {return local_co_variables_;};
     il::int_t getDofDimension() const  {return dof_dimension_;};
     il::int_t getSpatialDimension() const {return dim_;};
 

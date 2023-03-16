@@ -36,20 +36,20 @@ namespace bie {
 
         il::StaticArray2D<double, 2, 2> R = source_elt.rotationMatrix();
 
-        il::StaticArray2D<double, 2, 2> Rt = R; // transpose rotation matrix
-        Rt(0, 1) = R(1, 0);
-        Rt(1, 0) = R(0, 1);
-
+//        il::StaticArray2D<double, 2, 2> Rt = R; // transpose rotation matrix
+//        Rt(0, 1) = R(1, 0);
+//        Rt(1, 0) = R(0, 1);
+        il::StaticArray2D<double, 2, 2> Rt = source_elt.rotationMatrix_T();
         il::StaticArray<double, 2> xe;
         auto Xmid = source_elt.getCentroid();
         auto r_col = receiver_elt.getCollocationPoints();
         for (int i = 0; i < 2; ++i) {
             xe[i] = r_col(i_r, i) - Xmid[i];
         }
-        xe = il::dot(Rt, xe);
+        xe =source_elt.to_local(xe);// il::dot(Rt, xe);
 
-        il::StaticArray<double, 2> n = il::dot(Rt, receiver_elt.getNormal());
-        il::StaticArray<double, 2> s = il::dot(Rt, receiver_elt.getTangent());
+        il::StaticArray<double, 2> n =source_elt.to_local(receiver_elt.getNormal()); //il::dot(Rt, receiver_elt.getNormal());
+        il::StaticArray<double, 2> s =source_elt.to_local(receiver_elt.getTangent());// il::dot(Rt, );
 
         double h = source_elt.getSize();
 
