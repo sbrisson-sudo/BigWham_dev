@@ -6,7 +6,7 @@
 
 using namespace std;
 
-# include "elliptic_integral.hpp"
+# include "elliptic_integral.h"
 
 //****************************************************************************80
 

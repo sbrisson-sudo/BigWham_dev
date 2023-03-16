@@ -11,6 +11,7 @@
 #define BIGWHAM_BIE_KERNEL_H
 
 #include <string>
+#include <vector>
 
 #include "core/BoundaryElement.h"
 
@@ -31,7 +32,7 @@ public:
     ~BIE_Kernel() {};
 
     // methods
-    virtual std::vector<T>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const =0 ;
+  virtual std::vector<T>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const = 0; 
 
     il::int_t getDofDimension() const  {return dof_dimension_;};
     il::int_t getSpatialDimension() const {return dim_;};

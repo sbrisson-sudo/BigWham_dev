@@ -130,6 +130,9 @@ set(SOURCE_FILES
     src/elasticity/2d/Elastic2D_segment.cpp
     )
 
+
+add_subdirectory(src/elasticity/GordeliyDetourney11)
+
 add_library(BigWham OBJECT ${SOURCE_FILES})
 target_compile_features(BigWham PUBLIC cxx_std_17)
 target_link_libraries(BigWham PUBLIC InsideLoop)
