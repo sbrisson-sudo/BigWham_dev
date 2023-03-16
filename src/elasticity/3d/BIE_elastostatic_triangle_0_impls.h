@@ -43,9 +43,8 @@ namespace bie{
         il::StaticArray2D<double, 3, 6> Stress= StressesKernelT0(receiver_coor,el_vertices_s,G,nu);
 
         // normal vector at the receiver location in the reference system of the source element
-        il::StaticArray2D<double, 3, 3>  R_T_source = source_elt.rotationMatrix_T();
-        il::StaticArray<double, 3> nr = receiver_elt.getNormal();
-        nr = il::dot(R_T_source,nr);
+        il::StaticArray<double, 3> nr =source_elt.to_local(receiver_elt.getNormal());// il::dot(R_T_source,nr);
+
         // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source element
         // in the reference system of the source element
         il::StaticArray2D<double,3,3> DDs_to_traction_local{0.0}; // traction vectors
@@ -79,9 +78,10 @@ namespace bie{
         }
 
         // local-local   only for now ....
-        auto A_rotated = il::dot(R_T_source,DDs_to_traction_local);
-        il::StaticArray2D<double, 3, 3>  R_T_receiver = receiver_elt.rotationMatrix_T();
-        A_rotated = il::dot(R_T_receiver,A_rotated);
+        il::StaticArray2D<double, 3, 3>  R_T_source = source_elt.rotationMatrix_T();
+        auto A_rotated = il::dot(R_T_source,DDs_to_traction_local); // back to global
+        il::StaticArray2D<double, 3, 3>  R_receiver = receiver_elt.rotationMatrix();
+        A_rotated = il::dot(R_receiver,A_rotated); // to receiver local
         // std vector output in column major format
         std::vector<double> stnl(9,0.);
         int k=0;
