@@ -81,20 +81,20 @@ set(SOURCE_FILES
     src/hmat/cluster/cluster.h
     src/hmat/cluster/cluster.cpp
     # 2D source code
-    src/core/Mesh2D.cpp src/core/Mesh2D.h
-    src/core/SegmentData.h
+        src/core/oldies/Mesh2D.cpp src/core/oldies/Mesh2D.h
+        src/core/oldies/SegmentData.h
     src/core/SquareMatrixGenerator.h
     src/core/BEMesh.h
-    src/elasticity/2d/ElasticS3DP0_element.cpp
-    src/elasticity/2d/Elastic2DP1_element.cpp
-    src/elasticity/PostProcessDDM_2d.cpp
-    src/elasticity/PostProcessDDM_3d.cpp
+        src/elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.cpp
+        src/elasticity/FsIso2dSegment/Elastic2DP1_element.cpp
+        src/elasticity/oldies/PostProcessDDM_2d.cpp
+        src/elasticity/oldies/PostProcessDDM_3d.cpp
 
     # 3D source code
-    src/core/Mesh3D.cpp src/core/Mesh3D.h
-    src/core/FaceData.cpp
+        src/core/oldies/Mesh3D.cpp src/core/oldies/Mesh3D.h
+        src/core/oldies/FaceData.cpp
     #  - T6 element
-    src/core/element_utilities.cpp
+        src/core/oldies/element_utilities.cpp
     src/elasticity/3d/Elastic3DT6_element.cpp
     src/elasticity/3d/h_potential_3DT6.cpp
     src/elasticity/3d/tensor_utilities_3DT6.cpp
@@ -112,26 +112,26 @@ set(SOURCE_FILES
     src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
     src/elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h
     # BigWham Interface
-    src/BigWham.h
+        src/BigWhamIO.h
     #new
-    src/core/BIE_Kernel.h
+        src/core/BieKernel.h
     src/core/BEMesh.h
     src/core/BoundaryElement.h
-    src/elasticity/BIE_elastostatic.h
+        src/elasticity/BieElastostatic.h
 
     src/core/hierarchical_representation.h
     src/hmat/hmatrix/toHPattern.cpp
     src/core/elements/Segment.h
     src/core/elements/Triangle.h
     src/core/elements/Rectangle.h
-    src/elasticity/2d/BIE_elastostatic_segment_0_impls.h
-    src/elasticity/2d/BIE_elastostatic_segment_1_impls.h
+        src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h
+        src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h
     src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h
-    src/elasticity/2d/Elastic2D_segment.cpp
-    )
+        src/elasticity/FsIso2dSegment/Elastic2D_segment.cpp
+        src/elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h)
 
 
-add_subdirectory(src/elasticity/GordeliyDetourney11)
+add_subdirectory(src/elasticity/FsIsoAxiFlatRingUnidirectional)
 
 add_library(BigWham OBJECT ${SOURCE_FILES})
 target_compile_features(BigWham PUBLIC cxx_std_17)
@@ -190,7 +190,7 @@ if(BIGWHAM_TESTING)
         #src/_test/elastic3DR0_element_benchmark.cpp
         src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
         src/core/_test/segment_test.cpp
-        src/elasticity/BIE_elastostatic.h
+            src/elasticity/BieElastostatic.h
         src/elasticity/_test/segment0_sp3d_tests.cpp
         src/core/_test/BEmesh_tests.cpp
         src/elasticity/_test/elastic_square_matrix_generator_tests.cpp
@@ -200,7 +200,7 @@ if(BIGWHAM_TESTING)
         src/core/_test/rectangle_tests.cpp
         src/_test/bigwhamio_tests_2d.cpp
         src/elasticity/_test/triangle0_tests.cpp
-        src/elasticity/2d/_test/plane_elasticity_segment.cpp
+            src/elasticity/FsIso2dSegment/_test/plane_elasticity_segment.cpp
         src/elasticity/_test/segment0_kernels.cpp
       )
 

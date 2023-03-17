@@ -16,8 +16,8 @@
 
 // Inclusion from the project
 #include "core/ElasticProperties.h"
-#include "core/Mesh3D.h"
-#include "core/FaceData.h"
+#include "core/oldies/Mesh3D.h"
+#include "core/oldies/FaceData.h"
 
 namespace bie {
     // The typedef is used to define a new type of function pointer.

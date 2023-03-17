@@ -9,15 +9,15 @@
 #ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS_H
 #define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS_H
 
-#include "elasticity/BIE_elastostatic.h"
+#include "elasticity/BieElastostatic.h"
 #include "core/elements/Segment.h"
-#include "elasticity/2d/Elastic2DP1_element.h"
+#include "Elastic2DP1_element.h"
 
 namespace bie {
 
     template<>
     inline std::vector<double>
-    BIE_elastostatic<Segment<1>, Segment<1>, H>::influence(Segment<1> source_elt, il::int_t i_s, Segment<1> receiver_elt, il::int_t i_r) const {
+    BieElastostatic<Segment<1>, Segment<1>, H>::influence(Segment<1> source_elt, il::int_t i_s, Segment<1> receiver_elt, il::int_t i_r) const {
         //  return tractions - Hypersingular elastic kernel - Segment 1 element
         // source_elt : element object of the source element
         // i_s : integert for the source collocation number (0,1)

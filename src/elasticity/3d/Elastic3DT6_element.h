@@ -17,7 +17,7 @@
 #include <il/Array2D.h>
 #include <il/StaticArray2D.h>
 
-#include "core/FaceData.h"
+#include "core/oldies/FaceData.h"
 #include "core/ElasticProperties.h"
 
 namespace bie {

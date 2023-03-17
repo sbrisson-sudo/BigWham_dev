@@ -15,8 +15,8 @@
 #include <il/StaticArray.h>
 
 #include "core/ElasticProperties.h"
-#include "core/Mesh2D.h"
-#include "core/SegmentData.h"
+#include "core/oldies/Mesh2D.h"
+#include "core/oldies/SegmentData.h"
 
 namespace bie {
 

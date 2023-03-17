@@ -7,8 +7,8 @@
 //
 
 
-#ifndef BIGWHAM_BIE_KERNEL_H
-#define BIGWHAM_BIE_KERNEL_H
+#ifndef BIGWHAM_BIEKERNEL_H
+#define BIGWHAM_BIEKERNEL_H
 
 #include <string>
 #include <vector>
@@ -19,7 +19,7 @@ namespace bie{
 
 
 template<typename T,class Es,class Er>
-class BIE_Kernel {
+class BieKernel {
 protected:
 
     il::int_t dof_dimension_{1};
@@ -28,8 +28,8 @@ protected:
 public:
 
     //  constructor
-    BIE_Kernel()  {};
-    ~BIE_Kernel() {};
+    BieKernel()  {};
+    ~BieKernel() {};
 
     // methods
   virtual std::vector<T>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const = 0; 
@@ -41,4 +41,4 @@ public:
 
 
 }
-#endif //BIGWHAM_BIE_KERNEL_H
+#endif //BIGWHAM_BIEKERNEL_H

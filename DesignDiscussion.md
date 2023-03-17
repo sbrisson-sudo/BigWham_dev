@@ -79,8 +79,8 @@ effect of one node of the receiver element (or receiver points in the case of ob
   
 Proposal / new implementation as 25.01.2023:
   + Boundary Element class hieararchy with interpolation order as template parameter : {segment<0>,segment<1>,rectangle<0>,triangle<0>,triangle<2> ....}
-  + BIE_Kernel template class hierarchy with Boundary Element  as template parameters (for source + receiver possibly)
-  + i.e. the elasticity base derived class is BIE_elastostatic (some derived classses will be needed for dumb down case e.g. modeI only etc.)
+  + BieKernel template class hierarchy with Boundary Element  as template parameters (for source + receiver possibly)
+  + i.e. the elasticity base derived class is BieElastostatic (some derived classses will be needed for dumb down case e.g. modeI only etc.)
   + an enum for the kernels implemented : {U,T,H,S,V}   - note depending on physics (we or we do not have everything implemented)
   + for a given Boundary Element + kernel {U,...} the influence function  must be implemented 
   + the influence function has always the signature std::vector<T> influence<Element<p>,Element<p>,U> influence(source_Elt,i_s,receiver_Elt,i_r)

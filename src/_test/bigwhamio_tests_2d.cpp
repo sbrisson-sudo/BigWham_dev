@@ -10,14 +10,14 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include "BigWham.h"
+#include "BigWhamIO.h"
 
 #include "core/BoundaryElement.h"
 #include "core/BEMesh.h"
 #include "core/SquareMatrixGenerator.h"
 #include "hmat/cluster/cluster.h"
-#include "elasticity/2d/BIE_elastostatic_segment_0_impls.h"
-#include "elasticity/2d/ElasticS3DP0_element.h"
+#include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
+#include "elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.h"
 #include "hmat/hmatrix/Hmat.h"
 
 

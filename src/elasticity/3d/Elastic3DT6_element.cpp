@@ -22,7 +22,7 @@
 #include <il/StaticArray3D.h>
 #include <il/StaticArray4D.h>
 #include <il/linearAlgebra.h>
-#include "core/element_utilities.h"
+#include "core/oldies/element_utilities.h"
 
 #include <elasticity/3d/Elastic3DT6_element.h>
 #include <elasticity/3d/h_potential_3DT6.h>

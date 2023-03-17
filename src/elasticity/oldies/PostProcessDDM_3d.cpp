@@ -16,7 +16,7 @@
 
 #include <iostream>
 #include <il/linearAlgebra.h>
-#include "elasticity/PostProcessDDM_3d.h"
+#include "PostProcessDDM_3d.h"
 #ifndef NUMBEROFTHREADS
 #define NUMBEROFTHREADS 4
 #endif

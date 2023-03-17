@@ -15,7 +15,7 @@
 #include <il/linearAlgebra.h>
 #include <il/linearAlgebra/dense/norm.h>
 #include "elasticity/3d/constants.h"
-#include "core/element_utilities.h"
+#include "element_utilities.h"
 
 namespace bie {
 

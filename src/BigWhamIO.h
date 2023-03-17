@@ -30,15 +30,16 @@
 #include "core/elements/Segment.h"
 #include "core/elements/Triangle.h"
 
-#include "core/BIE_Kernel.h"
+#include "core/BieKernel.h"
 #include "core/ElasticProperties.h"
 #include "core/SquareMatrixGenerator.h"
-#include "elasticity/BIE_elastostatic.h"
+#include "elasticity/BieElastostatic.h"
 
-#include "elasticity/2d/BIE_elastostatic_segment_0_impls.h"
-#include "elasticity/2d/BIE_elastostatic_segment_1_impls.h"
+#include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
+#include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h"
 #include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
-#include "elasticity/GordeliyDetourney11/ElasticAxi3DP0_element.h"
+#include "elasticity/FsIsoAxiFlatRingUnidirectional/ElasticAxi3DP0_element.h"
+#include <elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h>
 
 // utilities for switch with string in C++17
 // https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
@@ -170,9 +171,9 @@ public:
       tt.Reset();
       tt.Start();
       const auto ker_type = bie::ElasticKernelType::H;
-      bie::BIE_elastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
+      bie::BieElastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
       bie::SquareMatrixGenerator<
-          double, EltType, bie::BIE_elastostatic<EltType, EltType, ker_type>>
+          double, EltType, bie::BieElastostatic<EltType, EltType, ker_type>>
           M(mesh, ker, hr.permutation_0_);
       h_.toHmat(M, hr, epsilon_aca_);
       tt.Stop();
@@ -206,13 +207,13 @@ public:
       tt.Reset();
       tt.Start();
       const auto ker_type = bie::ElasticKernelType::H;
-      bie::BIE_elastostatic_sp3d<EltType, EltType, ker_type> ker(elas,
+      bie::BieElastostaticSp3d<EltType, EltType, ker_type> ker(elas,
                                                                  dimension_);
       il::Array<double> prop{1, properties[2]}; // for the SP3D0
       ker.setKernelProperties(prop);
       bie::SquareMatrixGenerator<
           double, EltType,
-          bie::BIE_elastostatic_sp3d<EltType, EltType, ker_type>>
+          bie::BieElastostaticSp3d<EltType, EltType, ker_type>>
           M(mesh, ker, hr.permutation_0_);
       h_.toHmat(M, hr, epsilon_aca_);
       tt.Stop();
@@ -240,9 +241,9 @@ public:
       tt.Reset();
       tt.Start();
       const auto ker_type = bie::ElasticKernelType::H;
-      bie::BIE_elastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
+      bie::BieElastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
       bie::SquareMatrixGenerator<
-          double, EltType, bie::BIE_elastostatic<EltType, EltType, ker_type>>
+          double, EltType, bie::BieElastostatic<EltType, EltType, ker_type>>
           M(mesh, ker, hr.permutation_0_);
       h_.toHmat(M, hr, epsilon_aca_);
       tt.Stop();
@@ -269,9 +270,9 @@ public:
       tt.Reset();
       tt.Start();
       const auto ker_type = bie::ElasticKernelType::H;
-      bie::BIE_elastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
+      bie::BieElastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
       bie::SquareMatrixGenerator<
-          double, EltType, bie::BIE_elastostatic<EltType, EltType, ker_type>>
+          double, EltType, bie::BieElastostatic<EltType, EltType, ker_type>>
           M(mesh, ker, hr.permutation_0_);
       h_.toHmat(M, hr, epsilon_aca_);
       tt.Stop();

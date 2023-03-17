@@ -14,7 +14,7 @@
 #include <iostream>
 
 #include <il/linearAlgebra.h>
-#include <hmat/hmatrix/HMatrix.h>
+#include <hmat/hmatrix/oldies/HMatrix.h>
 
 
 namespace bie {

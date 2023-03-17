@@ -10,13 +10,13 @@
 #define BIGWHAM_BIE_ELASTOSTATIC_TRIANGLE_0_IMPLS_H
 
 #include <il/linearAlgebra/dense/blas/dot.h>
-#include "elasticity/BIE_elastostatic.h"
+#include "elasticity/BieElastostatic.h"
 #include "core/elements/Triangle.h"
 #include "elasticity/3d/Elastic3DT0_element.h"
 
 namespace bie{
 
-    template<> inline std::vector<double> BIE_elastostatic<Triangle<0>,Triangle<0>,H>::influence(Triangle<0> source_elt,il::int_t i_s,Triangle<0>  receiver_elt, il::int_t i_r) const {
+    template<> inline std::vector<double> BieElastostatic<Triangle<0>,Triangle<0>,H>::influence(Triangle<0> source_elt,il::int_t i_s,Triangle<0>  receiver_elt, il::int_t i_r) const {
     //  return tractions - Hypersingular elastic kernel - Triangle 0 element
     // source_elt : element object of the source element
     // i_s : integert for the source collocation number (0,1)

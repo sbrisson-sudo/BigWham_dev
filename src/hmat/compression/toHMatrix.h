@@ -12,7 +12,7 @@
 
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 #include <hmat/compression/adaptiveCrossApproximation.h>
-#include <hmat/hmatrix/HMatrix.h>
+#include <hmat/hmatrix/oldies/HMatrix.h>
 
 #ifdef IL_PARALLEL
 #include <tbb/tbb.h>

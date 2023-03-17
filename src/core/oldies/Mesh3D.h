@@ -14,7 +14,7 @@
 #include <il/Array2D.h>
 #include <il/StaticArray2D.h>
 #include <elasticity/3d/constants.h>
-#include "core/FaceData.h"
+#include "core/oldies/FaceData.h"
 
 namespace bie {
 

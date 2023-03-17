@@ -6,7 +6,7 @@
 #include <il/Array2D.h>
 #include <il/Map.h>
 
-#include <hmat/hmatrix/HMatrixNode.h>
+#include <hmat/hmatrix/oldies/HMatrixNode.h>
 #include <hmat/hmatrix/HMatrixType.h>
 
 namespace bie {

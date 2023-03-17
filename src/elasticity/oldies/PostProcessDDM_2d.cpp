@@ -14,7 +14,7 @@
 //#include <elasticity/2d/ElasticS3DP0_element.h>
 
 
-#include "elasticity/PostProcessDDM_2d.h"
+#include "PostProcessDDM_2d.h"
 
 namespace bie {
 

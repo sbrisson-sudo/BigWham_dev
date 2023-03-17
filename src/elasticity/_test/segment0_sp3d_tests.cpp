@@ -6,16 +6,16 @@
 // See the LICENSE.TXT file for more details.
 //
 
-
+#pragma once
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/math.h>
 
 #include "core/BoundaryElement.h"
-#include "elasticity/2d/BIE_elastostatic_segment_0_impls.h"
-#include "elasticity/2d/ElasticS3DP0_element.h"
-
+#include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
+//#include "elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.h"
+#include <elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h>
 
 TEST(SP3D,test_seg_0_dof_dim){
 
@@ -24,7 +24,7 @@ TEST(SP3D,test_seg_0_dof_dim){
     bie::Segment<0> source;
     source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
-    bie::BIE_elastostatic_sp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
+    bie::BieElastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     ASSERT_TRUE(test.getDofDimension() == 2);
 }
 
@@ -34,7 +34,7 @@ TEST(SP3D,test_seg_0_dim){
     bie::Segment<0> source;
     source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
-    bie::BIE_elastostatic_sp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
+    bie::BieElastostaticSp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     ASSERT_TRUE(test.getSpatialDimension()==2);
 }
 
@@ -47,7 +47,7 @@ TEST(SP3D,test_seg_0_self){
     bie::Segment<0> source;
     source.setElement(xy);
     bie::ElasticProperties elas(1,0.3);
-    bie::BIE_elastostatic_sp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
+    bie::BieElastostaticSp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
     test.setKernelProperties(prop);
     std::vector<double> test_self = test.influence(source,0,source,0);
@@ -79,7 +79,7 @@ TEST(SP3D,test_seg_0_1){
     xy_r(0,0)=1.0; xy_r(1,0)=5.0; xy_r(0,1)=1.0;xy_r(1,1)=0.0;
     bie::Segment<0> receiver;
     receiver.setElement(xy_r);
-    bie::BIE_elastostatic_sp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
+    bie::BieElastostaticSp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
     test.setKernelProperties(prop);
     std::vector<double> test_self = test.influence(source,0,receiver,0);

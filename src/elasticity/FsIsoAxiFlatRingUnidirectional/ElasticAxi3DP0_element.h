@@ -8,22 +8,22 @@
 
 #include <vector>
 
-#include "core/elements/Segment.h"
+#include <core/elements/Segment.h>
 #include <core/ElasticProperties.h>
 
-#include "elasticity/BIE_elastostatic.h"
-#include <elasticity/GordeliyDetourney11/elliptic_integral.h>
+#include <elasticity/BieElastostatic.h>
+#include <elasticity/FsIsoAxiFlatRingUnidirectional/elliptic_integral.h>
 
 using ElemType = bie::Segment<0>;
 
 namespace bie {
 
 class ElasticAxiSymmRingKernel
-    : public BIE_elastostatic<ElemType, ElemType, H> {
+    : public BieElastostatic<ElemType, ElemType, H> {
 
 public:
   ElasticAxiSymmRingKernel(ElasticProperties &elas, il::int_t dim)
-      : BIE_elastostatic<ElemType, ElemType, H>(elas, dim){};
+      : BieElastostatic<ElemType, ElemType, H>(elas, dim){};
   std::vector<double> influence(ElemType, il::int_t, ElemType, il::int_t) const;
 
 private:

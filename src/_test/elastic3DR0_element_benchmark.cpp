@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include "_test/elastic3DR0_element_benchmark.h"
 #include "_test/penny_shaped_crack_analytical_sol.h"
-#include <BigWham.h>
+#include <BigWhamIO.h>
 
 //--------------------------------------------------------------------------
 

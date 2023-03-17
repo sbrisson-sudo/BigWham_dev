@@ -8,8 +8,8 @@
 //
 //
 
-#include "core/Mesh2D.h"
-#include "core/SegmentData.h"
+#include "Mesh2D.h"
+#include "SegmentData.h"
 
 namespace bie {
 

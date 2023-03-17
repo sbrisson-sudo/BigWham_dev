@@ -36,7 +36,7 @@ using Int2D = il::Array2D<il::int_t>;
 using Tri0 = bie::Triangle<0>;
 using Mesh = bie::BEMesh<Tri0>;
 using MatProp = bie::ElasticProperties;
-using KernelH = bie::BIE_elastostatic<Tri0, Tri0, bie::ElasticKernelType::H>;
+using KernelH = bie::BieElastostatic<Tri0, Tri0, bie::ElasticKernelType::H>;
 using MatixGenerator = bie::SquareMatrixGenerator<double, Tri0, KernelH>;
 
 template <typename T> std::string print_array2D(const il::Array2D<T> &);

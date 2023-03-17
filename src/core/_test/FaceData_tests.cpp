@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <il/Array2D.h>
-#include "core/FaceData.h"
+#include "core/oldies/FaceData.h"
 
 
 //--------------------------------------------------------------------------

@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <il/StaticArray2D.h>
-#include "elasticity/2d/Elastic2D_segment.h"
+#include "elasticity/FsIso2dSegment/Elastic2D_segment.h"
 
 
 TEST(elas_fs_iso_segment,U_0_1){

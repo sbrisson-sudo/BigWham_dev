@@ -10,7 +10,7 @@
 #include <il/StaticArray2D.h>
 #include <il/math.h>
 
-#include "elasticity/2d/Elastic2D_segment.h"
+#include "Elastic2D_segment.h"
 
 
 namespace bie {

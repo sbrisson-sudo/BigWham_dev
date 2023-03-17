@@ -6,11 +6,11 @@
 // See the LICENSE.TXT file for more details.
 //
 
-#ifndef BIGWHAM_BIE_ELASTOSTATIC_H
-#define BIGWHAM_BIE_ELASTOSTATIC_H
+#ifndef BIGWHAM_BIEELASTOSTATIC_H
+#define BIGWHAM_BIEELASTOSTATIC_H
 
 #include <vector> 
-#include "core/BIE_Kernel.h"
+#include "core/BieKernel.h"
 #include "core/ElasticProperties.h"
 #include "core/BoundaryElement.h"
 
@@ -27,10 +27,10 @@ namespace bie{
  ElasticKernelType: ElasticKernelType {U,T,H,S,V};
 */
     template<class Es,class Er,ElasticKernelType k>
-    class BIE_elastostatic : public BIE_Kernel<double,Es,Er> {
+    class BieElastostatic : public BieKernel<double,Es,Er> {
 // generic class for uniform  elasticity - isotopric - full-space.
 //note that for pure mode 1 (scalar problem), another class must be written or / derived from this one.
-    using BIE_Kernel<double,Es,Er>::BIE_Kernel;
+    using BieKernel<double,Es,Er>::BieKernel;
 
     protected:
         il::Array<double> kernel_properties_{};
@@ -40,15 +40,15 @@ namespace bie{
 
     public :
 
-        BIE_elastostatic() : BIE_Kernel<double, Es, Er>()  {};
+        BieElastostatic() : BieKernel<double, Es, Er>()  {};
 
-        BIE_elastostatic(bie::ElasticProperties &elas,il::int_t dim) : BIE_Kernel<double, Es, Er>() {
+        BieElastostatic(bie::ElasticProperties &elas,il::int_t dim) : BieKernel<double, Es, Er>() {
             elas_=elas;
             this->dof_dimension_=dim;
             this->dim_=dim;
         };
 
-        BIE_elastostatic(bie::ElasticProperties &elas ,il::int_t dim,bool local_unknowns,bool local_co_variables)  : BIE_Kernel<double, Es, Er>()  {
+        BieElastostatic(bie::ElasticProperties &elas ,il::int_t dim,bool local_unknowns,bool local_co_variables)  : BieKernel<double, Es, Er>()  {
             elas_=elas;
             this->dof_dimension_=dim;
             this->dim_=dim;
@@ -66,37 +66,8 @@ namespace bie{
         virtual std::vector<double>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const;
     };
 
-  // BRICE : TODO WHY THIS IS HERE
-    // a dummy derived class for simplified 3D P0 kernel....
-    template<class Es,class Er,ElasticKernelType k>
-    class BIE_elastostatic_sp3d : public BIE_elastostatic<Es,Er,k> {
-        using BIE_elastostatic<Es,Er,k>::BIE_elastostatic;
-
-        public:
-            BIE_elastostatic_sp3d() : BIE_elastostatic< Es, Er,k>()  {};
-
-            BIE_elastostatic_sp3d(bie::ElasticProperties &elas,il::int_t dim) : BIE_elastostatic<Es, Er,k>() {
-                IL_EXPECT_FAST(dim==2);
-                this->elas_=elas;
-                this->dof_dimension_=dim;
-                this->dim_=dim;
-        };
-
-        BIE_elastostatic_sp3d(bie::ElasticProperties &elas ,il::int_t dim,bool local_unknowns,bool local_co_variables)  : BIE_elastostatic<Es, Er,k>()  {
-            IL_EXPECT_FAST(dim==2);
-            this->elas_=elas;
-            this->dof_dimension_=dim;
-            this->dim_=dim;
-            this->local_unknowns_=local_unknowns;
-            this->local_co_variables_=local_co_variables;
-        };
-
-        virtual std::vector<double>  influence(Es source_elt,il::int_t i_s,Er receiver_elt, il::int_t i_r) const;
-
-    };
-
 
 
 }
 
-#endif //BIGWHAM_BIE_ELASTOSTATIC_H
+#endif //BIGWHAM_BIEELASTOSTATIC_H

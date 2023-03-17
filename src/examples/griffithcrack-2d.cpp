@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#include "BigWham.h"
+#include "BigWhamIO.h"
 #include <il/Array2D.h>
 
 using namespace Eigen;

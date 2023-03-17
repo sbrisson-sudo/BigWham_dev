@@ -14,8 +14,8 @@
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 #include <elasticity/3d/Elastic3DR0_element.h>
 #include "core/ElasticProperties.h"
-#include "core/FaceData.h"
-#include "core/Mesh3D.h"
+#include "core/oldies/FaceData.h"
+#include "core/oldies/Mesh3D.h"
 
 namespace bie {
 

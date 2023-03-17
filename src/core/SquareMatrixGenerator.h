@@ -25,7 +25,7 @@ namespace bie {
  source and receiver elements should be the same!
 
  El: Element Type, Triangle<0>
- Bie_def: Kernel Type, BIE_elastostatic<Tri0, Tri0, bie::ElasticKernelType::H>
+ Bie_def: Kernel Type, BieElastostatic<Tri0, Tri0, bie::ElasticKernelType::H>
 */
 template <typename T, class El, class Bie_def>
 class SquareMatrixGenerator : public bie::MatrixGenerator<T> {

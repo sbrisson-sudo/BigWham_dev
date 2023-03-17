@@ -7,7 +7,7 @@
 // file for more details.
 //
 
-#include "core/Mesh3D.h"
+#include "Mesh3D.h"
 
 #include <il/Array.h>
 #include <il/Array2D.h>
