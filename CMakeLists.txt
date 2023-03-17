@@ -15,12 +15,17 @@ project(BigWham VERSION 1.0
 # This is only for pybind11 to behave properly
 set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "cmake build type")
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    Release
-    Debug
-    RelWithDebInfo
-    )
+
+# Set a default build type if none was specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'Debug' as none was specified.")
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+    "MinSizeRel" "RelWithDebInfo")
+endif()
+
+message(STATUS "CMAKE_BUILD_TYPE :  ${CMAKE_BUILD_TYPE}")
 
 #if(NOT CMAKE_BUILD_TYPE)
 #    message(STATUS "Build Type not set, defaulting to Release..." )
@@ -62,7 +67,9 @@ message(STATUS "  The compiler is:  ${CMAKE_CXX_COMPILER}")
 
 if(BIGWHAM_MATHEMATICA_INTERFACE)
   set(IL_MATH_VENDOR "MKL_sequential" CACHE INTERNAL "" FORCE)
-  set(IL_OPENMP OFF CACHE INTERNAL "" FORCE)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "Intel")
+    set(IL_OPENMP OFF CACHE INTERNAL "" FORCE)
+  endif()
 endif()
 
 add_subdirectory(il)

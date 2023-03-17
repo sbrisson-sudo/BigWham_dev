@@ -15,7 +15,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
-#include <BigWham.h>
+#include <BigWhamIO.h>
 #include "core/BEMesh.h"
 #include "core/BoundaryElement.h"
 #include "core/elements/Segment.h"
