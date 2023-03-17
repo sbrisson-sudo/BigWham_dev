@@ -6,7 +6,6 @@
 // See the LICENSE.TXT file for more details.
 //
 
-#pragma once
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
