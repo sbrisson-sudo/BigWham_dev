@@ -2,7 +2,7 @@
 
 namespace bie {
 
-  template<class ElasType> void BEMesh<ElemType>::constuct_elements() {
+  template<class ElemType> void BEMesh<ElemType>::constuct_elements() {
   }
 
   il::Array2D<double> getVertices(il::int_t ne) const {
@@ -58,13 +58,6 @@ namespace bie {
     return colPoints;
   };
 
-  il::int_t inElement(il::int_t point_n) const {
-    return il::floor(point_n / (nodes_per_element_)); // element
-  }
-
-  il::int_t localCollocationPointId(il::int_t point_n) const {
-    return (point_n % (nodes_per_element_));
-  }
 
 /* -------------------------------------------------------------------------- */
   il::Array2D<double> getVertices(il::int_t ne) const {

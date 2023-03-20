@@ -91,8 +91,8 @@ public:
   }
 
   // Main constructor
-  void toHmat(const bie::MatrixGenerator<T> &matrix_gen,
-              const bie::HRepresentation &h_r, const double epsilon_aca) {
+  void toHmat(const MatrixGenerator<T> &matrix_gen,
+              const HRepresentation &h_r, const double epsilon_aca) {
     pattern_ = h_r.pattern_;
     is_square_ = h_r.is_square_;
     // construction directly

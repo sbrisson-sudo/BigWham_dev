@@ -13,8 +13,8 @@
 #include <memory>
 #include <vector>
 
-#include "core/elements/boundary_element.h"
 #include "core/mesh.h"
+#include "elements/boundary_element.h"
 
 namespace bie {
 
@@ -91,40 +91,49 @@ public:
     return connectivity_(e, i);
   }
 
-  il::int_t numberDDDofsPerElt() const {
-    return nodes_per_element_ * spatial_dimension_;
-  }
+  // il::int_t numberDDDofsPerElt() const {
+  //   return nodes_per_element_ * spatial_dimension_;
+  // }
 
-  il::int_t numberDDDofs() const {
-    return (numberOfElts() * nodes_per_element_ * spatial_dimension_);
-  }
+  // il::int_t numberDDDofs() const {
+  //   return (numberOfElts() * nodes_per_element_ * spatial_dimension_);
+  // }
 
   ////////////////////////////////////////////////////////////////////////////////////////////
   //   Methods
   ////////////////////////////////////////////////////////////////////////////////////////////
 
-  il::Array2D<double> getVertices(il::int_t ne) const {
-    il::Array2D<double> vertElt{number_vertex_, spatial_dimension_};
-    // loop over the vertices
-    for (il::int_t j = 0; j < spatial_dimension_; j++) {
-      for (il::int_t i = 0; i < number_vertex_; i++) {
-        vertElt(i, j) = coordinates_(connectivity_(ne, i), j);
-      }
-    }
-    return vertElt;
+  // il::Array2D<double> getVertices(il::int_t ne) const {
+  //   il::Array2D<double> vertElt{number_vertex_, spatial_dimension_};
+  //   // loop over the vertices
+  //   for (il::int_t j = 0; j < spatial_dimension_; j++) {
+  //     for (il::int_t i = 0; i < number_vertex_; i++) {
+  //       vertElt(i, j) = coordinates_(connectivity_(ne, i), j);
+  //     }
+  //   }
+  //   return vertElt;
+  // }
+
+  // void setCurrentElement(il::int_t ne) {
+  //   il::Array2D<double> xv{
+  //       number_vertex_,
+  //       spatial_dimension_,
+  //       0,
+  //   };
+  //   xv = this->getVertices(ne);
+  //   this->element_def_.setElement(xv);
+  // }
+
+  virtual il::int_t get_element_id(il::int_t matrix_index) const override {
+    return il::floor(matrix_index / (num_colloc_pts_per_element_)); 
   }
 
-  void setCurrentElement(il::int_t ne) {
-    il::Array2D<double> xv{
-        number_vertex_,
-        spatial_dimension_,
-        0,
-    };
-    xv = this->getVertices(ne);
-    this->element_def_.setElement(xv);
+  virtual il::int_t get_element_collocation_id(il::int_t matrix_index) const override {
+    return (matrix_index % (num_colloc_pts_per_element_));
   }
 
-
+  virtual il::Array2D<double> get_collocation_points() const override{
+  }
 };
 
 } // namespace bie

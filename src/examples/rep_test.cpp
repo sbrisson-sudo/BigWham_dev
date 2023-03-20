@@ -12,33 +12,32 @@
 ///
 ///=============================================================================
 
-#include "cnpy.h"
-#include "core/be_mesh.h"
-#include "core/bie_kernel.h"
-#include "core/elastic_properties.h"
-#include "core/square_matrix_generator.h"
-#include "core/elements/triangle.h"
-#include "core/hierarchical_representation.h"
-#include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
-#include "hmat/hmatrix/Hmat.h"
 #include <algorithm>
 #include <cmath>
-#include <il/Array2D.h>
 #include <iostream>
 #include <math.h>
 #include <memory>
 #include <string>
 #include <vector>
 
-using Real1D = il::Array<double>;
-using Real2D = il::Array2D<double>;
-using Int1D = il::Array<il::int_t>;
-using Int2D = il::Array2D<il::int_t>;
-using Tri0 = bie::Triangle<0>;
-using MatProp = bie::ElasticProperties;
-using KernelH = bie::BieElastostatic<Tri0, Tri0, bie::ElasticKernelType::H>;
-using MatixGenerator = bie::SquareMatrixGenerator<double, Tri0, KernelH>;
+#include <il/Array2D.h>
 
+#include "elasticity/bie_elastostatic.h"
+#include "hmat/hierarchical_representation.h"
+#include "hmat/hmatrix/Hmat.h"
+#include "hmat/square_matrix_generator.h"
+
+#include "core/be_mesh.h"
+#include "core/bie_kernel.h"
+#include "core/elastic_properties.h"
+
+#include "elasticity/3d/bie_elastostatic_triangle_0_impls.h"
+#include "elements/triangle.h"
+
+#include "cnpy.h"
+#include "il/container/2d/Array2D.h"
+
+using namespace bie;
 template <typename T> std::string print_array2D(const il::Array2D<T> &);
 template <typename T> std::string print_array1D(const il::Array<T> &);
 template <typename T>
@@ -52,8 +51,8 @@ int main(int argc, char *argv[]) {
   auto coord_npy = cnpy::npy_load(f_coord);
   auto conn_npy = cnpy::npy_load(f_conn);
 
-  Real2D coord;
-  Int2D conn;
+  il::Array2D<double> coord;
+  il::Array2D<il::int_t> conn;
 
   // Penby shape geometery
   uint dim = 3;
@@ -77,28 +76,36 @@ int main(int argc, char *argv[]) {
   // std::cout << print_array2D(coord) << std::endl;
   // std::cout << print_array2D(conn) << std::endl;
 
-  bie::Mesh my_mesh  = bie::BEMesh<Tri0>(coord, conn);
-  Real2D xcol = my_mesh.get_collocation_points();
-  bie::ElasticProperties elas(E, nu);
-  bie::BieKernel<double> ker = bie::BieElastostatic(elas, coord.size(1));
+  BEMesh<Triangle<0>> my_mesh(coord, conn);
+  // auto my_mesh = std::make_shared<BEMesh<Triangle<0>>>(coord, conn);
+
+  il::Array2D<double> xcol = my_mesh.get_collocation_points();
+
+  ElasticProperties elas(E, nu);
+
+  BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H> ker(
+      elas, coord.size(1));
+
+  // auto ker = std::make_shared<
+  //     BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>>(
+  //     elas, coord.size(1));
 
   // TODO: Should be default
-  Real1D prop{1, 1000.};
+  il::Array<double> prop{1, 1000.};
   ker.set_kernel_properties(prop);
 
   std::cout << "Number of Collocation points  = " << xcol.size(0) << " X "
             << xcol.size(1) << std::endl;
 
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, max_leaf_size, eta);
+  auto hr = h_representation_square_matrix(my_mesh, max_leaf_size, eta);
 
-  bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr.permutation_0_);
+  SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   bie::Hmat<double> h_(M, hr, eps_aca);
 
-  Real1D dd{M.size(1), 0.0};
-  Real1D dd_perm{M.size(1), 0.0};
-  Real1D trac{M.size(0), 0.0};
-  Real1D trac_perm{M.size(0), 0.0};
+  il::Array<double> dd{M.size(1), 0.0};
+  il::Array<double> dd_perm{M.size(1), 0.0};
+  il::Array<double> trac{M.size(0), 0.0};
+  il::Array<double> trac_perm{M.size(0), 0.0};
 
   double pre_fac = (8 * (1 - nu * nu)) / (pi * E);
 
@@ -144,7 +151,7 @@ int main(int argc, char *argv[]) {
   cnpy::npy_save("trac_perm.npy", trac_perm.Data(),
                  {static_cast<unsigned long>(trac_perm.size())});
 
-  Real1D rel_err{M.sizeAsBlocks(0), 0.};
+  il::Array<double> rel_err{M.sizeAsBlocks(0), 0.};
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
     rel_err[i] += trac[dim * i + 0] * trac[dim * i + 0];
     rel_err[i] += trac[dim * i + 1] * trac[dim * i + 1];

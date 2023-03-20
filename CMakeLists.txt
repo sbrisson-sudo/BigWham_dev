@@ -84,7 +84,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 ################################################################################
 # file definitions
 ################################################################################
-set(SOURCE_FILES
     # # 2D source code
     #     src/elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.cpp
     #     src/elasticity/FsIso2dSegment/Elastic2DP1_element.cpp
@@ -113,9 +112,12 @@ set(SOURCE_FILES
     #     src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h
     # src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h
     #     src/elasticity/FsIso2dSegment/Elastic2D_segment.cpp
-        src/elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h
-      )
+        # src/elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h
+      # )
 
+
+# Source files are added by src subdirectories
+set(SOURCE_FILES "")
 add_subdirectory(src)
 
 message(${SOURCE_FILES})
@@ -178,7 +180,6 @@ if(BIGWHAM_TESTING)
         #src/_test/elastic3DR0_element_benchmark.cpp
         src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
         src/core/_test/segment_test.cpp
-            src/elasticity/BieElastostatic.h
         src/elasticity/_test/segment0_sp3d_tests.cpp
         src/core/_test/BEmesh_tests.cpp
         src/elasticity/_test/elastic_square_matrix_generator_tests.cpp

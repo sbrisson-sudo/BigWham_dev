@@ -15,10 +15,9 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
-#include <BigWhamIO.h>
-#include "core/BEMesh.h"
-#include "core/BoundaryElement.h"
-#include "core/elements/Segment.h"
+#include "bigwham_io.h"
+#include "core/be_mesh.h"
+#include "elements/boundary_element.h"
 
 namespace py = pybind11;
 

@@ -15,9 +15,10 @@
 #include <il/Array.h>
 #include <il/Timer.h>
 
-#include "core/mesh.h"
 #include "hmat/cluster/cluster.h"
 #include "hmat/hmatrix/toHPattern.h"
+
+#include "core/mesh.h"
 
 namespace bie {
 
@@ -29,11 +30,11 @@ struct HRepresentation {
       true; // if true - square matrix, and only permutation_0_ is stored
 };
 
-bie::HRepresentation h_representation_square_matrix(Mesh &mesh,
-                                                    il::int_t max_leaf_size,
-                                                    double eta) {
+HRepresentation h_representation_square_matrix(const Mesh &mesh,
+                                               const il::int_t max_leaf_size,
+                                               const double eta) {
   // std::cout << "Pattern construction started .... \n";
-  bie::HRepresentation hr;
+  HRepresentation hr;
   hr.is_square_ = true;
   // creation of the cluster
   // first get all collocation points in the mesh
@@ -42,7 +43,7 @@ bie::HRepresentation h_representation_square_matrix(Mesh &mesh,
   // std::cout << " Got col points construction ...."<< "\n";
   il::Timer tt;
   tt.Start();
-  bie::Cluster cluster = bie::cluster(max_leaf_size, il::io, Xcol);
+  Cluster cluster = bie::cluster(max_leaf_size, il::io, Xcol);
   std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
@@ -50,13 +51,13 @@ bie::HRepresentation h_representation_square_matrix(Mesh &mesh,
   hr.permutation_1_ = cluster.permutation;
 
   tt.Start();
-  const il::Tree<bie::SubHMatrix, 4> block_tree =
-      bie::hmatrixTreeIxI(Xcol, cluster.partition, eta);
+  const il::Tree<SubHMatrix, 4> block_tree =
+      hmatrixTreeIxI(Xcol, cluster.partition, eta);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction  " << tt.time()
             << "\n";
   std::cout << "Binary cluster tree depth = " << block_tree.depth() << "\n";
-  hr.pattern_ = bie::createPattern(block_tree);
+  hr.pattern_ = createPattern(block_tree);
 
   std::cout << "Number of blocks = " << hr.pattern_.n_B << "\n";
   std::cout << "Number of full blocks = " << hr.pattern_.n_FRB << "\n";
@@ -67,11 +68,10 @@ bie::HRepresentation h_representation_square_matrix(Mesh &mesh,
   return hr;
 }
 
-bie::HRepresentation
-h_representation_rectangular_matrix(Mesh &source_mesh,
-                                    Mesh &receiver_mesh,
-                                    il::int_t max_leaf_size, double eta) {
-  bie::HRepresentation hr;
+HRepresentation h_representation_rectangular_matrix(
+    const Mesh &source_mesh, const Mesh &receiver_mesh,
+    const il::int_t max_leaf_size, const double eta) {
+  HRepresentation hr;
   hr.is_square_ = false;
   // creation of the cluster
   // first get all collocation points in the mesh
@@ -80,7 +80,7 @@ h_representation_rectangular_matrix(Mesh &source_mesh,
   il::Array2D<double> Xcol_receiver = receiver_mesh.get_collocation_points();
 
   tt.Start();
-  bie::Cluster cluster_s = bie::cluster(max_leaf_size, il::io, Xcol_source);
+  Cluster cluster_s = cluster(max_leaf_size, il::io, Xcol_source);
   std::cout << "Cluster tree creation time for the source mesh :  " << tt.time()
             << "\n";
   tt.Stop();
@@ -88,7 +88,7 @@ h_representation_rectangular_matrix(Mesh &source_mesh,
   hr.permutation_1_ = cluster_s.permutation; // sources permutation
 
   tt.Start();
-  bie::Cluster cluster_r = bie::cluster(max_leaf_size, il::io, Xcol_receiver);
+  Cluster cluster_r = cluster(max_leaf_size, il::io, Xcol_receiver);
   std::cout << "Cluster tree creation time for the source mesh :  " << tt.time()
             << "\n";
   tt.Stop();
@@ -96,14 +96,14 @@ h_representation_rectangular_matrix(Mesh &source_mesh,
   hr.permutation_0_ = cluster_r.permutation; // receivers permutation
 
   tt.Start();
-  const il::Tree<bie::SubHMatrix, 4> block_tree =
-      bie::hmatrixTreeIxJ(Xcol_receiver, cluster_r.partition, Xcol_source,
-                          cluster_s.partition, eta);
+  const il::Tree<SubHMatrix, 4> block_tree =
+      hmatrixTreeIxJ(Xcol_receiver, cluster_r.partition, Xcol_source,
+                     cluster_s.partition, eta);
   tt.Stop();
   std::cout << "Time for binary cluster tree construction  " << tt.time()
             << "\n";
   std::cout << " binary cluster tree depth =" << block_tree.depth() << "\n";
-  hr.pattern_ = bie::createPattern(block_tree);
+  hr.pattern_ = createPattern(block_tree);
   //        hr.pattern_.nr = receiver_mesh.numberCollocationPoints();
   //        hr.pattern_.nc = source_mesh.numberCollocationPoints();
 

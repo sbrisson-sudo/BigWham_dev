@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "core/boundary_element.h"
+#include "elements/boundary_element.h"
 
 namespace bie {
 
@@ -32,8 +32,8 @@ public:
                                    BoundaryElement &rec_element,
                                    il::int_t colloc_id_rec) const = 0;
 
-  il::int_t getDofDimension() const { return dof_dimension_; };
-  il::int_t getSpatialDimension() const { return dim_; };
+  il::int_t get_DofDimension() const { return dof_dimension_; };
+  il::int_t get_spatial_dimension() const { return dim_; };
 };
 
 } // namespace bie

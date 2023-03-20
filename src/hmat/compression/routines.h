@@ -16,7 +16,7 @@
 #include <il/linearAlgebra/dense/factorization/LU.h>
 #include <il/linearAlgebra/dense/factorization/Singular.h>
 
-#include <hmat/arrayFunctor/MatrixGenerator.h>
+#include <hmat/arrayFunctor/matrix_generator.h>
 
 namespace bie {
 

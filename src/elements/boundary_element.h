@@ -27,22 +27,21 @@ namespace bie {
 class BoundaryElement {
 
 protected:
-  using Real1D = il::Array<double>;
-  using Real2D = il::Array2D<double>;
+  using il::Array2D<double> = il::Array2D<double>;
   int spatial_dimension_;   // spatial dimension
   int interpolation_order_; // order of interpolation for field on the element
-  Real1D centroid_; // centroid of the element in global system of coordinates
-  Real1D n_; // unit vector normal to element in global system of coordinates
-  Real1D s_; // unit vector tangent to element in global system of coordinates,
+  il::Array<double> centroid_; // centroid of the element in global system of coordinates
+  il::Array<double> n_; // unit vector normal to element in global system of coordinates
+  il::Array<double> s_; // unit vector tangent to element in global system of coordinates,
   // in the direction from vertex 0 to vertex 1
-  Real1D t_; // unit vector tangent to element in global system of coordinates,
+  il::Array<double> t_; // unit vector tangent to element in global system of coordinates,
   // orthogonal to s_ and n_ (un-used for 2D element)
-  Real2D collocation_points_; // collocation points' coordinates in
+  il::Array2D<double> collocation_points_; // collocation points' coordinates in
                               // global reference system
-  Real2D nodes_;              // nodes' coordinates in global reference system -
+  il::Array2D<double> nodes_;              // nodes' coordinates in global reference system -
                               // size: number of nodes x dim
-  Real2D vertices_; // vertices' coordinates in global reference system -
-  Real2D rotMat_;   // rotation matrix for transformaion
+  il::Array2D<double> vertices_; // vertices' coordinates in global reference system -
+  il::Array2D<double> rotMat_;   // rotation matrix for transformaion
 
   int n_vertices_;
   int n_nodes_;
@@ -60,14 +59,14 @@ public:
   };
   ~BoundaryElement();
 
-  Real1D getCentroid() const { return this->centroid_; };
-  Real1D getNormal() const { return this->n_; };
-  Real1D getTangent_1() const { return this->s_; };
-  Real1D getTangent_2() const { return this->t_; };
+  il::Array<double> getCentroid() const { return this->centroid_; };
+  il::Array<double> getNormal() const { return this->n_; };
+  il::Array<double> getTangent_1() const { return this->s_; };
+  il::Array<double> getTangent_2() const { return this->t_; };
 
-  Real2D getVertices() const { return this->vertices_; };
-  Real2D getCollocationPoints() const { return this->collocation_points_; };
-  Real2D getNodes() const { return nodes_; };
+  il::Array2D<double> getVertices() const { return this->vertices_; };
+  il::Array2D<double> get_collocation_points() const { return this->collocation_points_; };
+  il::Array2D<double> getNodes() const { return nodes_; };
 
   il::int_t getNumberOfNodes() const { return this->nodes_.size(0); };
   il::int_t getSpatialDimension() const { return spatial_dimension_; };
@@ -78,7 +77,7 @@ public:
   };
 
   virtual void setrotationMatrix() = 0;
-  virtual void setElement(const Real2D &) = 0;
+  virtual void setElement(const il::Array2D<double> &) = 0;
 };
 
 }; // namespace bie

@@ -9,7 +9,7 @@
 #ifndef BIGWHAM_RECTANGLE_H
 #define BIGWHAM_RECTANGLE_H
 
-#include "core/elements/Polygon.h"
+#include "elements/polygon.h"
 
 namespace bie{
 

@@ -13,6 +13,7 @@
 #define BIGWHAM_BIGWHAMIO_H
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <string_view>
 
@@ -21,25 +22,25 @@
 #include <il/Dynamic.h>
 #include <il/Map.h>
 
-#include <hmat/cluster/cluster.h>
 #include <hmat/hmatrix/Hmat.h>
 
-#include "core/BEMesh.h"
-#include "core/BoundaryElement.h"
-#include "core/elements/Rectangle.h"
-#include "core/elements/Segment.h"
-#include "core/elements/Triangle.h"
+#include "core/be_mesh.h"
+// #include "elements/rectangle.h"
+// #include "elements/segment.h"
+#include "elements/triangle.h"
 
-#include "core/BieKernel.h"
-#include "core/ElasticProperties.h"
-#include "core/SquareMatrixGenerator.h"
-#include "elasticity/BieElastostatic.h"
+#include "core/bie_kernel.h"
+#include "core/elastic_properties.h"
+#include "elasticity/bie_elastostatic.h"
+#include "hmat/square_matrix_generator.h"
 
-#include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
-#include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h"
-#include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
-#include "elasticity/FsIsoAxiFlatRingUnidirectional/ElasticAxi3DP0_element.h"
-#include <elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h>
+// #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
+// #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h"
+#include "elasticity/3d/bie_elastostatic_triangle_0_impls.h"
+// #include "elasticity/FsIsoAxiFlatRingUnidirectional/ElasticAxi3DP0_element.h"
+// #include <elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h>
+
+using namespace bie;
 
 // utilities for switch with string in C++17
 // https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
@@ -57,9 +58,11 @@ inline constexpr auto operator"" _sh(const char *str, size_t len) {
 
 //////////////////////////// utility for mesh object creation from std::vector
 template <class El>
-bie::BEMesh<El> createMeshFromVect(int spatial_dimension, int n_vertex_elt,
-                                   const std::vector<double> &coor,
-                                   const std::vector<int> &conn) {
+// std::shared_ptr<Mesh> createMeshFromVect(int spatial_dimension,
+BEMesh<El> createMeshFromVect(int spatial_dimension,
+                                         int n_vertex_elt,
+                                         const std::vector<double> &coor,
+                                         const std::vector<int> &conn) {
   il::int_t npoints = coor.size() / spatial_dimension;
   il::int_t nelts = conn.size() / spatial_dimension;
   il::Array2D<double> Coor{npoints, spatial_dimension, 0.}; //
@@ -79,7 +82,8 @@ bie::BEMesh<El> createMeshFromVect(int spatial_dimension, int n_vertex_elt,
       index++;
     }
   }
-  bie::BEMesh<El> mesh(Coor, Conn);
+  BEMesh<El> mesh(Coor, Conn);
+  // auto mesh = std::make_shared<BEMesh<El>>(Coor, Conn);
   // std::cout << "in create mesh - done "
   //           << "\n";
   return mesh;
@@ -146,134 +150,141 @@ public:
     }
     switch (hash_djb2a(kernel_)) {
     case "2DP0"_sh: {
-      dimension_ = 2;
-      using EltType = bie::Segment<0>;
-      int nvertices_per_elt_ = dimension_;
-      std::cout << " in 2DP0 " << coor.size() << "-" << conn.size();
-      bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
-          dimension_, nvertices_per_elt_, coor, conn);
-      auto tes = mesh.getVertices(0);
-      mesh.setCurrentElement(0);
-      std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
-                << tes(1, 0) << "- " << tes(1, 1) << "\n";
-      collocationPoints_ =
-          mesh.getCollocationPoints(); // be careful returning it in original
-                                       // ordering.  note this is only for the
-                                       // output function getCollocationPoints
-                                       // ... could be deleted possibly
-      std::cout << " mesh - done - n_elts" << mesh.numberOfElts() << "\n";
+      // dimension_ = 2;
+      // using EltType = bie::Segment<0>;
+      // int nvertices_per_elt_ = dimension_;
+      // std::cout << " in 2DP0 " << coor.size() << "-" << conn.size();
+      // bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
+      //     dimension_, nvertices_per_elt_, coor, conn);
+      // auto tes = mesh.getVertices(0);
+      // mesh.setCurrentElement(0);
+      // std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
+      //           << tes(1, 0) << "- " << tes(1, 1) << "\n";
+      // collocationPoints_ =
+      //     mesh.getCollocationPoints(); // be careful returning it in original
+      //                                  // ordering.  note this is only for
+      //                                  the
+      //                                  // output function
+      //                                  getCollocationPoints
+      //                                  // ... could be deleted possibly
+      // std::cout << " mesh - done - n_elts" << mesh.numberOfElts() << "\n";
+      // // tt.Start();
+      // bie::HRepresentation hr =
+      //     bie::h_representation_square_matrix(mesh, max_leaf_size_, eta_);
+      // std::cout << " pattern created \n";
+      // // tt.Stop();
+      // h_representation_time_ = tt.time();
+      // tt.Reset();
       // tt.Start();
-      bie::HRepresentation hr =
-          bie::h_representation_square_matrix(mesh, max_leaf_size_, eta_);
-      std::cout << " pattern created \n";
+      // const auto ker_type = bie::ElasticKernelType::H;
+      // bie::BieElastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
+      // bie::SquareMatrixGenerator<
+      //     double, EltType, bie::BieElastostatic<EltType, EltType, ker_type>>
+      //     M(mesh, ker, hr.permutation_0_);
+      // h_.toHmat(M, hr, epsilon_aca_);
       // tt.Stop();
-      h_representation_time_ = tt.time();
-      tt.Reset();
-      tt.Start();
-      const auto ker_type = bie::ElasticKernelType::H;
-      bie::BieElastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
-      bie::SquareMatrixGenerator<
-          double, EltType, bie::BieElastostatic<EltType, EltType, ker_type>>
-          M(mesh, ker, hr.permutation_0_);
-      h_.toHmat(M, hr, epsilon_aca_);
-      tt.Stop();
-      permutation_ = hr.permutation_0_;
-      hmat_time_ = tt.time();
-      break;
+      // permutation_ = hr.permutation_0_;
+      // hmat_time_ = tt.time();
+      // break;
     }
     case "S3DP0"_sh: {
-      dimension_ = 2;
-      using EltType = bie::Segment<0>;
-      int nvertices_per_elt_ = dimension_;
-      std::cout << " in S3DP0 " << coor.size() << "-" << conn.size();
-      bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
-          dimension_, nvertices_per_elt_, coor, conn);
-      auto tes = mesh.getVertices(0);
-      mesh.setCurrentElement(0);
-      std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
-                << tes(1, 0) << "- " << tes(1, 1) << "\n";
-      collocationPoints_ =
-          mesh.getCollocationPoints(); // be careful returning it in original
-                                       // ordering.  note this is only for the
-                                       // output function getCollocationPoints
-                                       // ... could be deleted possibly
-      std::cout << " mesh - done - n_elts" << mesh.numberOfElts() << "\n";
+      // dimension_ = 2;
+      // using EltType = bie::Segment<0>;
+      // int nvertices_per_elt_ = dimension_;
+      // std::cout << " in S3DP0 " << coor.size() << "-" << conn.size();
+      // bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
+      //     dimension_, nvertices_per_elt_, coor, conn);
+      // auto tes = mesh.getVertices(0);
+      // mesh.setCurrentElement(0);
+      // std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
+      //           << tes(1, 0) << "- " << tes(1, 1) << "\n";
+      // collocationPoints_ =
+      //     mesh.getCollocationPoints(); // be careful returning it in original
+      //                                  // ordering.  note this is only for
+      //                                  the
+      //                                  // output function
+      //                                  getCollocationPoints
+      //                                  // ... could be deleted possibly
+      // std::cout << " mesh - done - n_elts" << mesh.numberOfElts() << "\n";
+      // // tt.Start();
+      // bie::HRepresentation hr =
+      //     bie::h_representation_square_matrix(mesh, max_leaf_size_, eta_);
+      // std::cout << " pattern created \n";
+      // // tt.Stop();
+      // h_representation_time_ = tt.time();
+      // tt.Reset();
       // tt.Start();
-      bie::HRepresentation hr =
-          bie::h_representation_square_matrix(mesh, max_leaf_size_, eta_);
-      std::cout << " pattern created \n";
+      // const auto ker_type = bie::ElasticKernelType::H;
+      // bie::BieElastostaticSp3d<EltType, EltType, ker_type> ker(elas,
+      //                                                            dimension_);
+      // il::Array<double> prop{1, properties[2]}; // for the SP3D0
+      // ker.setKernelProperties(prop);
+      // bie::SquareMatrixGenerator<
+      //     double, EltType,
+      //     bie::BieElastostaticSp3d<EltType, EltType, ker_type>>
+      //     M(mesh, ker, hr.permutation_0_);
+      // h_.toHmat(M, hr, epsilon_aca_);
       // tt.Stop();
-      h_representation_time_ = tt.time();
-      tt.Reset();
-      tt.Start();
-      const auto ker_type = bie::ElasticKernelType::H;
-      bie::BieElastostaticSp3d<EltType, EltType, ker_type> ker(elas,
-                                                                 dimension_);
-      il::Array<double> prop{1, properties[2]}; // for the SP3D0
-      ker.setKernelProperties(prop);
-      bie::SquareMatrixGenerator<
-          double, EltType,
-          bie::BieElastostaticSp3d<EltType, EltType, ker_type>>
-          M(mesh, ker, hr.permutation_0_);
-      h_.toHmat(M, hr, epsilon_aca_);
-      tt.Stop();
-      permutation_ = hr.permutation_0_;
-      hmat_time_ = tt.time();
-      break;
+      // permutation_ = hr.permutation_0_;
+      // hmat_time_ = tt.time();
+      // break;
     }
     case "2DP1"_sh: {
-      dimension_ = 2;
-      using EltType = bie::Segment<1>;
-      int nvertices_per_elt_ = dimension_;
-      bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
-          dimension_, nvertices_per_elt_, coor, conn);
-      tt.Start();
-      bie::HRepresentation hr =
-          bie::h_representation_square_matrix(mesh, max_leaf_size, eta);
-      tt.Stop();
-      std::cout << " pattern created \n";
-      collocationPoints_ =
-          mesh.getCollocationPoints(); // be careful returning it in original
-                                       // ordering.  note this is only for the
-                                       // output function getCollocationPoints
-                                       // ... could be deleted possibly
-      h_representation_time_ = tt.time();
-      tt.Reset();
-      tt.Start();
-      const auto ker_type = bie::ElasticKernelType::H;
-      bie::BieElastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
-      bie::SquareMatrixGenerator<
-          double, EltType, bie::BieElastostatic<EltType, EltType, ker_type>>
-          M(mesh, ker, hr.permutation_0_);
-      h_.toHmat(M, hr, epsilon_aca_);
-      tt.Stop();
-      permutation_ = hr.permutation_0_;
-      hmat_time_ = tt.time();
-      break;
+      // dimension_ = 2;
+      // using EltType = bie::Segment<1>;
+      // int nvertices_per_elt_ = dimension_;
+      // bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
+      //     dimension_, nvertices_per_elt_, coor, conn);
+      // tt.Start();
+      // bie::HRepresentation hr =
+      //     bie::h_representation_square_matrix(mesh, max_leaf_size, eta);
+      // tt.Stop();
+      // std::cout << " pattern created \n";
+      // collocationPoints_ =
+      //     mesh.getCollocationPoints(); // be careful returning it in original
+      //                                  // ordering.  note this is only for
+      //                                  the
+      //                                  // output function
+      //                                  getCollocationPoints
+      //                                  // ... could be deleted possibly
+      // h_representation_time_ = tt.time();
+      // tt.Reset();
+      // tt.Start();
+      // const auto ker_type = bie::ElasticKernelType::H;
+      // bie::BieElastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
+      // bie::SquareMatrixGenerator<
+      //     double, EltType, bie::BieElastostatic<EltType, EltType, ker_type>>
+      //     M(mesh, ker, hr.permutation_0_);
+      // h_.toHmat(M, hr, epsilon_aca_);
+      // tt.Stop();
+      // permutation_ = hr.permutation_0_;
+      // hmat_time_ = tt.time();
+      // break;
     }
     case "3DT0"_sh: {
       dimension_ = 3;
       int nvertices_per_elt_ = 3;
-      using EltType = bie::Triangle<0>;
-      bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
-          dimension_, nvertices_per_elt_, coor, conn);
+      using EltType = Triangle<0>;
+      auto mesh = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_,
+                                              coor, conn);
       tt.Start();
-      bie::HRepresentation hr =
-          bie::h_representation_square_matrix(mesh, max_leaf_size, eta);
+      auto hr = h_representation_square_matrix(mesh, max_leaf_size, eta);
       tt.Stop();
       collocationPoints_ =
-          mesh.getCollocationPoints(); // be careful returning it in original
-                                       // ordering.  note this is only for the
-                                       // output function getCollocationPoints
-                                       // ... could be deleted possibly
+          mesh.get_collocation_points(); // be careful returning it in original
+                                          // ordering.  note this is only for
+                                          // the output function
+                                          // getCollocationPoints
+                                          // ... could be deleted possibly
       h_representation_time_ = tt.time();
       tt.Reset();
       tt.Start();
-      const auto ker_type = bie::ElasticKernelType::H;
-      bie::BieElastostatic<EltType, EltType, ker_type> ker(elas, dimension_);
-      bie::SquareMatrixGenerator<
-          double, EltType, bie::BieElastostatic<EltType, EltType, ker_type>>
-          M(mesh, ker, hr.permutation_0_);
+      BieElastostatic<EltType, EltType, ElasticKernelType::H> ker(elas,
+                                                                   dimension_);
+      // auto ker = std::make_shared<
+      //     BieElastostatic<EltType, EltType, ElasticKernelType::H>>(elas,
+      //                                                              dimension_);
+      bie::SquareMatrixGenerator<double> M(mesh, ker, hr);
       h_.toHmat(M, hr, epsilon_aca_);
       tt.Stop();
       permutation_ = hr.permutation_0_;
@@ -281,38 +292,41 @@ public:
       break;
     }
     case "Axi3DP0"_sh: {
-      dimension_ = 2;
-      using EltType = bie::Segment<0>;
-      int nvertices_per_elt_ = dimension_;
-      std::cout << "In Axi3DP0 " << coor.size() << "   " << conn.size() << "\n";
-      bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
-          dimension_, nvertices_per_elt_, coor, conn);
-      auto tes = mesh.getVertices(0);
-      mesh.setCurrentElement(0);
-      std::cout << "Element vertices " << tes(0, 0) << "  " << tes(0, 1)
-                << "  " << tes(1, 0) << "  " << tes(1, 1) << "\n";
-      collocationPoints_ =
-          mesh.getCollocationPoints(); // be careful returning it in original
-                                       // ordering.  note this is only for the
-                                       // output function getCollocationPoints
-                                       // ... could be deleted possibly
-      std::cout << "Mesh Done ...... N_elts" << mesh.numberOfElts() << "\n";
+      // dimension_ = 2;
+      // using EltType = bie::Segment<0>;
+      // int nvertices_per_elt_ = dimension_;
+      // std::cout << "In Axi3DP0 " << coor.size() << "   " << conn.size() <<
+      // "\n"; bie::BEMesh<EltType> mesh = createMeshFromVect<EltType>(
+      //     dimension_, nvertices_per_elt_, coor, conn);
+      // auto tes = mesh.getVertices(0);
+      // mesh.setCurrentElement(0);
+      // std::cout << "Element vertices " << tes(0, 0) << "  " << tes(0, 1)
+      //           << "  " << tes(1, 0) << "  " << tes(1, 1) << "\n";
+      // collocationPoints_ =
+      //     mesh.getCollocationPoints(); // be careful returning it in original
+      //                                  // ordering.  note this is only for
+      //                                  the
+      //                                  // output function
+      //                                  getCollocationPoints
+      //                                  // ... could be deleted possibly
+      // std::cout << "Mesh Done ...... N_elts" << mesh.numberOfElts() << "\n";
+      // // tt.Start();
+      // bie::HRepresentation hr =
+      //     bie::h_representation_square_matrix(mesh, max_leaf_size_, eta_);
+      // // tt.Stop();
+      // h_representation_time_ = tt.time();
+      // tt.Reset();
       // tt.Start();
-      bie::HRepresentation hr =
-          bie::h_representation_square_matrix(mesh, max_leaf_size_, eta_);
+      // const auto ker_type = bie::ElasticKernelType::H;
+      // bie::ElasticAxiSymmRingKernel ker(elas, dimension_);
+      // bie::SquareMatrixGenerator<double, EltType,
+      // bie::ElasticAxiSymmRingKernel>
+      //     M(mesh, ker, hr.permutation_0_);
+      // h_.toHmat(M, hr, epsilon_aca_);
       // tt.Stop();
-      h_representation_time_ = tt.time();
-      tt.Reset();
-      tt.Start();
-      const auto ker_type = bie::ElasticKernelType::H;
-      bie::ElasticAxiSymmRingKernel ker(elas, dimension_);
-      bie::SquareMatrixGenerator<double, EltType, bie::ElasticAxiSymmRingKernel>
-          M(mesh, ker, hr.permutation_0_);
-      h_.toHmat(M, hr, epsilon_aca_);
-      tt.Stop();
-      permutation_ = hr.permutation_0_;
-      hmat_time_ = tt.time();
-      break;
+      // permutation_ = hr.permutation_0_;
+      // hmat_time_ = tt.time();
+      // break;
     }
     default: {
       std::cout << "wrong inputs -abort \n";
@@ -325,8 +339,8 @@ public:
       std::cout << "HMAT --> built \n";
       double test_cr = h_.compressionRatio();
       std::cout << "HMAT set"
-                << ", CR = " << test_cr << ", eps_aca = " << epsilon_aca_ << ", eta = "
-                << eta_ << "\n";
+                << ", CR = " << test_cr << ", eps_aca = " << epsilon_aca_
+                << ", eta = " << eta_ << "\n";
       // std::cout << "H-mat construction time = :  " << hmat_time_ << "\n";
     } else {
       isBuilt_ = false;

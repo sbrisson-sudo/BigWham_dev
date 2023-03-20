@@ -1,8 +1,4 @@
 set(SOURCE_FILES ${SOURCE_FILES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/boundary_element.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/segment.h
     ${CMAKE_CURRENT_SOURCE_DIR}/triangle.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/rectangle.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/polygon.h
     PARENT_SCOPE
 )
