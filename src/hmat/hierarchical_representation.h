@@ -15,7 +15,7 @@
 #include <il/Array.h>
 #include <il/Timer.h>
 
-#include "core/BEMesh.h"
+#include "core/mesh.h"
 #include "hmat/cluster/cluster.h"
 #include "hmat/hmatrix/toHPattern.h"
 
@@ -29,17 +29,16 @@ struct HRepresentation {
       true; // if true - square matrix, and only permutation_0_ is stored
 };
 
-template <class El>
-bie::HRepresentation h_representation_square_matrix(bie::BEMesh<El> &mesh,
+bie::HRepresentation h_representation_square_matrix(Mesh &mesh,
                                                     il::int_t max_leaf_size,
                                                     double eta) {
-  std::cout << "Pattern construction started .... \n";
+  // std::cout << "Pattern construction started .... \n";
   bie::HRepresentation hr;
   hr.is_square_ = true;
   // creation of the cluster
   // first get all collocation points in the mesh
   // std::cout << " Before call to getCollocationPoints() ...."<< "\n";
-  il::Array2D<double> Xcol = mesh.getCollocationPoints();
+  il::Array2D<double> Xcol = mesh.get_collocation_points();
   // std::cout << " Got col points construction ...."<< "\n";
   il::Timer tt;
   tt.Start();
@@ -68,18 +67,17 @@ bie::HRepresentation h_representation_square_matrix(bie::BEMesh<El> &mesh,
   return hr;
 }
 
-template <class El_s, class El_r>
 bie::HRepresentation
-h_representation_rectangular_matrix(bie::BEMesh<El_s> &source_mesh,
-                                    bie::BEMesh<El_r> &receiver_mesh,
+h_representation_rectangular_matrix(Mesh &source_mesh,
+                                    Mesh &receiver_mesh,
                                     il::int_t max_leaf_size, double eta) {
   bie::HRepresentation hr;
   hr.is_square_ = false;
   // creation of the cluster
   // first get all collocation points in the mesh
   il::Timer tt;
-  il::Array2D<double> Xcol_source = source_mesh.getCollocationPoints();
-  il::Array2D<double> Xcol_receiver = receiver_mesh.getCollocationPoints();
+  il::Array2D<double> Xcol_source = source_mesh.get_collocation_points();
+  il::Array2D<double> Xcol_receiver = receiver_mesh.get_collocation_points();
 
   tt.Start();
   bie::Cluster cluster_s = bie::cluster(max_leaf_size, il::io, Xcol_source);

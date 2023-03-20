@@ -20,14 +20,14 @@
 #include <omp.h>
 #endif
 
-#include "core/hierarchical_representation.h"
+#include <vector>
+
 #include <hmat/hmatrix/LowRank.h>
 #include <hmat/hmatrix/toHPattern.h>
-
-#include <hmat/arrayFunctor/MatrixGenerator.h>
+#include <hmat/arrayFunctor/matrix_generator.h>
 #include <hmat/compression/adaptiveCrossApproximation.h>
 
-#include <vector>
+#include "hmat/hierarchical_representation.h"
 
 namespace bie {
 
@@ -44,8 +44,10 @@ private:
   il::int_t dof_dimension_;            //  dof per collocation points
   il::StaticArray<il::int_t, 2> size_; // size of tot mat (row, cols)
 
-  std::vector<std::unique_ptr<bie::LowRank<T>>>   low_rank_blocks_; // vector of low rank blocks
-  std::vector<std::unique_ptr<il::Array2D<T>>>    full_rank_blocks_; // vector of full rank blocks
+  std::vector<std::unique_ptr<bie::LowRank<T>>>
+      low_rank_blocks_; // vector of low rank blocks
+  std::vector<std::unique_ptr<il::Array2D<T>>>
+      full_rank_blocks_; // vector of full rank blocks
 
   bool isBuilt_ = false;
   bool isBuilt_LR_ = false;

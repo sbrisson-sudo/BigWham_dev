@@ -17,20 +17,16 @@ namespace bie {
 
 /////////////////////////////////////////////////////////////
 //   2D segment !
-template <int p> class Segment : public BoundaryElement<2, p> {
-private:
-  int spatial_dimension_;
+template <int p> class Segment : public BoundaryElement {
 
-protected:
-  int n_vertices_;
-  int n_nodes_;
+private:
   double size_;
 
 public:
   Segment();
   ~Segment();
 
-  void setElement(il::Array2D<double> xv) {
+  void setElement(Real2D xv) {
     IL_ASSERT(xv.size(0) == n_vertices_);
     for (il::int_t j = 0; j < spatial_dimension_; j++) {
       this->centroid_[j] =
@@ -41,7 +37,8 @@ public:
     }
     for (il::int_t j = 0; j < spatial_dimension_; j++) {
       for (il::int_t i = 0; i < n_vertices_; i++) {
-        this->centroid_[j] = this->centroid_[j] + this->vertices_(i, j) / n_vertices_;
+        this->centroid_[j] =
+            this->centroid_[j] + this->vertices_(i, j) / n_vertices_;
       }
     }
     for (il::int_t j = 0; j < spatial_dimension_; j++) {
@@ -106,8 +103,8 @@ public:
 // templated methods implementation
 template <int p> Segment<p>::Segment() {
   this->vertices_.Resize(2, 2);
-  this->collocation_points_.Resize(p+1, 2);
-  this->nodes_.Resize(p+1, 2);
+  this->collocation_points_.Resize(p + 1, 2);
+  this->nodes_.Resize(p + 1, 2);
   this->spatial_dimension_ = 2;
   this->n_vertices_ = spatial_dimension_;
   this->n_nodes_ = p + 1;

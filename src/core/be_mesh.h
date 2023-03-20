@@ -1,0 +1,132 @@
+//
+// This file is part of BigWham.
+//
+// Created by Brice Lecampion on 13.01.23.
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// file for more details.
+//
+
+#ifndef BIGWHAM_BEMESH_H
+#define BIGWHAM_BEMESH_H
+
+#include <memory>
+#include <vector>
+
+#include "core/elements/boundary_element.h"
+#include "core/mesh.h"
+
+namespace bie {
+
+// Class for Boundary element mesh
+// a BE mesh has a element with dimension -1 compared to the spatial
+// dimension... the coordinates of the element vertex have dimension spatial
+// dimension this should replace the 2D and 3D class into a single class....
+template <class ElemType> // E is the element type
+class BEMesh : public Mesh {
+private:
+  // number of vertex per element
+  il::int_t num_vertices_;
+  // Interpolation order
+  il::int_t interpolation_order_;
+
+  //  collocation points oer element
+  il::int_t num_colloc_pts_per_element_;
+
+  void construct_elements();
+
+public:
+  BEMesh(){};
+
+  // Basic constructor with  coordinates and connectivity array and
+  // element type !
+  BEMesh(const il::Array2D<double> &coordinates,
+         const il::Array2D<il::int_t> &connectivity)
+      : Mesh(coordinates, connectivity) {
+
+    num_vertices_ = connectivity.size(1);
+
+    ////
+    // construct element list
+    ////
+    this->construct_elements();
+    // for (il::int_t i = 0; i < num_elements_; i++) {
+    //   BoundaryElement elem = std::make_unique<ElemType>();
+    //     }
+
+    // IL_EXPECT_FAST(spatial_dimension_ == 2 || spatial_dimension_ == 3);
+    // IL_EXPECT_FAST(connectivity.size(1) ==
+    // element_def_.getNumberOfVertices());
+
+    //  we do not check consistency of Connectivity here - such that actually
+    //  there can be no connectivity (can be used as dummy mesh)
+    //    for list of observation points for example
+    // this->number_vertex_ = element_def_.getNumberOfVertices();
+    // interpolation_order_ = element_def_.getInterpolationOrder();
+    // nodes_per_element_ = element_def_.getNumberOfNodes();
+  };
+
+  //////////////////////////////////////////////////////////////////////////
+  //        get-set functions  - i.e. public interfaces
+  //////////////////////////////////////////////////////////////////////////
+
+  // il::int_t interpolationOrder() const { return interpolation_order_; };
+  // il::int_t numberOfNodes() const { return nodes_per_element_; };
+  // il::int_t numberCollocationPoints() const {
+  //   return (element_def_.getNumberOfCollocationPoints()) * n_elts_;
+  // }
+
+  // get the connectivity of an element -> A StaticArray of size 2 here !
+  il::StaticArray<il::int_t, 2> connectivity(il::int_t k) // const
+  {
+    il::StaticArray<il::int_t, 2> temp;
+    for (il::int_t i = 0; i < connectivity_.size(1); i++) {
+      temp[i] = connectivity_(k, i);
+    }
+    return temp;
+  };
+  //
+  il::int_t connectivity(il::int_t e, il::int_t i)
+      const { // element e, local coordinates i - return global nodes
+    return connectivity_(e, i);
+  }
+
+  il::int_t numberDDDofsPerElt() const {
+    return nodes_per_element_ * spatial_dimension_;
+  }
+
+  il::int_t numberDDDofs() const {
+    return (numberOfElts() * nodes_per_element_ * spatial_dimension_);
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////////////////
+  //   Methods
+  ////////////////////////////////////////////////////////////////////////////////////////////
+
+  il::Array2D<double> getVertices(il::int_t ne) const {
+    il::Array2D<double> vertElt{number_vertex_, spatial_dimension_};
+    // loop over the vertices
+    for (il::int_t j = 0; j < spatial_dimension_; j++) {
+      for (il::int_t i = 0; i < number_vertex_; i++) {
+        vertElt(i, j) = coordinates_(connectivity_(ne, i), j);
+      }
+    }
+    return vertElt;
+  }
+
+  void setCurrentElement(il::int_t ne) {
+    il::Array2D<double> xv{
+        number_vertex_,
+        spatial_dimension_,
+        0,
+    };
+    xv = this->getVertices(ne);
+    this->element_def_.setElement(xv);
+  }
+
+
+};
+
+} // namespace bie
+
+#endif // BIGWHAM_BEMESH_H

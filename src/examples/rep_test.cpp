@@ -13,10 +13,11 @@
 ///=============================================================================
 
 #include "cnpy.h"
-#include "core/BEMesh.h"
-#include "core/ElasticProperties.h"
-#include "core/SquareMatrixGenerator.h"
-#include "core/elements/Triangle.h"
+#include "core/be_mesh.h"
+#include "core/bie_kernel.h"
+#include "core/elastic_properties.h"
+#include "core/square_matrix_generator.h"
+#include "core/elements/triangle.h"
 #include "core/hierarchical_representation.h"
 #include "elasticity/3d/BIE_elastostatic_triangle_0_impls.h"
 #include "hmat/hmatrix/Hmat.h"
@@ -34,7 +35,6 @@ using Real2D = il::Array2D<double>;
 using Int1D = il::Array<il::int_t>;
 using Int2D = il::Array2D<il::int_t>;
 using Tri0 = bie::Triangle<0>;
-using Mesh = bie::BEMesh<Tri0>;
 using MatProp = bie::ElasticProperties;
 using KernelH = bie::BieElastostatic<Tri0, Tri0, bie::ElasticKernelType::H>;
 using MatixGenerator = bie::SquareMatrixGenerator<double, Tri0, KernelH>;
@@ -77,12 +77,14 @@ int main(int argc, char *argv[]) {
   // std::cout << print_array2D(coord) << std::endl;
   // std::cout << print_array2D(conn) << std::endl;
 
-  Mesh my_mesh(coord, conn);
-  Real2D xcol = my_mesh.getCollocationPoints();
-  MatProp elas(E, nu);
-  KernelH ker(elas, coord.size(1));
+  bie::Mesh my_mesh  = bie::BEMesh<Tri0>(coord, conn);
+  Real2D xcol = my_mesh.get_collocation_points();
+  bie::ElasticProperties elas(E, nu);
+  bie::BieKernel<double> ker = bie::BieElastostatic(elas, coord.size(1));
+
+  // TODO: Should be default
   Real1D prop{1, 1000.};
-  ker.setKernelProperties(prop);
+  ker.set_kernel_properties(prop);
 
   std::cout << "Number of Collocation points  = " << xcol.size(0) << " X "
             << xcol.size(1) << std::endl;
@@ -90,7 +92,7 @@ int main(int argc, char *argv[]) {
   bie::HRepresentation hr =
       bie::h_representation_square_matrix(my_mesh, max_leaf_size, eta);
 
-  MatixGenerator M(my_mesh, ker, hr.permutation_0_);
+  bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr.permutation_0_);
   bie::Hmat<double> h_(M, hr, eps_aca);
 
   Real1D dd{M.size(1), 0.0};

@@ -85,60 +85,41 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 # file definitions
 ################################################################################
 set(SOURCE_FILES
-    src/hmat/cluster/cluster.h
-    src/hmat/cluster/cluster.cpp
-    # 2D source code
-        src/core/oldies/Mesh2D.cpp src/core/oldies/Mesh2D.h
-        src/core/oldies/SegmentData.h
-    src/core/SquareMatrixGenerator.h
-    src/core/BEMesh.h
-        src/elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.cpp
-        src/elasticity/FsIso2dSegment/Elastic2DP1_element.cpp
-        src/elasticity/oldies/PostProcessDDM_2d.cpp
-        src/elasticity/oldies/PostProcessDDM_3d.cpp
+    # # 2D source code
+    #     src/elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.cpp
+    #     src/elasticity/FsIso2dSegment/Elastic2DP1_element.cpp
+    #     src/elasticity/oldies/PostProcessDDM_2d.cpp
+    #     src/elasticity/oldies/PostProcessDDM_3d.cpp
+    # #  - T6 element
+    # src/elasticity/3d/Elastic3DT6_element.cpp
+    # src/elasticity/3d/h_potential_3DT6.cpp
+    # src/elasticity/3d/tensor_utilities_3DT6.cpp
+    # src/elasticity/3d/ElasticHMatrix3DT6.h
+    # #  - T0 element
+    # src/elasticity/3d/Elastic3DT0_element.cpp
+    # src/elasticity/3d/ElasticHMatrix3DT0.h
+    # src/elasticity/3d/ElasticHMatrix3DT0_modes2and3.h
+    # #  - R0 element
+    # src/elasticity/3d/Elastic3DR0_common.cpp
+    # src/elasticity/3d/Elastic3DR0_element.cpp
+    # src/elasticity/3d/Elastic3DR0_mode1Cartesian_element.cpp
+    # src/elasticity/3d/ElasticHMatrix3DR0.h
+    # src/elasticity/3d/ElasticHMatrix3DR0displ.h
+    # src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
+    # src/elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h
+    # #new
+    #     src/elasticity/BieElastostatic.h
+    #     src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h
+    #     src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h
+    # src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h
+    #     src/elasticity/FsIso2dSegment/Elastic2D_segment.cpp
+        src/elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h
+      )
 
-    # 3D source code
-        src/core/oldies/Mesh3D.cpp src/core/oldies/Mesh3D.h
-        src/core/oldies/FaceData.cpp
-    #  - T6 element
-        src/core/oldies/element_utilities.cpp
-    src/elasticity/3d/Elastic3DT6_element.cpp
-    src/elasticity/3d/h_potential_3DT6.cpp
-    src/elasticity/3d/tensor_utilities_3DT6.cpp
-    src/elasticity/3d/ElasticHMatrix3DT6.h
-    #  - T0 element
-    src/elasticity/3d/Elastic3DT0_element.cpp
-    src/elasticity/3d/ElasticHMatrix3DT0.h
-    src/elasticity/3d/ElasticHMatrix3DT0_modes2and3.h
-    #  - R0 element
-    src/elasticity/3d/Elastic3DR0_common.cpp
-    src/elasticity/3d/Elastic3DR0_element.cpp
-    src/elasticity/3d/Elastic3DR0_mode1Cartesian_element.cpp
-    src/elasticity/3d/ElasticHMatrix3DR0.h
-    src/elasticity/3d/ElasticHMatrix3DR0displ.h
-    src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
-    src/elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h
-    # BigWham Interface
-        src/BigWhamIO.h
-    #new
-        src/core/BieKernel.h
-    src/core/BEMesh.h
-    src/core/BoundaryElement.h
-        src/elasticity/BieElastostatic.h
+add_subdirectory(src)
 
-    src/core/hierarchical_representation.h
-    src/hmat/hmatrix/toHPattern.cpp
-    src/core/elements/Segment.h
-    src/core/elements/Triangle.h
-    src/core/elements/Rectangle.h
-        src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h
-        src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h
-    src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h
-        src/elasticity/FsIso2dSegment/Elastic2D_segment.cpp
-        src/elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h)
+message(${SOURCE_FILES})
 
-
-add_subdirectory(src/elasticity/FsIsoAxiFlatRingUnidirectional)
 
 add_library(BigWham OBJECT ${SOURCE_FILES})
 target_compile_features(BigWham PUBLIC cxx_std_17)
@@ -154,7 +135,7 @@ foreach(tgt BigWhamShared BigWhamStatic)
     set_target_properties(${tgt} PROPERTIES OUTPUT_NAME BigWham)
 endforeach()
 
-set(BIGWHAM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/src;${PROJECT_SOURCE_DIR}/src/hmat"
+set(BIGWHAM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/src"
     CACHE PATH "BigWham include dirs")
 mark_as_advanced(BIGWHAM_INCLUDE_DIRS)
 

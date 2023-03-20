@@ -13,9 +13,11 @@
 
 #include <string>
 
-#include "core/BEMesh.h"
-#include "core/ElasticProperties.h"
-#include <hmat/arrayFunctor/MatrixGenerator.h>
+#include "core/be_mesh.h"
+#include "core/bie_kernel.h"
+#include "core/elastic_properties.h"
+#include <hmat/arrayFunctor/matrix_generator.h>
+
 
 namespace bie {
 
@@ -27,20 +29,23 @@ namespace bie {
  El: Element Type, Triangle<0>
  Bie_def: Kernel Type, BieElastostatic<Tri0, Tri0, bie::ElasticKernelType::H>
 */
-template <typename T, class El, class Bie_def>
-class SquareMatrixGenerator : public bie::MatrixGenerator<T> {
+template <typename T, class ElemType>
+class SquareMatrixGenerator : public MatrixGenerator<T> {
+
+using Mesh = BEMesh<ElemType>;
+using Kernel = BieKernel<T, ElemType, ElemType>;
+
 private:
   il::Array<il::int_t> permutation_;
-  bie::BEMesh<El> mesh_;
-
-  Bie_def bie_kernel_;
+  Mesh mesh_;
+  Kernel bie_kernel_;
 
   il::int_t dof_dimension_; // unknowns per nodes
   il::int_t size_;          // total square matrix of size_*size_
   il::int_t number_points_; // size_ / block_size_
 
 public:
-  SquareMatrixGenerator(bie::BEMesh<El> &mesh, Bie_def &bie_kernel,
+  SquareMatrixGenerator(Mesh &mesh, Kernel &bie_kernel,
                         il::Array<il::int_t> &permutation);
   il::int_t size(il::int_t d) const override;
   il::int_t blockSize() const override;
@@ -49,36 +54,35 @@ public:
            il::Array2DEdit<T> M) const override;
 };
 
-template <typename T, class El, class Bie_def>
-SquareMatrixGenerator<T, El, Bie_def>::SquareMatrixGenerator(
-    bie::BEMesh<El> &mesh, Bie_def &bie_kernel,
-    il::Array<il::int_t> &permutation)
+template <typename T, class ElemType>
+SquareMatrixGenerator<T, ElemType>::SquareMatrixGenerator(
+    Mesh &mesh, Kernel &bie_kernel, il::Array<il::int_t> &permutation)
     : mesh_{mesh}, bie_kernel_{bie_kernel}, permutation_{permutation} {
   number_points_ = mesh_.numberCollocationPoints();
   dof_dimension_ = bie_kernel.getDofDimension();
   size_ = number_points_ * dof_dimension_;
 };
 
-template <typename T, class El, class Bie_def>
-il::int_t SquareMatrixGenerator<T, El, Bie_def>::size(il::int_t d) const {
+template <typename T, class ElemType>
+il::int_t SquareMatrixGenerator<T, ElemType>::size(il::int_t d) const {
   IL_EXPECT_MEDIUM(d == 0 || d == 1);
   return size_;
 };
 
-template <typename T, class El, class Bie_def>
-il::int_t SquareMatrixGenerator<T, El, Bie_def>::blockSize() const {
+template <typename T, class ElemType>
+il::int_t SquareMatrixGenerator<T, ElemType>::blockSize() const {
   return dof_dimension_;
 }
 
-template <typename T, class El, class Bie_def>
+template <typename T, class ElemType>
 il::int_t
-SquareMatrixGenerator<T, El, Bie_def>::sizeAsBlocks(il::int_t d) const {
+SquareMatrixGenerator<T, ElemType>::sizeAsBlocks(il::int_t d) const {
   IL_EXPECT_MEDIUM(d == 0 || d == 1);
   return number_points_;
 }
 
-template <typename T, class El, class Bie_def>
-void SquareMatrixGenerator<T, El, Bie_def>::set(il::int_t b0, il::int_t b1,
+template <typename T, class ElemType>
+void SquareMatrixGenerator<T, ElemType>::set(il::int_t b0, il::int_t b1,
                                                 il::io_t,
                                                 il::Array2DEdit<T> M) const {
   IL_EXPECT_MEDIUM(M.size(0) % blockSize() == 0);
