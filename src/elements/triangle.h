@@ -30,12 +30,15 @@ public:
     switch (p) {
     case 0:
       this->num_nodes_ = 1;
+      this->num_collocation_points_ = this->num_nodes_;
       break;
     case 1:
       this->num_nodes_ = this->spatial_dimension_;
+      this->num_collocation_points_ = this->num_nodes_;
       break;
     case 2:
       this->num_nodes_ = 2 * this->spatial_dimension_;
+      this->num_collocation_points_ = this->num_nodes_;
       break;
     }
   }

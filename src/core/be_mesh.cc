@@ -1,8 +1,6 @@
 #include "core/be_mesh.h"
 #include "elements/triangle.h"
 
-
-
 namespace bie {
 /* -------------------------------------------------------------------------- */
 
@@ -21,15 +19,21 @@ il::Array2D<double> BEMesh<ElemType>::get_vertices(il::int_t element_id) const {
 
 template <class ElemType> void BEMesh<ElemType>::construct_mesh() {
   il::int_t j = 0;
+    // std::cout << num_colloc_pts_per_element_ << "\n";
+    // std::cout << num_elements_ << "\n";
+    // std::cout << element_list_.size() << "\n";
   for (il::int_t i = 0; i < element_list_.size(); i++) {
     // define element
     std::shared_ptr<BoundaryElement> elem = std::make_shared<ElemType>();
     auto vertices = this->get_vertices(i);
     elem->set_element(vertices);
+    // std::cout << num_colloc_pts_per_element_ << "\n";
     this->element_list_[i] = std::move(elem);
 
+    // std::cout << num_colloc_pts_per_element_ << "\n";
     // define collocation points
-    auto elem_colloc_pts = elem->get_collocation_points();
+    auto elem_colloc_pts = this->element_list_[i]->get_collocation_points();
+    // std::cout << num_colloc_pts_per_element_ << "\n";
     for (il::int_t k = 0; k < spatial_dimension_; k++) {
       for (il::int_t j1 = 0; j1 < num_colloc_pts_per_element_; j1++) {
         collocation_points_(j + j1, k) = elem_colloc_pts(j1, k);

@@ -64,9 +64,9 @@ int main(int argc, char *argv[]) {
   double pi = M_PI;
 
   // H-mat parameters
-  il::int_t max_leaf_size = 16;
+  il::int_t max_leaf_size = 4;
   double eta = 3.0;
-  double eps_aca = 1.e-4;
+  double eps_aca = 1.e-1;
 
   copy_array2D(coord, coord_npy);
   copy_array2D(conn, conn_npy);
@@ -76,6 +76,7 @@ int main(int argc, char *argv[]) {
 
   // BEMesh<Triangle<0>> my_mesh(coord, conn);
   auto my_mesh = std::make_shared<BEMesh<Triangle<0>>>(coord, conn);
+  my_mesh->construct_mesh();
 
   il::Array2D<double> xcol = my_mesh->get_collocation_points();
 

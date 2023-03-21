@@ -32,11 +32,11 @@ private:
   //  collocation points oer element
   il::int_t num_colloc_pts_per_element_;
 
-  il::Array2D<double> get_vertices(il::int_t element_id) const;
 
 public:
   BEMesh() {
     std::shared_ptr<BoundaryElement> elem = std::make_shared<ElemType>();
+    // std::cout << elem->get_number_collocation_points() << "\n";
     interpolation_order_ = elem->get_interpolation_order();
     num_vertices_ = elem->get_number_vertices();
     num_colloc_pts_per_element_ = elem->get_number_collocation_points();
@@ -45,11 +45,18 @@ public:
   // element type !
   BEMesh(const il::Array2D<double> &coordinates,
          const il::Array2D<il::int_t> &connectivity)
-      : Mesh(coordinates, connectivity) {
-    BEMesh();
-    this->num_collocation_points =
+    : Mesh(coordinates, connectivity) {
+    // *this = BEMesh();
+    // std::cout << num_colloc_pts_per_element_ << "\n";
+    std::shared_ptr<BoundaryElement> elem = std::make_shared<ElemType>();
+    interpolation_order_ = elem->get_interpolation_order();
+    num_vertices_ = elem->get_number_vertices();
+    num_colloc_pts_per_element_ = elem->get_number_collocation_points();
+    this->num_collocation_points_ =
         this->num_elements_ * num_colloc_pts_per_element_;
-    collocation_points_.Resize(num_collocation_points, spatial_dimension_);
+    // std::cout << num_collocation_points_ << "\n";
+    // std::cout << num_elements_ << "\n";
+    collocation_points_.Resize(num_collocation_points_, spatial_dimension_);
   }
 
   virtual il::int_t get_element_id(il::int_t matrix_index) const override {
@@ -60,6 +67,8 @@ public:
   get_element_collocation_id(il::int_t matrix_index) const override {
     return (matrix_index % (num_colloc_pts_per_element_));
   }
+
+  il::Array2D<double> get_vertices(il::int_t element_id) const;
 
   virtual void construct_mesh() override;
 };

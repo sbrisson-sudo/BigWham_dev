@@ -10,6 +10,7 @@
 #ifndef BIGWHAM_BOUNDARYELEMENT_H
 #define BIGWHAM_BOUNDARYELEMENT_H
 
+#include "il/container/2d/Array2D.h"
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/blas.h>
@@ -45,10 +46,11 @@ protected:
 
   int num_vertices_;
   int num_nodes_;
+  int num_collocation_points_;
 
 public:
   BoundaryElement();
-  BoundaryElement(int dim, int p) {
+  BoundaryElement(const int dim, const int p) {
     this->centroid_.Resize(dim);
     this->n_.Resize(dim);
     this->s_.Resize(dim);
@@ -73,11 +75,15 @@ public:
 
   il::int_t get_number_nodes() const { return this->num_nodes_; };
   il::int_t get_spatial_dimension() const { return this->spatial_dimension_; };
-  il::int_t get_interpolation_order() const { return this->interpolation_order_; };
-  il::int_t get_number_vertices() const { return this->vertices_.size(0); };
-  il::int_t get_number_collocation_points() const {
-    return this->collocation_points_.size(0);
+  il::int_t get_interpolation_order() const {
+    return this->interpolation_order_;
   };
+  il::int_t get_number_vertices() const { return this->num_vertices_; };
+  il::int_t get_number_collocation_points() const {
+    return this->num_collocation_points_;
+  };
+
+  il::Array2D<double> get_rotation_matrix() const { return rotation_matrix_; }
 
   il::Array<double> convert_to_local(const il::Array<double> global_vec) const {
     return il::dot(this->rotation_matrix_, global_vec);

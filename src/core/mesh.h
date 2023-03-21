@@ -3,9 +3,11 @@
 
 #include <memory>
 #include <vector>
+#include <iostream>
+
+#include "il/core/core.h"
 
 #include "elements/boundary_element.h"
-#include "il/core/core.h"
 
 namespace bie {
 
@@ -20,7 +22,7 @@ protected:
   // Connectivity matrix - size: number of elements x   n_vertex per element
   il::Array2D<il::int_t> connectivity_;
 
-  il::int_t num_collocation_points;
+  il::int_t num_collocation_points_;
   il::Array2D<double> collocation_points_;
 
 
@@ -34,6 +36,8 @@ public:
     coordinates_ = coordinates;
     connectivity_ = connectivity;
     element_list_.resize(num_elements_);
+    // std::cout << element_list_.size() << std::endl;
+    // std::cout << num_elements_ << std::endl;
   };
   ~Mesh(){};
   std::shared_ptr<BoundaryElement> get_element(il::int_t element_id) const {
@@ -55,7 +59,7 @@ public:
   }
 
   il::int_t get_num_collocation_points() const {
-    return this->num_collocation_points;
+    return this->num_collocation_points_;
   }
 
   virtual il::int_t get_element_id(il::int_t dof_index) const = 0;

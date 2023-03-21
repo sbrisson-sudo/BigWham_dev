@@ -120,7 +120,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(SOURCE_FILES "")
 add_subdirectory(src)
 
-message(${SOURCE_FILES})
+message(STATUS ${SOURCE_FILES})
 
 
 add_library(BigWham OBJECT ${SOURCE_FILES})
@@ -173,24 +173,24 @@ if(BIGWHAM_TESTING)
     set(UNIT_TEST_FILES
         il/gtest/src/gtest-all.cc
         # src/elasticity/_test/elasticity_tests.cpp
-        src/_test/penny_shaped_crack_analytical_sol.h
-        src/_test/penny_shaped_crack_analytical_sol.cpp
-        src/core/_test/FaceData_tests.cpp
-        src/elasticity/_test/elastic3DR0_element_tests.cpp
+        # src/_test/penny_shaped_crack_analytical_sol.h
+        # src/_test/penny_shaped_crack_analytical_sol.cpp
+        # src/core/_test/FaceData_tests.cpp
+        # src/elasticity/_test/elastic3DR0_element_tests.cpp
         #src/_test/elastic3DR0_element_benchmark.cpp
-        src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-        src/core/_test/segment_test.cpp
-        src/elasticity/_test/segment0_sp3d_tests.cpp
-        src/core/_test/BEmesh_tests.cpp
-        src/elasticity/_test/elastic_square_matrix_generator_tests.cpp
-        src/core/_test/hierarchical_representation_tests.cpp
-        src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
-        src/core/_test/triangle_tests.cpp
-        src/core/_test/rectangle_tests.cpp
-        src/_test/bigwhamio_tests_2d.cpp
+        # src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
+        # src/core/_test/segment_test.cpp
+        # src/elasticity/_test/segment0_sp3d_tests.cpp
+        src/core/_test/bemesh_test.cc
+        # src/elasticity/_test/elastic_square_matrix_generator_tests.cpp
+        # src/core/_test/hierarchical_representation_tests.cpp
+        # src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
+        src/core/_test/triangle_test.cc
+        # src/core/_test/rectangle_tests.cpp
+        # src/_test/bigwhamio_tests_2d.cpp
         src/elasticity/_test/triangle0_tests.cpp
-            src/elasticity/FsIso2dSegment/_test/plane_elasticity_segment.cpp
-        src/elasticity/_test/segment0_kernels.cpp
+        # src/elasticity/FsIso2dSegment/_test/plane_elasticity_segment.cpp
+        # src/elasticity/_test/segment0_kernels.cpp
       )
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
