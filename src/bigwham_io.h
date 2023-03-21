@@ -36,7 +36,7 @@
 
 // #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
 // #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h"
-#include "elasticity/3d/bie_elastostatic_triangle_0_impls.h"
+// #include "elasticity/3d/bie_elastostatic_triangle_0_impls.h"
 // #include "elasticity/FsIsoAxiFlatRingUnidirectional/ElasticAxi3DP0_element.h"
 // #include <elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h>
 
@@ -58,8 +58,8 @@ inline constexpr auto operator"" _sh(const char *str, size_t len) {
 
 //////////////////////////// utility for mesh object creation from std::vector
 template <class El>
-// std::shared_ptr<Mesh> createMeshFromVect(int spatial_dimension,
-BEMesh<El> createMeshFromVect(int spatial_dimension,
+std::shared_ptr<Mesh> createMeshFromVect(int spatial_dimension,
+// BEMesh<El> createMeshFromVect(int spatial_dimension,
                                          int n_vertex_elt,
                                          const std::vector<double> &coor,
                                          const std::vector<int> &conn) {
@@ -82,10 +82,10 @@ BEMesh<El> createMeshFromVect(int spatial_dimension,
       index++;
     }
   }
-  BEMesh<El> mesh(Coor, Conn);
-  // auto mesh = std::make_shared<BEMesh<El>>(Coor, Conn);
-  // std::cout << "in create mesh - done "
-  //           << "\n";
+  // BEMesh<El> mesh(Coor, Conn);
+  auto mesh = std::make_shared<BEMesh<El>>(Coor, Conn);
+  std::cout << "in create mesh - done "
+            << "\n";
   return mesh;
 }
 
@@ -271,7 +271,7 @@ public:
       auto hr = h_representation_square_matrix(mesh, max_leaf_size, eta);
       tt.Stop();
       collocationPoints_ =
-          mesh.get_collocation_points(); // be careful returning it in original
+          mesh->get_collocation_points(); // be careful returning it in original
                                           // ordering.  note this is only for
                                           // the output function
                                           // getCollocationPoints
@@ -279,11 +279,11 @@ public:
       h_representation_time_ = tt.time();
       tt.Reset();
       tt.Start();
-      BieElastostatic<EltType, EltType, ElasticKernelType::H> ker(elas,
-                                                                   dimension_);
-      // auto ker = std::make_shared<
-      //     BieElastostatic<EltType, EltType, ElasticKernelType::H>>(elas,
+      // BieElastostatic<EltType, EltType, ElasticKernelType::H> ker(elas,
       //                                                              dimension_);
+      auto ker = std::make_shared<
+          BieElastostatic<EltType, EltType, ElasticKernelType::H>>(elas,
+                                                                   dimension_);
       bie::SquareMatrixGenerator<double> M(mesh, ker, hr);
       h_.toHmat(M, hr, epsilon_aca_);
       tt.Stop();

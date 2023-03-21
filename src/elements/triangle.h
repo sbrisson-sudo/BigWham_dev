@@ -16,82 +16,33 @@ namespace bie {
 
 template <int p> class Triangle : public Polygon<p> {
 private:
-  double beta_ =
+  const double beta_ =
       1.5 *
       0.166666666666667; // collocation points' location parameter for linear
-  double beta1_ = 0.35;  // 1.5 * 0.091576213509771 related to nodes at vertices
+  const double beta1_ = 0.35;  // 1.5 * 0.091576213509771 related to nodes at vertices
                          // (see documentation)
-  double beta2_ = 0.35;  // 1.5 * 0.10810301816807 related to middle-edge nodes
+  const double beta2_ = 0.35;  // 1.5 * 0.10810301816807 related to middle-edge nodes
                          // (see documentation)
-
-protected:
-  int n_vertices_ = 3;
-  int n_nodes_;
-  il::StaticArray2D<double, 3, 3> vertices_;
-  double area_{};
 
 public:
-  Triangle();
-  ~Triangle();
-
-  void setElement(il::Array2D<double> xv) {
-    IL_ASSERT(xv.size(0) == n_vertices_);
-    //
-    for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
-      for (il::int_t i = 0; i < n_vertices_; i++) {
-        this->vertices_(i, j) = xv(i, j);
-      }
+  Triangle() : Polygon<p>() {
+    this->num_vertices_ = 3;
+    switch (p) {
+    case 0:
+      this->num_nodes_ = 1;
+      break;
+    case 1:
+      this->num_nodes_ = this->spatial_dimension_;
+      break;
+    case 2:
+      this->num_nodes_ = 2 * this->spatial_dimension_;
+      break;
     }
-
-    for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
-      this->centroid_[j] =
-          0.0; // always reset centroid when setting the coordinates
-      for (il::int_t i = 0; i < n_vertices_; i++) {
-        this->centroid_[j] = this->centroid_[j] + vertices_(i, j) / n_vertices_;
-      }
-    }
-    for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
-      this->s_[j] = vertices_(1, j) - vertices_(0, j);
-      this->t_[j] = vertices_(n_vertices_ - 1, j) - vertices_(0, j);
-    }
-    double size_s = il::norm(this->s_, il::Norm::L2);
-    double size_t = il::norm(this->t_, il::Norm::L2);
-    // normal s and t
-    for (il::int_t k = 0; k < this->spatial_dimension_; ++k) {
-      this->s_[k] = this->s_[k] / size_s;
-      this->t_[k] = this->t_[k] / size_t;
-    }
-    // normal;
-    this->n_[0] = this->s_[1] * this->t_[2] - this->s_[2] * this->t_[1];
-    this->n_[1] = this->s_[2] * this->t_[0] - this->s_[0] * this->t_[2];
-    this->n_[2] = this->s_[0] * this->t_[1] - this->s_[1] * this->t_[0];
-    double size_n = il::norm(this->n_, il::Norm::L2);
-    for (il::int_t k = 0; k < this->spatial_dimension_; ++k) {
-      this->n_[k] = this->n_[k] / size_n;
-    }
-    this->t_[0] = this->n_[1] * this->s_[2] - this->n_[2] * this->s_[1];
-    this->t_[1] = this->n_[2] * this->s_[0] - this->n_[0] * this->s_[2];
-    this->t_[2] = this->n_[0] * this->s_[1] - this->n_[1] * this->s_[0];
-    double norm = il::norm(this->t_, il::Norm::L2);
-    for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
-      this->t_[j] = this->t_[j] / norm;
-    }
-    this->setCollocationPoints();
-    this->setNodes();
   }
+  ~Triangle() {}
 
-  void setCollocationPoints();
-
-  void setNodes() {
-    this->nodes_ = this->collocation_points_; // by default nodes = collocation
-                                              // points for 0 element
-  }
-
-  int getNumberOfVertices() const { return n_vertices_; };
-  il::int_t getNumberOfNodes() const { return n_nodes_; };
-  il::int_t getNumberOfCollocationPoints() const { return n_nodes_; };
-
-  il::StaticArray2D<double, 3, 3> getVertices() const { return vertices_; };
+  virtual void set_collocation_points() override;
+  virtual void set_nodes() override;
 };
 } // namespace bie
 #endif // BIGWHAM_TRIANGLE_H

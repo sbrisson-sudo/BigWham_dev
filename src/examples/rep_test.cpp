@@ -31,11 +31,9 @@
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 
-#include "elasticity/3d/bie_elastostatic_triangle_0_impls.h"
 #include "elements/triangle.h"
 
 #include "cnpy.h"
-#include "il/container/2d/Array2D.h"
 
 using namespace bie;
 template <typename T> std::string print_array2D(const il::Array2D<T> &);
@@ -76,23 +74,23 @@ int main(int argc, char *argv[]) {
   // std::cout << print_array2D(coord) << std::endl;
   // std::cout << print_array2D(conn) << std::endl;
 
-  BEMesh<Triangle<0>> my_mesh(coord, conn);
-  // auto my_mesh = std::make_shared<BEMesh<Triangle<0>>>(coord, conn);
+  // BEMesh<Triangle<0>> my_mesh(coord, conn);
+  auto my_mesh = std::make_shared<BEMesh<Triangle<0>>>(coord, conn);
 
-  il::Array2D<double> xcol = my_mesh.get_collocation_points();
+  il::Array2D<double> xcol = my_mesh->get_collocation_points();
 
   ElasticProperties elas(E, nu);
 
-  BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H> ker(
-      elas, coord.size(1));
-
-  // auto ker = std::make_shared<
-  //     BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>>(
+  // BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H> ker(
   //     elas, coord.size(1));
+
+  auto ker = std::make_shared<
+      BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>>(
+      elas, coord.size(1));
 
   // TODO: Should be default
   il::Array<double> prop{1, 1000.};
-  ker.set_kernel_properties(prop);
+  ker->set_kernel_properties(prop);
 
   std::cout << "Number of Collocation points  = " << xcol.size(0) << " X "
             << xcol.size(1) << std::endl;

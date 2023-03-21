@@ -17,7 +17,7 @@
 
 namespace bie {
 
-enum ElasticKernelType { U, T, H, S, V };
+enum class ElasticKernelType { U, T, H, S, V };
 
 /*
 
@@ -66,8 +66,10 @@ public:
   bool isLocalUnknowns() const { return local_unknowns_; };
   bool isLocalCoVariables() const { return local_co_variables_; };
 
-  virtual std::vector<double> influence(BoundaryElement& source_elt, il::int_t i_s,
-                                        BoundaryElement& receiver_elt, il::int_t i_r) const override;
+  virtual std::vector<double> influence(const BoundaryElement &source_elt,
+                                        il::int_t i_s,
+                                        const BoundaryElement &receiver_elt,
+                                        il::int_t i_r) const override;
 };
 
 } // namespace bie

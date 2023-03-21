@@ -28,11 +28,11 @@ public:
   ~BieKernel(){};
 
   // methods
-  virtual std::vector<T> influence(BoundaryElement &src_element, il::int_t colloc_id_src,
-                                   BoundaryElement &rec_element,
+  virtual std::vector<T> influence(const BoundaryElement &src_element, il::int_t colloc_id_src,
+                                   const BoundaryElement &rec_element,
                                    il::int_t colloc_id_rec) const = 0;
 
-  il::int_t get_DofDimension() const { return dof_dimension_; };
+  il::int_t get_dof_dimension() const { return dof_dimension_; };
   il::int_t get_spatial_dimension() const { return dim_; };
 };
 

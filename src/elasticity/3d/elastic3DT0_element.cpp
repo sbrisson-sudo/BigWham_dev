@@ -6,10 +6,12 @@
 // Geo-Energy Laboratory, 2016-2020.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
+
+#include <iostream>
+
 #include <il/linearAlgebra.h>
 #include <il/linearAlgebra/dense/blas/dot.h>
 #include <il/linearAlgebra/dense/norm.h>
-#include <iostream>
 
 #include "elasticity/3d/elastic3DT0_element.h"
 
@@ -1448,55 +1450,60 @@ double i3_Zeta(il::StaticArray<double, 3> &chi,
   return -sum;
 }
 
-il::Array2D<double> change_local_global(const il::Array2D<double> &A,
-                                        il::int_t local_global,
-                                        const il::Array2D<double> &R_source,
-                                        const il::Array2D<double> &R_receiver) {
-  // Note: all inputs and output can be static arrays instead, all are 3-by-3
-  // matrices
+// il::Array2D<double> change_local_global(const il::Array2D<double> &A,
+//                                         il::int_t local_global,
+//                                         const il::Array2D<double> &R_source,
+//                                         const il::Array2D<double>
+//                                         &R_receiver) {
+//   // Note: all inputs and output can be static arrays instead, all are 3-by-3
+//   // matrices
 
-  // Input:
-  // - A: is a 3-by-3 matrix such that t = A*d, where t can be the traction
-  // vector (or the displacement vector) the collocation point of the receiver
-  // element (or at the observation point), and d is the displacement
-  // discontinuity vector at the node of the source element. The matrix A is
-  // such that both t and d are expressed in the local reference system of the
-  // source element
-  // - local_global:
-  //      - 0 if d and t want to be expressed at the local reference system of
-  //      the source element an the local reference system of the receiver
-  //      element, respectively
-  //      - 1 if d and t want to be expressed at the global reference system
-  // - R_source: is a 3-by-3 rotation matrix that goes from the global reference
-  // system to the local reference system of the source element
-  // - R_receiver: is a 3-by-3 rotation matrix that goes from the global
-  // reference system to the local reference system of the receiver element
-  //
-  // Output:
-  // The 3-by-3 matrix A (input), but rotated as wished
+//   // Input:
+//   // - A: is a 3-by-3 matrix such that t = A*d, where t can be the traction
+//   // vector (or the displacement vector) the collocation point of the
+//   receiver
+//   // element (or at the observation point), and d is the displacement
+//   // discontinuity vector at the node of the source element. The matrix A is
+//   // such that both t and d are expressed in the local reference system of
+//   the
+//   // source element
+//   // - local_global:
+//   //      - 0 if d and t want to be expressed at the local reference system
+//   of
+//   //      the source element an the local reference system of the receiver
+//   //      element, respectively
+//   //      - 1 if d and t want to be expressed at the global reference system
+//   // - R_source: is a 3-by-3 rotation matrix that goes from the global
+//   reference
+//   // system to the local reference system of the source element
+//   // - R_receiver: is a 3-by-3 rotation matrix that goes from the global
+//   // reference system to the local reference system of the receiver element
+//   //
+//   // Output:
+//   // The 3-by-3 matrix A (input), but rotated as wished
 
-  il::Array2D<double> A_rotated{3, 3, 0.};
-  il::Array2D<double> R_source_transposed{3, 3, 0.};
+//   il::Array2D<double> A_rotated{3, 3, 0.};
+//   il::Array2D<double> R_source_transposed{3, 3, 0.};
 
-  // transpose R_source
-  for (il::int_t i = 0; i < 3; i++) {
-    for (il::int_t j = 0; j < 3; j++) {
-      R_source_transposed(j, i) = R_source(i, j);
-    }
-  }
+//   // transpose R_source
+//   for (il::int_t i = 0; i < 3; i++) {
+//     for (il::int_t j = 0; j < 3; j++) {
+//       R_source_transposed(j, i) = R_source(i, j);
+//     }
+//   }
 
-  if (local_global == 0) // local-local
-  {
-    A_rotated = il::dot(R_source_transposed, A);
-    A_rotated = il::dot(R_receiver, A_rotated);
-  } else // global-global
-  {
-    A_rotated = il::dot(A, R_source);
-    A_rotated = il::dot(R_source_transposed, A_rotated);
-  }
+//   if (local_global == 0) // local-local
+//   {
+//     A_rotated = il::dot(R_source_transposed, A);
+//     A_rotated = il::dot(R_receiver, A_rotated);
+//   } else // global-global
+//   {
+//     A_rotated = il::dot(A, R_source);
+//     A_rotated = il::dot(R_source_transposed, A_rotated);
+//   }
 
-  return A_rotated;
-}
+//   return A_rotated;
+// }
 
 //    il::Array<double> point_stress_3DT0(il::Array<double> &observ_pt,FaceData
 //    &elem_data_s, // source element
@@ -1566,7 +1573,7 @@ il::Array2D<double> change_local_global(const il::Array2D<double> &A,
 //        elem_data_s.rotationMatrix(true); // true: R(g->l)
 //
 ////        il::Array2D<double> stress_tensor_global =
-///il::dot(R_source_transposed, il::dot(stress_tensor_local, R_source));
+/// il::dot(R_source_transposed, il::dot(stress_tensor_local, R_source));
 //        il::Array2D<double> stress_tensor_global = il::dot(R_source,
 //        il::dot(stress_tensor_local, R_source_transposed));
 //
@@ -1581,63 +1588,64 @@ il::Array2D<double> change_local_global(const il::Array2D<double> &A,
 //        return stress_at_point;
 //    }
 
-il::Array<double>
-point_displacement_3DT0(il::Array<double> &observ_pt,
-                        FaceData &elem_data_s, // source element
-                        il::Array<double> &dd,
-                        ElasticProperties const &elas_ // elastic properties
-) {
-  /*
-   * It returns the displacement components:
-   * u_xx, u_yy, u_zz
-   * expressed in the global reference system
-   *
-   */
+// il::Array<double>
+// point_displacement_3DT0(il::Array<double> &observ_pt,
+//                         FaceData &elem_data_s, // source element
+//                         il::Array<double> &dd,
+//                         ElasticProperties const &elas_ // elastic properties
+// ) {
+//   /*
+//    * It returns the displacement components:
+//    * u_xx, u_yy, u_zz
+//    * expressed in the global reference system
+//    *
+//    */
 
-  double G = elas_.getG(), nu = elas_.getNu();
+//   double G = elas_.getG(), nu = elas_.getNu();
 
-  // get coordinates vertices of triangular source element
-  il::Array2D<double> el_vertices_s;
-  el_vertices_s = elem_data_s.getVertices();
+//   // get coordinates vertices of triangular source element
+//   il::Array2D<double> el_vertices_s;
+//   el_vertices_s = elem_data_s.getVertices();
 
-  // observation point coordinates from 1D array to 2D array
-  il::Array2D<double> x{1, 3, 0.};
-  for (int i = 0; i < 3; ++i) {
-    x(0, i) = observ_pt[i];
-  }
+//   // observation point coordinates from 1D array to 2D array
+//   il::Array2D<double> x{1, 3, 0.};
+//   for (int i = 0; i < 3; ++i) {
+//     x(0, i) = observ_pt[i];
+//   }
 
-  // get stress influence coefficients - in the local reference system of the
-  // source element
-  il::StaticArray2D<double, 3, 3> disp_influence_aux =
-      DisplacementKernelT0(x, el_vertices_s, nu);
-  il::Array2D<double> disp_influence{3, 3};
-  for (int j = 0; j < 3; j++) {
-    for (int i = 0; i < 3; i++) {
-      disp_influence(i, j) = disp_influence_aux(i, j);
-    }
-  }
-  // Note:
-  // expressed in the reference system of the DD element
-  // index        ->    DD1 (shear)    DD2 (shear)     DD3 (normal)
-  //   0      -> |       U1,            U1,             U1            |
-  //   1      -> |       U2,            U2,             U2            |
-  //   2      -> |       U3,            U3,             U3            |
+//   // get stress influence coefficients - in the local reference system of the
+//   // source element
+//   il::StaticArray2D<double, 3, 3> disp_influence_aux =
+//       DisplacementKernelT0(x, el_vertices_s, nu);
+//   il::Array2D<double> disp_influence{3, 3};
+//   for (int j = 0; j < 3; j++) {
+//     for (int i = 0; i < 3; i++) {
+//       disp_influence(i, j) = disp_influence_aux(i, j);
+//     }
+//   }
+//   // Note:
+//   // expressed in the reference system of the DD element
+//   // index        ->    DD1 (shear)    DD2 (shear)     DD3 (normal)
+//   //   0      -> |       U1,            U1,             U1            |
+//   //   1      -> |       U2,            U2,             U2            |
+//   //   2      -> |       U3,            U3,             U3            |
 
-  // Apply immediately the DD in order to get a displacement vector in the
-  // reference system local to the source element
-  il::Array<double> displacement_at_point_local = il::dot(disp_influence, dd);
+//   // Apply immediately the DD in order to get a displacement vector in the
+//   // reference system local to the source element
+//   il::Array<double> displacement_at_point_local = il::dot(disp_influence,
+//   dd);
 
-  // rotation matrix from local to global
-  il::Array2D<double> R_source =
-      elem_data_s.rotationMatrix(false); // false: R(l->g)
-  // transpose of rotation matrix, or from global to local
-  il::Array2D<double> R_source_transposed =
-      elem_data_s.rotationMatrix(true); // true: R(g->l)
+//   // rotation matrix from local to global
+//   il::Array2D<double> R_source =
+//       elem_data_s.rotationMatrix(false); // false: R(l->g)
+//   // transpose of rotation matrix, or from global to local
+//   il::Array2D<double> R_source_transposed =
+//       elem_data_s.rotationMatrix(true); // true: R(g->l)
 
-  // Get the displacements in the global reference system
-  il::Array<double> displacement_at_point =
-      il::dot(R_source_transposed, displacement_at_point_local);
+//   // Get the displacements in the global reference system
+//   il::Array<double> displacement_at_point =
+//       il::dot(R_source_transposed, displacement_at_point_local);
 
-  return displacement_at_point;
-}
+//   return displacement_at_point;
+// }
 } // namespace bie

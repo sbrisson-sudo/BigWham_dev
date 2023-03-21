@@ -176,5 +176,5 @@ PYBIND11_MODULE(bigwhamPybind, m) {
   declare_array<double>(m, "Real2D");
   declare_array<il::int_t>(m, "Int2D");
 
-  py::class_<bie::Segment<0>>(m, "Segment0").def(py::init<>());
+  // py::class_<bie::Segment<0>>(m, "Segment0").def(py::init<>());
 }

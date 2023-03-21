@@ -18,7 +18,7 @@
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 #include "core/mesh.h"
-#include "hierarchical_representation.h"
+#include "hmat/hierarchical_representation.h"
 
 namespace bie {
 
@@ -33,16 +33,16 @@ namespace bie {
 template <typename T> class SquareMatrixGenerator : public MatrixGenerator<T> {
 
 private:
-  il::Array<il::int_t> permutation_;
-  std::shared_ptr<Mesh> mesh_;
-  std::shared_ptr<BieKernel<T>> bie_kernel_;
+  const il::Array<il::int_t> permutation_;
+  const std::shared_ptr<Mesh> mesh_;
+  const std::shared_ptr<BieKernel<T>> bie_kernel_;
 
   il::int_t dof_dimension_; // unknowns per nodes
   il::int_t size_;          // total square matrix of size_*size_
-  il::int_t number_points_; // size_ / block_size_
+  il::int_t num_points_; // size_ / block_size_
 
 public:
-  SquareMatrixGenerator(const Mesh &mesh, const BieKernel<T> &bie_kernel,
+  SquareMatrixGenerator(const std::shared_ptr<Mesh> &mesh,const std::shared_ptr<BieKernel<T>> &bie_kernel,
                         const HRepresentation &hr);
   il::int_t size(il::int_t d) const override;
   il::int_t blockSize() const override;
@@ -52,16 +52,14 @@ public:
 };
 
 template <typename T>
-SquareMatrixGenerator<T>::SquareMatrixGenerator(const Mesh &mesh,
-                                                const BieKernel<T> &bie_kernel,
-                                                const HRepresentation &hr) {
-  this->mesh_ = &mesh;
-  this->bie_kernel_ = &bie_kernel;
-  // mesh_ = &mesh;
-  this->permutation_ = hr.permutation_0_;
-  // number_points_ = mesh_.numberCollocationPoints();
-  dof_dimension_ = bie_kernel.getDofDimension();
-  size_ = number_points_ * dof_dimension_;
+SquareMatrixGenerator<T>::SquareMatrixGenerator(const std::shared_ptr<Mesh> &mesh,
+                                                const std::shared_ptr<BieKernel<T>> &bie_kernel,
+                                                const HRepresentation &hr)
+    : mesh_(mesh),
+      bie_kernel_(bie_kernel), permutation_(hr.permutation_0_) {
+  num_points_ = this->mesh_->get_num_collocation_points();
+  dof_dimension_ = this->bie_kernel_->get_dof_dimension();
+  size_ = num_points_ * dof_dimension_;
 };
 
 template <typename T>
@@ -77,7 +75,7 @@ template <typename T> il::int_t SquareMatrixGenerator<T>::blockSize() const {
 template <typename T>
 il::int_t SquareMatrixGenerator<T>::sizeAsBlocks(il::int_t d) const {
   IL_EXPECT_MEDIUM(d == 0 || d == 1);
-  return number_points_;
+  return num_points_;
 }
 
 template <typename T>
@@ -85,8 +83,8 @@ void SquareMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
                                    il::Array2DEdit<T> M) const {
   IL_EXPECT_MEDIUM(M.size(0) % blockSize() == 0);
   IL_EXPECT_MEDIUM(M.size(1) % blockSize() == 0);
-  IL_EXPECT_MEDIUM(b0 + M.size(0) / blockSize() <= number_points_);
-  IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= number_points_);
+  IL_EXPECT_MEDIUM(b0 + M.size(0) / blockSize() <= num_points_);
+  IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= num_points_);
 
   il::int_t jj = M.size(1) / blockSize();
 #pragma omp parallel if (M.size(1) / blockSize() > 200)
@@ -102,8 +100,8 @@ void SquareMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       // of
       // the clusters.
       il::int_t old_k1 = this->permutation_[k1];
-      il::int_t e_k1 = mesh_->get_element_id(old_k1);
-      il::int_t is_l = mesh_->get_element_collocation_id(old_k1);
+      il::int_t e_k1 = this->mesh_->get_element_id(old_k1);
+      il::int_t is_l = this->mesh_->get_element_collocation_id(old_k1);
 
       auto source_element = mesh_->get_element(e_k1);
 
@@ -113,9 +111,9 @@ void SquareMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
         il::int_t e_k0 = mesh_->get_element_id(old_k0); //  receiver element
         il::int_t ir_l = mesh_->get_element_collocation_id(old_k0);
 
-        auto receiver_element = mesh_->get_element(e_k0);
-        std::vector<double> st = bie_kernel_->influence(
-            source_element, is_l, receiver_element, ir_l); // column major
+        auto receiver_element = this->mesh_->get_element(e_k0);
+        std::vector<double> st = this->bie_kernel_->influence(
+            *source_element, is_l, *receiver_element, ir_l); // column major
         // std::cout << "kernel size =" << st.size() << std::endl;
         // std::cout << "DOF dimension =" << dof_dimension_ << std::endl;
         IL_EXPECT_FAST(st.size() == dof_dimension_ * dof_dimension_);

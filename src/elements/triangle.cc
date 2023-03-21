@@ -10,24 +10,11 @@
 #include "elements/triangle.h"
 
 namespace bie {
-
-template <int p> Triangle<p>::Triangle() = default;
-
-template <int p> Triangle<p>::~Triangle() = default;
-
+/* -------------------------------------------------------------------------- */
 //   Triangle 0
-template <> inline Triangle<0>::Triangle() { n_nodes_ = 1; };
+/* -------------------------------------------------------------------------- */
 
-template <> inline void Triangle<0>::setNodes() {
-  // 0 order element: collocation at centroid
-  il::Array2D<double> col{1, 3, 0.};
-  for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
-    col(0, j) = this->centroid_[j];
-  }
-  this->nodes_ = col;
-}
-
-template <> inline void Triangle<0>::setCollocationPoints() {
+template <> void Triangle<0>::set_collocation_points() {
   // 0 order element: collocation at centroid
   il::Array2D<double> col{1, 3, 0.};
   for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
@@ -35,11 +22,21 @@ template <> inline void Triangle<0>::setCollocationPoints() {
   }
   this->collocation_points_ = col;
 }
+/* -------------------------------------------------------------------------- */
 
+template <> void Triangle<0>::set_nodes() {
+  // 0 order element: collocation at centroid
+  il::Array2D<double> col{1, 3, 0.};
+  for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
+    col(0, j) = this->centroid_[j];
+  }
+  this->nodes_ = col;
+}
+/* -------------------------------------------------------------------------- */
 // Triangle 1
-template <> inline Triangle<1>::Triangle() { n_nodes_ = spatial_dimension_; }
+/* -------------------------------------------------------------------------- */
 
-template <> inline void Triangle<1>::setNodes() {
+template <> void Triangle<1>::set_nodes() {
   IL_EXPECT_FAST(this->spatial_dimension_ == 3 &&
                  (this->vertices_).size(0) == 3);
   il::Array2D<double> nodes{this->spatial_dimension_, this->spatial_dimension_,
@@ -51,8 +48,9 @@ template <> inline void Triangle<1>::setNodes() {
   }
   this->nodes_ = nodes;
 }
+/* -------------------------------------------------------------------------- */
 
-template <> inline void Triangle<1>::setCollocationPoints() {
+template <> void Triangle<1>::set_collocation_points() {
   // 1 order element: collocation points
   //   col points located on the line from centroid to vertices with offset
   //   beta from vertices
@@ -66,13 +64,11 @@ template <> inline void Triangle<1>::setCollocationPoints() {
   }
   this->collocation_points_ = col;
 }
-
+/* -------------------------------------------------------------------------- */
 // Triangle 2
-template <> inline Triangle<2>::Triangle() {
-  n_nodes_ = 2 * spatial_dimension_;
-}
+/* -------------------------------------------------------------------------- */
 
-template <> inline void Triangle<2>::setNodes() {
+template <> void Triangle<2>::set_nodes() {
   // nodes for the T2
   //                             0
   //                           /   \
@@ -99,8 +95,9 @@ template <> inline void Triangle<2>::setNodes() {
   }
   this->nodes_ = std::move(nodes);
 }
+/* -------------------------------------------------------------------------- */
 
-template <> inline void Triangle<2>::setCollocationPoints() {
+template <> void Triangle<2>::set_collocation_points() {
   // 1 order element: collocation points
   //   col points located on the line from centroid to vertices with offset
   //   beta from vertices
@@ -113,7 +110,7 @@ template <> inline void Triangle<2>::setCollocationPoints() {
                   this->vertices_(i, j);
     }
   }
-  this->setNodes(); // because we need the middle-edge nodes
+  this->set_nodes(); // because we need the middle-edge nodes
   // loop over collocation points related to middle-edge nodes (from 3 -> 5)
   for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
     for (il::int_t i = this->spatial_dimension_;
@@ -124,4 +121,10 @@ template <> inline void Triangle<2>::setCollocationPoints() {
   }
   this->collocation_points_ = col;
 }
+/* -------------------------------------------------------------------------- */
+
+// template class Triangle<0>;
+// template class Triangle<1>;
+// template class Triangle<2>;
+
 } // namespace bie

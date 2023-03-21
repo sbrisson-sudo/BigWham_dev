@@ -1,4 +1,4 @@
 set(SOURCE_FILES ${SOURCE_FILES}
-    ${CMAKE_CURRENT_SOURCE_DIR}/triangle.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/triangle.cc
     PARENT_SCOPE
 )

@@ -10,9 +10,12 @@
 #ifndef BIGWHAM_EXE_ELASTIC3DT0_ELEMENT_H
 #define BIGWHAM_EXE_ELASTIC3DT0_ELEMENT_H
 
-#include "core/elastic_properties.h"
-#include "core/oldies/FaceData.h"
 #include <il/StaticArray2D.h>
+#include <il/StaticArray.h>
+#include <il/Array.h>
+#include <il/Array2D.h>
+
+#include "core/elastic_properties.h"
 
 namespace bie {
 //
@@ -53,11 +56,11 @@ il::Array2D<double> change_local_global(const il::Array2D<double> &A,
 //                                        elastic properties
 //    );
 
-il::Array<double> point_displacement_3DT0(
-    il::Array<double> &observ_pt,    // coordinates
-    FaceData &elem_data_s,           // source element
-    il::Array<double> &dd,           // dislacement discontinuities components
-    ElasticProperties const &elas_); // elastic properties
+// il::Array<double> point_displacement_3DT0(
+//     il::Array<double> &observ_pt,    // coordinates
+//     FaceData &elem_data_s,           // source element
+//     il::Array<double> &dd,           // dislacement discontinuities components
+//     ElasticProperties const &elas_); // elastic properties
 
 // generic integrals -- why the heck these functiomns are interfaced ??
 
