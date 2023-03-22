@@ -15,9 +15,9 @@
 #include <il/math.h>
 
 // Inclusion from the project
-#include <elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.h>
 #include "core/ElasticProperties.h"
 #include "core/oldies/Mesh2D.h"
+#include <elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.h>
 
 // contains fundamental plane-strain elasticity kernels.
 // for fracture segment with linear variation of displacement discontinuities
@@ -181,24 +181,24 @@ double ip233(double x, double y, double z, double xi, double eta) {
          (pow(R2, 3. / 2.) * ((R + x - xi) * (R + x - xi)));
 }
 
-    double ip333(double x, double y, double z, double xi, double eta) {
-        //    (-(2 R2^2 + R2 z^2 + 3 z^4) (z^2 + (y - \[Eta])^2) (y - \[Eta]) (z^2 + (x - \
+double ip333(double x, double y, double z, double xi, double eta) {
+  //    (-(2 R2^2 + R2 z^2 + 3 z^4) (z^2 + (y - \[Eta])^2) (y - \[Eta]) (z^2 + (x - \
     //    \[Xi])^2) (x - \[Xi]) + 2 (y - \[Eta])^3 (2 z^2 + (y - \[Eta])^2 + (x - \[Xi])^2)^2 (x - \
     //    \[Xi])^3)/(R2^(3/2) z (z^2 + (y - \[Eta])^2)^2 (z^2 + (x - \[Xi])^2)^2)
 
-        double R2, R, z2, xmxi, ymeta;
-        xmxi = (x - xi);
-        ymeta = (y - eta);
-        R2 = xmxi * xmxi + ymeta * ymeta + z * z;
-        z2 = z * z;
+  double R2, R, z2, xmxi, ymeta;
+  xmxi = (x - xi);
+  ymeta = (y - eta);
+  R2 = xmxi * xmxi + ymeta * ymeta + z * z;
+  z2 = z * z;
 
-        return (-(2 * R2 * R2 + R2 * z2 + 3 * z2 * z2) *
-                (z2 + pow(ymeta,2)) * ymeta *
-                (z2 + pow(xmxi,2)) * xmxi + 2 * pow(ymeta,3) *
-                                            pow(2 * z2 + pow(ymeta,2) + pow(xmxi,2),2) *
-                                            pow(xmxi,3)) / (pow(R2,1.5) * z * pow(z2 + pow(ymeta,2),2) *
-                                                            pow(z2 + pow(xmxi,2),2));
-    }
+  return (-(2 * R2 * R2 + R2 * z2 + 3 * z2 * z2) * (z2 + pow(ymeta, 2)) *
+              ymeta * (z2 + pow(xmxi, 2)) * xmxi +
+          2 * pow(ymeta, 3) * pow(2 * z2 + pow(ymeta, 2) + pow(xmxi, 2), 2) *
+              pow(xmxi, 3)) /
+         (pow(R2, 1.5) * z * pow(z2 + pow(ymeta, 2), 2) *
+          pow(z2 + pow(xmxi, 2), 2));
+}
 
 // CHEMMERY Integration function
 
@@ -288,10 +288,10 @@ double rectangular_integration(double x, double y, double z, double a, double b,
 
 //  this function ouptuts the stress in the plane (x2=0) s11,s33,s13
 //  simplified 3D kernel
-il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
-            double a, double b,
-            double G, double nu,
-            double xx, double yy) {
+il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(double a, double b,
+                                                          double G, double nu,
+                                                          double xx,
+                                                          double yy) {
   //  Simplified 3D Kernel - 3D kernel of Rongved,
   // with corrections from Wu & Olson 2015
   //
@@ -332,8 +332,8 @@ il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
 
   double C11, C12, D, H;
 
-  D = sqrt(xx * xx + yy * yy);  // distance to DD center
-  H = 2 * b;  // height -> may want to modify that & input H directly ?
+  D = sqrt(xx * xx + yy * yy); // distance to DD center
+  H = 2 * b; // height -> may want to modify that & input H directly ?
 
   // correction factors
   C11 =
@@ -341,8 +341,7 @@ il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
   C12 =
       1. - pow(D, 1.8) * pow(H / 1., 4.) / pow(D * D + H * H, (1.8 + 4.) / 2.);
 
-
-   //
+  //
   il::StaticArray2D<double, 2, 3> StressInPlane;
   // compute the Is function derivatives....
 
@@ -380,30 +379,26 @@ il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
 
   // stress du to displacement discontinuity DDz (normal)
   StressInPlane(1, 0) =
-      Ce * C11 * (Ip33 + (1. - 2. * nu) * Ip22 - z * Ip113);  // sxx
+      Ce * C11 * (Ip33 + (1. - 2. * nu) * Ip22 - z * Ip113); // sxx
   //  Stress(1, 3) = Ce * (-(1. - 2. * nu) * Ip12 - z * Ip123);        // sxy
-  StressInPlane(1, 1) = Ce * C12 * (-z * Ip133);  // sxz[which is sxy in the 2D]
+  StressInPlane(1, 1) = Ce * C12 * (-z * Ip133); // sxz[which is sxy in the 2D]
   //  Stress(1, 5) = Ce * (z * Ip233);                                 // syz
   //  Stress(1, 1) = Ce * (Ip33 + (1. - 2. * nu) * Ip11 - z * Ip223);  // syy
   double EPSILON;
   EPSILON = std::numeric_limits<double>::epsilon();
   if (abs(z) <= EPSILON) {
-      StressInPlane(1, 2) = Ce * C11 * (Ip33);
+    StressInPlane(1, 2) = Ce * C11 * (Ip33);
+  } else {
+    StressInPlane(1, 2) = Ce * C11 * (Ip33 - z * Ip333); // modified 2021
   }
-  else {
-      StressInPlane(1, 2) = Ce * C11 * (Ip33 - z * Ip333); // modified 2021
-  }
-    // szz[which is syy in the 2D]
+  // szz[which is syy in the 2D]
   return StressInPlane;
 }
 
 //------------------------------------------------------------------------------
 il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_s3d_dp0_dd(
-    SegmentData &source_elt,
-    SegmentData &receiver_elt,
-    il::int_t i_col,
-    const ElasticProperties &Elas,
-    double ker_options) {
+    SegmentData &source_elt, SegmentData &receiver_elt, il::int_t i_col,
+    const ElasticProperties &Elas, double ker_options) {
   //  Function to get the normal and shear stress at a point on a surface
   // (with given normal and shear vector) induced by
   // a piece-wise constant DD segment of size h  and height ker_options
@@ -443,8 +438,9 @@ il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_s3d_dp0_dd(
 
   double h = source_elt.size();
 
-  il::StaticArray2D<double, 2, 3> stress_l = stresses_kernel_s3d_p0_dd(
-      h / 2., ker_options / 2., Elas.getG(), Elas.getNu(), xe[0], xe[1]);
+  il::StaticArray2D<double, 2, 3> stress_l =
+      stresses_kernel_s3d_p0_dd(h / 2., ker_options / 2., Elas.shear_modulus(),
+                                Elas.poisson_ratio(), xe[0], xe[1]);
 
   double n1n1 = n[0] * n[0];
   double n2n2 = n[1] * n[1];
@@ -485,12 +481,8 @@ il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_s3d_dp0_dd(
 
 //------------------------------------------------------------------------------
 il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_s3d_dp0_dd_nodal(
-    SegmentData &source_elt,
-    SegmentData &receiver_elt,
-    il::int_t s_col,
-    il::int_t i_col,
-    const ElasticProperties &Elas,
-    double ker_options) {
+    SegmentData &source_elt, SegmentData &receiver_elt, il::int_t s_col,
+    il::int_t i_col, const ElasticProperties &Elas, double ker_options) {
   //  Function to get the normal and shear stress at a point on a surface
   // (with given normal and shear vector) induced by
   // a piece-wise constant DD segment of size h  and height ker_options
@@ -529,8 +521,9 @@ il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_s3d_dp0_dd_nodal(
 
   double h = source_elt.size();
 
-  il::StaticArray2D<double, 2, 3> stress_l = stresses_kernel_s3d_p0_dd(
-      h / 2., ker_options / 2., Elas.getG(), Elas.getNu(), xe[0], xe[1]);
+  il::StaticArray2D<double, 2, 3> stress_l =
+      stresses_kernel_s3d_p0_dd(h / 2., ker_options / 2., Elas.shear_modulus(),
+                                Elas.poisson_ratio(), xe[0], xe[1]);
 
   double n1n1 = n[0] * n[0];
   double n2n2 = n[1] * n[1];
@@ -562,76 +555,73 @@ il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_s3d_dp0_dd_nodal(
 };
 
 //------------------------------------------------------------------------------
-    il::StaticArray<double, 3> point_stress_s3d_dp0_dd(
-            il::StaticArray<double, 2> &observ_pt,
-            SegmentData &source_elt,
-            il::StaticArray<double, 4> &nodal_dd, // we use only [0] and [1]
-            ElasticProperties &Elas,
-            double ker_options) {
-        // Function to get the stress at a point
-        // induced by a piece-wise constant DD segment of size h and height
-        // ker_options
-        //
-        // Used to calculate stresses at given points
-        //
-        // INPUTS:
-        // source_elt : element data structure of the source element
-        // elt_dd : (shear, normal)
-        // observ_pt : observation point coordinates (x, y)
-        // Elas :: elastic properties object
-        // ker_options : dummy argument here for the height of the simplified 3D elt
-        //
-        // OUTPUTS:
-        // stress in global (reference) coordinates (xx, xy, yy)
-        // Make sure to add in-situ stress later
-        //
-        // CONVENTIONS:
-        // positive compression / positive opening DD;
-        // positive tension / positive overlap DD;
+il::StaticArray<double, 3> point_stress_s3d_dp0_dd(
+    il::StaticArray<double, 2> &observ_pt, SegmentData &source_elt,
+    il::StaticArray<double, 4> &nodal_dd, // we use only [0] and [1]
+    ElasticProperties &Elas, double ker_options) {
+  // Function to get the stress at a point
+  // induced by a piece-wise constant DD segment of size h and height
+  // ker_options
+  //
+  // Used to calculate stresses at given points
+  //
+  // INPUTS:
+  // source_elt : element data structure of the source element
+  // elt_dd : (shear, normal)
+  // observ_pt : observation point coordinates (x, y)
+  // Elas :: elastic properties object
+  // ker_options : dummy argument here for the height of the simplified 3D elt
+  //
+  // OUTPUTS:
+  // stress in global (reference) coordinates (xx, xy, yy)
+  // Make sure to add in-situ stress later
+  //
+  // CONVENTIONS:
+  // positive compression / positive opening DD;
+  // positive tension / positive overlap DD;
 
-        // the tensor to switch to the frame of the source element....
-        il::StaticArray2D<double, 2, 2> R =
-            bie::rotationMatrix2D(source_elt.theta());
+  // the tensor to switch to the frame of the source element....
+  il::StaticArray2D<double, 2, 2> R = bie::rotationMatrix2D(source_elt.theta());
 
-        // the inverse rotation...
-        il::StaticArray2D<double, 2, 2> Rt = R;
-        Rt(0, 1) = R(1, 0);
-        Rt(1, 0) = R(0, 1); // il::transpose() ?
+  // the inverse rotation...
+  il::StaticArray2D<double, 2, 2> Rt = R;
+  Rt(0, 1) = R(1, 0);
+  Rt(1, 0) = R(0, 1); // il::transpose() ?
 
-        // directional vector from the element to the observation point
-        il::StaticArray<double, 2> xe;
-        for (int i = 0; i < 2; ++i) {
-            xe[i] = observ_pt[i] - source_elt.Xmid(i);
-        }
-        // -"- in source element's coordinates
-        xe = il::dot(Rt, xe);
+  // directional vector from the element to the observation point
+  il::StaticArray<double, 2> xe;
+  for (int i = 0; i < 2; ++i) {
+    xe[i] = observ_pt[i] - source_elt.Xmid(i);
+  }
+  // -"- in source element's coordinates
+  xe = il::dot(Rt, xe);
 
-        // stress kernel at the observation point in source element's coordinates
-        il::StaticArray2D<double, 2, 3> stress_l = stresses_kernel_s3d_p0_dd(
-                source_elt.size() / 2., ker_options / 2.,
-                                      Elas.getG(), Elas.getNu(), xe[0], xe[1]);
+  // stress kernel at the observation point in source element's coordinates
+  il::StaticArray2D<double, 2, 3> stress_l = stresses_kernel_s3d_p0_dd(
+      source_elt.size() / 2., ker_options / 2., Elas.shear_modulus(),
+      Elas.poisson_ratio(), xe[0], xe[1]);
 
-        // stresses at the observation point (in source element's coordinates)
-        il::StaticArray<double, 2> elt_dd;
-        elt_dd[0] = nodal_dd[0];
-        elt_dd[1] = nodal_dd[1]; // here we ignore [2] & [3] components (for P1)
-        il::StaticArray<double, 3> stress_g = il::dot(elt_dd, stress_l);
+  // stresses at the observation point (in source element's coordinates)
+  il::StaticArray<double, 2> elt_dd;
+  elt_dd[0] = nodal_dd[0];
+  elt_dd[1] = nodal_dd[1]; // here we ignore [2] & [3] components (for P1)
+  il::StaticArray<double, 3> stress_g = il::dot(elt_dd, stress_l);
 
-        // stress tensor in matrix form (in source element's coordinates)
-        il::StaticArray2D<double, 2, 2> stress_m, stress_i;
-        stress_m(0, 0) = stress_g[0];
-        stress_m(0, 1) = stress_g[1];
-        stress_m(1, 0) = stress_g[1];
-        stress_m(1, 1) = stress_g[2];
+  // stress tensor in matrix form (in source element's coordinates)
+  il::StaticArray2D<double, 2, 2> stress_m, stress_i;
+  stress_m(0, 0) = stress_g[0];
+  stress_m(0, 1) = stress_g[1];
+  stress_m(1, 0) = stress_g[1];
+  stress_m(1, 1) = stress_g[2];
 
-        // stress rotation to global (reference) coordinates
-        stress_i = il::dot(stress_m, Rt);
-        stress_m = il::dot(R, stress_i);
+  // stress rotation to global (reference) coordinates
+  stress_i = il::dot(stress_m, Rt);
+  stress_m = il::dot(R, stress_i);
 
-        stress_g[0] = stress_m(0, 0);
-        stress_g[1] = 0.5 * (stress_m(0, 1) + stress_m(1, 0));
-        stress_g[2] = stress_m(1, 1);
+  stress_g[0] = stress_m(0, 0);
+  stress_g[1] = 0.5 * (stress_m(0, 1) + stress_m(1, 0));
+  stress_g[2] = stress_m(1, 1);
 
-        return stress_g;
-    };
-}
+  return stress_g;
+};
+} // namespace bie

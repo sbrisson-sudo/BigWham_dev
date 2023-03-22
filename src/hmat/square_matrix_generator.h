@@ -57,8 +57,8 @@ SquareMatrixGenerator<T>::SquareMatrixGenerator(
     const std::shared_ptr<Mesh> &mesh,
     const std::shared_ptr<BieKernel<T>> &bie_kernel, const HRepresentation &hr)
     : mesh_(mesh), bie_kernel_(bie_kernel), permutation_(hr.permutation_0_) {
-  num_points_ = this->mesh_->get_num_collocation_points();
-  dof_dimension_ = this->bie_kernel_->get_dof_dimension();
+  num_points_ = this->mesh_->num_collocation_points();
+  dof_dimension_ = this->bie_kernel_->dof_dimension();
   size_ = num_points_ * dof_dimension_;
 };
 
@@ -100,16 +100,16 @@ void SquareMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       // of
       // the clusters.
       il::int_t old_k1 = this->permutation_[k1];
-      il::int_t e_k1 = this->mesh_->get_element_id(old_k1);
-      il::int_t is_l = this->mesh_->get_element_collocation_id(old_k1);
+      il::int_t e_k1 = this->mesh_->GetElementId(old_k1);
+      il::int_t is_l = this->mesh_->GetElementCollocationId(old_k1);
 
       auto source_element = mesh_->get_element(e_k1);
 
       for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
         il::int_t k0 = b0 + j0;
         il::int_t old_k0 = this->permutation_[k0];
-        il::int_t e_k0 = mesh_->get_element_id(old_k0); //  receiver element
-        il::int_t ir_l = mesh_->get_element_collocation_id(old_k0);
+        il::int_t e_k0 = mesh_->GetElementId(old_k0); //  receiver element
+        il::int_t ir_l = mesh_->GetElementCollocationId(old_k0);
 
         auto receiver_element = this->mesh_->get_element(e_k0);
         std::vector<double> st = this->bie_kernel_->influence(

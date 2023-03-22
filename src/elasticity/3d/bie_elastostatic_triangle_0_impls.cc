@@ -8,14 +8,14 @@
 //
 
 #include <il/blas.h>
-
-#include "elements/triangle.h"
-
-#include "elasticity/3d/elastic3DT0_element.h"
-#include "elasticity/bie_elastostatic.h"
-
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
+
+#include "elements/triangle.h"
+#include "elasticity/bie_elastostatic.h"
+
+#include "elastic_3dT0_element.h"
+
 
 namespace bie {
 
@@ -33,8 +33,8 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
   // vector for the displacement to tractions influence matrix
 
   // get constitutive parameters
-  double G = this->elas_.getG();
-  double nu = this->elas_.getNu();
+  double G = this->elas_.shear_modulus();
+  double nu = this->elas_.poisson_ratio();
 
   // get coordinates receiver cp
   auto el_cp_r = receiver_elt.collocation_points();
@@ -118,4 +118,5 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
   return stnl;
 }
 
+template class BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>;
 } // namespace bie

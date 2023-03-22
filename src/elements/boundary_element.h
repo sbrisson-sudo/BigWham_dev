@@ -48,6 +48,9 @@ protected:
   int num_nodes_;
   int num_collocation_points_;
 
+  // length for 1d, area for 2d
+  double size_;
+
 public:
   BoundaryElement();
   BoundaryElement(const int dim, const int p) {
@@ -66,6 +69,7 @@ public:
   il::Array<double> normal() const { return this->normal_; };
   il::Array<double> tangent1() const { return this->tangent1_; };
   il::Array<double> tangent2() const { return this->tangent2_; };
+  double size() const { return size_; }
 
   il::Array2D<double> vertices() const { return this->vertices_; };
   il::Array2D<double> collocation_points() const {

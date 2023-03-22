@@ -18,9 +18,6 @@ namespace bie {
 // class for polygon element - with fixed number of vertex ;(
 template <int p> class Polygon : public BoundaryElement {
 
-protected:
-  double area_;
-
 public:
   Polygon() : BoundaryElement(3, p) {}
   ~Polygon() {}

@@ -13,9 +13,9 @@
 
 #include <core/elements/Segment.h>
 #include <core/ElasticProperties.h>
-#include <elasticity/BieElastostatic.h>
+#include <elasticity/bie_elastostatic.h>
 
-#include "ElasticS3DP0_element.h"
+#include "elastic_sp3dP0_element.h"
 
 namespace bie{
 
@@ -72,7 +72,7 @@ namespace bie{
         double ker_options = this->kernel_properties_[0];
 
         il::StaticArray2D<double, 2, 3> stress_l = stresses_kernel_s3d_p0_dd(
-                h / 2., ker_options / 2., this->elas_.getG(), this->elas_.getNu(), xe[0], xe[1]);
+                h / 2., ker_options / 2., this->elas_.shear_modulus(), this->elas_.poisson_ratio(), xe[0], xe[1]);
 
         il::StaticArray<double, 2> n = source_elt.to_local(receiver_elt.getNormal());
         il::StaticArray<double, 2> s = source_elt.to_local(receiver_elt.getTangent());

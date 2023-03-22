@@ -31,7 +31,7 @@ TEST(H_representation, mesh2d_square_1) {
     conn(i, 1) = i + 1;
   }
   auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(coor, conn);
-  my_mesh->construct_mesh();
+  my_mesh->ConstructMesh();
   auto hr = bie::h_representation_square_matrix(my_mesh, 32, 1.0);
   ASSERT_TRUE(hr.pattern_.n_FRB == 1 && hr.pattern_.n_LRB == 0);
 }
@@ -52,7 +52,7 @@ TEST(H_representation, mesh2d_square_2) {
     conn(i, 1) = i + 1;
   }
   auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(coor, conn);
-  my_mesh->construct_mesh();
+  my_mesh->ConstructMesh();
   auto hr = bie::h_representation_square_matrix(my_mesh, 50, 0.0);
   ASSERT_TRUE(hr.pattern_.n_FRB == 4 && hr.pattern_.n_LRB == 0);
 }
@@ -80,7 +80,7 @@ TEST(H_representation, mesh2d_square_3) {
     conn(i, 1) = i + 2;
   }
   auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(coor, conn);
-  my_mesh->construct_mesh();
+  my_mesh->ConstructMesh();
   auto hr = bie::h_representation_square_matrix(my_mesh, n_elts / 2, 4.0);
   ASSERT_TRUE(hr.pattern_.n_FRB == 2 && hr.pattern_.n_LRB == 2);
 }
@@ -102,7 +102,7 @@ TEST(H_representation, mesh2d_rectangle_1) {
     conn(i, 1) = i + 1;
   }
   auto source_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(coor, conn);
-  source_mesh->construct_mesh();
+  source_mesh->ConstructMesh();
   int n_elts_r = 20;
   il::Array2D<double> coor_r{n_elts_r + 1, 2, 0.};
   il::Array2D<il::int_t> conn_r{n_elts_r, 2};
@@ -117,7 +117,7 @@ TEST(H_representation, mesh2d_rectangle_1) {
   }
   auto rec_mesh =
       std::make_shared<bie::BEMesh<bie::Segment<0>>>(coor_r, conn_r);
-  rec_mesh->construct_mesh();
+  rec_mesh->ConstructMesh();
   auto hr = bie::h_representation_rectangular_matrix(
       source_mesh, rec_mesh, 60, 14.0);
 

@@ -389,7 +389,7 @@ il::Array2D<double> traction_influence_3DT6(bie::FaceData &elem_data_s, bie::Fac
   //
   // Calculating DD-to stress influence
   // w.r. to the source element's local coordinate system (both DD and stresses!)
-  il::StaticArray2D<double, 6, 18> stress_infl_el2p_loc_h =make_local_3dbem_submatrix(1,  elas_.getG(), elas_.getNu(), hz.h, hz.z, tau, sfm);
+  il::StaticArray2D<double, 6, 18> stress_infl_el2p_loc_h =make_local_3dbem_submatrix(1,  elas_.shear_modulus(), elas_.poisson_ratio(), hz.h, hz.z, tau, sfm);
 
   // Alternative 2: rotating nrm_cp_glob to
   // the source element's local coordinate system

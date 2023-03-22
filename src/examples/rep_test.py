@@ -2,7 +2,8 @@
 
 from bigwham4py import Hmatrix  # linear operator file
 import numpy as np
-import subprocess
+
+# import subprocess
 
 # subprocess.call("python generate_penny_mesh.py 0.5", shell=True)
 
@@ -28,7 +29,9 @@ col_pts = hmat.getMeshCollocationPoints()
 
 pre_fac = (8 * (1 - nu * nu)) / (np.pi * E)
 dd = np.zeros(col_pts.shape)
-dd[:, 2] = pre_fac * np.sqrt(radius * radius - np.linalg.norm(col_pts[:, :2], axis=1)**2)
+dd[:, 2] = pre_fac * np.sqrt(
+    radius * radius - np.linalg.norm(col_pts[:, :2], axis=1) ** 2
+)
 
 
 # calculate tractions

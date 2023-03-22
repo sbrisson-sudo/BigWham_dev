@@ -19,9 +19,6 @@ namespace bie {
 
 template <int p> class Segment : public BoundaryElement {
 
-private:
-  double size_;
-
 protected:
   void set_nodes();
   void set_collocation_points();
@@ -41,7 +38,6 @@ public:
   virtual void SetElement(const il::Array2D<double> &vertices) override;
   virtual void SetRotationMatrices() override;
 
-  double size() const { return size_; }
 };
 /* -------------------------------------------------------------------------- */
 
@@ -79,7 +75,7 @@ inline void Segment<p>::SetElement(const il::Array2D<double> &xv) {
     this->tangent1_[j] = this->vertices_(1, j) - this->vertices_(0, j);
     this->tangent2_[j] = this->vertices_(num_vertices_ - 1, j) - this->vertices_(0, j);
   }
-  size_ = std::sqrt(il::dot(this->tangent1_, this->tangent1_));
+  this->size_ = std::sqrt(il::dot(this->tangent1_, this->tangent1_));
   // unit s and t
   for (il::int_t k = 0; k < spatial_dimension_; ++k) {
     this->tangent1_[k] = this->tangent1_[k] / size_;

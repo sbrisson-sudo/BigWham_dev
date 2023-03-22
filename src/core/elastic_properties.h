@@ -15,61 +15,65 @@
 namespace bie {
 
 class ElasticProperties {
- private:
-  double young_;    // Young's modulus
-  double poiss_;    // Poisson's ratio
-  double G_;    // Lame's second parameter or shear modulus
-  double bulkm_;    // Bulk modulus
-  double youngPS_;  // Plane-strain Young's modulus
-  bool iso_;
+private:
+  double young_modulus_; // Young's modulus
+  double poisson_ratio_; // Poisson's ratio
 
- public:
+  double shear_modulus_;             // Lame's second parameter or shear modulus
+  double bulk_modulus_;              // Bulk modulus
+  double young_modulus_plane_strain_; // Plane-strain Young's modulus
+  bool isotropic_;
 
+public:
   ElasticProperties(){};
 
-  ~ElasticProperties() {};
+  ~ElasticProperties(){};
 
   // Creation of elastic properties class from Young's modulus and Poisson's
   // Ratio
-  ElasticProperties(double YoungModulus, double PoissonRatio) {
-    IL_ASSERT(YoungModulus>0.);
-    IL_ASSERT(PoissonRatio>-1.);
-    IL_ASSERT(PoissonRatio<=0.5);
+  ElasticProperties(const double E, const double nu) {
+    IL_ASSERT(E > 0.);
+    IL_ASSERT(nu > -1.);
+    IL_ASSERT(nu <= 0.5);
 
-    young_ = YoungModulus;
-    poiss_ = PoissonRatio;
-    bulkm_ = young_ / (3.0 * (1.0 - 2.0 * poiss_));
-    G_ = young_ / (2.0 * (1 + poiss_));
-    youngPS_ = young_ / (1.0 - poiss_ * poiss_);
-    iso_=true;
-
+    young_modulus_ = E;
+    poisson_ratio_ = nu;
+    bulk_modulus_ = young_modulus_ / (3.0 * (1.0 - 2.0 * poisson_ratio_));
+    shear_modulus_ = young_modulus_ / (2.0 * (1 + poisson_ratio_));
+    young_modulus_plane_strain_ =
+        young_modulus_ / (1.0 - poisson_ratio_ * poisson_ratio_);
+    isotropic_ = true;
   }
 
   // Explicit creation from bulk and shear modulus
-  void setElasKG(double BulkModulus, double ShearModulus) {
-    IL_ASSERT(ShearModulus>0.);
+  void SetBulkShearModulus(double K, double mu) {
+    IL_ASSERT(mu > 0.);
 
-    bulkm_ = BulkModulus;
-    G_ = ShearModulus;
-    young_ = 9.0 * bulkm_ * G_ / (3.0 * bulkm_ + G_);
-    poiss_ = (3.0 * bulkm_ - 2.0 * G_) / (2.0 * (3.0 * bulkm_ + G_));
-  //  lame1_ = bulkm_ - 2.0 * G_ / 3.0;
-    youngPS_ = young_ / (1.0 - poiss_ * poiss_);
+    bulk_modulus_ = K;
+    shear_modulus_ = mu;
+    young_modulus_ = 9.0 * bulk_modulus_ * shear_modulus_ /
+                     (3.0 * bulk_modulus_ + shear_modulus_);
+    poisson_ratio_ = (3.0 * bulk_modulus_ - 2.0 * shear_modulus_) /
+                     (2.0 * (3.0 * bulk_modulus_ + shear_modulus_));
+    //  lame1_ = bulk_modulus_ - 2.0 * shear_modulus_ / 3.0;
+    young_modulus_plane_strain_ =
+        young_modulus_ / (1.0 - poisson_ratio_ * poisson_ratio_);
+    isotropic_ = true;
   }
 
   // Methods for accessing the elastic properties
 
-  double getE() const { return young_; }
-  double getNu() const { return poiss_; }
-  double getK() const { return bulkm_; }
+  double young_modulus() const { return young_modulus_; }
+  double poisson_ratio() const { return poisson_ratio_; }
+  double bulk_modulus() const { return bulk_modulus_; }
 
-  double getG() const { return G_; }
-  double getEp() const { return youngPS_; }
-  double isIsotropic() const {return iso_;}
-
+  double shear_modulus() const { return shear_modulus_; }
+  double young_modulus_plane_strain() const {
+    return young_modulus_plane_strain_;
+  }
+  bool isotropic() const { return isotropic_; }
 };
 
+} // namespace bie
 
-}
-
-#endif  // BIE_ELASTICPROPERTIES_H
+#endif // BIE_ELASTICPROPERTIES_H

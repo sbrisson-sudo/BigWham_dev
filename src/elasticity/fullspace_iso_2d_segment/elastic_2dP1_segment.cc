@@ -20,8 +20,8 @@
 #include <il/math.h>
 
 // Inclusion from the project
-#include "Elastic2DP1_element.h"
-#include "core/ElasticProperties.h"
+#include "elastic_2dP0_segment.h"
+#include "core/elastic_properties.h"
 
 namespace bie {
 
@@ -203,7 +203,7 @@ il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_dp1_dd(
   // columns sxxs, sxys, syys, syyn
   // (knowing that sxxn and sxyn are respectively equal to sxys and syys )
   il::StaticArray2D<double, 2, 4> stress_l =
-      stresses_kernel_dp1_dd(h, Elas.getEp(), xe[0], xe[1]);
+      stresses_kernel_dp1_dd(h, Elas.young_modulus_plane_strain(), xe[0], xe[1]);
 
   // shear stress
   // coordinates 1
@@ -470,7 +470,7 @@ il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_dp1_dd_nodal(
   // columns sxxs, sxys, syys, syyn
   // (knowing that sxxn and sxyn are respectively equal to sxys and syys )
   il::StaticArray<double, 4> stress_l =
-      stresses_kernel_dp1_dd_nodal(s_col, h, Elas.getEp(), xe[0], xe[1]);
+      stresses_kernel_dp1_dd_nodal(s_col, h, Elas.young_modulus_plane_strain(), xe[0], xe[1]);
 
   // shear stress
   // shear dd
@@ -544,7 +544,7 @@ il::StaticArray<double, 3> point_stress_s2d_dp1_dd(
 
   // stress kernel at the observation point in source element's coordinates
   il::StaticArray2D<double, 2, 4> stress_l =
-      stresses_kernel_dp1_dd(source_elt.size(), Elas.getEp(), xe[0], xe[1]);
+      stresses_kernel_dp1_dd(source_elt.size(), Elas.young_modulus_plane_strain(), xe[0], xe[1]);
 
   // note that we have the following relations : sxxn = sxys,  sxyn = syys
   // we return a vector with 4 entries

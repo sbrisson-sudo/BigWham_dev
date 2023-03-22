@@ -481,7 +481,7 @@ TEST(SquareMatGen, Triangle_0_1) {
   conn(1, 2) = 3;
 
   auto my_mesh = std::make_shared<bie::BEMesh<bie::Triangle<0>>>(coor, conn);
-  my_mesh->construct_mesh();
+  my_mesh->ConstructMesh();
   il::Array2D<double> xcol = my_mesh->collocation_points();
   bie::ElasticProperties elas(1, 0.0);
 

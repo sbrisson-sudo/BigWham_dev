@@ -76,7 +76,7 @@ namespace bie{
         )
     {
 
-        double G = elas_.getG(), nu = elas_.getNu();
+        double G = elas_.shear_modulus(), nu = elas_.poisson_ratio();
         il::StaticArray<double,2> a_and_b = get_a_and_b(elem_data_s.getVertices(),elem_data_s.getNoV());
         double a = a_and_b[0], b = a_and_b[1];
 

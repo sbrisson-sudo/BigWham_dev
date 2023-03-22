@@ -6,39 +6,42 @@
 #ifndef BIGWHAM_ELASTICAXI3DP0_ELEMENT_H
 #define BIGWHAM_ELASTICAXI3DP0_ELEMENT_H
 
+#include <il/StaticArray2D.h>
 #include <vector>
 
-#include <core/elements/Segment.h>
-#include <core/ElasticProperties.h>
+#include "core/elastic_properties.h"
+#include "elasticity/bie_elastostatic.h"
+#include "elements/boundary_element.h"
+#include "elements/segment.h"
 
-#include <elasticity/BieElastostatic.h>
-#include <elasticity/FsIsoAxiFlatRingUnidirectional/elliptic_integral.h>
+#include "elliptic_integral.h"
 
 using ElemType = bie::Segment<0>;
 
 namespace bie {
 
 class ElasticAxiSymmRingKernel
-    : public BieElastostatic<ElemType, ElemType, H> {
+    : public BieElastostatic<ElemType, ElemType, ElasticKernelType::H> {
 
 public:
   ElasticAxiSymmRingKernel(ElasticProperties &elas, il::int_t dim)
-      : BieElastostatic<ElemType, ElemType, H>(elas, dim){};
-  std::vector<double> influence(ElemType, il::int_t, ElemType, il::int_t) const;
+      : BieElastostatic<ElemType, ElemType, ElasticKernelType::H>(elas, dim){};
+  std::vector<double> influence(const BoundaryElement &, il::int_t,
+                                const BoundaryElement &,
+                                il::int_t) const override;
 
 private:
   double stress_disk_dislocation(double &rObs, double &rSrc) const;
 };
 
-std::vector<double>
-ElasticAxiSymmRingKernel::influence(ElemType src_el, il::int_t src_colid,
-                                    ElemType rec_el,
-                                    il::int_t rec_colid) const {
+inline std::vector<double> ElasticAxiSymmRingKernel::influence(
+    const BoundaryElement &src_el, il::int_t src_colid,
+    const BoundaryElement &rec_el, il::int_t rec_colid) const {
 
   // get constitutive parameters. NOTE:   Poisson's ratio is taken as zero
-  double G = this->elas_.getG();
+  double G = this->elas_.shear_modulus();
 
-  auto src_vertices = src_el.getVertices();
+  auto src_vertices = src_el.vertices();
 
   // std::cout << src_vertices.size(0) << "  " <<  src_vertices.size(1) << "\n";
 
@@ -89,7 +92,7 @@ ElasticAxiSymmRingKernel::influence(ElemType src_el, il::int_t src_colid,
   return stnl;
 }
 
-double ElasticAxiSymmRingKernel::stress_disk_dislocation(
+inline double ElasticAxiSymmRingKernel::stress_disk_dislocation(
     double &rObs, // radial coordinate of the observation point
     double &rSrc  // radius of the dislocation disk
 ) const {

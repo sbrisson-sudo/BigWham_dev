@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
 
   // BEMesh<Triangle<0>> my_mesh(coord, conn);
   auto my_mesh = std::make_shared<BEMesh<Triangle<0>>>(coord, conn);
-  my_mesh->construct_mesh();
+  my_mesh->ConstructMesh();
 
   il::Array2D<double> xcol = my_mesh->collocation_points();
 

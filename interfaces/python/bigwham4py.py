@@ -102,13 +102,13 @@ class Hmatrix(LinearOperator):
         return: (no_collo_pts, dim) array from mesh
         """
         dim = self.H_.getSpatialDimension()
-        return np.asarray(self.H_.get_collocation_points()).reshape(
+        return np.asarray(self.H_.getCollocationPoints()).reshape(
             (self.matvec_size_ // dim, dim)
         )
 
     def getCollocationPoints(self):
         n = self.H_.getSpatialDimension()
-        aux = np.asarray(self.H_.get_collocation_points())
+        aux = np.asarray(self.H_.getCollocationPoints())
         auxpermut = np.reshape(aux, (int(aux.size / n), n))
         permut = self.getPermutation()
         colPts = 0.0 * auxpermut
@@ -119,9 +119,8 @@ class Hmatrix(LinearOperator):
         return self.H_.getSpatialDimension()
 
     def _getFullBlocks(self):
-        fb = (
-            pyGetFullBlocks()
-        )  # not fan of this way of creating empty object and setting them after - a constructor should do something!
+        fb = pyGetFullBlocks()  # not fan of this way of creating empty object
+        # and setting them after - a constructor should do something!
         fb.set(self.H_)
         val = np.asarray(fb.getValList(), dtype=float)
         col = np.asarray(fb.getColumnN(), dtype=int)

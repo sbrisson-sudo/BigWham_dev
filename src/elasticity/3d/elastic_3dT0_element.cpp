@@ -13,7 +13,7 @@
 #include <il/linearAlgebra/dense/blas/dot.h>
 #include <il/linearAlgebra/dense/norm.h>
 
-#include "elasticity/3d/elastic3DT0_element.h"
+#include "elastic_3dT0_element.h"
 
 namespace bie {
 
@@ -25,8 +25,8 @@ namespace bie {
 //            global-global
 //
 //        // get constitutive parameters
-//        double G = elas_.getG();
-//        double nu = elas_.getNu();
+//        double G = elas_.shear_modulus();
+//        double nu = elas_.poisson_ratio();
 //
 //        // get coordinates receiver cp
 //        il::Array2D<double> el_cp_r;
@@ -103,7 +103,7 @@ namespace bie {
 //    {
 //
 //        // get constitutive parameters - only nu is needed
-//        double nu = elas_.getNu();
+//        double nu = elas_.poisson_ratio();
 //
 //        // get coordinates receiver cp
 //        il::Array2D<double> el_cp_r;
@@ -1516,7 +1516,7 @@ double i3_Zeta(il::StaticArray<double, 3> &chi,
 //         * S11, S22, S33, S12, S13, S23
 //         * expressed in the global reference system
 //         */
-//        double G = elas_.getG(), nu = elas_.getNu();
+//        double G = elas_.shear_modulus(), nu = elas_.poisson_ratio();
 //
 //        // get coordinates vertices of triangular source element
 //        il::Array2D<double> el_vertices_s;
@@ -1601,7 +1601,7 @@ double i3_Zeta(il::StaticArray<double, 3> &chi,
 //    *
 //    */
 
-//   double G = elas_.getG(), nu = elas_.getNu();
+//   double G = elas_.shear_modulus(), nu = elas_.poisson_ratio();
 
 //   // get coordinates vertices of triangular source element
 //   il::Array2D<double> el_vertices_s;

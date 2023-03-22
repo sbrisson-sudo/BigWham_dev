@@ -20,7 +20,8 @@ namespace bie {
 template <typename T> class BieKernel {
 protected:
   il::int_t dof_dimension_;
-  il::int_t dim_;
+  il::int_t spatial_dimension_;
+  il::Array<double> kernel_properties_;
 
 public:
   //  constructor
@@ -28,12 +29,17 @@ public:
   ~BieKernel(){};
 
   // methods
-  virtual std::vector<T> influence(const BoundaryElement &src_element, il::int_t colloc_id_src,
+  virtual std::vector<T> influence(const BoundaryElement &src_element,
+                                   il::int_t colloc_id_src,
                                    const BoundaryElement &rec_element,
                                    il::int_t colloc_id_rec) const = 0;
 
-  il::int_t get_dof_dimension() const { return dof_dimension_; };
-  il::int_t spatial_dimension() const { return dim_; };
+  il::int_t dof_dimension() const { return dof_dimension_; };
+  il::int_t spatial_dimension() const { return spatial_dimension_; };
+
+  void set_kernel_properties(const il::Array<double> &prop) {
+
+  }
 };
 
 } // namespace bie

@@ -34,7 +34,6 @@ class BieElastostatic : public BieKernel<double> {
   // or / derived from this one.
 
 protected:
-  il::Array<double> kernel_properties_;
   bie::ElasticProperties elas_;
   bool local_unknowns_;
   bool local_co_variables_;
@@ -46,7 +45,7 @@ public:
       : BieKernel<double>() {
     elas_ = elas;
     this->dof_dimension_ = dim;
-    this->dim_ = dim;
+    this->spatial_dimension_ = dim;
     this->local_unknowns_ = true;
     this->local_co_variables_ = true;
   }
@@ -55,17 +54,13 @@ public:
       : BieKernel<double>() {
     elas_ = elas;
     this->dof_dimension_ = dim;
-    this->dim_ = dim;
+    this->spatial_dimension_ = dim;
     local_unknowns_ = local_unknowns;
     local_co_variables_ = local_co_variables;
   };
 
-  void set_kernel_properties(const il::Array<double> &prop) {
-    kernel_properties_ = prop;
-  }
-
-  bool is_local_unknowns() const { return local_unknowns_; };
-  bool is_local_covariables() const { return local_co_variables_; };
+  bool local_unknowns() const { return local_unknowns_; };
+  bool local_covariables() const { return local_co_variables_; };
 
   virtual std::vector<double> influence(const BoundaryElement &source_elt,
                                         il::int_t i_s,

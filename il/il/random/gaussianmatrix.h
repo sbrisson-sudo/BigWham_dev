@@ -17,7 +17,7 @@
 
 namespace il {
 // generate an gaussian matrix G with zero mean and unit variance
-// from wich we can always do G_=mu + sigma^2 G
+// from wich we can always do shear_modulus_=mu + sigma^2 G
     inline il::Array2D<double> gaussianmatrix(il::int_t nr, il::int_t nc) {
         il::Array2D<double> G{nr, nc};
 
