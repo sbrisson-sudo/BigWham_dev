@@ -13,110 +13,90 @@
 #include <il/Array2D.h>
 
 #include "elements/boundary_element.h"
+#include "il/container/2d/Array2D.h"
 
 namespace bie {
 
-/////////////////////////////////////////////////////////////
-//   2D segment !
 template <int p> class Segment : public BoundaryElement {
 
 private:
   double size_;
 
+protected:
+  void set_nodes();
+  void set_collocation_points();
+
 public:
-  Segment();
-  ~Segment();
+  Segment() : BoundaryElement(2, p) {
+    this->num_vertices_ = 2;
+    this->num_nodes_ = p + 1;
+    this->num_collocation_points_ = this->num_nodes_;
 
-  void set_element(Real2D xv) {
-    IL_ASSERT(xv.size(0) == n_vertices_);
-    for (il::int_t j = 0; j < spatial_dimension_; j++) {
-      this->centroid_[j] =
-          0.0; // always reset centroid when setting the coordinates
-      for (il::int_t i = 0; i < n_vertices_; i++) {
-        this->vertices_(i, j) = xv(i, j);
-      }
-    }
-    for (il::int_t j = 0; j < spatial_dimension_; j++) {
-      for (il::int_t i = 0; i < n_vertices_; i++) {
-        this->centroid_[j] =
-            this->centroid_[j] + this->vertices_(i, j) / n_vertices_;
-      }
-    }
-    for (il::int_t j = 0; j < spatial_dimension_; j++) {
-      this->s_[j] = this->vertices_(1, j) - this->vertices_(0, j);
-      this->t_[j] = this->vertices_(n_vertices_ - 1, j) - this->vertices_(0, j);
-    }
-    size_ = sqrt(il::dot(this->s_, this->s_));
-    // unit s and t
-    for (il::int_t k = 0; k < spatial_dimension_; ++k) {
-      this->s_[k] = this->s_[k] / size_;
-      this->t_[k] = this->t_[k] / size_;
-    }
-    // normal;
-    this->n_[0] = -1. * this->s_[1];
-    this->n_[1] = this->s_[0];
-    this->setCollocationPoints();
-    this->setNodes();
-  };
-
-  void setNodes() {
-    this->nodes_ = this->collocation_points_; // by default nodes = collocation
-                                              // points for 0 element
-  };
-
-  int getNumberOfVertices() const { return n_vertices_; };
-  il::int_t getNumberOfNodes() const { return n_nodes_; };
-  il::int_t getNumberOfCollocationPoints() const { return n_nodes_; };
-  double getSize() const { return size_; };
-  il::StaticArray<double, 2> getTangent() const { return this->s_; };
-
-  // rotation matrix from e_i to e'_i is by definition R_ij= e'_i . e_j
-  il::StaticArray2D<double, 2, 2> rotationMatrix() {
-    il::StaticArray2D<double, 2, 2> R;
-    for (il::int_t i = 0; i < spatial_dimension_; i++) {
-      R(0, i) = this->s_[i];
-      R(1, i) = this->n_[i];
-    }
-    return R;
+    this->vertices_.Resize(num_vertices_, 2);
+    this->collocation_points_.Resize(num_collocation_points_, 2);
+    this->nodes_.Resize(num_nodes_, 2);
   }
+  ~Segment() {}
 
-  il::StaticArray2D<double, 2, 2> rotationMatrix_T() {
-    il::StaticArray2D<double, 2, 2> Rt;
-    for (il::int_t i = 0; i < spatial_dimension_; i++) {
-      Rt(i, 0) = this->s_[i];
-      Rt(i, 1) = this->n_[i];
-    }
-    return Rt;
-  }
+  virtual void set_element(const il::Array2D<double> &vertices) override;
+  virtual void set_rotation_matrix() override;
 
-  il::StaticArray<double, 2> to_local(il::StaticArray<double, 2> x) {
-    return il::dot(this->rotationMatrix(), x);
-  }
-
-  il::StaticArray<double, 2> to_global(il::StaticArray<double, 2> x) {
-    return il::dot(this->rotationMatrix_T(), x);
-  }
-
-  virtual void setCollocationPoints();
+  double get_size() const { return size_; }
 };
+/* -------------------------------------------------------------------------- */
 
-////////////////////////////////////////////////////////////////////
-// templated methods implementation
-template <int p> Segment<p>::Segment() {
-  this->vertices_.Resize(2, 2);
-  this->collocation_points_.Resize(p + 1, 2);
-  this->nodes_.Resize(p + 1, 2);
-  this->spatial_dimension_ = 2;
-  this->n_vertices_ = spatial_dimension_;
-  this->n_nodes_ = p + 1;
+template <int p> inline void Segment<p>::set_rotation_matrix() {
+  // rotation matrix from e_i to e'_i is by definition R_ij= e'_i . e_j
+  for (il::int_t i = 0; i < spatial_dimension_; i++) {
+    rotation_matrix_(0, i) = this->s_[i];
+    rotation_matrix_(1, i) = this->n_[i];
+  }
+
+  for (il::int_t i = 0; i < spatial_dimension_; i++) {
+    rotation_matrix_T_(i, 0) = this->s_[i];
+    rotation_matrix_T_(i, 1) = this->n_[i];
+  }
 }
+/* -------------------------------------------------------------------------- */
 
-template <int p> Segment<p>::~Segment() = default;
+template <int p>
+inline void Segment<p>::set_element(const il::Array2D<double> &xv) {
+  IL_ASSERT(xv.size(0) == num_vertices_);
+  for (il::int_t j = 0; j < spatial_dimension_; j++) {
+    this->centroid_[j] =
+        0.0; // always reset centroid when setting the coordinates
+    for (il::int_t i = 0; i < num_vertices_; i++) {
+      this->vertices_(i, j) = xv(i, j);
+    }
+  }
+  for (il::int_t j = 0; j < spatial_dimension_; j++) {
+    for (il::int_t i = 0; i < num_vertices_; i++) {
+      this->centroid_[j] =
+          this->centroid_[j] + this->vertices_(i, j) / num_vertices_;
+    }
+  }
+  for (il::int_t j = 0; j < spatial_dimension_; j++) {
+    this->s_[j] = this->vertices_(1, j) - this->vertices_(0, j);
+    this->t_[j] = this->vertices_(num_vertices_ - 1, j) - this->vertices_(0, j);
+  }
+  size_ = std::sqrt(il::dot(this->s_, this->s_));
+  // unit s and t
+  for (il::int_t k = 0; k < spatial_dimension_; ++k) {
+    this->s_[k] = this->s_[k] / size_;
+    this->t_[k] = this->t_[k] / size_;
+  }
+  // normal;
+  this->n_[0] = -1. * this->s_[1];
+  this->n_[1] = this->s_[0];
 
-template <int p> void Segment<p>::setCollocationPoints(){};
+  this->set_rotation_matrix();
+  this->set_collocation_points();
+  this->set_nodes();
+}
+/* -------------------------------------------------------------------------- */
 
 // Zero order segment
-template <> inline void Segment<0>::setCollocationPoints() {
+template <> inline void Segment<0>::set_collocation_points() {
   // 0 order element: collocation at centroid
   // std::cout << " in set collo ! \n";
   il::Array2D<double> col{1, 2, 0.};
@@ -125,25 +105,34 @@ template <> inline void Segment<0>::setCollocationPoints() {
   }
   this->collocation_points_ = col;
 }
+/* -------------------------------------------------------------------------- */
 
 // Linear Segment
-template <> inline void Segment<1>::setCollocationPoints() {
+template <> inline void Segment<1>::set_collocation_points() {
   // on ref element x in [-1,1]   y=0
   // collocation @ -1/sqrt(2), 1/sqrt(2)
   il::Array2D<double> x_col{2, 2, 0.0};
-  il::StaticArray<double, 2> xaux;
+  il::Array<double> xaux{2, 0.0};
   x_col(0, 0) = -1. / sqrt(2.);
   x_col(1, 0) = 1. / sqrt(2.);
   // auto Rt = this->rotationMatrix_T();
   for (int i = 0; i < 2; ++i) {
     xaux[0] = (size_)*x_col(i, 0) / 2.;
     xaux[1] = (size_)*x_col(i, 1) / 2.;
-    xaux = this->to_global(xaux); // il::dot(Rt, xaux);
+    xaux = this->convert_to_global(xaux); // il::dot(Rt, xaux);
     x_col(i, 0) = xaux[0] + this->centroid_[0];
     x_col(i, 1) = xaux[1] + this->centroid_[1];
   }
+  // std::cout << x_col(0, 0) << " " << x_col(0, 1) << " " << x_col(1, 0) << " "
+  //           << x_col(1, 1) << "\n";
   this->collocation_points_ = x_col;
 }
+/* -------------------------------------------------------------------------- */
+
+template <int p> inline void Segment<p>::set_nodes() {
+  this->nodes_ = this->collocation_points_; // by default nodes = collocation
+                                            // points for 0 element
+};
 
 } // namespace bie
 

@@ -125,9 +125,9 @@ inline void Polygon<p>::set_element(const il::Array2D<double> &xv) {
   for (il::int_t j = 0; j < spatial_dimension_; j++) {
     this->t_[j] = this->t_[j] / norm;
   }
+  this->set_rotation_matrix();
   this->set_collocation_points();
   this->set_nodes();
-  this->set_rotation_matrix();
 }
 
 } // namespace bie

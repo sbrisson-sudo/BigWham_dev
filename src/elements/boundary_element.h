@@ -84,6 +84,7 @@ public:
   };
 
   il::Array2D<double> get_rotation_matrix() const { return rotation_matrix_; }
+  il::Array2D<double> get_rotation_matrix_T() const { return rotation_matrix_T_; }
 
   il::Array<double> convert_to_local(const il::Array<double> global_vec) const {
     return il::dot(this->rotation_matrix_, global_vec);
