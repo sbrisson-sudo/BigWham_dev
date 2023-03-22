@@ -21,9 +21,9 @@ TEST(triangle, triangle_0_1) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
+  tri0.SetElement(xyz);
 
-  ASSERT_TRUE(tri0.get_spatial_dimension() == 3);
+  ASSERT_TRUE(tri0.spatial_dimension() == 3);
 }
 /* -------------------------------------------------------------------------- */
 
@@ -32,8 +32,8 @@ TEST(triangle, triangle_0_2) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
-  ASSERT_TRUE(tri0.get_number_collocation_points() == 1);
+  tri0.SetElement(xyz);
+  ASSERT_TRUE(tri0.num_collocation_points() == 1);
 }
 /* -------------------------------------------------------------------------- */
 
@@ -43,8 +43,8 @@ TEST(triangle, triangle_0_3) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
-  auto R = tri0.get_rotation_matrix();
+  tri0.SetElement(xyz);
+  auto R = tri0.rotation_matrix();
   ASSERT_TRUE(R(0, 0) == 1 && R(1, 1) == 1 && R(2, 2) == 1 && R(0, 1) == 0 &&
               R(0, 2) == 0 & R(1, 0) == 0 && R(1, 2) == 0 && R(2, 0) == 0 &&
               R(2, 1) == 0);
@@ -57,8 +57,8 @@ TEST(triangle, triangle_0_4) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
-  auto x = tri0.get_centroid();
+  tri0.SetElement(xyz);
+  auto x = tri0.centroid();
   ASSERT_TRUE(x[0] == 1. / 3 && x[1] == 1. / 3 && x[2] == 0.);
 }
 /* -------------------------------------------------------------------------- */
@@ -69,8 +69,8 @@ TEST(triangle, triangle_0_5) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
-  auto x = tri0.get_nodes();
+  tri0.SetElement(xyz);
+  auto x = tri0.nodes();
   ASSERT_TRUE(abs(x(0, 0) - 1. / 3) < 1.e-12 &&
               abs(x(0, 1) - 1. / 3) < 1.e-12 && abs(x(0, 2)) < 1.e-12);
 }
@@ -82,8 +82,8 @@ TEST(triangle, triangle_0_6) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
-  auto x = tri0.get_vertices();
+  tri0.SetElement(xyz);
+  auto x = tri0.vertices();
   ASSERT_TRUE(x(0, 0) == xyz(0, 0) && x(0, 1) == xyz(0, 1) &&
               x(0, 2) == xyz(0, 2));
 }
@@ -95,8 +95,8 @@ TEST(triangle, triangle_0_7) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
-  auto x = tri0.get_normal();
+  tri0.SetElement(xyz);
+  auto x = tri0.normal();
   ASSERT_TRUE(x[0] == 0 && x[1] == 0 && x[2] == 1);
 }
 /* -------------------------------------------------------------------------- */
@@ -107,8 +107,8 @@ TEST(triangle, triangle_0_8) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
-  auto x = tri0.get_tangent_1();
+  tri0.SetElement(xyz);
+  auto x = tri0.tangent1();
   ASSERT_TRUE(x[0] == 1 && x[1] == 0 && x[2] == 0);
 }
 /* -------------------------------------------------------------------------- */
@@ -119,8 +119,8 @@ TEST(triangle, triangle_0_9) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<0> tri0;
-  tri0.set_element(xyz);
-  auto x = tri0.get_tangent_2();
+  tri0.SetElement(xyz);
+  auto x = tri0.tangent2();
   ASSERT_TRUE(x[0] == 0 && x[1] == 1 && x[2] == 0);
 }
 /* -------------------------------------------------------------------------- */
@@ -131,9 +131,9 @@ TEST(triangle, triangle_2_0) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<2> tri2;
-  tri2.set_element(xyz);
-  auto x = tri2.get_nodes();
-  ASSERT_TRUE(tri2.get_number_nodes() == 6);
+  tri2.SetElement(xyz);
+  auto x = tri2.nodes();
+  ASSERT_TRUE(tri2.num_nodes() == 6);
 }
 /* -------------------------------------------------------------------------- */
 
@@ -143,10 +143,10 @@ TEST(triangle, triangle_2_1) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<2> tri2;
-  tri2.set_element(xyz);
-  auto x = tri2.get_nodes();
+  tri2.SetElement(xyz);
+  auto x = tri2.nodes();
   std::cout << x(0, 0);
-  ASSERT_TRUE(tri2.get_spatial_dimension() == 3);
+  ASSERT_TRUE(tri2.spatial_dimension() == 3);
 }
 /* -------------------------------------------------------------------------- */
 
@@ -156,10 +156,10 @@ TEST(triangle, triangle_2_2) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<2> tri2;
-  tri2.set_element(xyz);
-  auto x = tri2.get_nodes();
+  tri2.SetElement(xyz);
+  auto x = tri2.nodes();
   std::cout << x(0, 0);
-  ASSERT_TRUE(tri2.get_number_collocation_points() == 6);
+  ASSERT_TRUE(tri2.num_collocation_points() == 6);
 }
 /* -------------------------------------------------------------------------- */
 
@@ -169,8 +169,8 @@ TEST(triangle, triangle_2_3) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<2> tri2;
-  tri2.set_element(xyz);
-  auto R = tri2.get_rotation_matrix();
+  tri2.SetElement(xyz);
+  auto R = tri2.rotation_matrix();
   ASSERT_TRUE(R(0, 0) == 1 && R(1, 1) == 1 && R(2, 2) == 1 && R(0, 1) == 0 &&
               R(0, 2) == 0 & R(1, 0) == 0 && R(1, 2) == 0 && R(2, 0) == 0 &&
               R(2, 1) == 0);
@@ -183,7 +183,7 @@ TEST(triangle, triangle_2_4) {
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
   bie::Triangle<2> tri2;
-  tri2.set_element(xyz);
-  auto xcol = tri2.get_collocation_points();
+  tri2.SetElement(xyz);
+  auto xcol = tri2.collocation_points();
   ASSERT_TRUE(xcol.size(0) == 6 && xcol.size(1) == 3);
 }

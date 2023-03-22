@@ -43,27 +43,27 @@ namespace bie{
                 }
             }
             for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
-                this->s_[j] = vertices_(1, j) - vertices_(0, j);
+                this->tangent1_[j] = vertices_(1, j) - vertices_(0, j);
                 this->t_[j] = vertices_(n_vertices_ - 1, j) - vertices_(0, j);
             }
             // check if this is indeed a Rectangle !
-            auto dot_1_2=il::dot(this->s_,this->t_);
+            auto dot_1_2=il::dot(this->tangent1_,this->t_);
             IL_EXPECT_FAST(dot_1_2==0);
-            double size_s = il::norm(this->s_, il::Norm::L2);
+            double size_s = il::norm(this->tangent1_, il::Norm::L2);
             double size_t = il::norm(this->t_, il::Norm::L2);
             area_= size_s*size_t; //area of rectangle
             // normal s and t
             for (il::int_t k = 0; k < this->spatial_dimension_; ++k) {
-                this->s_[k] = this->s_[k] / size_s;
+                this->tangent1_[k] = this->tangent1_[k] / size_s;
                 this->t_[k] = this->t_[k] / size_t;
             }
             // normal;
-            this->n_[0] = this->s_[1] * this->t_[2] - this->s_[2] * this->t_[1];
-            this->n_[1] = this->s_[2] * this->t_[0] - this->s_[0] * this->t_[2];
-            this->n_[2] = this->s_[0] * this->t_[1] - this->s_[1] * this->t_[0];
-            double size_n = il::norm(this->n_, il::Norm::L2);
+            this->normal_[0] = this->tangent1_[1] * this->t_[2] - this->tangent1_[2] * this->t_[1];
+            this->normal_[1] = this->tangent1_[2] * this->t_[0] - this->tangent1_[0] * this->t_[2];
+            this->normal_[2] = this->tangent1_[0] * this->t_[1] - this->tangent1_[1] * this->t_[0];
+            double size_n = il::norm(this->normal_, il::Norm::L2);
             for (il::int_t k = 0; k < this->spatial_dimension_; ++k) {
-                this->n_[k] = this->n_[k] / size_n;
+                this->normal_[k] = this->normal_[k] / size_n;
             }
             this->setCollocationPoints();
             this->setNodes();

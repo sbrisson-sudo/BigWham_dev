@@ -22,7 +22,7 @@ TEST(Triangle0, test_H_1) {
   xy(1, 0) = 1;
   xy(2, 1) = 1.0;
   bie::Triangle<0> source;
-  source.set_element(xy);
+  source.SetElement(xy);
   bie::ElasticProperties elas(1, 0.3);
   bie::BieElastostatic<bie::Triangle<0>, bie::Triangle<0>,
                        bie::ElasticKernelType::H>

@@ -56,7 +56,7 @@ namespace bie {
         il::Array2D<double> getVerticesElt(il::int_t ne) const; // vertices' coordinates for element
 
         bie::FaceData getElementData(il::int_t ne) const; // build face element object for the element number/ID 'ne'
-        il::Array2D<double> get_collocation_points(); // get all the collocation points of the mesh
+        il::Array2D<double> collocation_points(); // get all the collocation points of the mesh
         il::Array2D<double> getNodes(); // get all the nodes of the mesh
         int getConnectivity(il::int_t e, il::int_t ln); // keep it here because it is passed to mma
     };

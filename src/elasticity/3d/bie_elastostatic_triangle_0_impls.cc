@@ -37,7 +37,7 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
   double nu = this->elas_.getNu();
 
   // get coordinates receiver cp
-  auto el_cp_r = receiver_elt.get_collocation_points();
+  auto el_cp_r = receiver_elt.collocation_points();
 
   // randomly perturb collocation point
   il::StaticArray<double, 3> receiver_coor{0};
@@ -47,7 +47,7 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
   }
 
   // get coordinates vertices of triangular source element
-  auto el_vertices_s = source_elt.get_vertices();
+  auto el_vertices_s = source_elt.vertices();
 
   il::StaticArray2D<double, 3, 3> el_vertices_s_static{0};
   for (int i = 0; i < 3; i++) {
@@ -62,7 +62,7 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
 
   // normal vector at the receiver location in the reference system of the
   // source element
-  auto nr = source_elt.convert_to_local(receiver_elt.get_normal());
+  auto nr = source_elt.ConvertToLocal(receiver_elt.normal());
 
   // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source
   // element in the reference system of the source element
@@ -89,10 +89,10 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
     // compute temporary traction vector
     traction_temp = il::dot(sigma_temp, nr);
     // convert to global from local src element coordinate system
-    auto traction_temp_global = source_elt.convert_to_global(traction_temp);
+    auto traction_temp_global = source_elt.ConvertToGlobal(traction_temp);
     // convert to local rec element coordinate system
     auto traction_temp_local_rec =
-        receiver_elt.convert_to_local(traction_temp_global);
+        receiver_elt.ConvertToLocal(traction_temp_global);
 
     for (int j = 0; j < 3; ++j) {
       // fill the traction vectors at receiver element cp due to (DD1,DD2,DD3)

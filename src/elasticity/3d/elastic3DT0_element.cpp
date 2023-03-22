@@ -30,7 +30,7 @@ namespace bie {
 //
 //        // get coordinates receiver cp
 //        il::Array2D<double> el_cp_r;
-//        el_cp_r = elem_data_r.get_collocation_points();
+//        el_cp_r = elem_data_r.collocation_points();
 //
 //        // get coordinates vertices of triangular source element
 //        il::Array2D<double> el_vertices_s;
@@ -107,7 +107,7 @@ namespace bie {
 //
 //        // get coordinates receiver cp
 //        il::Array2D<double> el_cp_r;
-//        el_cp_r = elem_data_r.get_collocation_points();
+//        el_cp_r = elem_data_r.collocation_points();
 //
 //        // get coordinates vertices of triangular source element
 //        il::Array2D<double> el_vertices_s;

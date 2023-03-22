@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
   auto my_mesh = std::make_shared<BEMesh<Triangle<0>>>(coord, conn);
   my_mesh->construct_mesh();
 
-  il::Array2D<double> xcol = my_mesh->get_collocation_points();
+  il::Array2D<double> xcol = my_mesh->collocation_points();
 
   ElasticProperties elas(E, nu);
 

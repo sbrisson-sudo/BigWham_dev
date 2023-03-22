@@ -81,10 +81,10 @@ namespace bie{
         double a = a_and_b[0], b = a_and_b[1];
 
         il::Array2D<double> el_cp_s;
-        el_cp_s = elem_data_s.get_collocation_points();
+        el_cp_s = elem_data_s.collocation_points();
 
         il::Array2D<double> el_cp_r;
-        el_cp_r = elem_data_r.get_collocation_points();
+        el_cp_r = elem_data_r.collocation_points();
 
         il::Array<double> dsr{3};
         for (int i = 0; i < 3; ++i) { dsr[i] = el_cp_r(0,i) - el_cp_s(0,i);}

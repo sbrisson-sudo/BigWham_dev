@@ -121,7 +121,7 @@
 //     conn(i, 1) = i + 1;
 //   }
 //   bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
-//   il::Array2D<double> xcol = my_mesh.get_collocation_points();
+//   il::Array2D<double> xcol = my_mesh.collocation_points();
 //   bie::ElasticProperties elas(1, 0.3);
 //   bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
 //                        bie::ElasticKernelType::H>
@@ -158,7 +158,7 @@
 //     conn(i, 1) = i + 1;
 //   }
 //   bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
-//   il::Array2D<double> xcol = my_mesh.get_collocation_points();
+//   il::Array2D<double> xcol = my_mesh.collocation_points();
 //   bie::ElasticProperties elas(1, 0.0);
 //   bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
 //                        bie::ElasticKernelType::H>
@@ -482,7 +482,7 @@ TEST(SquareMatGen, Triangle_0_1) {
 
   auto my_mesh = std::make_shared<bie::BEMesh<bie::Triangle<0>>>(coor, conn);
   my_mesh->construct_mesh();
-  il::Array2D<double> xcol = my_mesh->get_collocation_points();
+  il::Array2D<double> xcol = my_mesh->collocation_points();
   bie::ElasticProperties elas(1, 0.0);
 
   using Kernel = bie::BieElastostatic<bie::Triangle<0>, bie::Triangle<0>,
@@ -499,9 +499,9 @@ TEST(SquareMatGen, Triangle_0_1) {
   il::Array<double> val_list;
   il::Array<int> pos_list;
   h_.fullBlocksOriginal(permutation, il::io, val_list, pos_list);
-  for (int i = 0; i < 9; i++) {
-    std::cout << val_list[i] << "\n";
-  }
+  // for (int i = 0; i < 9; i++) {
+  //   std::cout << val_list[i] << "\n";
+  // }
   ASSERT_TRUE(h_.isBuilt());
   // simple opening mode...
   //    il::Array<double> x{M.size(1),0.0},y{M.size(1),0.0};

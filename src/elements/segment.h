@@ -38,29 +38,29 @@ public:
   }
   ~Segment() {}
 
-  virtual void set_element(const il::Array2D<double> &vertices) override;
-  virtual void set_rotation_matrix() override;
+  virtual void SetElement(const il::Array2D<double> &vertices) override;
+  virtual void SetRotationMatrices() override;
 
-  double get_size() const { return size_; }
+  double size() const { return size_; }
 };
 /* -------------------------------------------------------------------------- */
 
-template <int p> inline void Segment<p>::set_rotation_matrix() {
+template <int p> inline void Segment<p>::SetRotationMatrices() {
   // rotation matrix from e_i to e'_i is by definition R_ij= e'_i . e_j
   for (il::int_t i = 0; i < spatial_dimension_; i++) {
-    rotation_matrix_(0, i) = this->s_[i];
-    rotation_matrix_(1, i) = this->n_[i];
+    rotation_matrix_(0, i) = this->tangent1_[i];
+    rotation_matrix_(1, i) = this->normal_[i];
   }
 
   for (il::int_t i = 0; i < spatial_dimension_; i++) {
-    rotation_matrix_T_(i, 0) = this->s_[i];
-    rotation_matrix_T_(i, 1) = this->n_[i];
+    rotation_matrix_t_(i, 0) = this->tangent1_[i];
+    rotation_matrix_t_(i, 1) = this->normal_[i];
   }
 }
 /* -------------------------------------------------------------------------- */
 
 template <int p>
-inline void Segment<p>::set_element(const il::Array2D<double> &xv) {
+inline void Segment<p>::SetElement(const il::Array2D<double> &xv) {
   IL_ASSERT(xv.size(0) == num_vertices_);
   for (il::int_t j = 0; j < spatial_dimension_; j++) {
     this->centroid_[j] =
@@ -76,20 +76,20 @@ inline void Segment<p>::set_element(const il::Array2D<double> &xv) {
     }
   }
   for (il::int_t j = 0; j < spatial_dimension_; j++) {
-    this->s_[j] = this->vertices_(1, j) - this->vertices_(0, j);
-    this->t_[j] = this->vertices_(num_vertices_ - 1, j) - this->vertices_(0, j);
+    this->tangent1_[j] = this->vertices_(1, j) - this->vertices_(0, j);
+    this->tangent2_[j] = this->vertices_(num_vertices_ - 1, j) - this->vertices_(0, j);
   }
-  size_ = std::sqrt(il::dot(this->s_, this->s_));
+  size_ = std::sqrt(il::dot(this->tangent1_, this->tangent1_));
   // unit s and t
   for (il::int_t k = 0; k < spatial_dimension_; ++k) {
-    this->s_[k] = this->s_[k] / size_;
-    this->t_[k] = this->t_[k] / size_;
+    this->tangent1_[k] = this->tangent1_[k] / size_;
+    this->tangent2_[k] = this->tangent2_[k] / size_;
   }
   // normal;
-  this->n_[0] = -1. * this->s_[1];
-  this->n_[1] = this->s_[0];
+  this->normal_[0] = -1. * this->tangent1_[1];
+  this->normal_[1] = this->tangent1_[0];
 
-  this->set_rotation_matrix();
+  this->SetRotationMatrices();
   this->set_collocation_points();
   this->set_nodes();
 }
@@ -119,7 +119,7 @@ template <> inline void Segment<1>::set_collocation_points() {
   for (int i = 0; i < 2; ++i) {
     xaux[0] = (size_)*x_col(i, 0) / 2.;
     xaux[1] = (size_)*x_col(i, 1) / 2.;
-    xaux = this->convert_to_global(xaux); // il::dot(Rt, xaux);
+    xaux = this->ConvertToGlobal(xaux); // il::dot(Rt, xaux);
     x_col(i, 0) = xaux[0] + this->centroid_[0];
     x_col(i, 1) = xaux[1] + this->centroid_[1];
   }

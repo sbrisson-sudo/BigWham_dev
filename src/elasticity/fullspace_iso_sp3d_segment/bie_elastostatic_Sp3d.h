@@ -62,7 +62,7 @@ namespace bie{
 
         il::StaticArray<double, 2> xe;
         auto Xmid = source_elt.getCentroid();
-        auto r_col = receiver_elt.get_collocation_points();
+        auto r_col = receiver_elt.collocation_points();
         for (int i = 0; i < 2; ++i) {
             xe[i] = r_col(i_r, i) - Xmid[i];
         }

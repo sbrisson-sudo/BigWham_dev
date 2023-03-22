@@ -33,7 +33,7 @@ public:
                                    il::int_t colloc_id_rec) const = 0;
 
   il::int_t get_dof_dimension() const { return dof_dimension_; };
-  il::int_t get_spatial_dimension() const { return dim_; };
+  il::int_t spatial_dimension() const { return dim_; };
 };
 
 } // namespace bie

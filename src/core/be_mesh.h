@@ -36,10 +36,10 @@ private:
 public:
   BEMesh() {
     std::shared_ptr<BoundaryElement> elem = std::make_shared<ElemType>();
-    // std::cout << elem->get_number_collocation_points() << "\n";
-    interpolation_order_ = elem->get_interpolation_order();
-    num_vertices_ = elem->get_number_vertices();
-    num_colloc_pts_per_element_ = elem->get_number_collocation_points();
+    // std::cout << elem->num_collocation_points() << "\n";
+    interpolation_order_ = elem->interpolation_order();
+    num_vertices_ = elem->num_vertices();
+    num_colloc_pts_per_element_ = elem->num_collocation_points();
   }
   // Basic constructor with  coordinates and connectivity array and
   // element type !
@@ -49,9 +49,9 @@ public:
     // *this = BEMesh();
     // std::cout << num_colloc_pts_per_element_ << "\n";
     std::shared_ptr<BoundaryElement> elem = std::make_shared<ElemType>();
-    interpolation_order_ = elem->get_interpolation_order();
-    num_vertices_ = elem->get_number_vertices();
-    num_colloc_pts_per_element_ = elem->get_number_collocation_points();
+    interpolation_order_ = elem->interpolation_order();
+    num_vertices_ = elem->num_vertices();
+    num_colloc_pts_per_element_ = elem->num_collocation_points();
     this->num_collocation_points_ =
         this->num_elements_ * num_colloc_pts_per_element_;
     // std::cout << num_collocation_points_ << "\n";
@@ -68,7 +68,7 @@ public:
     return (matrix_index % (num_colloc_pts_per_element_));
   }
 
-  il::Array2D<double> get_vertices(il::int_t element_id) const;
+  il::Array2D<double> vertices(il::int_t element_id) const;
 
   virtual void construct_mesh() override;
 };

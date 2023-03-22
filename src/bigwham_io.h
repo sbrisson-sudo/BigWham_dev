@@ -97,12 +97,12 @@ private:
 
   il::Array<il::int_t>
       permutation_; // permutation list of the collocation points
-  il::Array2D<double> collocationPoints_; //  collocation points coordinates ?
+  il::Array2D<double> collocation_points_; //  collocation points coordinates ?
 
   int dimension_;     // spatial dimension
   int dof_dimension_; // number of dof per nodes / collocation points
 
-  bool isBuilt_; // True if the class instance is built
+  bool is_built_; // True if the class instance is built
 
   // H-matrix parameters
   int max_leaf_size_;
@@ -120,7 +120,7 @@ public:
   Bigwhamio() { // default constructor
     dimension_ = 0;
     dof_dimension_ = 0;
-    isBuilt_ = false;
+    is_built_ = false;
     eta_ = 0.0;
     epsilon_aca_ = 0.001;
     max_leaf_size_ = 100;
@@ -161,8 +161,8 @@ public:
       // mesh.setCurrentElement(0);
       // std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
       //           << tes(1, 0) << "- " << tes(1, 1) << "\n";
-      // collocationPoints_ =
-      //     mesh.get_collocation_points(); // be careful returning it in original
+      // collocation_points_ =
+      //     mesh.collocation_points(); // be careful returning it in original
       //                                  // ordering.  note this is only for
       //                                  the
       //                                  // output function
@@ -199,8 +199,8 @@ public:
       // mesh.setCurrentElement(0);
       // std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
       //           << tes(1, 0) << "- " << tes(1, 1) << "\n";
-      // collocationPoints_ =
-      //     mesh.get_collocation_points(); // be careful returning it in original
+      // collocation_points_ =
+      //     mesh.collocation_points(); // be careful returning it in original
       //                                  // ordering.  note this is only for
       //                                  the
       //                                  // output function
@@ -241,8 +241,8 @@ public:
       //     bie::h_representation_square_matrix(mesh, max_leaf_size, eta);
       // tt.Stop();
       // std::cout << " pattern created \n";
-      // collocationPoints_ =
-      //     mesh.get_collocation_points(); // be careful returning it in original
+      // collocation_points_ =
+      //     mesh.collocation_points(); // be careful returning it in original
       //                                  // ordering.  note this is only for
       //                                  the
       //                                  // output function
@@ -271,8 +271,8 @@ public:
       tt.Start();
       auto hr = h_representation_square_matrix(mesh, max_leaf_size, eta);
       tt.Stop();
-      collocationPoints_ =
-          mesh->get_collocation_points(); // be careful returning it in original
+      collocation_points_ =
+          mesh->collocation_points(); // be careful returning it in original
                                           // ordering.  note this is only for
                                           // the output function
                                           // getCollocationPoints
@@ -303,8 +303,8 @@ public:
       // mesh.setCurrentElement(0);
       // std::cout << "Element vertices " << tes(0, 0) << "  " << tes(0, 1)
       //           << "  " << tes(1, 0) << "  " << tes(1, 1) << "\n";
-      // collocationPoints_ =
-      //     mesh.get_collocation_points(); // be careful returning it in original
+      // collocation_points_ =
+      //     mesh.collocation_points(); // be careful returning it in original
       //                                  // ordering.  note this is only for
       //                                  the
       //                                  // output function
@@ -335,7 +335,7 @@ public:
     }
     }
     if (h_.isBuilt()) {
-      isBuilt_ = true;
+      is_built_ = true;
       dof_dimension_ = h_.dofDimension();
       std::cout << "HMAT --> built \n";
       double test_cr = h_.compressionRatio();
@@ -344,13 +344,13 @@ public:
                 << ", eta = " << eta_ << "\n";
       // std::cout << "H-mat construction time = :  " << hmat_time_ << "\n";
     } else {
-      isBuilt_ = false;
+      is_built_ = false;
     }
 
     std::cout << "BigWhamIO ENDED\n";
   }
 
-  bool isBuilt() { return isBuilt_; };
+  bool isBuilt() { return is_built_; };
 
   void hmatDestructor() {
     // this function will free the memory and set the hmat obj to its initial
@@ -365,16 +365,16 @@ public:
 
   double getPatternTime() const { return h_representation_time_; };
 
-  std::vector<double> get_collocation_points() {
-    IL_EXPECT_FAST(isBuilt_);
-    IL_EXPECT_FAST(collocationPoints_.size(1) == dimension_);
-    il::int_t npoints = collocationPoints_.size(0);
+  std::vector<double> getCollocationPoints() {
+    IL_EXPECT_FAST(is_built_);
+    IL_EXPECT_FAST(collocation_points_.size(1) == dimension_);
+    il::int_t npoints = collocation_points_.size(0);
     std::vector<double> flat_col;
     flat_col.assign(npoints * dimension_, 0.);
     int index = 0;
-    for (il::int_t i = 0; i < collocationPoints_.size(0); i++) {
-      for (il::int_t j = 0; j < collocationPoints_.size(1); j++) {
-        flat_col[index] = collocationPoints_(i, j);
+    for (il::int_t i = 0; i < collocation_points_.size(0); i++) {
+      for (il::int_t j = 0; j < collocation_points_.size(1); j++) {
+        flat_col[index] = collocation_points_(i, j);
         index++;
       }
     }
@@ -383,7 +383,7 @@ public:
 
   //---------------------------------------------------------------------------
   std::vector<long> getPermutation() {
-    IL_EXPECT_FAST(isBuilt_);
+    IL_EXPECT_FAST(is_built_);
     std::vector<long> permut;
     permut.assign(permutation_.size(), 0);
     for (il::int_t i = 0; i < permutation_.size(); i++) {
@@ -395,7 +395,7 @@ public:
 
   //---------------------------------------------------------------------------
   double getCompressionRatio() {
-    IL_EXPECT_FAST(isBuilt_);
+    IL_EXPECT_FAST(is_built_);
     return h_.compressionRatio();
   }
 
@@ -419,7 +419,7 @@ public:
     //
     // we output a flatten row-major order std::vector
 
-    IL_EXPECT_FAST(isBuilt_);
+    IL_EXPECT_FAST(is_built_);
 
     bie::HPattern pattern = h_.pattern();
 
@@ -466,7 +466,7 @@ public:
     // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
     // output in the original dof state (accounting for the permutation)
 
-    IL_EXPECT_FAST(isBuilt_);
+    IL_EXPECT_FAST(is_built_);
 
     il::Array<double> values{};
     il::Array<int> positions{};
@@ -490,7 +490,7 @@ public:
     // return the diagonal of the h-matrix
     // output in the original dof state (accounting for the permutation)
 
-    IL_EXPECT_FAST(isBuilt_);
+    IL_EXPECT_FAST(is_built_);
     val_list = h_.diagonalOriginal(permutation_);
 
     std::cout << " End of Bigwhamio getDiagonal() \n";
@@ -499,7 +499,7 @@ public:
   // ---------------------------------------------------------------------------
   std::vector<double> matvect(const std::vector<double> &x) {
     // in the original / natural ordering
-    IL_EXPECT_FAST(this->isBuilt_);
+    IL_EXPECT_FAST(this->is_built_);
     IL_EXPECT_FAST(h_.size(0) == h_.size(1));
     IL_EXPECT_FAST(h_.size(1) == x.size());
     std::vector<double> y = h_.matvecOriginal(permutation_, x);
@@ -509,7 +509,7 @@ public:
   // ---------------------------------------------------------------------------
   std::vector<double> hdotProductInPermutted(const std::vector<double> &x) {
     // in the permutted state.
-    IL_EXPECT_FAST(this->isBuilt_);
+    IL_EXPECT_FAST(this->is_built_);
     IL_EXPECT_FAST(h_.size(0) == h_.size(1));
     IL_EXPECT_FAST(h_.size(1) == x.size());
     std::vector<double> y = h_.matvec(x);

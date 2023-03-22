@@ -41,9 +41,9 @@ class SegmentData {
   double size_;
   double theta_;  // angle w.r. to e_1 (Ox)
   // unit normal to segment in global system of coordinates
-  il::StaticArray<double, 2> n_;
+  il::StaticArray<double, 2> normal_;
   // unit tangent to segment in global system of coordinates
-  il::StaticArray<double, 2> s_;
+  il::StaticArray<double, 2> tangent1_;
   // segment mid points coordinates.
   il::StaticArray<double, 2> xc_;
   // collocation points in global system of coordinates
@@ -88,8 +88,8 @@ class SegmentData {
     n[0] = -1. * s[1];
     n[1] = s[0];
 
-    s_ = s;
-    n_ = n;
+    tangent1_ = s;
+    normal_ = n;
 
     // mid point of the element
     xmean[0] = (xv(1, 0) + xv(0, 0)) / 2.;
@@ -137,8 +137,8 @@ class SegmentData {
   // get functions
   double size() const { return size_;};
   double theta() const { return theta_;}
-  il::StaticArray<double,2> n() const {return n_;};
-  il::StaticArray<double,2> s() const {return s_;};
+  il::StaticArray<double,2> n() const {return normal_;};
+  il::StaticArray<double,2> s() const {return tangent1_;};
   il::StaticArray<double, 2> Centroid() const { return xc_;};
   il::Array2D<double> CollocationPoints() const { return CollocationPoints_;};
 

@@ -219,7 +219,7 @@ TEST(Mesh, colPts_p1) {
   }
 
   bie::Mesh mesh(xy, myconn, 1);
-  il::Array2D<double> col_pts_2 =mesh.get_collocation_points();
+  il::Array2D<double> col_pts_2 =mesh.collocation_points();
 
   std::cout << col_pts(0,0) <<  " " << col_pts(0,1)  <<"\n";
   std::cout << col_pts_2(0,0) <<  " " << col_pts_2(0,1)   <<"\n";

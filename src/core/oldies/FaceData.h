@@ -22,11 +22,11 @@ class FaceData {
 private:
 
     il::int_t interpolation_order_;    // interpolation order: 0, 1 or 2
-    il::StaticArray<double, 3> n_;     // unit vector normal to element in global system of coordinates
-    il::StaticArray<double, 3> s_;     // unit vector tangent to element in global system of coordinates,
+    il::StaticArray<double, 3> normal_;     // unit vector normal to element in global system of coordinates
+    il::StaticArray<double, 3> tangent1_;     // unit vector tangent to element in global system of coordinates,
                                        // in the direction from vertex 0 to vertex 1
-    il::StaticArray<double, 3> t_;     // unit vector tangent to element in global system of coordinates,
-                                       // orthogonal to s_ and n_
+    il::StaticArray<double, 3> tangent2_;     // unit vector tangent to element in global system of coordinates,
+                                       // orthogonal to tangent1_ and normal_
     il::StaticArray<double, 3> xc_;    // centroid of the element in global system of coordinates
     il::Array2D<double> vertices_;     // vertices' coordinates in global reference system -
                                        // size: number of vertices x 3
@@ -58,7 +58,7 @@ public:
     il::Array<double> getNormal();
     il::Array<double> getS1();
     il::Array<double> getS2();
-    il::Array2D<double> get_collocation_points();
+    il::Array2D<double> collocation_points();
     il::Array2D<double> getVertices(); // this function is a bit silly because
     // the object is indeed constructed by the vertices as input, however is needed due to the way the
     // construction of the elasticity matrix is coded up for quadratic (p=2) elements. This function
@@ -70,9 +70,9 @@ public:
 
     // uncomment the following if needed ...
 //    il::StaticArray<double, 3> getCentroid() { return xc_;};
-//    il::StaticArray<double, 3> getNormal() { return n_;};
-//    il::StaticArray<double, 3> getTangent1() { return s_;};
-//    il::StaticArray<double, 3> getTangent2() { return t_;};
+//    il::StaticArray<double, 3> getNormal() { return normal_;};
+//    il::StaticArray<double, 3> getTangent1() { return tangent1_;};
+//    il::StaticArray<double, 3> getTangent2() { return tangent2_;};
 //    const double getBeta() { return beta_;};
 
     //////////////////////////////////////////////////////////////////////////

@@ -322,10 +322,10 @@ namespace bie{
         double a = a_and_b[0], b = a_and_b[1];
 
         il::Array2D<double> el_cp_s;
-        el_cp_s = elem_data_s.get_collocation_points();
+        el_cp_s = elem_data_s.collocation_points();
 
         il::Array2D<double> el_cp_r;
-        el_cp_r = elem_data_r.get_collocation_points();
+        el_cp_r = elem_data_r.collocation_points();
 
         il::Array2D<double> R = elem_data_s.rotationMatrix(true); // from global to local
 
@@ -401,10 +401,10 @@ namespace bie{
         double nu = elas_.getNu();
 
         il::Array2D<double> el_cp_s;
-        el_cp_s = elem_data_s.get_collocation_points();
+        el_cp_s = elem_data_s.collocation_points();
 
         il::Array2D<double> el_cp_r;
-        el_cp_r = elem_data_r.get_collocation_points();
+        el_cp_r = elem_data_r.collocation_points();
 
         il::Array2D<double> R;
         R = elem_data_s.rotationMatrix(true);
@@ -454,7 +454,7 @@ namespace bie{
         double a = a_and_b[0], b = a_and_b[1];
 
         il::Array2D<double> el_cp_s;
-        el_cp_s = elem_data_s.get_collocation_points();
+        el_cp_s = elem_data_s.collocation_points();
 
         il::Array2D<double> R = elem_data_s.rotationMatrix(true); // R(g->l)
 
@@ -522,7 +522,7 @@ namespace bie{
         double nu = elas_.getNu();
 
         il::Array2D<double> el_cp_s;
-        el_cp_s = elem_data_s.get_collocation_points();
+        el_cp_s = elem_data_s.collocation_points();
 
         il::Array2D<double> R = elem_data_s.rotationMatrix(true); // R(g->l)
 

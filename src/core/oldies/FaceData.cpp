@@ -66,7 +66,7 @@ FaceData::FaceData(il::Array2D<double> xv, il::int_t p) {
            "and retry! \n It wasn't of size (number of vertex x 3)\n";
   }
 
-  // compute unit normal vector n_
+  // compute unit normal vector normal_
 
   // prepare vectors for cross product
   // vec01 goes from vertex 0 to vertex 1
@@ -112,35 +112,35 @@ FaceData::FaceData(il::Array2D<double> xv, il::int_t p) {
   n[0] = n[0] / norm;
   n[1] = n[1] / norm;
   n[2] = n[2] / norm;
-  this->n_ = n;
+  this->normal_ = n;
 
-  // compute unit tangent vector s_ that goes from vertex 0 to vertex 1
+  // compute unit tangent vector tangent1_ that goes from vertex 0 to vertex 1
   il::StaticArray<double, 3> s;
   s[0] = xv(1, 0) - xv(0, 0);
   s[1] = xv(1, 1) - xv(0, 1);
   s[2] = xv(1, 2) - xv(0, 2);
 
-  // normalize tangent vector s_
+  // normalize tangent vector tangent1_
   norm = sqrt(s[0] * s[0] + s[1] * s[1] + s[2] * s[2]);
   s[0] = s[0] / norm;
   s[1] = s[1] / norm;
   s[2] = s[2] / norm;
-  this->s_ = s;
+  this->tangent1_ = s;
 
-  // compute unit tangent vector t_ orthogonal to n_ and s_
+  // compute unit tangent vector tangent2_ orthogonal to normal_ and tangent1_
 
-  // cross product between n_ and s_
+  // cross product between normal_ and tangent1_
   il::StaticArray<double, 3> t;
   t[0] = n[1] * s[2] - n[2] * s[1];
   t[1] = n[2] * s[0] - n[0] * s[2];
   t[2] = n[0] * s[1] - n[1] * s[0];
 
-  // normalize tangent vector t_
+  // normalize tangent vector tangent2_
   norm = sqrt(t[0] * t[0] + t[1] * t[1] + t[2] * t[2]);
   t[0] = t[0] / norm;
   t[1] = t[1] / norm;
   t[2] = t[2] / norm;
-  this->t_ = t;
+  this->tangent2_ = t;
 
   // compute centroid of the element
   this->xc_ = this->computeCentroid(
@@ -169,7 +169,7 @@ double FaceData::getNoV() { // get number of vertexes
 }
 
 il::Array2D<double>
-FaceData::get_collocation_points() { // get collocation points' coordinates
+FaceData::collocation_points() { // get collocation points' coordinates
   return collocation_points_;
 }
 
@@ -184,7 +184,7 @@ double FaceData::getBeta2() const { return beta2_; }
 il::Array<double> FaceData::getNormal() {
   il::Array<double> n{3};
   for (int i = 0; i < 3; ++i) {
-    n[i] = n_[i];
+    n[i] = normal_[i];
   }
   return n;
 }
@@ -192,7 +192,7 @@ il::Array<double> FaceData::getNormal() {
 il::Array<double> FaceData::getS1() {
   il::Array<double> s1{3};
   for (int i = 0; i < 3; ++i) {
-    s1[i] = s_[i];
+    s1[i] = tangent1_[i];
   }
   return s1;
 }
@@ -200,7 +200,7 @@ il::Array<double> FaceData::getS1() {
 il::Array<double> FaceData::getS2() {
   il::Array<double> s2{3};
   for (int i = 0; i < 3; ++i) {
-    s2[i] = t_[i];
+    s2[i] = tangent2_[i];
   }
   return s2;
 }
@@ -483,16 +483,16 @@ il::Array2D<double> FaceData::rotationMatrix(bool Transposed) {
   if (Transposed) {
     // loop over spatial coordinates
     for (il::int_t i = 0; i < 3; i++) {
-      rotM(0, i) = this->s_[i]; // 1st row equal to s unit vector
-      rotM(1, i) = this->t_[i]; // 2nd row equal to t unit vector
-      rotM(2, i) = this->n_[i]; // 3rd row equal to n unit vector
+      rotM(0, i) = this->tangent1_[i]; // 1st row equal to s unit vector
+      rotM(1, i) = this->tangent2_[i]; // 2nd row equal to t unit vector
+      rotM(2, i) = this->normal_[i]; // 3rd row equal to n unit vector
     }
   } else {
     // loop over spatial coordinates
     for (il::int_t i = 0; i < 3; i++) {
-      rotM(i, 0) = this->s_[i]; // 1st column equal to s unit vector
-      rotM(i, 1) = this->t_[i]; // 2nd column equal to t unit vector
-      rotM(i, 2) = this->n_[i]; // 3rd column equal to n unit vector
+      rotM(i, 0) = this->tangent1_[i]; // 1st column equal to s unit vector
+      rotM(i, 1) = this->tangent2_[i]; // 2nd column equal to t unit vector
+      rotM(i, 2) = this->normal_[i]; // 3rd column equal to n unit vector
     }
   }
   return rotM;

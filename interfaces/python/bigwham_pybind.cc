@@ -119,7 +119,7 @@ PYBIND11_MODULE(bigwhamPybind, m) {
       .def(py::init<>()) // constructor
       .def("hmatDestructor", &Bigwhamio::hmatDestructor)
       .def("set", &Bigwhamio::set)
-      .def("getCollocationPoints", &Bigwhamio::get_collocation_points)
+      .def("getCollocationPoints", &Bigwhamio::getCollocationPoints)
       .def("getPermutation", &Bigwhamio::getPermutation)
       .def("getCompressionRatio", &Bigwhamio::getCompressionRatio)
       .def("getKernel", &Bigwhamio::getKernel)

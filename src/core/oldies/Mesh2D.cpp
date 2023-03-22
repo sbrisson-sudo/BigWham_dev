@@ -17,7 +17,7 @@ namespace bie {
 //          METHODS
 ////////////////////////////////////////////////////////////////////////////////
 
-il::Array2D<double> Mesh2D::get_collocation_points() {
+il::Array2D<double> Mesh2D::collocation_points() {
   il::Array2D<double> Xcol{(interpolation_order_ + 1), 2, 0.},
       colPoints{connectivity_.size(0) * (interpolation_order_ + 1), 2, 0};
 

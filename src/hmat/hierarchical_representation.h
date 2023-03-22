@@ -30,7 +30,7 @@ struct HRepresentation {
       true; // if true - square matrix, and only permutation_0_ is stored
 };
 
-HRepresentation h_representation_square_matrix(const std::shared_ptr<Mesh> &mesh,
+inline HRepresentation h_representation_square_matrix(const std::shared_ptr<Mesh> &mesh,
                                                const il::int_t max_leaf_size,
                                                const double eta) {
   // std::cout << "Pattern construction started .... \n";
@@ -38,8 +38,8 @@ HRepresentation h_representation_square_matrix(const std::shared_ptr<Mesh> &mesh
   hr.is_square_ = true;
   // creation of the cluster
   // first get all collocation points in the mesh
-  // std::cout << " Before call to get_collocation_points() ...."<< "\n";
-  il::Array2D<double> Xcol = mesh->get_collocation_points();
+  // std::cout << " Before call to collocation_points() ...."<< "\n";
+  il::Array2D<double> Xcol = mesh->collocation_points();
   // std::cout << " Got col points construction ...."<< "\n";
   il::Timer tt;
   tt.Start();
@@ -68,16 +68,16 @@ HRepresentation h_representation_square_matrix(const std::shared_ptr<Mesh> &mesh
   return hr;
 }
 
-HRepresentation h_representation_rectangular_matrix(
-    const std::shared_ptr<Mesh> &source_mesh, std::shared_ptr<Mesh>& receiver_mesh,
+inline HRepresentation h_representation_rectangular_matrix(
+    const std::shared_ptr<Mesh> &source_mesh, const std::shared_ptr<Mesh>& receiver_mesh,
     const il::int_t max_leaf_size, const double eta) {
   HRepresentation hr;
   hr.is_square_ = false;
   // creation of the cluster
   // first get all collocation points in the mesh
   il::Timer tt;
-  il::Array2D<double> Xcol_source = source_mesh->get_collocation_points();
-  il::Array2D<double> Xcol_receiver = receiver_mesh->get_collocation_points();
+  il::Array2D<double> Xcol_source = source_mesh->collocation_points();
+  il::Array2D<double> Xcol_receiver = receiver_mesh->collocation_points();
 
   tt.Start();
   Cluster cluster_s = cluster(max_leaf_size, il::io, Xcol_source);

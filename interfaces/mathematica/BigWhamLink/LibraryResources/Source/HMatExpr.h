@@ -101,8 +101,8 @@ class HMatExpr {
     }
     
     // get collocation points
-    mma::RealTensorRef get_collocation_points(){
-        std::vector<double> coll_pts=bie_obj_.get_collocation_points();
+    mma::RealTensorRef collocation_points(){
+        std::vector<double> coll_pts=bie_obj_.collocation_points();
         int sp_dimension =bie_obj_.getSpatialDimension();
         int npts=coll_pts.size()/sp_dimension;
         return mma::makeMatrix<double>(npts, sp_dimension, coll_pts.data());
