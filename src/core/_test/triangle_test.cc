@@ -145,7 +145,7 @@ TEST(triangle, triangle_2_1) {
   bie::Triangle<2> tri2;
   tri2.SetElement(xyz);
   auto x = tri2.nodes();
-  std::cout << x(0, 0);
+  // std::cout << x(0, 0);
   ASSERT_TRUE(tri2.spatial_dimension() == 3);
 }
 /* -------------------------------------------------------------------------- */
@@ -158,7 +158,7 @@ TEST(triangle, triangle_2_2) {
   bie::Triangle<2> tri2;
   tri2.SetElement(xyz);
   auto x = tri2.nodes();
-  std::cout << x(0, 0);
+  // std::cout << x(0, 0);
   ASSERT_TRUE(tri2.num_collocation_points() == 6);
 }
 /* -------------------------------------------------------------------------- */

@@ -15,6 +15,8 @@
 #include "core/elastic_properties.h"
 #include "elasticity/bie_elastostatic.h"
 #include "elements/segment.h"
+
+#include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
 /* -------------------------------------------------------------------------- */
 
 TEST(TwoDP0, test_seg_0_dof_dim) {
@@ -51,7 +53,7 @@ TEST(TwoDP0, test_seg_0_self) {
   bie::Segment<0> source;
   source.SetElement(xy);
   bie::ElasticProperties elas(1, 0.3);
-  bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
+  bie::BieElastostaticSp3d<bie::Segment<0>, bie::Segment<0>,
                        bie::ElasticKernelType::H>
       reftest(elas, xy.size(1));
   il::Array<double> prop{1, 1000.};
@@ -67,52 +69,53 @@ TEST(TwoDP0, test_seg_0_self) {
   bool tt = true;
   for (int i = 0; i < 3; i++) {
     tt = tt && (abs(test_self[i] - test_self_sp3d[i]) < epsilon);
+    // std::cout << test_self[i] << " " << test_self_sp3d[i] << "\n";
   }
   ASSERT_TRUE(tt);
 }
 /* -------------------------------------------------------------------------- */
 
-// TEST(TwoDP0, test_seg_0_1) {
-//   il::Array2D<double> xy{2, 2, 0.};
-//   xy(0, 1) = 2.4;
-//   xy(1, 0) = 3.0;
-//   bie::Segment<0> source;
-//   source.SetElement(xy);
-//   bie::ElasticProperties elas(1, 0.3);
-//   std::cout << "test on inclined elt "
-//             << "\n";
-//   il::Array2D<double> xy_r{2, 2, 0.};
-//   xy_r(0, 0) = 1.0;
-//   xy_r(1, 0) = 5.0;
-//   xy_r(0, 1) = 1.0;
-//   xy_r(1, 1) = 0.0;
-//   bie::Segment<0> receiver;
-//   receiver.SetElement(xy_r);
-//   bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-//                        bie::ElasticKernelType::H>
-//       test(elas, xy.size(1));
+TEST(TwoDP0, test_seg_0_1) {
+  il::Array2D<double> xy{2, 2, 0.};
+  xy(0, 1) = 2.4;
+  xy(1, 0) = 3.0;
+  bie::Segment<0> source;
+  source.SetElement(xy);
+  bie::ElasticProperties elas(1, 0.3);
+  // std::cout << "test on inclined elt "
+  //           << "\n";
+  il::Array2D<double> xy_r{2, 2, 0.};
+  xy_r(0, 0) = 1.0;
+  xy_r(1, 0) = 5.0;
+  xy_r(0, 1) = 1.0;
+  xy_r(1, 1) = 0.0;
+  bie::Segment<0> receiver;
+  receiver.SetElement(xy_r);
+  bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
+                       bie::ElasticKernelType::H>
+      test(elas, xy.size(1));
 
-//   std::vector<double> test_st = test.influence(source, 0, receiver, 0);
+  std::vector<double> test_st = test.influence(source, 0, receiver, 0);
 
-//   bie::BieElastostaticSp3d<bie::Segment<0>, bie::Segment<0>,
-//                            bie::ElasticKernelType::H>
-//       reftest(elas, xy.size(1));
-//   il::Array<double> prop{1, 10000.};
-//   reftest.setKernelProperties(prop);
-//   std::vector<double> test_st_sp3d = reftest.influence(source, 0, receiver, 0);
+  bie::BieElastostaticSp3d<bie::Segment<0>, bie::Segment<0>,
+                           bie::ElasticKernelType::H>
+      reftest(elas, xy.size(1));
+  il::Array<double> prop{1, 10000.};
+  reftest.set_kernel_properties(prop);
+  std::vector<double> test_st_sp3d = reftest.influence(source, 0, receiver, 0);
 
-//   double epsilon = 1.e-6;
-//   bool tt = true;
-//   for (int i = 0; i < 2; i++) {
-//     tt = tt && (abs(test_st[i] - test_st_sp3d[i]) < epsilon);
-//   }
-//   if (!tt) {
-//     std::cout << "Issue in test" << std::endl;
-//     for (int i = 0; i < 2; i++) {
-//       std::cout << std::abs(test_st[i] - test_st_sp3d[i]) << std::endl;
-//     }
-//   }
+  double epsilon = 1.e-6;
+  bool tt = true;
+  for (int i = 0; i < 2; i++) {
+    tt = tt && (abs(test_st[i] - test_st_sp3d[i]) < epsilon);
+  }
+  if (!tt) {
+    std::cout << "Issue in test" << std::endl;
+    for (int i = 0; i < 2; i++) {
+      std::cout << std::abs(test_st[i] - test_st_sp3d[i]) << std::endl;
+    }
+  }
 
-//   ASSERT_TRUE(tt);
-// }
+  ASSERT_TRUE(tt);
+}
 /* -------------------------------------------------------------------------- */

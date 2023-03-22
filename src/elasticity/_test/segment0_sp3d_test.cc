@@ -14,6 +14,7 @@
 
 #include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
 #include "elements/boundary_element.h"
+/* -------------------------------------------------------------------------- */
 
 TEST(SP3D, test_seg_0_dof_dim) {
 
@@ -27,6 +28,7 @@ TEST(SP3D, test_seg_0_dof_dim) {
       test(elas, xy.size(1));
   ASSERT_TRUE(test.dof_dimension() == 2);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(SP3D, test_seg_0_dim) {
   il::Array2D<double> xy{2, 2, 0.};
@@ -39,6 +41,7 @@ TEST(SP3D, test_seg_0_dim) {
       test(elas, xy.size(1));
   ASSERT_TRUE(test.spatial_dimension() == 2);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(SP3D, test_seg_0_self) {
 
@@ -52,12 +55,12 @@ TEST(SP3D, test_seg_0_self) {
       test(elas, xy.size(1));
   il::Array<double> prop{1, 1000.};
   test.set_kernel_properties(prop);
+  // std::cout << "test self effect "
+  //           << "\n";
   std::vector<double> test_self = test.influence(source, 0, source, 0);
-  std::cout << "test self effect "
-            << "\n";
-  for (int i = 0; i < 4; i++) {
-    std::cout << test_self[i] << "\n";
-  }
+  // for (int i = 0; i < 4; i++) {
+  //   std::cout << test_self[i] << "\n";
+  // }
   // old way // would have to be removed at some point !
   il::StaticArray2D<double, 2, 2> xys{0.};
   xys(1, 0) = 1.0;
@@ -65,15 +68,16 @@ TEST(SP3D, test_seg_0_self) {
   il::StaticArray2D<double, 2, 2> stnl =
       bie::normal_shear_stress_kernel_s3d_dp0_dd_nodal(auxi, auxi, 0, 0, elas,
                                                        prop[0]);
-  for (int i = 0; i < 2; i++) {
-    std::cout << stnl(i, 0) << "-" << stnl(i, 1) << "\n";
-  }
+  // for (int i = 0; i < 2; i++) {
+  //   std::cout << stnl(i, 0) << "-" << stnl(i, 1) << "\n";
+  // }
   double epsilon = 1.e-6;
   ASSERT_TRUE(abs(stnl(0, 0) - test_self[0]) < epsilon &&
               abs(stnl(1, 0) - test_self[1]) < epsilon &&
               abs(stnl(0, 1) - test_self[2]) < epsilon &&
               abs(stnl(1, 1) - test_self[3]) < epsilon);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(SP3D, test_seg_0_1) {
   il::Array2D<double> xy{2, 2, 0.};
@@ -82,8 +86,8 @@ TEST(SP3D, test_seg_0_1) {
   bie::Segment<0> source;
   source.SetElement(xy);
   bie::ElasticProperties elas(1, 0.3);
-  std::cout << "test on inclined elt "
-            << "\n";
+  // std::cout << "test on inclined elt "
+  //           << "\n";
   il::Array2D<double> xy_r{2, 2, 0.};
   xy_r(0, 0) = 1.0;
   xy_r(1, 0) = 5.0;
@@ -122,3 +126,4 @@ TEST(SP3D, test_seg_0_1) {
               abs(stnl(0, 1) - test_self[2]) < eps &&
               abs(stnl(1, 1) - test_self[3]) < eps);
 }
+/* -------------------------------------------------------------------------- */

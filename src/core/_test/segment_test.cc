@@ -35,7 +35,7 @@ TEST(Segment, test_centroid) {
   seg.SetElement(xy);
 
   auto center = seg.centroid();
-  std::cout << "center " << center[0] << "\n";
+  // std::cout << "center " << center[0] << "\n";
   ASSERT_TRUE(center[0] == 0.5);
 }
 /* -------------------------------------------------------------------------- */
