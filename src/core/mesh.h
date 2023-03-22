@@ -93,7 +93,7 @@ public:
 // std::cout << "Number of vertex per element : " << number_vertex_ << "\n";
 // for (il::int_t e = 0; e < n_elts_; e++) {
 //   this->setCurrentElement(e);
-//   Xcol = this->element_def_.getCollocationPoints();
+//   Xcol = this->element_def_.get_collocation_points();
 //   auto centro = this->element_def_.getCentroid();
 //   //  std::cout << "centro  " << e << "  centroid " << centro[0]  <<" -" <<
 //   //  centro[1]   <<"\n";

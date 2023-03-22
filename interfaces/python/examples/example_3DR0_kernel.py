@@ -269,7 +269,7 @@ class Hmatrix(LinearOperator):
 
     def getCollocationPoints(self):
         n=self.H_.getSpatialDimension()
-        aux=np.asarray(self.H_.getCollocationPoints())
+        aux=np.asarray(self.H_.get_collocation_points())
         auxpermut=np.reshape(aux,(int(aux.size/n),n))
         permut=self.getPermutation()
         colPts=0.*auxpermut

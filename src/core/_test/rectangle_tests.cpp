@@ -19,7 +19,7 @@ TEST(rectangle,rectangle_0_1){
     xyz(2,0)=hx;xyz(2,1)=hy;
     xyz(3,1)=hy;
     bie::Rectangle<0> rec0;
-    rec0.setElement(xyz);
+    rec0.set_element(xyz);
     ASSERT_TRUE(rec0.getSpatialDimension()==3);
 }
 
@@ -31,7 +31,7 @@ TEST(rectangle,rectangle_0_2){
     xyz(2,0)=hx;xyz(2,1)=hy;
     xyz(3,1)=hy;
     bie::Rectangle<0> rec0;
-    rec0.setElement(xyz);
+    rec0.set_element(xyz);
     ASSERT_TRUE(rec0.area()==hx*hy);
 }
 
@@ -42,7 +42,7 @@ TEST(rectangle,rectangle_0_3){
     xyz(2,0)=hx;xyz(2,1)=hy;
     xyz(3,1)=hy;
     bie::Rectangle<0> rec0;
-    rec0.setElement(xyz);
+    rec0.set_element(xyz);
     auto xc=rec0.getCentroid();
     ASSERT_TRUE( xc[0]==hx/2. && xc[1]==hy/2. && xc[2]==0.);
 }
@@ -55,7 +55,7 @@ TEST(rectangle,rectangle_0_4){
     xyz(2,0)=hx;xyz(2,1)=hy;
     xyz(3,1)=hy;
     bie::Rectangle<0> rec0;
-    rec0.setElement(xyz);
+    rec0.set_element(xyz);
     auto xn=rec0.getNormal();
     ASSERT_TRUE( xn[0]==0. && xn[1]==0. && xn[2]==1);
 }
@@ -67,7 +67,7 @@ TEST(rectangle,rectangle_0_5){
     xyz(2,0)=hx;xyz(2,1)=hy;
     xyz(3,1)=hy;
     bie::Rectangle<0> rec0;
-    rec0.setElement(xyz);
+    rec0.set_element(xyz);
     auto xn=rec0.getTangent_1();
     ASSERT_TRUE( xn[0]==1. && xn[1]==0. && xn[2]==0);
 }
@@ -80,7 +80,7 @@ TEST(rectangle,rectangle_0_6){
     xyz(2,0)=hx;xyz(2,1)=hy;
     xyz(3,1)=hy;
     bie::Rectangle<0> rec0;
-    rec0.setElement(xyz);
+    rec0.set_element(xyz);
     auto xn=rec0.getTangent_2();
     ASSERT_TRUE( xn[0]==0. && xn[1]==1. && xn[2]==0);
 }

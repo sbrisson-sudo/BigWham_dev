@@ -10,8 +10,9 @@
 #ifndef BIGWHAM_SEGMENT_H
 #define BIGWHAM_SEGMENT_H
 
-#include "core/BoundaryElement.h"
 #include <il/Array2D.h>
+
+#include "elements/boundary_element.h"
 
 namespace bie {
 
@@ -26,7 +27,7 @@ public:
   Segment();
   ~Segment();
 
-  void setElement(Real2D xv) {
+  void set_element(Real2D xv) {
     IL_ASSERT(xv.size(0) == n_vertices_);
     for (il::int_t j = 0; j < spatial_dimension_; j++) {
       this->centroid_[j] =

@@ -58,7 +58,7 @@ public:
     il::Array<double> getNormal();
     il::Array<double> getS1();
     il::Array<double> getS2();
-    il::Array2D<double> getCollocationPoints();
+    il::Array2D<double> get_collocation_points();
     il::Array2D<double> getVertices(); // this function is a bit silly because
     // the object is indeed constructed by the vertices as input, however is needed due to the way the
     // construction of the elasticity matrix is coded up for quadratic (p=2) elements. This function

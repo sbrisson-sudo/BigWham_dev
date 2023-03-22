@@ -11,7 +11,7 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include "core/BoundaryElement.h"
+#include "elements/boundary_element.h"
 #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
 //#include "elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.h"
 #include <elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h>
@@ -21,7 +21,7 @@ TEST(SP3D,test_seg_0_dof_dim){
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=1.0;
     bie::Segment<0> source;
-    source.setElement(xy);
+    source.set_element(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BieElastostatic<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     ASSERT_TRUE(test.getDofDimension() == 2);
@@ -31,7 +31,7 @@ TEST(SP3D,test_seg_0_dim){
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=1.0;
     bie::Segment<0> source;
-    source.setElement(xy);
+    source.set_element(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BieElastostaticSp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     ASSERT_TRUE(test.getSpatialDimension()==2);
@@ -44,7 +44,7 @@ TEST(SP3D,test_seg_0_self){
     il::Array2D<double> xy{2,2,0.};
     xy(1,0)=1.0;
     bie::Segment<0> source;
-    source.setElement(xy);
+    source.set_element(xy);
     bie::ElasticProperties elas(1,0.3);
     bie::BieElastostaticSp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
@@ -71,13 +71,13 @@ TEST(SP3D,test_seg_0_1){
     il::Array2D<double> xy{2,2,0.};
     xy(0,1)=2.4; xy(1,0)=3.0;
     bie::Segment<0> source;
-    source.setElement(xy);
+    source.set_element(xy);
     bie::ElasticProperties elas(1,0.3);
     std::cout << "test on inclined elt " << "\n";
     il::Array2D<double> xy_r{2,2,0.};
     xy_r(0,0)=1.0; xy_r(1,0)=5.0; xy_r(0,1)=1.0;xy_r(1,1)=0.0;
     bie::Segment<0> receiver;
-    receiver.setElement(xy_r);
+    receiver.set_element(xy_r);
     bie::BieElastostaticSp3d<bie::Segment<0>,bie::Segment<0>,bie::ElasticKernelType::H>  test(elas,xy.size(1));
     il::Array<double> prop{1,1000.};
     test.setKernelProperties(prop);

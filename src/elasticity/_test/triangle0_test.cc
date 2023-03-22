@@ -28,10 +28,10 @@ TEST(Triangle0, test_H_1) {
                        bie::ElasticKernelType::H>
       test(elas, xy.size(1));
   std::vector<double> test_self = test.influence(source, 0, source, 0);
-  std::cout << "test self effect "
-            << "\n";
-  for (int i = 0; i < 9; i++) {
-    std::cout << test_self[i] << "\n";
-  }
+  // std::cout << "test self effect "
+  //           << "\n";
+  // for (int i = 0; i < 9; i++) {
+  //   std::cout << test_self[i] << "\n";
+  // }
   ASSERT_NEAR(test_self[0], 0.656304, 1.e-3);
 }

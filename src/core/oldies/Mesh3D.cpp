@@ -99,7 +99,7 @@ namespace bie {
         return FaceData(xv, this->interpolation_order_);
     }
 
-    il::Array2D<double> Mesh3D::getCollocationPoints() {
+    il::Array2D<double> Mesh3D::get_collocation_points() {
         // inputs
         //   -none; it makes use of coordinates_, connectivity_, and interpolation_order_, when calling
         //   using getElementData function
@@ -122,7 +122,7 @@ namespace bie {
         // loop over the elements
         for (il::int_t i = 0; i < this -> numberOfElts(); i++) {
             bie::FaceData elt = this->getElementData(i);
-            collPtsElt = elt.getCollocationPoints();
+            collPtsElt = elt.get_collocation_points();
             // loop over collocation points per element
             for (il::int_t j1 = 0; j1 < this -> numberCollPtsElt(); j1++) {
                 collPts(j, 0) = collPtsElt(j1, 0);

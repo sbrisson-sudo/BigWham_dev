@@ -182,13 +182,13 @@ if(BIGWHAM_TESTING)
         # src/core/_test/segment_test.cpp
         # src/elasticity/_test/segment0_sp3d_tests.cpp
         src/core/_test/bemesh_test.cc
-        # src/elasticity/_test/elastic_square_matrix_generator_tests.cpp
+        src/elasticity/_test/elastic_square_matrix_generator_test.cc
         # src/core/_test/hierarchical_representation_tests.cpp
         # src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
         src/core/_test/triangle_test.cc
         # src/core/_test/rectangle_tests.cpp
         # src/_test/bigwhamio_tests_2d.cpp
-        src/elasticity/_test/triangle0_tests.cpp
+        src/elasticity/_test/triangle0_test.cc
         # src/elasticity/FsIso2dSegment/_test/plane_elasticity_segment.cpp
         # src/elasticity/_test/segment0_kernels.cpp
       )

@@ -162,7 +162,7 @@ public:
       // std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
       //           << tes(1, 0) << "- " << tes(1, 1) << "\n";
       // collocationPoints_ =
-      //     mesh.getCollocationPoints(); // be careful returning it in original
+      //     mesh.get_collocation_points(); // be careful returning it in original
       //                                  // ordering.  note this is only for
       //                                  the
       //                                  // output function
@@ -200,7 +200,7 @@ public:
       // std::cout << " ELement vertices " << tes(0, 0) << "- " << tes(0, 1)
       //           << tes(1, 0) << "- " << tes(1, 1) << "\n";
       // collocationPoints_ =
-      //     mesh.getCollocationPoints(); // be careful returning it in original
+      //     mesh.get_collocation_points(); // be careful returning it in original
       //                                  // ordering.  note this is only for
       //                                  the
       //                                  // output function
@@ -242,7 +242,7 @@ public:
       // tt.Stop();
       // std::cout << " pattern created \n";
       // collocationPoints_ =
-      //     mesh.getCollocationPoints(); // be careful returning it in original
+      //     mesh.get_collocation_points(); // be careful returning it in original
       //                                  // ordering.  note this is only for
       //                                  the
       //                                  // output function
@@ -304,7 +304,7 @@ public:
       // std::cout << "Element vertices " << tes(0, 0) << "  " << tes(0, 1)
       //           << "  " << tes(1, 0) << "  " << tes(1, 1) << "\n";
       // collocationPoints_ =
-      //     mesh.getCollocationPoints(); // be careful returning it in original
+      //     mesh.get_collocation_points(); // be careful returning it in original
       //                                  // ordering.  note this is only for
       //                                  the
       //                                  // output function
@@ -365,7 +365,7 @@ public:
 
   double getPatternTime() const { return h_representation_time_; };
 
-  std::vector<double> getCollocationPoints() {
+  std::vector<double> get_collocation_points() {
     IL_EXPECT_FAST(isBuilt_);
     IL_EXPECT_FAST(collocationPoints_.size(1) == dimension_);
     il::int_t npoints = collocationPoints_.size(0);

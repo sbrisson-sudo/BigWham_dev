@@ -11,7 +11,7 @@
 #include <il/math.h>
 //
 #include "core/elements/Segment.h"
-#include "core/BEMesh.h"
+#include "core/be_mesh.h"
 #include "core/hierarchical_representation.h"
 
 

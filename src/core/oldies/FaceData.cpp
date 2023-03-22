@@ -169,7 +169,7 @@ double FaceData::getNoV() { // get number of vertexes
 }
 
 il::Array2D<double>
-FaceData::getCollocationPoints() { // get collocation points' coordinates
+FaceData::get_collocation_points() { // get collocation points' coordinates
   return collocation_points_;
 }
 

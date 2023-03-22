@@ -32,7 +32,7 @@
 //             eltC(i,0)=(coor(i,0)+coor(i+1,0))/2.;
 //     }
 //     bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
-//     il::Array2D<double> test=my_mesh.getCollocationPoints();
+//     il::Array2D<double> test=my_mesh.get_collocation_points();
 //     bool t= true;
 //     for (int i=0;i<n_elts;i++){
 //         t = t && (abs(test(i,0)-eltC(i,0))<1.e-6);
@@ -57,7 +57,7 @@
 //         eltC(i,1)=(coor(i,1)+coor(i+1,1))/2.;
 //     }
 //     bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
-//     il::Array2D<double> test=my_mesh.getCollocationPoints();
+//     il::Array2D<double> test=my_mesh.get_collocation_points();
 //     bool t= true;
 //     for (int i=0;i<n_elts;i++){
 //         t = t && (abs(test(i,1)-eltC(i,1))<1.e-6) &&
@@ -81,7 +81,7 @@
 //         eltC(i,0)=(coor(i,0)+coor(i+1,0))/2.;
 //     }
 //     bie::BEMesh<bie::Segment<1>> my_mesh(coor, conn);
-//     il::Array2D<double> test=my_mesh.getCollocationPoints();
+//     il::Array2D<double> test=my_mesh.get_collocation_points();
 //     bool t= true;
 //     for (int i=0;i<n_elts;i++){ // left col points
 //         t = t && (abs(test(2*i,0)-eltC(i,0)+(h/2.)/sqrt(2))<1.e-6);
@@ -187,11 +187,11 @@ TEST(bemesh_triangle, triangle_0_2) {
 //         conn(c,1) <<"-" <<conn(c,2) << "-" << conn(c,3) <<"\n";
 //     }
 //     bie::BEMesh<bie::Rectangle<0>> my_mesh(coor, conn);
-//     il::Array2D<double> test=my_mesh.getCollocationPoints();
+//     il::Array2D<double> test=my_mesh.get_collocation_points();
 //     bie::Rectangle<0> rec_a;
 //     il::Array2D<double> xv=my_mesh.getVertices(0);
 
-//     rec_a.setElement(xv);
+//     rec_a.set_element(xv);
 //     auto aux=il::dot(rec_a.getTangent_1(),rec_a.getNormal());
 //     auto aux2=il::dot(rec_a.getTangent_1(),rec_a.getTangent_2());
 //     std::cout <<  rec_a.area() <<"\n";

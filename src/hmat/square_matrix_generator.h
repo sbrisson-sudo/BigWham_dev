@@ -39,10 +39,11 @@ private:
 
   il::int_t dof_dimension_; // unknowns per nodes
   il::int_t size_;          // total square matrix of size_*size_
-  il::int_t num_points_; // size_ / block_size_
+  il::int_t num_points_;    // size_ / block_size_
 
 public:
-  SquareMatrixGenerator(const std::shared_ptr<Mesh> &mesh,const std::shared_ptr<BieKernel<T>> &bie_kernel,
+  SquareMatrixGenerator(const std::shared_ptr<Mesh> &mesh,
+                        const std::shared_ptr<BieKernel<T>> &bie_kernel,
                         const HRepresentation &hr);
   il::int_t size(il::int_t d) const override;
   il::int_t blockSize() const override;
@@ -52,11 +53,10 @@ public:
 };
 
 template <typename T>
-SquareMatrixGenerator<T>::SquareMatrixGenerator(const std::shared_ptr<Mesh> &mesh,
-                                                const std::shared_ptr<BieKernel<T>> &bie_kernel,
-                                                const HRepresentation &hr)
-    : mesh_(mesh),
-      bie_kernel_(bie_kernel), permutation_(hr.permutation_0_) {
+SquareMatrixGenerator<T>::SquareMatrixGenerator(
+    const std::shared_ptr<Mesh> &mesh,
+    const std::shared_ptr<BieKernel<T>> &bie_kernel, const HRepresentation &hr)
+    : mesh_(mesh), bie_kernel_(bie_kernel), permutation_(hr.permutation_0_) {
   num_points_ = this->mesh_->get_num_collocation_points();
   dof_dimension_ = this->bie_kernel_->get_dof_dimension();
   size_ = num_points_ * dof_dimension_;
@@ -113,7 +113,8 @@ void SquareMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
 
         auto receiver_element = this->mesh_->get_element(e_k0);
         std::vector<double> st = this->bie_kernel_->influence(
-            *source_element, is_l, *receiver_element, ir_l); // column major
+            *source_element, is_l, *receiver_element,
+            ir_l); // column major
         // std::cout << "kernel size =" << st.size() << std::endl;
         // std::cout << "DOF dimension =" << dof_dimension_ << std::endl;
         IL_EXPECT_FAST(st.size() == dof_dimension_ * dof_dimension_);

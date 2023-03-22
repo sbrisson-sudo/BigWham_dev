@@ -34,21 +34,22 @@ class BieElastostatic : public BieKernel<double> {
   // or / derived from this one.
 
 protected:
-  il::Array<double> kernel_properties_{};
+  il::Array<double> kernel_properties_;
   bie::ElasticProperties elas_;
-  bool local_unknowns_{true};
-  bool local_co_variables_{true};
+  bool local_unknowns_;
+  bool local_co_variables_;
 
 public:
   BieElastostatic() : BieKernel<double>(){};
 
-  BieElastostatic(bie::ElasticProperties &elas, il::int_t dim)
+  BieElastostatic(const bie::ElasticProperties &elas, const il::int_t dim)
       : BieKernel<double>() {
     elas_ = elas;
     this->dof_dimension_ = dim;
     this->dim_ = dim;
-  };
-
+    this->local_unknowns_ = true;
+    this->local_co_variables_ = true;
+  }
   BieElastostatic(bie::ElasticProperties &elas, il::int_t dim,
                   bool local_unknowns, bool local_co_variables)
       : BieKernel<double>() {
@@ -59,12 +60,12 @@ public:
     local_co_variables_ = local_co_variables;
   };
 
-  void set_kernel_properties(il::Array<double> &prop) {
+  void set_kernel_properties(const il::Array<double> &prop) {
     kernel_properties_ = prop;
   }
 
-  bool isLocalUnknowns() const { return local_unknowns_; };
-  bool isLocalCoVariables() const { return local_co_variables_; };
+  bool is_local_unknowns() const { return local_unknowns_; };
+  bool is_local_covariables() const { return local_co_variables_; };
 
   virtual std::vector<double> influence(const BoundaryElement &source_elt,
                                         il::int_t i_s,

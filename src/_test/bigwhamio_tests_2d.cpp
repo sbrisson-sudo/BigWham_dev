@@ -10,15 +10,16 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include "BigWhamIO.h"
+#include "hmat/hmatrix/Hmat.h"
 
-#include "core/BoundaryElement.h"
-#include "core/BEMesh.h"
-#include "core/SquareMatrixGenerator.h"
-#include "hmat/cluster/cluster.h"
+#include "bigwham_io.h"
+
+#include "elements/boundary_element.h"
+#include "core/be_mesh.h"
+#include "hmat/square_matrix_generator.h"
+
 #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
 #include "elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.h"
-#include "hmat/hmatrix/Hmat.h"
 
 
 TEST(bigwham_io_2d,Sp3D0_1_1){

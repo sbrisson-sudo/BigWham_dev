@@ -113,7 +113,7 @@ tractionHMAT.set(coor,
       eps_aca)
 
 # flattened collocation points
-mycollp = tractionHMAT.getCollocationPoints()
+mycollp = tractionHMAT.get_collocation_points()
 print(mycollp)
 print("\n")
 

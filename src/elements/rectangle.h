@@ -28,7 +28,7 @@ namespace bie{
         Rectangle() ;
         ~Rectangle();
 
-        void setElement(il::Array2D<double> xv) {
+        void set_element(il::Array2D<double> xv) {
             IL_ASSERT(xv.size(0)==n_vertices_);
             //
             for (il::int_t j = 0; j < this->spatial_dimension_; j++) {

@@ -133,7 +133,7 @@ class Mesh2D {  // class for   1D segment elements
   //   Methods
   ////////////////////////////////////////////////////////////////////////////////////////////
 
-  il::Array2D<double> getCollocationPoints();
+  il::Array2D<double> get_collocation_points();
 
   bie::SegmentData getElementData(il::int_t ne)  const;
 };

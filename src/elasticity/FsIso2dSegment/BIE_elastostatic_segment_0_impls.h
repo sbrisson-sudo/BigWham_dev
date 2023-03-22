@@ -10,8 +10,8 @@
 #define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_0_IMPLS_H
 
 
-#include "elasticity/BieElastostatic.h"
-#include "core/elements/Segment.h"
+#include "elasticity/bie_elastostatic.h"
+#include "elements/segment.h"
 
 #include "Elastic2D_segment.h"
 
@@ -32,7 +32,7 @@ namespace bie {
        // il::StaticArray2D<double, 2, 2> Rt = source_elt.rotationMatrix_T();; // transpose rotation matrix
         il::StaticArray<double, 2> xe;
         auto Xmid = source_elt.getCentroid();
-        auto r_col = receiver_elt.getCollocationPoints();
+        auto r_col = receiver_elt.get_collocation_points();
         for (int i = 0; i < 2; ++i) {
             xe[i] = r_col(i_r, i) - Xmid[i];
         }
@@ -73,7 +73,7 @@ namespace bie {
         // switch to the frame of the source element....
         il::StaticArray<double, 2> xe;
         auto Xmid = source_elt.getCentroid();
-        auto r_col = receiver_elt.getCollocationPoints();
+        auto r_col = receiver_elt.get_collocation_points();
         for (int i = 0; i < 2; ++i) {
             xe[i] = r_col(i_r, i) - Xmid[i];
         }
@@ -141,7 +141,7 @@ namespace bie {
         // switch to the frame of the source element....
         il::StaticArray<double, 2> xe;
         auto Xmid = source_elt.getCentroid();
-        auto r_col = receiver_elt.getCollocationPoints();
+        auto r_col = receiver_elt.get_collocation_points();
         for (int i = 0; i < 2; ++i) {
             xe[i] = r_col(i_r, i) - Xmid[i];
         }

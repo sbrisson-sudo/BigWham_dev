@@ -52,7 +52,7 @@ ElasticAxiSymmRingKernel::influence(ElemType src_el, il::int_t src_colid,
   // double rExt = source_elt.Xmid(0) + source_elt.size() / 2.0;
   // double rInt = source_elt.Xmid(0) - source_elt.size() / 2.0;
 
-  auto rec_colpts = rec_el.getCollocationPoints();
+  auto rec_colpts = rec_el.get_collocation_points();
   double rObs = std::sqrt(rec_colpts(0, 0) * rec_colpts(0, 0) +
                           rec_colpts(0, 1) * rec_colpts(0, 1));
 

@@ -102,13 +102,13 @@ class Hmatrix(LinearOperator):
         return: (no_collo_pts, dim) array from mesh
         """
         dim = self.H_.getSpatialDimension()
-        return np.asarray(self.H_.getCollocationPoints()).reshape(
+        return np.asarray(self.H_.get_collocation_points()).reshape(
             (self.matvec_size_ // dim, dim)
         )
 
     def getCollocationPoints(self):
         n = self.H_.getSpatialDimension()
-        aux = np.asarray(self.H_.getCollocationPoints())
+        aux = np.asarray(self.H_.get_collocation_points())
         auxpermut = np.reshape(aux, (int(aux.size / n), n))
         permut = self.getPermutation()
         colPts = 0.0 * auxpermut

@@ -42,7 +42,7 @@ namespace bie {
         il::StaticArray2D<double, 2, 2> Rt = source_elt.rotationMatrix_T();
         il::StaticArray<double, 2> xe;
         auto Xmid = source_elt.getCentroid();
-        auto r_col = receiver_elt.getCollocationPoints();
+        auto r_col = receiver_elt.get_collocation_points();
         for (int i = 0; i < 2; ++i) {
             xe[i] = r_col(i_r, i) - Xmid[i];
         }

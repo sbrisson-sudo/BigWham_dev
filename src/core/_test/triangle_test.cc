@@ -13,6 +13,8 @@
 
 #include "elements/triangle.h"
 
+/* -------------------------------------------------------------------------- */
+
 TEST(triangle, triangle_0_1) {
 
   il::Array2D<double> xyz{3, 3, 0.0};
@@ -23,6 +25,7 @@ TEST(triangle, triangle_0_1) {
 
   ASSERT_TRUE(tri0.get_spatial_dimension() == 3);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_0_2) {
   il::Array2D<double> xyz{3, 3, 0.0};
@@ -32,6 +35,7 @@ TEST(triangle, triangle_0_2) {
   tri0.set_element(xyz);
   ASSERT_TRUE(tri0.get_number_collocation_points() == 1);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_0_3) {
   // check rotation matrix
@@ -45,6 +49,7 @@ TEST(triangle, triangle_0_3) {
               R(0, 2) == 0 & R(1, 0) == 0 && R(1, 2) == 0 && R(2, 0) == 0 &&
               R(2, 1) == 0);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_0_4) {
   // check centroid
@@ -56,6 +61,7 @@ TEST(triangle, triangle_0_4) {
   auto x = tri0.get_centroid();
   ASSERT_TRUE(x[0] == 1. / 3 && x[1] == 1. / 3 && x[2] == 0.);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_0_5) {
   // check nodes
@@ -68,6 +74,7 @@ TEST(triangle, triangle_0_5) {
   ASSERT_TRUE(abs(x(0, 0) - 1. / 3) < 1.e-12 &&
               abs(x(0, 1) - 1. / 3) < 1.e-12 && abs(x(0, 2)) < 1.e-12);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_0_6) {
   // check vertices
@@ -80,6 +87,7 @@ TEST(triangle, triangle_0_6) {
   ASSERT_TRUE(x(0, 0) == xyz(0, 0) && x(0, 1) == xyz(0, 1) &&
               x(0, 2) == xyz(0, 2));
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_0_7) {
   // check normal
@@ -91,6 +99,7 @@ TEST(triangle, triangle_0_7) {
   auto x = tri0.get_normal();
   ASSERT_TRUE(x[0] == 0 && x[1] == 0 && x[2] == 1);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_0_8) {
   // check tangent 1
@@ -102,6 +111,7 @@ TEST(triangle, triangle_0_8) {
   auto x = tri0.get_tangent_1();
   ASSERT_TRUE(x[0] == 1 && x[1] == 0 && x[2] == 0);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_0_9) {
   // check tangent 2
@@ -113,6 +123,7 @@ TEST(triangle, triangle_0_9) {
   auto x = tri0.get_tangent_2();
   ASSERT_TRUE(x[0] == 0 && x[1] == 1 && x[2] == 0);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_2_0) {
   // check # nodes
@@ -124,6 +135,7 @@ TEST(triangle, triangle_2_0) {
   auto x = tri2.get_nodes();
   ASSERT_TRUE(tri2.get_number_nodes() == 6);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_2_1) {
   //  check dimension
@@ -136,6 +148,7 @@ TEST(triangle, triangle_2_1) {
   std::cout << x(0, 0);
   ASSERT_TRUE(tri2.get_spatial_dimension() == 3);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_2_2) {
   // check # collocation points
@@ -148,6 +161,7 @@ TEST(triangle, triangle_2_2) {
   std::cout << x(0, 0);
   ASSERT_TRUE(tri2.get_number_collocation_points() == 6);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_2_3) {
   // check rotation matrix
@@ -161,6 +175,7 @@ TEST(triangle, triangle_2_3) {
               R(0, 2) == 0 & R(1, 0) == 0 && R(1, 2) == 0 && R(2, 0) == 0 &&
               R(2, 1) == 0);
 }
+/* -------------------------------------------------------------------------- */
 
 TEST(triangle, triangle_2_4) {
   // check collocation points location

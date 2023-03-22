@@ -8,7 +8,7 @@ title: BigWham API
 ---
 classDiagram
     class BoundaryElement~int dim, int nvert, int p~{
-        +getCollocationPoints()
+        +get_collocation_points()
     }
     class Segment{
     }
