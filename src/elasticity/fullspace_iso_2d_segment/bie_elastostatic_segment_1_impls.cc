@@ -14,12 +14,13 @@
 #include "elements/boundary_element.h"
 #include "elements/segment.h"
 
-#include "elastic_2dP1_element.h"
+#include "elastic_2dP1_segment.h"
+/* -------------------------------------------------------------------------- */
 
 namespace bie {
 
 template <>
-inline std::vector<double>
+std::vector<double>
 BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
@@ -42,26 +43,18 @@ BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>::influence(
   // first row shear traction  (effect of shear and opening DD)
   // second row normal traction (effect of shear and opening DD)
 
-  auto R = source_elt.rotation_matrix();
-
-  //        il::StaticArray2D<double, 2, 2> Rt = R; // transpose rotation matrix
-  //        Rt(0, 1) = R(1, 0);
-  //        Rt(1, 0) = R(0, 1);
-  auto Rt = source_elt.rotation_matrix_t();
-  il::StaticArray<double, 2> xe;
-  auto Xmid = source_elt.getCentroid();
-  auto r_col = receiver_elt.get_collocation_points();
+  il::Array<double> xe{2, 0.};
+  auto Xmid = source_elt.centroid();
+  auto r_col = receiver_elt.collocation_points();
   for (int i = 0; i < 2; ++i) {
     xe[i] = r_col(i_r, i) - Xmid[i];
   }
-  xe = source_elt.to_local(xe); // il::dot(Rt, xe);
+  xe = source_elt.ConvertToLocal(xe);
 
-  il::StaticArray<double, 2> n = source_elt.to_local(
-      receiver_elt.getNormal()); // il::dot(Rt, receiver_elt.getNormal());
-  il::StaticArray<double, 2> s =
-      source_elt.to_local(receiver_elt.getTangent()); // il::dot(Rt, );
+  auto n = source_elt.ConvertToLocal(receiver_elt.normal());
+  auto s = source_elt.ConvertToLocal(receiver_elt.tangent1());
 
-  double h = source_elt.getSize();
+  double h = source_elt.size();
 
   double n1n1 = n[0] * n[0];
   double n2n2 = n[1] * n[1];
@@ -73,8 +66,8 @@ BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>::influence(
 
   // columns sxxs, sxys, syys, syyn
   // (knowing that sxxn and sxyn are respectively equal to sxys and syys )
-  il::StaticArray<double, 4> stress_l =
-      stresses_kernel_dp1_dd_nodal(i_s, h, this->elas_.young_modulus_plane_strain(), xe[0], xe[1]);
+  il::StaticArray<double, 4> stress_l = stresses_kernel_dp1_dd_nodal(
+      i_s, h, this->elas_.young_modulus_plane_strain(), xe[0], xe[1]);
 
   // shear traction
   // shear dd
@@ -111,6 +104,9 @@ BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>::influence(
   stnl[3] = snn;
   return stnl;
 }
+/* -------------------------------------------------------------------------- */
+
+template class BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>;
 
 } // namespace bie
 

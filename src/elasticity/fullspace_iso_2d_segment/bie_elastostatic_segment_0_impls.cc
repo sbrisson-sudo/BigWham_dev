@@ -21,7 +21,7 @@ namespace bie {
 
 //  U kernel - pt force displacement
 template <>
-inline std::vector<double>
+std::vector<double>
 BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
@@ -78,7 +78,7 @@ BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>::influence(
 
 //       Singular Kernel   T
 template <>
-inline std::vector<double>
+std::vector<double>
 BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
@@ -153,7 +153,7 @@ BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>::influence(
 
 //      HyperSingular Kernel   H
 template <>
-inline std::vector<double>
+std::vector<double>
 BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {

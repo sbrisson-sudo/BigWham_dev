@@ -14,14 +14,13 @@
 //      Displacement discontinuity positive in overlap dd=u^- - u^+
 //
 
-// Inclusion from Inside Loop library
 #include <il/Array2D.h>
 #include <il/linearAlgebra.h>
 #include <il/math.h>
 
-// Inclusion from the project
-#include "elastic_2dP0_segment.h"
 #include "core/elastic_properties.h"
+#include "elastic_2dP1_segment.h"
+
 
 namespace bie {
 

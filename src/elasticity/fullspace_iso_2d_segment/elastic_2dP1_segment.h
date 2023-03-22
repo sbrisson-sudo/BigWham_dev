@@ -14,7 +14,7 @@
 #include <il/StaticArray2D.h>
 #include <il/StaticArray.h>
 
-#include "core/ElasticProperties.h"
+#include "core/elastic_properties.h"
 #include "core/oldies/Mesh2D.h"
 #include "core/oldies/SegmentData.h"
 

@@ -15,15 +15,15 @@
 #include <il/math.h>
 
 // Inclusion from the project
-#include "core/ElasticProperties.h"
+#include "core/elastic_properties.h"
 #include "core/oldies/Mesh2D.h"
-#include <elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.h>
+
+#include "elastic_sp3dP0_element.h"
 
 // contains fundamental plane-strain elasticity kernels.
 // for fracture segment with linear variation of displacement discontinuities
 // (DD)
 
-namespace bie {
 
 //------------------------------------------------------------------------------
 // implementation of the Wu & Olson (2015) Simplified 3D kernels for constant
@@ -213,6 +213,8 @@ double rectangular_integration(double x, double y, double z, double a, double b,
   return (Func(x, y, z, a, b) - Func(x, y, z, a, mb) - Func(x, y, z, ma, b) +
           Func(x, y, z, ma, mb));
 }
+
+namespace bie {
 //
 //// Fundamental stress kernel - only  effect of DD_x(e_1) and DD_z (e3)
 //// this function output the 3D stress in the 3D frame for completeness ?

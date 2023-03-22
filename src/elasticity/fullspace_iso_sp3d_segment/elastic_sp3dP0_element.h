@@ -11,12 +11,10 @@
 #ifndef HFP_SIMPLIFIED3D_H
 #define HFP_SIMPLIFIED3D_H
 
-// Inclusion from Inside Loop library
 #include <il/StaticArray2D.h>
 #include <il/StaticArray.h>
 
-// Inclusion from the project
-#include "core/ElasticProperties.h"
+#include "core/elastic_properties.h"
 #include "core/oldies/Mesh2D.h"
 #include "core/oldies/SegmentData.h"
 

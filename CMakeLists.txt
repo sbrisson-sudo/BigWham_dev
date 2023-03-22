@@ -180,7 +180,7 @@ if(BIGWHAM_TESTING)
         # src/_test/elastic3DR0_element_benchmark.cpp
         # src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
         src/core/_test/segment_test.cc
-        # src/elasticity/_test/segment0_sp3d_test.cc
+        src/elasticity/_test/segment0_sp3d_test.cc
         src/core/_test/bemesh_test.cc
         src/elasticity/_test/elastic_square_matrix_generator_test.cc
         src/core/_test/hierarchical_representation_test.cc
