@@ -6,22 +6,20 @@
 // Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/math.h>
-#include <memory>
 
+#include "hmat/hmatrix/Hmat.h"
+#include "hmat/square_matrix_generator.h"
 #include "core/be_mesh.h"
 #include "elasticity/bie_elastostatic.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
-#include "hmat/square_matrix_generator.h"
-// #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
-// #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h"
-// #include "elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.h"
 
-#include "hmat/hmatrix/Hmat.h"
 /* -------------------------------------------------------------------------- */
 
 TEST(SquareMatGen, segment_0_1) {
