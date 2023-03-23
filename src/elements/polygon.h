@@ -24,8 +24,8 @@ public:
 
   virtual void SetElement(const il::Array2D<double> &coods_vertices) override;
   virtual void SetRotationMatrices() override;
-  virtual void set_collocation_points() = 0;
-  virtual void set_nodes() = 0;
+  virtual void SetCollocationPoints() = 0;
+  virtual void SetNodes() = 0;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -56,7 +56,7 @@ template <int p> inline void Polygon<p>::SetRotationMatrices() {
 }
 /* -------------------------------------------------------------------------- */
 
-template <> inline void Polygon<0>::set_nodes() {
+template <> inline void Polygon<0>::SetNodes() {
   // 0 order element: collocation at centroid
   il::Array2D<double> col{1, 3, 0.};
   for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
@@ -66,7 +66,7 @@ template <> inline void Polygon<0>::set_nodes() {
 }
 /* -------------------------------------------------------------------------- */
 
-template <> inline void Polygon<0>::set_collocation_points() {
+template <> inline void Polygon<0>::SetCollocationPoints() {
   // 0 order element: collocation at centroid
   il::Array2D<double> col{1, 3, 0.};
   for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
@@ -98,9 +98,15 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
     this->tangent1_[j] = vertices_(1, j) - vertices_(0, j);
     this->tangent2_[j] = vertices_(num_vertices_ - 1, j) - vertices_(0, j);
   }
-
   double size_s = il::norm(this->tangent1_, il::Norm::L2);
   double size_t = il::norm(this->tangent2_, il::Norm::L2);
+
+  // check if rectangle
+  if (this->num_vertices_ == 4) {
+    auto dot_1_2 = il::dot(this->tangent1_, this->tangent2_);
+    IL_EXPECT_FAST(dot_1_2 == 0);
+    this->size_ = size_s * size_t; // area of rectangle
+  }
 
   // normal s and t
   for (il::int_t k = 0; k < spatial_dimension_; ++k) {
@@ -129,8 +135,8 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
     this->tangent2_[j] = this->tangent2_[j] / norm;
   }
   this->SetRotationMatrices();
-  this->set_collocation_points();
-  this->set_nodes();
+  this->SetCollocationPoints();
+  this->SetNodes();
 }
 
 } // namespace bie

@@ -47,8 +47,8 @@ public:
   }
   ~Triangle() {}
 
-  virtual void set_collocation_points() override;
-  virtual void set_nodes() override;
+  virtual void SetCollocationPoints() override;
+  virtual void SetNodes() override;
 };
 } // namespace bie
 #endif // BIGWHAM_TRIANGLE_H

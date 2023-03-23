@@ -14,7 +14,7 @@ namespace bie {
 //   Triangle 0
 /* -------------------------------------------------------------------------- */
 
-template <> void Triangle<0>::set_collocation_points() {
+template <> void Triangle<0>::SetCollocationPoints() {
   // 0 order element: collocation at centroid
   il::Array2D<double> col{1, 3, 0.};
   for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
@@ -24,7 +24,7 @@ template <> void Triangle<0>::set_collocation_points() {
 }
 /* -------------------------------------------------------------------------- */
 
-template <> void Triangle<0>::set_nodes() {
+template <> void Triangle<0>::SetNodes() {
   // 0 order element: collocation at centroid
   il::Array2D<double> col{1, 3, 0.};
   for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
@@ -36,7 +36,7 @@ template <> void Triangle<0>::set_nodes() {
 // Triangle 1
 /* -------------------------------------------------------------------------- */
 
-template <> void Triangle<1>::set_nodes() {
+template <> void Triangle<1>::SetNodes() {
   IL_EXPECT_FAST(this->spatial_dimension_ == 3 &&
                  (this->vertices_).size(0) == 3);
   il::Array2D<double> nodes{this->spatial_dimension_, this->spatial_dimension_,
@@ -50,7 +50,7 @@ template <> void Triangle<1>::set_nodes() {
 }
 /* -------------------------------------------------------------------------- */
 
-template <> void Triangle<1>::set_collocation_points() {
+template <> void Triangle<1>::SetCollocationPoints() {
   // 1 order element: collocation points
   //   col points located on the line from centroid to vertices with offset
   //   beta from vertices
@@ -68,7 +68,7 @@ template <> void Triangle<1>::set_collocation_points() {
 // Triangle 2
 /* -------------------------------------------------------------------------- */
 
-template <> void Triangle<2>::set_nodes() {
+template <> void Triangle<2>::SetNodes() {
   // nodes for the T2
   //                             0
   //                           /   \
@@ -97,7 +97,7 @@ template <> void Triangle<2>::set_nodes() {
 }
 /* -------------------------------------------------------------------------- */
 
-template <> void Triangle<2>::set_collocation_points() {
+template <> void Triangle<2>::SetCollocationPoints() {
   // 1 order element: collocation points
   //   col points located on the line from centroid to vertices with offset
   //   beta from vertices
@@ -110,7 +110,7 @@ template <> void Triangle<2>::set_collocation_points() {
                   this->vertices_(i, j);
     }
   }
-  this->set_nodes(); // because we need the middle-edge nodes
+  this->SetNodes(); // because we need the middle-edge nodes
   // loop over collocation points related to middle-edge nodes (from 3 -> 5)
   for (il::int_t j = 0; j < this->spatial_dimension_; j++) {
     for (il::int_t i = this->spatial_dimension_;

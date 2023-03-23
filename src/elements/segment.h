@@ -20,8 +20,8 @@ namespace bie {
 template <int p> class Segment : public BoundaryElement {
 
 protected:
-  void set_nodes();
-  void set_collocation_points();
+  void SetNodes();
+  void SetCollocationPoints();
 
 public:
   Segment() : BoundaryElement(2, p) {
@@ -86,13 +86,13 @@ inline void Segment<p>::SetElement(const il::Array2D<double> &xv) {
   this->normal_[1] = this->tangent1_[0];
 
   this->SetRotationMatrices();
-  this->set_collocation_points();
-  this->set_nodes();
+  this->SetCollocationPoints();
+  this->SetNodes();
 }
 /* -------------------------------------------------------------------------- */
 
 // Zero order segment
-template <> inline void Segment<0>::set_collocation_points() {
+template <> inline void Segment<0>::SetCollocationPoints() {
   // 0 order element: collocation at centroid
   // std::cout << " in set collo ! \n";
   il::Array2D<double> col{1, 2, 0.};
@@ -104,7 +104,7 @@ template <> inline void Segment<0>::set_collocation_points() {
 /* -------------------------------------------------------------------------- */
 
 // Linear Segment
-template <> inline void Segment<1>::set_collocation_points() {
+template <> inline void Segment<1>::SetCollocationPoints() {
   // on ref element x in [-1,1]   y=0
   // collocation @ -1/sqrt(2), 1/sqrt(2)
   il::Array2D<double> x_col{2, 2, 0.0};
@@ -125,7 +125,7 @@ template <> inline void Segment<1>::set_collocation_points() {
 }
 /* -------------------------------------------------------------------------- */
 
-template <int p> inline void Segment<p>::set_nodes() {
+template <int p> inline void Segment<p>::SetNodes() {
   this->nodes_ = this->collocation_points_; // by default nodes = collocation
                                             // points for 0 element
 };

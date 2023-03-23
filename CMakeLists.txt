@@ -172,7 +172,6 @@ if(BIGWHAM_TESTING)
     set(TESTED_SOURCE_FILES ${SOURCE_FILES})
     set(UNIT_TEST_FILES
         il/gtest/src/gtest-all.cc
-        # src/elasticity/_test/elasticity_tests.cpp
         # src/_test/penny_shaped_crack_analytical_sol.h
         # src/_test/penny_shaped_crack_analytical_sol.cpp
         # src/core/_test/FaceData_tests.cpp
@@ -186,10 +185,10 @@ if(BIGWHAM_TESTING)
         src/core/_test/hierarchical_representation_test.cc
         # src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
         src/core/_test/triangle_test.cc
-        # src/core/_test/rectangle_tests.cpp
+        src/core/_test/rectangle_test.cc
         src/_test/bigwhamio_test_2d.cc
         src/elasticity/_test/triangle0_test.cc
-        # src/elasticity/FsIso2dSegment/_test/plane_elasticity_segment.cpp
+        src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc
         src/elasticity/_test/segment0_kernels_test.cc
       )
 
