@@ -12,91 +12,92 @@
 #include <il/Array2D.h>
 
 #include "core/be_mesh.h"
+#include "elements/rectangle.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
-// #include "elements/rectangle.h"
 
 /* -------------------------------------------------------------------------- */
 
 // 2D mesh test
-TEST(bemesh_seg,seg_0_1){
-    int n_elts=4;
-    il::Array2D<double> coor{n_elts+1,2,0.};
-    il::Array2D<double> eltC{n_elts,2,0.};
-    il::Array2D<il::int_t> conn{n_elts,2};
-    double h=1;
-    for (int i=0;i<n_elts+1;i++) {
-        coor(i,0)=i*h;
-    }
-    for (int i=0;i<n_elts;i++){
-            conn(i,0)= i;
-            conn(i,1)=i+1;
-            eltC(i,0)=(coor(i,0)+coor(i+1,0))/2.;
-    }
-    bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
-    my_mesh.ConstructMesh();
-    il::Array2D<double> test=my_mesh.collocation_points();
-    bool t= true;
-    for (int i=0;i<n_elts;i++){
-        t = t && (abs(test(i,0)-eltC(i,0))<1.e-6);
-    }
-    ASSERT_TRUE( t );
+TEST(bemesh_seg, seg_0_1) {
+  int n_elts = 4;
+  il::Array2D<double> coor{n_elts + 1, 2, 0.};
+  il::Array2D<double> eltC{n_elts, 2, 0.};
+  il::Array2D<il::int_t> conn{n_elts, 2};
+  double h = 1;
+  for (int i = 0; i < n_elts + 1; i++) {
+    coor(i, 0) = i * h;
+  }
+  for (int i = 0; i < n_elts; i++) {
+    conn(i, 0) = i;
+    conn(i, 1) = i + 1;
+    eltC(i, 0) = (coor(i, 0) + coor(i + 1, 0)) / 2.;
+  }
+  bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
+  my_mesh.ConstructMesh();
+  il::Array2D<double> test = my_mesh.collocation_points();
+  bool t = true;
+  for (int i = 0; i < n_elts; i++) {
+    t = t && (abs(test(i, 0) - eltC(i, 0)) < 1.e-6);
+  }
+  ASSERT_TRUE(t);
 }
 /* -------------------------------------------------------------------------- */
 
-TEST(bemesh_seg,seg_0_2){
-    int n_elts=6;
-    il::Array2D<double> coor{n_elts+1,2,0.};
-    il::Array2D<double> eltC{n_elts,2,0.};
-    il::Array2D<il::int_t> conn{n_elts,2};
-    double h=0.123;
-    for (int i=0;i<n_elts+1;i++) {
-        coor(i,1)=i*h;
-        coor(i,0)=i*h;
-    }
-    for (int i=0;i<n_elts;i++){
-        conn(i,0)= i;
-        conn(i,1)=i+1;
-        eltC(i,0)=(coor(i,0)+coor(i+1,0))/2.;
-        eltC(i,1)=(coor(i,1)+coor(i+1,1))/2.;
-    }
-    bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
-    my_mesh.ConstructMesh();
-    il::Array2D<double> test=my_mesh.collocation_points();
-    bool t= true;
-    for (int i=0;i<n_elts;i++){
-        t = t && (abs(test(i,1)-eltC(i,1))<1.e-6) &&
-        (abs(test(i,0)-eltC(i,0))<1.e-6);
-    }
-    ASSERT_TRUE( t );
+TEST(bemesh_seg, seg_0_2) {
+  int n_elts = 6;
+  il::Array2D<double> coor{n_elts + 1, 2, 0.};
+  il::Array2D<double> eltC{n_elts, 2, 0.};
+  il::Array2D<il::int_t> conn{n_elts, 2};
+  double h = 0.123;
+  for (int i = 0; i < n_elts + 1; i++) {
+    coor(i, 1) = i * h;
+    coor(i, 0) = i * h;
+  }
+  for (int i = 0; i < n_elts; i++) {
+    conn(i, 0) = i;
+    conn(i, 1) = i + 1;
+    eltC(i, 0) = (coor(i, 0) + coor(i + 1, 0)) / 2.;
+    eltC(i, 1) = (coor(i, 1) + coor(i + 1, 1)) / 2.;
+  }
+  bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
+  my_mesh.ConstructMesh();
+  il::Array2D<double> test = my_mesh.collocation_points();
+  bool t = true;
+  for (int i = 0; i < n_elts; i++) {
+    t = t && (abs(test(i, 1) - eltC(i, 1)) < 1.e-6) &&
+        (abs(test(i, 0) - eltC(i, 0)) < 1.e-6);
+  }
+  ASSERT_TRUE(t);
 }
 /* -------------------------------------------------------------------------- */
 
-TEST(bemesh_seg,seg_1_1){
-    int n_elts=4;
-    il::Array2D<double> coor{n_elts+1,2,0.};
-    il::Array2D<double> eltC{n_elts,2,0.};
-    il::Array2D<il::int_t> conn{n_elts,2};
-    double h=7.23;
-    for (int i=0;i<n_elts+1;i++) {
-        coor(i,0)=i*h;
-    }
-    for (int i=0;i<n_elts;i++){
-        conn(i,0)= i;
-        conn(i,1)=i+1;
-        eltC(i,0)=(coor(i,0)+coor(i+1,0))/2.;
-    }
-    bie::BEMesh<bie::Segment<1>> my_mesh(coor, conn);
-    my_mesh.ConstructMesh();
-    il::Array2D<double> test=my_mesh.collocation_points();
-    bool t= true;
-    for (int i=0;i<n_elts;i++){ // left col points
-        t = t && (abs(test(2*i,0)-eltC(i,0)+(h/2.)/sqrt(2))<1.e-6);
-    }
-    for (int i=0;i<n_elts;i++){ // right col points
-        t = t && (abs(test(2*i+1,0)-eltC(i,0)-(h/2.)/sqrt(2))<1.e-6);
-    }
-    ASSERT_TRUE( t && (test.size(0)==n_elts*2) );//
+TEST(bemesh_seg, seg_1_1) {
+  int n_elts = 4;
+  il::Array2D<double> coor{n_elts + 1, 2, 0.};
+  il::Array2D<double> eltC{n_elts, 2, 0.};
+  il::Array2D<il::int_t> conn{n_elts, 2};
+  double h = 7.23;
+  for (int i = 0; i < n_elts + 1; i++) {
+    coor(i, 0) = i * h;
+  }
+  for (int i = 0; i < n_elts; i++) {
+    conn(i, 0) = i;
+    conn(i, 1) = i + 1;
+    eltC(i, 0) = (coor(i, 0) + coor(i + 1, 0)) / 2.;
+  }
+  bie::BEMesh<bie::Segment<1>> my_mesh(coor, conn);
+  my_mesh.ConstructMesh();
+  il::Array2D<double> test = my_mesh.collocation_points();
+  bool t = true;
+  for (int i = 0; i < n_elts; i++) { // left col points
+    t = t && (abs(test(2 * i, 0) - eltC(i, 0) + (h / 2.) / sqrt(2)) < 1.e-6);
+  }
+  for (int i = 0; i < n_elts; i++) { // right col points
+    t = t &&
+        (abs(test(2 * i + 1, 0) - eltC(i, 0) - (h / 2.) / sqrt(2)) < 1.e-6);
+  }
+  ASSERT_TRUE(t && (test.size(0) == n_elts * 2)); //
 }
 /* -------------------------------------------------------------------------- */
 // Triangular Mesh tests
@@ -168,40 +169,45 @@ TEST(bemesh_triangle, triangle_0_2) {
 // Rectangular mesh
 /* -------------------------------------------------------------------------- */
 
-// TEST(bemesh_rectangle,rect_0_1){
-//     // cartesian mesh with _x*n_y rectangles on the same plane
-//     il::int_t n_x=3,n_y=1;il::int_t nelts=n_x*n_y;
-//     double hx=1.;double hy=2.;
-//     il::Array2D<double> coor{(n_x+1)*(n_y+1),3,0.};
-//     for (il::int_t k2=0;k2<n_y+1;k2++){
-//         for (il::int_t k=0;k<n_x+1;k++){
-//             coor(k+k2*(n_x+1),0)=hx*k;
-//             coor(k+k2*(n_x+1),1)=hy*k2;
-//         }
-//     }
-//     il::Array2D<il::int_t> conn{nelts,4,0};
-//     il::int_t c=0;
-//     for (il::int_t k2=0;k2<n_y;k2++){
-//         for (il::int_t k=0;k<n_x;k++){
-//             conn(c,0)=k+k2*n_y;conn(c,1)=k+1+k2*n_y;
-//             conn(c,2)=(k+1)+k2*n_y+n_x+1;conn(c,3)=(k)+k2*n_y+n_x+1;
-//             c++;
-//         }
-//     }
-//     for (il::int_t c=0;c<nelts;c++){
-//         std::cout << " elt #" << c<< " conn - " << conn(c,0) <<"-"<<
-//         conn(c,1) <<"-" <<conn(c,2) << "-" << conn(c,3) <<"\n";
-//     }
-//     bie::BEMesh<bie::Rectangle<0>> my_mesh(coor, conn);
-//     il::Array2D<double> test=my_mesh.collocation_points();
-//     bie::Rectangle<0> rec_a;
-//     il::Array2D<double> xv=my_mesh.getVertices(0);
+TEST(bemesh_rectangle, rect_0_1) {
+  // cartesian mesh with _x*n_y rectangles on the same plane
+  il::int_t n_x = 3, n_y = 1;
+  il::int_t nelts = n_x * n_y;
+  double hx = 1.;
+  double hy = 2.;
+  il::Array2D<double> coor{(n_x + 1) * (n_y + 1), 3, 0.};
+  for (il::int_t k2 = 0; k2 < n_y + 1; k2++) {
+    for (il::int_t k = 0; k < n_x + 1; k++) {
+      coor(k + k2 * (n_x + 1), 0) = hx * k;
+      coor(k + k2 * (n_x + 1), 1) = hy * k2;
+    }
+  }
+  il::Array2D<il::int_t> conn{nelts, 4, 0};
+  il::int_t c = 0;
+  for (il::int_t k2 = 0; k2 < n_y; k2++) {
+    for (il::int_t k = 0; k < n_x; k++) {
+      conn(c, 0) = k + k2 * n_y;
+      conn(c, 1) = k + 1 + k2 * n_y;
+      conn(c, 2) = (k + 1) + k2 * n_y + n_x + 1;
+      conn(c, 3) = (k) + k2 * n_y + n_x + 1;
+      c++;
+    }
+  }
+  // for (il::int_t c = 0; c < nelts; c++) {
+  //   std::cout << " elt #" << c << " conn - " << conn(c, 0) << "-" << conn(c, 1)
+  //             << "-" << conn(c, 2) << "-" << conn(c, 3) << "\n";
+  // }
+  bie::BEMesh<bie::Rectangle<0>> my_mesh(coor, conn);
+  my_mesh.ConstructMesh();
+  il::Array2D<double> test = my_mesh.collocation_points();
+  bie::Rectangle<0> rec_a;
+  il::Array2D<double> xv = my_mesh.vertices(0);
+  rec_a.SetElement(xv);
 
-//     rec_a.set_element(xv);
-//     auto aux=il::dot(rec_a.getTangent_1(),rec_a.getNormal());
-//     auto aux2=il::dot(rec_a.getTangent_1(),rec_a.getTangent_2());
-//     std::cout <<  rec_a.area() <<"\n";
-//     ASSERT_TRUE(my_mesh.numberOfElts()==nelts && aux==0 && aux2==0 &&
-//     (rec_a.area()==2.0) &&
-//     (test.size(0)==my_mesh.numberCollocationPoints()));
-// }
+  auto aux = il::dot(rec_a.tangent1(), rec_a.normal());
+  auto aux2 = il::dot(rec_a.tangent1(), rec_a.tangent2());
+  // std::cout << rec_a.size() << "\n";
+  ASSERT_TRUE(my_mesh.num_elements() == nelts && aux == 0 && aux2 == 0 &&
+              (rec_a.size() == 2.0) &&
+              (test.size(0) == my_mesh.num_collocation_points()));
+}

@@ -7,13 +7,14 @@
 // LICENSE.TXT file for more details.
 //
 
-#include "FaceData.h"
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/StaticArray.h>
 #include <il/linearAlgebra.h>
 #include <iostream>
 #include <limits>
+
+#include "FaceData.h"
 
 namespace bie {
 

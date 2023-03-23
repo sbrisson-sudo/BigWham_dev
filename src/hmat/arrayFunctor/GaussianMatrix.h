@@ -10,7 +10,7 @@
 
 #include <il/math.h>
 
-#include "hmat/arrayFunctor/MatrixGenerator.h"
+#include "hmat/arrayFunctor/matrix_generator.h"
 
 // This an example of a Matrix Generator needed to code for the implementation of a
 // BIE kernel

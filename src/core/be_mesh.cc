@@ -1,4 +1,5 @@
 #include "core/be_mesh.h"
+#include "elements/rectangle.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
 
@@ -66,5 +67,6 @@ template class BEMesh<Triangle<1>>;
 template class BEMesh<Triangle<2>>;
 template class BEMesh<Segment<0>>;
 template class BEMesh<Segment<1>>;
+template class BEMesh<Rectangle<0>>;
 
 } // namespace bie

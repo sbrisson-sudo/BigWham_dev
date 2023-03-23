@@ -10,8 +10,8 @@
 #ifndef BIGWHAM_POLYGON_H
 #define BIGWHAM_POLYGON_H
 
-#include "elements/boundary_element.h"
 #include <il/linearAlgebra/dense/norm.h>
+#include "elements/boundary_element.h"
 
 namespace bie {
 

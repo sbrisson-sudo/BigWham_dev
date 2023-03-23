@@ -26,7 +26,7 @@ TEST(elas_fs_iso_segment, U_0_1) {
   U_exact(0, 0) = -0.0408623;
   U_exact(1, 1) = 0.00587676;
   double eps = 1.e-6;
-  std::cout << Ue(0, 0) << "\n";
+  // std::cout << Ue(0, 0) << "\n";
   ASSERT_TRUE(abs(Ue(0, 0) - U_exact(0, 0)) < eps &&
               abs(Ue(1, 0) - U_exact(1, 0)) < eps &&
               abs(Ue(1, 1) - U_exact(1, 1)) < eps &&

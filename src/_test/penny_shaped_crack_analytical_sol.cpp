@@ -7,10 +7,9 @@
 // See the LICENSE.TXT file for more details.
 //
 
-#include <iostream>
-#include <math.h>
-#include "_test/penny_shaped_crack_analytical_sol.h"
 #include <vector>
+
+#include "penny_shaped_crack_analytical_sol.h"
 
 namespace bie{
     double pi_() {return 3.14159265358979323846;}

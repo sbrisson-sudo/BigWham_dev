@@ -27,9 +27,9 @@ public:
       this->num_collocation_points_ = this->num_nodes_;
       break;
     }
-  this->vertices_.Resize(this->num_vertices_, 2);
-  this->collocation_points_.Resize(this->num_collocation_points_, 2);
-  this->nodes_.Resize(this->num_nodes_, 2);
+  this->vertices_.Resize(this->num_vertices_, 3);
+  this->collocation_points_.Resize(this->num_collocation_points_, 3);
+  this->nodes_.Resize(this->num_nodes_, 3);
   }
   ~Rectangle() {}
 
