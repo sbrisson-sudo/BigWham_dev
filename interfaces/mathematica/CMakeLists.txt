@@ -59,8 +59,8 @@ find_file(WOLFRAMSCRIPT_EXE wolframscript REQUIRED)
 
 mark_as_advanced(WOLFRAMSCRIPT_EXE)
 
-set(MMA_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/LibraryResources/${CMAKE_HOST_SYSTEM_NAME}-x86-64/HmatExpressions.so")
-#message("  OUTPUT ${MMA_OUTPUT}")
+set(MMA_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/BigWhamLink/LibraryResources/${CMAKE_HOST_SYSTEM_NAME}-x86-64/HmatExpressions${CMAKE_SHARED_LIBRARY_SUFFIX}")
+message("  OUTPUT ${MMA_OUTPUT}")
 add_custom_command(
   OUTPUT "${MMA_OUTPUT}"
   COMMAND ${WOLFRAMSCRIPT_EXE} -print all -v -f compile.m
