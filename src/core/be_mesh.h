@@ -71,13 +71,6 @@ public:
   il::Array2D<double> vertices(il::int_t element_id) const;
 
   virtual void ConstructMesh() override;
-
-  virtual il::Array2D<double>
-  ConvertToGlobal(const il::Array2D<double> &local_vec) const override;
-
-  //
-  virtual il::Array2D<double>
-  ConvertToLocal(const il::Array2D<double> &global_vec) const override;
 };
 
 } // namespace bie

@@ -46,22 +46,6 @@ template <class ElemType> void BEMesh<ElemType>::ConstructMesh() {
 }
 /* -------------------------------------------------------------------------- */
 
-template <class ElemType>
-il::Array2D<double>
-BEMesh<ElemType>::ConvertToGlobal(const il::Array2D<double> &local_vec) const {
-  il::Array2D<double> v;
-  return v;
-}
-/* -------------------------------------------------------------------------- */
-
-template <class ElemType>
-il::Array2D<double>
-BEMesh<ElemType>::ConvertToLocal(const il::Array2D<double> &global_vec) const {
-  il::Array2D<double> v;
-  return v;
-}
-/* -------------------------------------------------------------------------- */
-
 template class BEMesh<Triangle<0>>;
 template class BEMesh<Triangle<1>>;
 template class BEMesh<Triangle<2>>;

@@ -124,6 +124,8 @@ PYBIND11_MODULE(bigwhamPybind, m) {
       .def("getSpatialDimension", &Bigwhamio::getSpatialDimension)
       .def("matrixSize", &Bigwhamio::matrixSize)
       .def("getHpattern", &Bigwhamio::getHpattern)
+      .def("convert_to_global", &Bigwhamio::ConvertToGlobal)
+      .def("convert_to_local", &Bigwhamio::ConvertToLocal)
       //.def("hdotProductInPermutted", &Bigwhamio::hdotProductInPermutted)
       // I change the previous binding of hdotProductInPermutted to return a
       // numpy array!!

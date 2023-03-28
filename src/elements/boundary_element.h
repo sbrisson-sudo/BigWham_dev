@@ -10,7 +10,6 @@
 #ifndef BIGWHAM_BOUNDARYELEMENT_H
 #define BIGWHAM_BOUNDARYELEMENT_H
 
-#include "il/container/2d/Array2D.h"
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/blas.h>
@@ -90,10 +89,10 @@ public:
   il::Array2D<double> rotation_matrix() const { return rotation_matrix_; }
   il::Array2D<double> rotation_matrix_t() const { return rotation_matrix_t_; }
 
-  il::Array<double> ConvertToLocal(const il::Array<double> global_vec) const {
+  il::Array<double> ConvertToLocal(const il::Array<double>& global_vec) const {
     return il::dot(this->rotation_matrix_, global_vec);
   }
-  il::Array<double> ConvertToGlobal(const il::Array<double> local_vec) const {
+  il::Array<double> ConvertToGlobal(const il::Array<double>& local_vec) const {
     return il::dot(this->rotation_matrix_t_, local_vec);
   }
 

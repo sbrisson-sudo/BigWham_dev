@@ -94,7 +94,9 @@ std::shared_ptr<bie::Mesh> createMeshFromVect(int spatial_dimension,
 //////////////////////////// the 'infamous' Bigwhamio class
 class Bigwhamio {
 private:
-  bie::Hmat<double> h_{}; // the  Hmat object
+  bie::Hmat<double> hmat_; // the  Hmat object
+  std::shared_ptr<bie::Mesh> mesh_;
+  std::shared_ptr<bie::BieKernel<double>> ker_obj_;
 
   il::Array<il::int_t>
       permutation_; // permutation list of the collocation points
@@ -146,8 +148,6 @@ public:
     std::cout << " Now setting things for kernel ... " << kernel_
               << " with properties size " << properties.size() << "\n";
     il::Timer tt;
-    std::shared_ptr<bie::Mesh> mesh;
-    std::shared_ptr<bie::BieKernel<double>> ker;
 
     if (kernel_ == "S3DP0") {
       IL_ASSERT(properties.size() == 3);
@@ -159,9 +159,9 @@ public:
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
       using EltType = bie::Segment<0>;
-      mesh = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
-                                         conn);
-      ker = std::make_shared<
+      mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                          conn);
+      ker_obj_ = std::make_shared<
           bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
           elas, dimension_);
       break;
@@ -170,23 +170,22 @@ public:
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
       using EltType = bie::Segment<0>;
-      mesh = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
-                                         conn);
-      ker = std::make_shared<
-          bie::BieElastostaticSp3d<EltType, EltType, bie::ElasticKernelType::H>>(
-          elas, dimension_);
+      mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                          conn);
+      ker_obj_ = std::make_shared<bie::BieElastostaticSp3d<
+          EltType, EltType, bie::ElasticKernelType::H>>(elas, dimension_);
 
       il::Array<double> prop{1, properties[2]};
-      ker->set_kernel_properties(prop);
+      ker_obj_->set_kernel_properties(prop);
       break;
     }
     case "2DP1"_sh: {
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
       using EltType = bie::Segment<1>;
-      mesh = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
-                                         conn);
-      ker = std::make_shared<
+      mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                          conn);
+      ker_obj_ = std::make_shared<
           bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
           elas, dimension_);
       break;
@@ -195,9 +194,9 @@ public:
       dimension_ = 3;
       int nvertices_per_elt_ = 3;
       using EltType = bie::Triangle<0>;
-      mesh = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
-                                         conn);
-      ker = std::make_shared<
+      mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                          conn);
+      ker_obj_ = std::make_shared<
           bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
           elas, dimension_);
       break;
@@ -206,9 +205,10 @@ public:
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
       using EltType = bie::Segment<0>;
-      mesh = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
-                                         conn);
-      ker = std::make_shared<bie::ElasticAxiSymmRingKernel>(elas, dimension_);
+      mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                          conn);
+      ker_obj_ =
+          std::make_shared<bie::ElasticAxiSymmRingKernel>(elas, dimension_);
       break;
     }
     default: {
@@ -217,27 +217,27 @@ public:
     }
     }
     tt.Start();
-    auto hr = h_representation_square_matrix(mesh, max_leaf_size, eta);
+    auto hr = h_representation_square_matrix(mesh_, max_leaf_size, eta);
     tt.Stop();
     collocation_points_ =
-        mesh->collocation_points(); // be careful returning it in original
-                                    // ordering.  note this is only for
-                                    // the output function
-                                    // getCollocationPoints
-                                    // ... could be deleted possibly
+        mesh_->collocation_points(); // be careful returning it in original
+                                     // ordering.  note this is only for
+                                     // the output function
+                                     // getCollocationPoints
+                                     // ... could be deleted possibly
     h_representation_time_ = tt.time();
     tt.Reset();
     tt.Start();
-    bie::SquareMatrixGenerator<double> M(mesh, ker, hr);
-    h_.toHmat(M, hr, epsilon_aca_);
+    bie::SquareMatrixGenerator<double> M(mesh_, ker_obj_, hr);
+    hmat_.toHmat(M, hr, epsilon_aca_);
     tt.Stop();
     permutation_ = hr.permutation_0_;
     hmat_time_ = tt.time();
-    if (h_.isBuilt()) {
+    if (hmat_.isBuilt()) {
       is_built_ = true;
-      dof_dimension_ = h_.dofDimension();
+      dof_dimension_ = hmat_.dofDimension();
       std::cout << "HMAT --> built \n";
-      double test_cr = h_.compressionRatio();
+      double test_cr = hmat_.compressionRatio();
       std::cout << "HMAT set"
                 << ", CR = " << test_cr << ", eps_aca = " << epsilon_aca_
                 << ", eta = " << eta_ << "\n";
@@ -259,7 +259,7 @@ public:
     // this function will free the memory and set the hmat obj to its initial
     // status prior to initialization this will avoid ownership specifications
     // at binding time
-    this->h_.hmatMemFree();
+    this->hmat_.hmatMemFree();
   };
   /* --------------------------------------------------------------------------
    */
@@ -304,7 +304,7 @@ public:
 
   double getCompressionRatio() {
     IL_EXPECT_FAST(is_built_);
-    return h_.compressionRatio();
+    return hmat_.compressionRatio();
   }
   /*
    */
@@ -321,7 +321,7 @@ public:
   /* --------------------------------------------------------------------------
    */
 
-  long matrixSize(int k) { return h_.size(k); };
+  long matrixSize(int k) { return hmat_.size(k); };
   /* --------------------------------------------------------------------------
    */
 
@@ -338,7 +338,7 @@ public:
 
     IL_EXPECT_FAST(is_built_);
 
-    bie::HPattern pattern = h_.pattern();
+    bie::HPattern pattern = hmat_.pattern();
 
     long numberofblocks = pattern.n_B;
     long len = 6 * numberofblocks;
@@ -350,7 +350,7 @@ public:
     //  starts with full rank
     for (il::int_t j = 0; j < pattern.n_FRB; j++) {
       // check is low rank or not
-      //  il::Array2DView<double> A = h_.asFullRank(s);
+      //  il::Array2DView<double> A = hmat_.asFullRank(s);
       patternlist[index++] = pattern.FRB_pattern(1, j);
       patternlist[index++] = pattern.FRB_pattern(2, j);
       patternlist[index++] = pattern.FRB_pattern(3, j);
@@ -388,7 +388,7 @@ public:
 
     il::Array<double> values{};
     il::Array<int> positions{};
-    h_.fullBlocksOriginal(permutation_, il::io, values, positions);
+    hmat_.fullBlocksOriginal(permutation_, il::io, values, positions);
     //    std::cout << " checking values size" << values.size() <<  "\n";
     val_list.reserve(values.size());
     for (il::int_t i = 0; i < values.size(); i++) {
@@ -410,7 +410,7 @@ public:
     // output in the original dof state (accounting for the permutation)
 
     IL_EXPECT_FAST(is_built_);
-    val_list = h_.diagonalOriginal(permutation_);
+    val_list = hmat_.diagonalOriginal(permutation_);
 
     std::cout << " End of Bigwhamio getDiagonal() \n";
   }
@@ -420,9 +420,9 @@ public:
   std::vector<double> matvect(const std::vector<double> &x) {
     // in the original / natural ordering
     IL_EXPECT_FAST(this->is_built_);
-    IL_EXPECT_FAST(h_.size(0) == h_.size(1));
-    IL_EXPECT_FAST(h_.size(1) == x.size());
-    std::vector<double> y = h_.matvecOriginal(permutation_, x);
+    IL_EXPECT_FAST(hmat_.size(0) == hmat_.size(1));
+    IL_EXPECT_FAST(hmat_.size(1) == x.size());
+    std::vector<double> y = hmat_.matvecOriginal(permutation_, x);
     return y;
   }
   /* --------------------------------------------------------------------------
@@ -431,13 +431,25 @@ public:
   std::vector<double> hdotProductInPermutted(const std::vector<double> &x) {
     // in the permutted state.
     IL_EXPECT_FAST(this->is_built_);
-    IL_EXPECT_FAST(h_.size(0) == h_.size(1));
-    IL_EXPECT_FAST(h_.size(1) == x.size());
-    std::vector<double> y = h_.matvec(x);
+    IL_EXPECT_FAST(hmat_.size(0) == hmat_.size(1));
+    IL_EXPECT_FAST(hmat_.size(1) == x.size());
+    std::vector<double> y = hmat_.matvec(x);
     return y;
   }
   /* -------------------------------------------------------------------------
    */
+  std::vector<double> ConvertToGlobal(const std::vector<double> &x_local) {
+    // Input: x in original state (not permutted)
+    // Output: in original state (not permutted)
+    return mesh_->ConvertToGlobal(x_local);
+  }
+  /* -------------------------------------------------------------------------
+   */
+  std::vector<double> ConvertToLocal(const std::vector<double> &x_global) {
+    // Input: x in original state (not permutted)
+    // Output: in original state (not permutted)
+    return mesh_->ConvertToLocal(x_global);
+  }
 
 }; // end class bigwhamio
 

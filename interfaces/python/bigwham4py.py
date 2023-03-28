@@ -74,7 +74,7 @@ class Hmatrix(LinearOperator):
         self.shape_ = (self.H_.matrixSize(0), self.H_.matrixSize(1))
         super().__init__(self.dtype_, self.shape_)
 
-    def _matvec(self, v):
+    def _matvec(self, v: np.ndarray) -> np.ndarray:
         """
         This function implements the dot product.
         :param v: vector expected to be of size self.HMAT_size_
@@ -90,13 +90,13 @@ class Hmatrix(LinearOperator):
         return self.dtype_
 
     # some useful methods
-    def getCompression(self):
+    def getCompression(self) -> float:
         return self.H_.getCompressionRatio()
 
-    def getPermutation(self):
+    def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.getPermutation())
 
-    def getMeshCollocationPoints(self):
+    def getMeshCollocationPoints(self) -> np.ndarray:
         """
         Get collocation points from mesh (no permutations ....)
         return: (no_collo_pts, dim) array from mesh
@@ -106,7 +106,23 @@ class Hmatrix(LinearOperator):
             (self.matvec_size_ // dim, dim)
         )
 
-    def getCollocationPoints(self):
+    def convert_to_global(self, x_local: np.ndarray) -> np.ndarray:
+        """
+        Convert local vector to global vector
+        :param x_local: local vector
+        :return: global vector
+        """
+        return self.H_.convertToGlobal(x_local)
+
+    def convert_to_local(self, x_global: np.ndarray) -> np.ndarray:
+        """
+        Convert global vector to local vector
+        :param x_global: global vector
+        :return: local vector
+        """
+        return self.H_.convertToLocal(x_global)
+
+    def getCollocationPoints(self) -> np.ndarray:
         n = self.H_.getSpatialDimension()
         aux = np.asarray(self.H_.getCollocationPoints())
         auxpermut = np.reshape(aux, (int(aux.size / n), n))
@@ -115,7 +131,7 @@ class Hmatrix(LinearOperator):
         colPts[permut] = auxpermut
         return colPts
 
-    def getSpatialDimension(self):
+    def getSpatialDimension(self) -> int:
         return self.H_.getSpatialDimension()
 
     def _getFullBlocks(self):
@@ -127,7 +143,7 @@ class Hmatrix(LinearOperator):
         row = np.asarray(fb.getRowN(), dtype=int)
         return csc_matrix((val, (row, col)), shape=self.shape_)
 
-    def _getPattern(self):
+    def _getPattern(self) -> np.ndarray:
         aux = np.asarray(self.H_.getHpattern())
         #  as flattened list via a pointer
         #  the numberofblocks is also returned (by reference)
