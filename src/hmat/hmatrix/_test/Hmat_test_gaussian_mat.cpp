@@ -10,8 +10,10 @@
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/math.h>
+#include <memory>
 //
 #include "hmat/cluster/cluster.h"
+#include "hmat/hierarchical_representation.h"
 #include "hmat/hmatrix/Hmat.h"
 #include "hmat/hmatrix/toHPattern.h"
 
@@ -27,12 +29,12 @@ TEST(hmat, gaussian_1) {
   bie::Cluster cluster = bie::cluster(32, il::io, points);
   const il::Tree<bie::SubHMatrix, 4> block_tree =
       bie::hmatrixTreeIxI(points, cluster.partition, 3.);
-  bie::HRepresentation hr;
-  hr.pattern_ = bie::createPattern(block_tree);
-  hr.permutation_0_ = cluster.permutation;
-  bie::GaussianMatrix<double> M{n, beta};
-  bie::Hmat<double> h_(M, hr, 1.e-3);
-  std::cout << " n FB " << hr.pattern_.n_FRB << "\n";
+  auto hr = std::make_shared<bie::HRepresentation>();
+  hr->pattern_ = bie::createPattern(block_tree);
+  hr->permutation_0_ = cluster.permutation;
+  bie::GaussianMatrix<double> M{n, beta, hr};
+  bie::Hmat<double> h_(M, 1.e-3);
+  std::cout << " n FB " << hr->pattern_.n_FRB << "\n";
   std::cout << " Size " << M.size(0) << " -" << M.size(1) << "\n";
   std::cout << " Compression " << h_.compressionRatio() << "\n";
   ASSERT_TRUE(h_.isBuilt());
@@ -49,12 +51,12 @@ TEST(hmat, gaussian_hmat_diag) {
   bie::Cluster cluster = bie::cluster(32, il::io, points);
   const il::Tree<bie::SubHMatrix, 4> block_tree =
       bie::hmatrixTreeIxI(points, cluster.partition, 3.);
-  bie::HRepresentation hr;
-  hr.pattern_ = bie::createPattern(block_tree);
-  hr.permutation_0_ = cluster.permutation;
-  bie::GaussianMatrix<double> M{n, alpha};
-  bie::Hmat<double> h_(M, hr, 1.e-3);
-  std::cout << " n FB " << hr.pattern_.n_FRB << "\n";
+  auto hr = std::make_shared<bie::HRepresentation>();
+  hr->pattern_ = bie::createPattern(block_tree);
+  hr->permutation_0_ = cluster.permutation;
+  bie::GaussianMatrix<double> M{n, alpha, hr};
+  bie::Hmat<double> h_(M, 1.e-3);
+  std::cout << " n FB " << hr->pattern_.n_FRB << "\n";
   std::cout << " Size " << M.size(0) << " -" << M.size(1) << "\n";
   std::cout << " Compression " << h_.compressionRatio() << "\n";
   std::vector<double> diag = h_.diagonal();

@@ -9,8 +9,10 @@
 #pragma once
 
 #include <il/math.h>
+#include <memory>
 
 #include "hmat/arrayFunctor/matrix_generator.h"
+#include "hmat/hierarchical_representation.h"
 
 // This an example of a Matrix Generator needed to code for the implementation of a
 // BIE kernel
@@ -26,8 +28,8 @@ class GaussianMatrix : public bie::MatrixGenerator<T> {
   double alpha_;
 
  public:
-  GaussianMatrix(il::int_t n, double alpha);
-  GaussianMatrix(il::int_t n, il::Range range0, il::Range range1, double alpha);
+  GaussianMatrix(il::int_t n, double alpha, const std::shared_ptr<HRepresentation>& hr);
+  GaussianMatrix(il::int_t n, il::Range range0, il::Range range1, double alpha, const std::shared_ptr<HRepresentation>& hr);
   il::int_t size(il::int_t d) const override;
   il::int_t blockSize() const override;
   il::int_t sizeAsBlocks(il::int_t d) const override;
@@ -36,9 +38,10 @@ class GaussianMatrix : public bie::MatrixGenerator<T> {
 };
 
 template <typename T>
-GaussianMatrix<T>::GaussianMatrix(il::int_t n, double alpha) {
+GaussianMatrix<T>::GaussianMatrix(il::int_t n, double alpha, const std::shared_ptr<HRepresentation>& hr) {
   IL_EXPECT_MEDIUM(n >= 0);
 
+  this->hr_ = hr;
   n_ = n;
   range0_ = il::Range{0, n};
   range1_ = il::Range{0, n};
@@ -47,11 +50,12 @@ GaussianMatrix<T>::GaussianMatrix(il::int_t n, double alpha) {
 
 template <typename T>
 GaussianMatrix<T>::GaussianMatrix(il::int_t n, il::Range range0,
-                                  il::Range range1, double alpha) {
+                                  il::Range range1, double alpha, const std::shared_ptr<HRepresentation>& hr) {
   IL_EXPECT_MEDIUM(n >= 0);
   IL_EXPECT_MEDIUM(range0.begin >= 0 && range0.end <= n);
   IL_EXPECT_MEDIUM(range1.begin >= 0 && range1.end <= n);
 
+  this->hr_ = hr;
   n_ = n;
   range0_ = range0;
   range1_ = range1;

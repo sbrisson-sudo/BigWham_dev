@@ -35,8 +35,8 @@ TEST(SquareMatGen, segment_0_1) {
       std::make_shared<bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
                                             bie::ElasticKernelType::H>>(
           elas, xy.size(1));
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, 1, 2.0);
+  auto hr =
+      bie::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
   bie::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   ASSERT_TRUE(M.size(1) == 2 && M.size(0) == 2);
 }
@@ -55,8 +55,8 @@ TEST(SquareMatGen, segment_0_2) {
       std::make_shared<bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
                                             bie::ElasticKernelType::H>>(
           elas, xy.size(1));
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, 1, 2.0);
+  auto hr =
+      bie::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
   bie::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   ASSERT_TRUE(M.blockSize() == 2 &&
               M.sizeAsBlocks(0) == my_mesh->num_elements());
@@ -78,8 +78,8 @@ TEST(SquareMatGen, segment_0_3) {
           elas, xy.size(1));
   // il::Array<double> prop{1, 1000.};
   // test->set_kernel_properties(prop);
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, 1, 2.0);
+  auto hr =
+      bie::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
   bie::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   il::Array2D<double> A{M.size(0), M.size(1), 0.0};
   il::Array2DEdit<double> v = A.Edit();
@@ -119,10 +119,10 @@ TEST(SquareMatGen, segment_0_Hmat_1) {
           elas, coor.size(1));
 
   il::int_t max_leaf_size = 32;
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, max_leaf_size, 1.0);
+  auto hr =
+      bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, 1.0);
   bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
-  bie::Hmat<double> h_(M, hr, 1.e-3);
+  bie::Hmat<double> h_(M, 1.e-3);
   ASSERT_TRUE(h_.isBuilt()); // h_.isBuilt()
 }
 /* -------------------------------------------------------------------------- */
@@ -152,15 +152,15 @@ TEST(SquareMatGen, segment_0_Hmat_2) {
           elas, coor.size(1));
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, max_leaf_size, eta);
+  auto hr =
+      bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
   bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, hr, eps_aca);
+  bie::Hmat<double> h_(M, eps_aca);
   // simple opening mode...
   il::Array<double> x{M.size(1), 0.0}, y{M.size(1), 0.0};
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
-    x[2 * hr.permutation_0_[i] + 1] =
+    x[2 * hr->permutation_0_[i] + 1] =
         4.0 * sqrt(L * L - xcol(i, 0) * xcol(i, 0));
   }
   y = h_.matvec(x);
@@ -207,13 +207,13 @@ TEST(SquareMatGen, segment_1_Hmat_1_segs_45_a1) {
           elas, xy.size(1));
   il::int_t max_leaf_size = 320;
   double eta = 0.0;
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, max_leaf_size, eta);
+  auto hr =
+      bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
   bie::SquareMatrixGenerator<
       double>
       M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, hr, eps_aca);
+  bie::Hmat<double> h_(M, eps_aca);
   /// analytical results from mathematica integration for that particular
   // case
   // we compare the results of the assembly w.t the mma code
@@ -291,7 +291,7 @@ TEST(SquareMatGen, segment_1_Hmat_1_segs_45_a1) {
   Kmma(7, 6) = 2.27998e-16;
   Kmma(7, 7) = 0.483423;
 
-  const il::Array<il::int_t> permutation = hr.permutation_0_;
+  auto permutation = hr->permutation_0_;
   il::Array<double> val_list;
   il::Array<int> pos_list;
   h_.fullBlocksOriginal(permutation, il::io, val_list, pos_list);
@@ -340,13 +340,13 @@ TEST(SquareMatGen, segment_1_Hmat_1_two_adjacent_segs) {
 
   il::int_t max_leaf_size = 320;
   double eta = 0.0;
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, max_leaf_size, eta);
+  auto hr =
+      bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
   bie::SquareMatrixGenerator<
       double>
       M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, hr, eps_aca);
+  bie::Hmat<double> h_(M, eps_aca);
   /// analytical results from mathematica integration for that particular
   // case
   // we compare the results of the assembly w.t the mma code
@@ -424,7 +424,7 @@ TEST(SquareMatGen, segment_1_Hmat_1_two_adjacent_segs) {
   Kmma(7, 6) = 0.;
   Kmma(7, 7) = -0.683664;
 
-  const il::Array<il::int_t> permutation = hr.permutation_0_;
+  auto permutation = hr->permutation_0_;
   il::Array<double> val_list;
   il::Array<int> pos_list;
   h_.fullBlocksOriginal(permutation, il::io, val_list, pos_list);
@@ -472,12 +472,13 @@ TEST(SquareMatGen, Triangle_0_1) {
   auto ker = std::make_shared<Kernel>(elas, dim);
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
-  bie::HRepresentation hr =
-      bie::h_representation_square_matrix(my_mesh, max_leaf_size, eta);
-  bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
+  auto hr =
+      bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bie
+      ::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, hr, eps_aca);
-  const il::Array<il::int_t> permutation = hr.permutation_0_;
+  bie::Hmat<double> h_(M, eps_aca);
+  auto permutation = hr->permutation_0_;
   il::Array<double> val_list;
   il::Array<int> pos_list;
   h_.fullBlocksOriginal(permutation, il::io, val_list, pos_list);

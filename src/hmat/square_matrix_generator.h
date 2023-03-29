@@ -33,7 +33,6 @@ namespace bie {
 template <typename T> class SquareMatrixGenerator : public MatrixGenerator<T> {
 
 private:
-  const il::Array<il::int_t> permutation_;
   const std::shared_ptr<Mesh> mesh_;
   const std::shared_ptr<BieKernel<T>> bie_kernel_;
 
@@ -44,7 +43,7 @@ private:
 public:
   SquareMatrixGenerator(const std::shared_ptr<Mesh> &mesh,
                         const std::shared_ptr<BieKernel<T>> &bie_kernel,
-                        const HRepresentation &hr);
+                        const std::shared_ptr<HRepresentation> &hr);
   il::int_t size(il::int_t d) const override;
   il::int_t blockSize() const override;
   il::int_t sizeAsBlocks(il::int_t d) const override;
@@ -55,8 +54,9 @@ public:
 template <typename T>
 SquareMatrixGenerator<T>::SquareMatrixGenerator(
     const std::shared_ptr<Mesh> &mesh,
-    const std::shared_ptr<BieKernel<T>> &bie_kernel, const HRepresentation &hr)
-    : mesh_(mesh), bie_kernel_(bie_kernel), permutation_(hr.permutation_0_) {
+    const std::shared_ptr<BieKernel<T>> &bie_kernel, const std::shared_ptr<HRepresentation> &hr)
+    : mesh_(mesh), bie_kernel_(bie_kernel) {
+  this->hr_ = hr;
   num_points_ = this->mesh_->num_collocation_points();
   dof_dimension_ = this->bie_kernel_->dof_dimension();
   size_ = num_points_ * dof_dimension_;
@@ -99,7 +99,7 @@ void SquareMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       // from k1 - permute back to original mesh ordering using permutation
       // of
       // the clusters.
-      il::int_t old_k1 = this->permutation_[k1];
+      il::int_t old_k1 = this->hr_->permutation_0_[k1];
       il::int_t e_k1 = this->mesh_->GetElementId(old_k1);
       il::int_t is_l = this->mesh_->GetElementCollocationId(old_k1);
 
@@ -107,7 +107,7 @@ void SquareMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
 
       for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
         il::int_t k0 = b0 + j0;
-        il::int_t old_k0 = this->permutation_[k0];
+        il::int_t old_k0 = this->hr_->permutation_1_[k0];
         il::int_t e_k0 = mesh_->GetElementId(old_k0); //  receiver element
         il::int_t ir_l = mesh_->GetElementCollocationId(old_k0);
 

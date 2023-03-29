@@ -217,7 +217,7 @@ public:
     }
     }
     tt.Start();
-    auto hr = h_representation_square_matrix(mesh_, max_leaf_size, eta);
+    auto hr = HRepresentationSquareMatrix(mesh_, max_leaf_size, eta);
     tt.Stop();
     collocation_points_ =
         mesh_->collocation_points(); // be careful returning it in original
@@ -229,9 +229,9 @@ public:
     tt.Reset();
     tt.Start();
     bie::SquareMatrixGenerator<double> M(mesh_, ker_obj_, hr);
-    hmat_.toHmat(M, hr, epsilon_aca_);
+    hmat_.toHmat(M, epsilon_aca_);
     tt.Stop();
-    permutation_ = hr.permutation_0_;
+    permutation_ = hr->permutation_0_;
     hmat_time_ = tt.time();
     if (hmat_.isBuilt()) {
       is_built_ = true;

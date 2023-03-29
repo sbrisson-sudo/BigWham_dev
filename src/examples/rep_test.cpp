@@ -96,10 +96,10 @@ int main(int argc, char *argv[]) {
   std::cout << "Number of Collocation points  = " << xcol.size(0) << " X "
             << xcol.size(1) << std::endl;
 
-  auto hr = h_representation_square_matrix(my_mesh, max_leaf_size, eta);
+  auto hr = HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
 
   SquareMatrixGenerator<double> M(my_mesh, ker, hr);
-  bie::Hmat<double> h_(M, hr, eps_aca);
+  bie::Hmat<double> h_(M, eps_aca);
 
   il::Array<double> dd{M.size(1), 0.0};
   il::Array<double> dd_perm{M.size(1), 0.0};
@@ -116,16 +116,16 @@ int main(int argc, char *argv[]) {
   }
 
   for (il::int_t i = 0; i < M.sizeAsBlocks(1); i++) {
-    il::int_t j = hr.permutation_1_[i];
+    il::int_t j = hr->permutation_1_[i];
     for (uint d = 0; d < dim; d++) {
       dd_perm[dim * i + d] = dd[dim * j + d];
     }
   }
 
-  cnpy::npy_save("perm1.npy", hr.permutation_1_.Data(),
-                 {static_cast<unsigned long>(hr.permutation_1_.size())});
-  cnpy::npy_save("perm0.npy", hr.permutation_0_.Data(),
-                 {static_cast<unsigned long>(hr.permutation_0_.size())});
+  cnpy::npy_save("perm1.npy", hr->permutation_1_.Data(),
+                 {static_cast<unsigned long>(hr->permutation_1_.size())});
+  cnpy::npy_save("perm0.npy", hr->permutation_0_.Data(),
+                 {static_cast<unsigned long>(hr->permutation_0_.size())});
   cnpy::npy_save("collocation.npy", xcol.Data(),
                  {static_cast<unsigned long>(xcol.size(0) * xcol.size(1))});
   cnpy::npy_save("dd.npy", dd.Data(), {static_cast<unsigned long>(dd.size())});
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
 
   // std::cout << "Traction Perm \n " << print_array1D(trac_perm) << std::endl;
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
-    il::int_t j = hr.permutation_0_[i];
+    il::int_t j = hr->permutation_0_[i];
     for (uint d = 0; d < dim; d++) {
       trac[dim * j + d] = trac_perm[dim * i + d];
     }
