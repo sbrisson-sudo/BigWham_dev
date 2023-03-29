@@ -33,10 +33,11 @@
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 #include "elasticity/bie_elastostatic.h"
-#include "hmat/square_matrix_generator.h"
+#include "hmat/bie_matrix_generator.h"
 
 #include "elasticity/fullspace_iso_axisymm_flat_ring_unidirectional/bie_elastostatic_axi3d0.h"
 #include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
+// #include "hmat/square_matrix_generator.h"
 // #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
 // #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h"
 // #include "elasticity/3d/bie_elastostatic_triangle_0_impls.h"
@@ -228,7 +229,7 @@ public:
     h_representation_time_ = tt.time();
     tt.Reset();
     tt.Start();
-    bie::SquareMatrixGenerator<double> M(mesh_, ker_obj_, hr);
+    bie::BieMatrixGenerator<double> M(mesh_, mesh_, ker_obj_, hr);
     hmat_.toHmat(M, epsilon_aca_);
     tt.Stop();
     permutation_ = hr->permutation_0_;

@@ -17,6 +17,7 @@
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 #include "core/mesh.h"
+#include "il/core/core.h"
 
 namespace bie {
 
@@ -63,11 +64,13 @@ inline BieMatrixGenerator<T>::BieMatrixGenerator(
 
 template <typename T>
 inline il::int_t BieMatrixGenerator<T>::size(il::int_t d) const {
+  il::int_t size;
   if (d == 0) {
-    return size0_;
+    size = size0_;
   } else if (d == 1) {
-    return size1_;
+    size = size1_;
   }
+  return size;
 }
 
 template <typename T>
@@ -77,11 +80,13 @@ inline il::int_t BieMatrixGenerator<T>::blockSize() const {
 
 template <typename T>
 inline il::int_t BieMatrixGenerator<T>::sizeAsBlocks(il::int_t d) const {
+  il::int_t num;
   if (d == 0) {
-    return num_row_points_;
+    num = num_row_points_;
   } else if (d == 1) {
-    return num_col_points_;
+    num = num_col_points_;
   }
+  return num;
 }
 
 template <typename T>
