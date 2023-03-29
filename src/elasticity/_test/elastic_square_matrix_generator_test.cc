@@ -13,8 +13,11 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
+#include "hmat/hierarchical_representation.h"
 #include "hmat/hmatrix/Hmat.h"
 #include "hmat/square_matrix_generator.h"
+#include "hmat/bie_matrix_generator.h"
+
 #include "core/be_mesh.h"
 #include "elasticity/bie_elastostatic.h"
 #include "elements/segment.h"
@@ -476,6 +479,62 @@ TEST(SquareMatGen, Triangle_0_1) {
       bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
   bie
       ::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
+  double eps_aca = 1.e-3;
+  bie::Hmat<double> h_(M, eps_aca);
+  auto permutation = hr->permutation_0_;
+  il::Array<double> val_list;
+  il::Array<int> pos_list;
+  h_.fullBlocksOriginal(permutation, il::io, val_list, pos_list);
+  // for (int i = 0; i < 9; i++) {
+  //   std::cout << val_list[i] << "\n";
+  // }
+  ASSERT_TRUE(h_.isBuilt());
+  // simple opening mode...
+  //    il::Array<double> x{M.size(1),0.0},y{M.size(1),0.0};
+  //    for(il::int_t i=0;i<M.sizeAsBlocks(0);i++){
+  //        x[2*hr.permutation_0_[i]+1]=4.0*sqrt(L*L-xcol(i,0)*xcol(i,0) );
+  //    }
+  //    y=h_.matvec(x);
+  //    il::Array<double> rel_err{M.sizeAsBlocks(0),0.};
+  //    for (il::int_t i=0;i<M.sizeAsBlocks(0);i++){
+  //        rel_err[i]=sqrt((y[2*i+1]-1.)*(y[2*i+1]-1.));
+  //        //std::cout << "rel x: " << rel_err[i] << "\n";
+  //    }
+}
+/* -------------------------------------------------------------------------- */
+
+
+TEST(RectangleMatGen, Triangle_0_1) {
+  // 2 triangles on the same plane making a square of size 1 by 1
+  // Same mesh source and reciver
+  int dim = 3;
+  il::Array2D<double> coor{4, 3, 0.};
+
+  coor(1, 0) = 1.;
+  coor(2, 1) = 1.;
+  coor(3, 0) = 1.;
+  coor(3, 1) = 1.;
+
+  il::Array2D<il::int_t> conn{2, 3, 0};
+  conn(0, 1) = 1;
+  conn(0, 2) = 2;
+  conn(1, 0) = 2;
+  conn(1, 1) = 1;
+  conn(1, 2) = 3;
+
+  auto my_mesh = std::make_shared<bie::BEMesh<bie::Triangle<0>>>(coor, conn);
+  my_mesh->ConstructMesh();
+  il::Array2D<double> xcol = my_mesh->collocation_points();
+  bie::ElasticProperties elas(1, 0.0);
+
+  using Kernel = bie::BieElastostatic<bie::Triangle<0>, bie::Triangle<0>,
+                                      bie::ElasticKernelType::H>;
+  auto ker = std::make_shared<Kernel>(elas, dim);
+  il::int_t max_leaf_size = 32;
+  double eta = 2.0;
+  auto hr =
+    bie::HRepresentationRectangularMatrix(my_mesh, my_mesh, max_leaf_size, eta);
+  bie::BieMatrixGenerator<double> M(my_mesh, my_mesh, ker, hr);
   double eps_aca = 1.e-3;
   bie::Hmat<double> h_(M, eps_aca);
   auto permutation = hr->permutation_0_;
