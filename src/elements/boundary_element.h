@@ -51,16 +51,16 @@ protected:
   double size_;
 
 public:
-  BoundaryElement();
+  BoundaryElement() {}
   BoundaryElement(const int dim, const int p) {
-    this->centroid_.Resize(dim);
-    this->normal_.Resize(dim);
-    this->tangent1_.Resize(dim);
-    this->tangent2_.Resize(dim);
+    this->centroid_.Resize(dim, 0.);
+    this->normal_.Resize(dim, 0.);
+    this->tangent1_.Resize(dim, 0.);
+    this->tangent2_.Resize(dim, 0.);
     this->spatial_dimension_ = dim;
     this->interpolation_order_ = p;
-    this->rotation_matrix_.Resize(dim, dim);
-    this->rotation_matrix_t_.Resize(dim, dim);
+    this->rotation_matrix_.Resize(dim, dim, 0.);
+    this->rotation_matrix_t_.Resize(dim, dim, 0.);
   }
   ~BoundaryElement() {}
 
@@ -89,10 +89,10 @@ public:
   il::Array2D<double> rotation_matrix() const { return rotation_matrix_; }
   il::Array2D<double> rotation_matrix_t() const { return rotation_matrix_t_; }
 
-  il::Array<double> ConvertToLocal(const il::Array<double>& global_vec) const {
+  virtual il::Array<double> ConvertToLocal(const il::Array<double>& global_vec) const {
     return il::dot(this->rotation_matrix_, global_vec);
   }
-  il::Array<double> ConvertToGlobal(const il::Array<double>& local_vec) const {
+  virtual il::Array<double> ConvertToGlobal(const il::Array<double>& local_vec) const {
     return il::dot(this->rotation_matrix_t_, local_vec);
   }
 

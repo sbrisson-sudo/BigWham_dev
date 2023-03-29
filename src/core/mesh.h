@@ -5,8 +5,6 @@
 #include <memory>
 #include <vector>
 
-#include "il/core/core.h"
-
 #include "elements/boundary_element.h"
 
 namespace bie {

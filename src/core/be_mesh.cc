@@ -2,6 +2,7 @@
 #include "elements/rectangle.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
+#include "elements/point.h"
 
 namespace bie {
 /* -------------------------------------------------------------------------- */
@@ -52,5 +53,7 @@ template class BEMesh<Triangle<2>>;
 template class BEMesh<Segment<0>>;
 template class BEMesh<Segment<1>>;
 template class BEMesh<Rectangle<0>>;
+template class BEMesh<Point<2>>;
+template class BEMesh<Point<3>>;
 
 } // namespace bie

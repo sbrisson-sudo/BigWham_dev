@@ -128,7 +128,7 @@ target_compile_features(BigWham PUBLIC cxx_std_17)
 target_link_libraries(BigWham PUBLIC InsideLoop)
 set_target_properties(BigWham PROPERTIES
     POSITION_INDEPENDENT_CODE ON)
-target_include_directories(BigWham PUBLIC src src/hmat)
+target_include_directories(BigWham PUBLIC src il)
 
 add_library(BigWhamShared SHARED $<TARGET_OBJECTS:BigWham>)
 add_library(BigWhamStatic STATIC $<TARGET_OBJECTS:BigWham>)
@@ -137,7 +137,7 @@ foreach(tgt BigWhamShared BigWhamStatic)
     set_target_properties(${tgt} PROPERTIES OUTPUT_NAME BigWham)
 endforeach()
 
-set(BIGWHAM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/src"
+set(BIGWHAM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/src;${PROJECT_SOURCE_DIR}/il"
     CACHE PATH "BigWham include dirs")
 mark_as_advanced(BIGWHAM_INCLUDE_DIRS)
 
