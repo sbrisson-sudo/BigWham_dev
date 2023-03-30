@@ -1,6 +1,6 @@
 ## Assuming build/interfaces/python is aleady in python path
 
-from bigwham4py import Hmatrix  # linear operator file
+from hmatrix import Hmatrix  # linear operator file
 import numpy as np
 
 # import subprocess

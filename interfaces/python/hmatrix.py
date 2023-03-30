@@ -24,7 +24,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
 
-from bigwhamPybind import Bigwhamio, pyGetFullBlocks
+from py_bigwham import BigWhamIOSelf, PyGetFullBlocks
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
@@ -57,7 +57,7 @@ class Hmatrix(LinearOperator):
         self.eta_ = eta
         self.eps_aca_ = eps_aca
 
-        self.H_ = Bigwhamio()
+        self.H_ = BigWhamIOSelf()
         self.H_.set(
             coor.flatten(),
             conn.flatten(),
@@ -67,11 +67,11 @@ class Hmatrix(LinearOperator):
             eta,
             eps_aca,
         )
-        self.matvec_size_ = self.H_.matrixSize(0)
+        self.matvec_size_ = self.H_.matrix_size(0)
         self.dtype_ = float
 
         # it is mandatory to define shape and dtype of the dot product
-        self.shape_ = (self.H_.matrixSize(0), self.H_.matrixSize(1))
+        self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
         super().__init__(self.dtype_, self.shape_)
 
     def _matvec(self, v: np.ndarray) -> np.ndarray:
@@ -80,7 +80,7 @@ class Hmatrix(LinearOperator):
         :param v: vector expected to be of size self.HMAT_size_
         :return: HMAT.v
         """
-        return self.H_.matvect(v)
+        return self.H_.matvec(v)
 
     @property
     def _init_shape(self):
@@ -91,18 +91,18 @@ class Hmatrix(LinearOperator):
 
     # some useful methods
     def getCompression(self) -> float:
-        return self.H_.getCompressionRatio()
+        return self.H_.get_compression_ratio()
 
     def getPermutation(self) -> np.ndarray:
-        return np.asarray(self.H_.getPermutation())
+        return np.asarray(self.H_.get_permutation())
 
     def getMeshCollocationPoints(self) -> np.ndarray:
         """
         Get collocation points from mesh (no permutations ....)
         return: (no_collo_pts, dim) array from mesh
         """
-        dim = self.H_.getSpatialDimension()
-        return np.asarray(self.H_.getCollocationPoints()).reshape(
+        dim = self.H_.get_spatial_dimension()
+        return np.asarray(self.H_.get_collocation_points()).reshape(
             (self.matvec_size_ // dim, dim)
         )
 
@@ -112,7 +112,7 @@ class Hmatrix(LinearOperator):
         :param x_local: local vector
         :return: global vector
         """
-        return self.H_.convertToGlobal(x_local)
+        return self.H_.convert_to_global(x_local)
 
     def convert_to_local(self, x_global: np.ndarray) -> np.ndarray:
         """
@@ -120,11 +120,11 @@ class Hmatrix(LinearOperator):
         :param x_global: global vector
         :return: local vector
         """
-        return self.H_.convertToLocal(x_global)
+        return self.H_.convert_to_local(x_global)
 
     def getCollocationPoints(self) -> np.ndarray:
-        n = self.H_.getSpatialDimension()
-        aux = np.asarray(self.H_.getCollocationPoints())
+        n = self.H_.get_spatial_dimension()
+        aux = np.asarray(self.H_.get_collocation_points())
         auxpermut = np.reshape(aux, (int(aux.size / n), n))
         permut = self.getPermutation()
         colPts = 0.0 * auxpermut
@@ -132,19 +132,19 @@ class Hmatrix(LinearOperator):
         return colPts
 
     def getSpatialDimension(self) -> int:
-        return self.H_.getSpatialDimension()
+        return self.H_.get_spatial_dimension()
 
     def _getFullBlocks(self):
-        fb = pyGetFullBlocks()  # not fan of this way of creating empty object
+        fb = PyGetFullBlocks()  # not fan of this way of creating empty object
         # and setting them after - a constructor should do something!
         fb.set(self.H_)
-        val = np.asarray(fb.getValList(), dtype=float)
-        col = np.asarray(fb.getColumnN(), dtype=int)
-        row = np.asarray(fb.getRowN(), dtype=int)
+        val = np.asarray(fb.get_val_list(), dtype=float)
+        col = np.asarray(fb.col(), dtype=int)
+        row = np.asarray(fb.row(), dtype=int)
         return csc_matrix((val, (row, col)), shape=self.shape_)
 
     def _getPattern(self) -> np.ndarray:
-        aux = np.asarray(self.H_.getHpattern())
+        aux = np.asarray(self.H_.get_hpattern())
         #  as flattened list via a pointer
         #  the numberofblocks is also returned (by reference)
         #

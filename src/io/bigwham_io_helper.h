@@ -1,14 +1,16 @@
 
-#include <string>
-#include <string_view>
+#ifndef BIGWHAM_IO_HELPER_H
+#define BIGWHAM_IO_HELPER_H
+
 #include <iostream>
 #include <memory>
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include "core/be_mesh.h"
 
-
-namespace bie{
+namespace bie {
 
 /* -------------------------------------------------------------------------- */
 // utilities for switch with string in C++17
@@ -29,9 +31,9 @@ inline constexpr auto operator"" _sh(const char *str, size_t len) {
 
 template <class El>
 std::shared_ptr<Mesh> createMeshFromVect(int spatial_dimension,
-                                              int n_vertex_elt,
-                                              const std::vector<double> &coor,
-                                              const std::vector<int> &conn) {
+                                         int n_vertex_elt,
+                                         const std::vector<double> &coor,
+                                         const std::vector<int> &conn) {
   il::int_t npoints = coor.size() / spatial_dimension;
   il::int_t nelts = conn.size() / spatial_dimension;
   il::Array2D<double> Coor{npoints, spatial_dimension, 0.}; //
@@ -58,5 +60,8 @@ std::shared_ptr<Mesh> createMeshFromVect(int spatial_dimension,
             << "\n";
   return mesh;
 }
+/* -------------------------------------------------------------------------- */
 
 } // namespace bie
+
+#endif // BIGWHAM_IO_HELPER_H

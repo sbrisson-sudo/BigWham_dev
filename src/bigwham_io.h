@@ -390,7 +390,7 @@ public:
 
     il::Array<double> values{};
     il::Array<int> positions{};
-    hmat_.fullBlocksOriginal(permutation_, il::io, values, positions);
+    hmat_.fullBlocksOriginal(il::io, values, positions);
     //    std::cout << " checking values size" << values.size() <<  "\n";
     val_list.reserve(values.size());
     for (il::int_t i = 0; i < values.size(); i++) {
@@ -412,7 +412,7 @@ public:
     // output in the original dof state (accounting for the permutation)
 
     IL_EXPECT_FAST(is_built_);
-    val_list = hmat_.diagonalOriginal(permutation_);
+    val_list = hmat_.diagonalOriginal();
 
     std::cout << " End of Bigwhamio getDiagonal() \n";
   }
@@ -424,7 +424,7 @@ public:
     IL_EXPECT_FAST(this->is_built_);
     IL_EXPECT_FAST(hmat_.size(0) == hmat_.size(1));
     IL_EXPECT_FAST(hmat_.size(1) == x.size());
-    std::vector<double> y = hmat_.matvecOriginal(permutation_, x);
+    std::vector<double> y = hmat_.matvecOriginal(x);
     return y;
   }
   /* --------------------------------------------------------------------------

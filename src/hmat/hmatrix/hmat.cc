@@ -4,13 +4,12 @@ namespace bie {
 /* -------------------------------------------------------------------------- */
 
 template <typename T>
-void Hmat<T>::fullBlocksOriginal(const il::Array<il::int_t> &permutation,
-                                 il::io_t, il::Array<T> &val_list,
+void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> &val_list,
                                  il::Array<int> &pos_list) {
   // return the full blocks in the permutted Original dof state
   // in the val_list and pos_list 1D arrays.
   IL_EXPECT_FAST(isBuilt_FR_);
-  IL_EXPECT_FAST(permutation.size() * dof_dimension_ == size_[1]);
+  IL_EXPECT_FAST(hr_->permutation_1_.size() * dof_dimension_ == size_[1]);
   //  compute the number of  entries in the whole full rank blocks
   int nbfentry = 0;
   for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
@@ -22,11 +21,11 @@ void Hmat<T>::fullBlocksOriginal(const il::Array<il::int_t> &permutation,
   pos_list.Resize(nbfentry * 2);
   val_list.Resize(nbfentry);
 
-  il::Array<int> permutDOF{dof_dimension_ * permutation.size(), 0};
+  il::Array<int> permutDOF{dof_dimension_ * hr_->permutation_1_.size(), 0};
   IL_EXPECT_FAST(permutDOF.size() == size_[0]);
-  for (il::int_t i = 0; i < permutation.size(); i++) {
+  for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
     for (il::int_t j = 0; j < dof_dimension_; j++) {
-      permutDOF[i * dof_dimension_ + j] = permutation[i] * dof_dimension_ + j;
+      permutDOF[i * dof_dimension_ + j] = hr_->permutation_1_[i] * dof_dimension_ + j;
     }
   }
   // loop on full rank and get i,j and val
@@ -56,7 +55,7 @@ void Hmat<T>::fullBlocksOriginal(const il::Array<il::int_t> &permutation,
 
 template <typename T>
 std::vector<T>
-Hmat<T>::diagonalOriginal(const il::Array<il::int_t> &permutation) {
+Hmat<T>::diagonalOriginal() {
   // return diagonal in original state....
   il::int_t diag_size = il::max(size_[0], size_[1]);
   il::int_t ncolpoints = diag_size / dof_dimension_;
@@ -65,7 +64,7 @@ Hmat<T>::diagonalOriginal(const il::Array<il::int_t> &permutation) {
   // permut back
   for (il::int_t i = 0; i < ncolpoints; i++) {
     for (int j = 0; j < dof_dimension_; j++) {
-      diag[dof_dimension_ * permutation[i] + j] =
+      diag[dof_dimension_ * hr_->permutation_1_[i] + j] =
           diag_raw[dof_dimension_ * i + j];
     }
   }
@@ -361,15 +360,15 @@ template <typename T> il::Array<T> Hmat<T>::matvec(const il::Array<T> &x) {
 // cases (only 1 permutation) in & out as std::vector todo : write another one
 // for the case of 2 permutations (rect. mat cases (for source != receivers)
 template <typename T>
-std::vector<T> Hmat<T>::matvecOriginal(const il::Array<il::int_t> &permutation,
-                                       const std::vector<T> &x) {
+std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> &x) {
 
   il::Array<T> z{static_cast<il::int_t>(x.size())};
   // permutation of the dofs according to the re-ordering sue to clustering
   il::int_t ncolpoints = this->size(1) / dof_dimension_;
   for (il::int_t i = 0; i < ncolpoints; i++) {
     for (int j = 0; j < dof_dimension_; j++) {
-      z[dof_dimension_ * i + j] = x[dof_dimension_ * permutation[i] + j];
+      z[dof_dimension_ * i + j] =
+          x[dof_dimension_ * hr_->permutation_1_[i] + j];
     }
   }
   il::Array<T> y = this->matvec(z);
@@ -378,7 +377,8 @@ std::vector<T> Hmat<T>::matvecOriginal(const il::Array<il::int_t> &permutation,
   // permut back
   for (il::int_t i = 0; i < ncolpoints; i++) {
     for (int j = 0; j < dof_dimension_; j++) {
-      yout[dof_dimension_ * permutation[i] + j] = y[dof_dimension_ * i + j];
+      yout[dof_dimension_ * hr_->permutation_1_[i] + j] =
+          y[dof_dimension_ * i + j];
     }
   }
   return yout;
@@ -400,6 +400,7 @@ template <typename T> std::vector<T> Hmat<T>::matvec(const std::vector<T> &x) {
   }
   return y;
 }
+/* -------------------------------------------------------------------------- */
 
 template class Hmat<double>;
 

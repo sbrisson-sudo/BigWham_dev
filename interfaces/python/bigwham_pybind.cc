@@ -8,34 +8,35 @@
 //
 // last modifications :: Jan. 12 2021
 
-#include <pybind11/pybind11.h>
 #include <pybind11/chrono.h>
 #include <pybind11/complex.h>
 #include <pybind11/functional.h>
 #include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "bigwham_io.h"
+#include "io/bigwham_io_gen.h"
 
 namespace py = pybind11;
+using namespace bie;
 
 // get fullBlocks
-class pyGetFullBlocks {
+class PyGetFullBlocks {
 private:
   std::vector<double> val_list;
   std::vector<int> rowN;
   std::vector<int> columN;
 
 public:
-  pyGetFullBlocks() = default;
-  ~pyGetFullBlocks() = default;
+  PyGetFullBlocks() = default;
+  ~PyGetFullBlocks() = default;
 
-  void set(Bigwhamio &BigwhamioObj) {
+  void set(const BigWhamIOGen &BigwhamioObj) {
     std::vector<int> pos_list;
     int nbfentry;
 
     std::cout << " calling getFullBlocks \n";
-    BigwhamioObj.getFullBlocks(this->val_list, pos_list);
+    BigwhamioObj.GetFullBlocks(this->val_list, pos_list);
     std::cout << " n entries: " << (this->val_list.size()) << "\n";
     std::cout << " Preparing the vectors \n";
 
@@ -49,6 +50,8 @@ public:
     }
     std::cout << " --- set pyGetFullBlocks completed ---- \n";
   };
+  /* --------------------------------------------------------------------------
+   */
 
   std::vector<double> &getgetValList() { return this->val_list; };
   std::vector<int> &getgetColumnN() { return this->columN; };
@@ -80,6 +83,7 @@ public:
     return py::array(v->size(), v->data(), capsule);
   };
 };
+/* -------------------------------------------------------------------------- */
 
 template <typename T>
 void declare_array(py::module &m, const std::string &typestr) {
@@ -107,32 +111,34 @@ void declare_array(py::module &m, const std::string &typestr) {
         return t1 + t2;
       });
 }
+/* -------------------------------------------------------------------------- */
 
-PYBIND11_MODULE(bigwhamPybind, m) {
+PYBIND11_MODULE(py_bigwham, m) {
 
   //    // Binding the mother class Bigwhamio
   //    // option py::dynamic_attr() added to allow new members to be created
   //    dynamically);
-  py::class_<Bigwhamio>(m, "Bigwhamio", py::dynamic_attr(), py::module_local())
+  py::class_<BigWhamIOGen>(m, "BigWhamIOSelf", py::dynamic_attr(),
+                                py::module_local())
       .def(py::init<>()) // constructor
-      .def("hmatDestructor", &Bigwhamio::hmatDestructor)
-      .def("set", &Bigwhamio::set)
-      .def("getCollocationPoints", &Bigwhamio::getCollocationPoints)
-      .def("getPermutation", &Bigwhamio::getPermutation)
-      .def("getCompressionRatio", &Bigwhamio::getCompressionRatio)
-      .def("getKernel", &Bigwhamio::getKernel)
-      .def("getSpatialDimension", &Bigwhamio::getSpatialDimension)
-      .def("matrixSize", &Bigwhamio::matrixSize)
-      .def("getHpattern", &Bigwhamio::getHpattern)
-      .def("convert_to_global", &Bigwhamio::ConvertToGlobal)
-      .def("convert_to_local", &Bigwhamio::ConvertToLocal)
-      //.def("hdotProductInPermutted", &Bigwhamio::hdotProductInPermutted)
+      .def("hmat_destructor", &BigWhamIOGen::HmatrixDestructor)
+      .def("set", &BigWhamIOGen::SetSelf)
+      .def("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
+      .def("get_permutation", &BigWhamIOGen::GetPermutation)
+      .def("get_compression_ratio", &BigWhamIOGen::GetCompressionRatio)
+      .def("get_kernel_name", &BigWhamIOGen::kernel_name)
+      .def("get_spatial_dimension", &BigWhamIOGen::spatial_dimension)
+      .def("matrix_size", &BigWhamIOGen::MatrixSize)
+      .def("get_hpattern", &BigWhamIOGen::GetHPattern)
+      .def("convert_to_global", &BigWhamIOGen::ConvertToGlobal)
+      .def("convert_to_local", &BigWhamIOGen::ConvertToLocal)
+      //.def("hdotProductInPermutted", &BigWhamIOGen::hdotProductInPermutted)
       // I change the previous binding of hdotProductInPermutted to return a
       // numpy array!!
       .def(
-          "hdotProductInPermutted",
-          [](Bigwhamio &self, const std::vector<double> &x) -> decltype(auto) {
-            auto v = new std::vector<double>(self.hdotProductInPermutted(x));
+          "matvec_permute",
+          [](BigWhamIOGen &self, const std::vector<double> &x) -> decltype(auto) {
+            auto v = new std::vector<double>(self.MatVecPerm(x));
             auto capsule = py::capsule(v, [](void *v) {
               delete reinterpret_cast<std::vector<double> *>(v);
             });
@@ -141,16 +147,16 @@ PYBIND11_MODULE(bigwhamPybind, m) {
           " dot product between hmat and a vector x", py::arg("x"),
           py::return_value_policy::reference)
 
-      //.def("hdotProduct",            &Bigwhamio::matvect, " dot product
+      //.def("hdotProduct",            &BigWhamIOGen::matvect, " dot product
       // between hmat and a vector x",py::arg("x"))
       // I change the previous binding of matvect to return a numpy array!!
       // todo: is it possible to move the result of the dot product to an
       // std::array? the array is contiguous in memory but not the vector!!!!!!
       // CP
       .def(
-          "matvect",
-          [](Bigwhamio &self, const std::vector<double> &x) -> decltype(auto) {
-            auto v = new std::vector<double>(self.matvect(x));
+          "matvec",
+          [](BigWhamIOGen &self, const std::vector<double> &x) -> decltype(auto) {
+            auto v = new std::vector<double>(self.MatVec(x));
             auto capsule = py::capsule(v, [](void *v) {
               delete reinterpret_cast<std::vector<double> *>(v);
             });
@@ -159,19 +165,19 @@ PYBIND11_MODULE(bigwhamPybind, m) {
           " dot product between hmat and a vector x", py::arg("x"),
           py::return_value_policy::reference)
 
-//      .def("computeStresses", &Bigwhamio::computeStresses,
-//           "function to compute the stress at a given set of points")
-//      .def("computeDisplacements", &Bigwhamio::computeDisplacements)
-      .def("getHmatTime", &Bigwhamio::getHmatTime);
-//      .def("getBlockClstrTime", &Bigwhamio::getBlockClstrTime)
-//      .def("getBinaryClstrTime", &Bigwhamio::getBinaryClstrTime);
+      //      .def("computeStresses", &BigWhamIOGen::computeStresses,
+      //           "function to compute the stress at a given set of points")
+      //      .def("computeDisplacements", &BigWhamIOGen::computeDisplacements)
+      .def("get_hmat_time", &BigWhamIOGen::hmat_time);
+  //      .def("getBlockClstrTime", &BigWhamIOGen::getBlockClstrTime)
+  //      .def("getBinaryClstrTime", &BigWhamIOGen::getBinaryClstrTime);
 
-  py::class_<pyGetFullBlocks>(m, "pyGetFullBlocks")
+  py::class_<PyGetFullBlocks>(m, "PyGetFullBlocks")
       .def(py::init<>())
-      .def("set", &pyGetFullBlocks::set)
-      .def("getValList", &pyGetFullBlocks::getValList)
-      .def("getColumnN", &pyGetFullBlocks::getColumnN)
-      .def("getRowN", &pyGetFullBlocks::getRowN);
+      .def("set", &PyGetFullBlocks::set)
+      .def("get_val_list", &PyGetFullBlocks::getValList)
+      .def("get_col", &PyGetFullBlocks::getColumnN)
+      .def("get_row", &PyGetFullBlocks::getRowN);
 
   declare_array<double>(m, "Real2D");
   declare_array<il::int_t>(m, "Int2D");

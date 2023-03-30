@@ -43,20 +43,19 @@ public:
   ~Hmat() {}
   void toHmat(const MatrixGenerator<T> &matrix_gen, const double epsilon_aca);
   std::vector<T> diagonal();
-  std::vector<T> diagonalOriginal(const il::Array<il::int_t> &permutation);
+  std::vector<T> diagonalOriginal();
   double compressionRatio();
   bool isBuilt() const { return isBuilt_; }
   il::int_t size(int k) const { return size_[k]; }
   bie::HPattern pattern() { return hr_->pattern_; }
   il::int_t dofDimension() const { return dof_dimension_; }
   il::int_t nbOfEntries();
-  void fullBlocksOriginal(const il::Array<il::int_t> &permutation, il::io_t,
-                          il::Array<T> &val_list, il::Array<int> &pos_list);
+  void fullBlocksOriginal(il::io_t, il::Array<T> &val_list,
+                          il::Array<int> &pos_list);
   // H-Matrix vector multiplication without permutation
   il::Array<T> matvec(const il::Array<T> &x);
   std::vector<T> matvec(const std::vector<T> &x);
-  std::vector<T> matvecOriginal(const il::Array<il::int_t> &permutation,
-                                const std::vector<T> &x);
+  std::vector<T> matvecOriginal(const std::vector<T> &x);
 
 private:
   void build(const bie::MatrixGenerator<T> &matrix_gen, const double epsilon);
