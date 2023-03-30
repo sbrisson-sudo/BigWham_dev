@@ -11,7 +11,6 @@
 #define BIGWHAM_TOHPATTERN_H
 
 
-
 #include <il/Tree.h>
 #include <il/Array2D.h>
 #include "hmat/hmatrix/HMatrixType.h"

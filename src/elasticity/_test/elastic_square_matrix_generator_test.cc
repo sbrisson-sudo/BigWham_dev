@@ -14,7 +14,7 @@
 #include <il/math.h>
 
 #include "hmat/hierarchical_representation.h"
-#include "hmat/hmatrix/Hmat.h"
+#include "hmat/hmatrix/hmat.h"
 #include "hmat/square_matrix_generator.h"
 #include "hmat/bie_matrix_generator.h"
 

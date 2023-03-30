@@ -7,7 +7,7 @@
 // file for more details.
 //
 
-#include "hmat/hmatrix/toHPattern.h"
+#include "h_pattern.h"
 
 namespace bie {
 

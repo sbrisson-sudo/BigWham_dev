@@ -11,8 +11,7 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include "hmat/hmatrix/Hmat.h"
-
+#include "hmat/hmatrix/hmat.h"
 #include "bigwham_io.h"
 
 #include "core/be_mesh.h"

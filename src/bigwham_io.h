@@ -22,7 +22,7 @@
 #include <il/Dynamic.h>
 #include <il/Map.h>
 
-#include <hmat/hmatrix/Hmat.h>
+#include <hmat/hmatrix/hmat.h>
 
 #include "core/be_mesh.h"
 // #include "elements/rectangle.h"
@@ -120,7 +120,8 @@ private:
   double hmat_time_;
 
 public:
-  Bigwhamio() { // default constructor
+  // default constructor
+  Bigwhamio() {
     dimension_ = 0;
     dof_dimension_ = 0;
     is_built_ = false;
@@ -130,7 +131,7 @@ public:
     kernel_ = "none";
     h_representation_time_ = 0.;
     hmat_time_ = 0.;
-  };
+  }
 
   ~Bigwhamio() = default;
 

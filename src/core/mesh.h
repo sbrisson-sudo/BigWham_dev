@@ -37,7 +37,7 @@ public:
     // std::cout << num_elements_ << std::endl;
   };
   ~Mesh(){};
-  std::shared_ptr<BoundaryElement> get_element(il::int_t element_id) const {
+  std::shared_ptr<BoundaryElement> GetElement(il::int_t element_id) const {
     return element_list_[element_id];
   };
   il::int_t num_elements() const { return num_elements_; };

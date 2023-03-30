@@ -11,13 +11,11 @@
 #define BIGWHAM_HIERARCHICAL_REPRESENTATION_H
 
 #include <memory>
-#pragma once
-
 #include <il/Array.h>
 #include <il/Timer.h>
 
 #include "hmat/cluster/cluster.h"
-#include "hmat/hmatrix/toHPattern.h"
+#include "hmat/hmatrix/h_pattern.h"
 
 #include "core/mesh.h"
 

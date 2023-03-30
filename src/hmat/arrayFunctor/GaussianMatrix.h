@@ -8,28 +8,28 @@
 //
 #pragma once
 
-#include <il/math.h>
 #include <memory>
-
+#include <il/math.h>
 #include "hmat/arrayFunctor/matrix_generator.h"
 #include "hmat/hierarchical_representation.h"
 
-// This an example of a Matrix Generator needed to code for the implementation of a
-// BIE kernel
+// This an example of a Matrix Generator needed to code for the implementation
+// of a BIE kernel
 
 namespace bie {
 
-template <typename T>
-class GaussianMatrix : public bie::MatrixGenerator<T> {
- private:
+template <typename T> class GaussianMatrix : public bie::MatrixGenerator<T> {
+private:
   il::int_t n_;
   il::Range range0_;
   il::Range range1_;
   double alpha_;
 
- public:
-  GaussianMatrix(il::int_t n, double alpha, const std::shared_ptr<HRepresentation>& hr);
-  GaussianMatrix(il::int_t n, il::Range range0, il::Range range1, double alpha, const std::shared_ptr<HRepresentation>& hr);
+public:
+  GaussianMatrix(il::int_t n, double alpha,
+                 const std::shared_ptr<HRepresentation> &hr);
+  GaussianMatrix(il::int_t n, il::Range range0, il::Range range1, double alpha,
+                 const std::shared_ptr<HRepresentation> &hr);
   il::int_t size(il::int_t d) const override;
   il::int_t blockSize() const override;
   il::int_t sizeAsBlocks(il::int_t d) const override;
@@ -38,7 +38,8 @@ class GaussianMatrix : public bie::MatrixGenerator<T> {
 };
 
 template <typename T>
-GaussianMatrix<T>::GaussianMatrix(il::int_t n, double alpha, const std::shared_ptr<HRepresentation>& hr) {
+GaussianMatrix<T>::GaussianMatrix(il::int_t n, double alpha,
+                                  const std::shared_ptr<HRepresentation> &hr) {
   IL_EXPECT_MEDIUM(n >= 0);
 
   this->hr_ = hr;
@@ -50,7 +51,8 @@ GaussianMatrix<T>::GaussianMatrix(il::int_t n, double alpha, const std::shared_p
 
 template <typename T>
 GaussianMatrix<T>::GaussianMatrix(il::int_t n, il::Range range0,
-                                  il::Range range1, double alpha, const std::shared_ptr<HRepresentation>& hr) {
+                                  il::Range range1, double alpha,
+                                  const std::shared_ptr<HRepresentation> &hr) {
   IL_EXPECT_MEDIUM(n >= 0);
   IL_EXPECT_MEDIUM(range0.begin >= 0 && range0.end <= n);
   IL_EXPECT_MEDIUM(range1.begin >= 0 && range1.end <= n);
@@ -62,23 +64,21 @@ GaussianMatrix<T>::GaussianMatrix(il::int_t n, il::Range range0,
   alpha_ = alpha;
 };
 
-template <typename T>
-il::int_t GaussianMatrix<T>::size(il::int_t d) const {
+template <typename T> il::int_t GaussianMatrix<T>::size(il::int_t d) const {
   IL_EXPECT_MEDIUM(d == 0 || d == 1);
   switch (d) {
-    case 0:
-      return range0_.end - range0_.begin;
-    case 1:
-      return range1_.end - range1_.begin;
-    default:
-      IL_UNREACHABLE;
+  case 0:
+    return range0_.end - range0_.begin;
+  case 1:
+    return range1_.end - range1_.begin;
+  default:
+    IL_UNREACHABLE;
   }
   IL_UNREACHABLE;
   return -1;
 };
 
-template <typename T>
-il::int_t GaussianMatrix<T>::blockSize() const {
+template <typename T> il::int_t GaussianMatrix<T>::blockSize() const {
   return 1;
 }
 
@@ -105,4 +105,4 @@ void GaussianMatrix<T>::set(il::int_t b0, il::int_t b1, il::io_t,
   }
 }
 
-}  // namespace il
+} // namespace bie

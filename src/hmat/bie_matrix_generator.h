@@ -114,7 +114,7 @@ inline void BieMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       il::int_t e_k1 = this->mesh_src_->GetElementId(old_k1);
       il::int_t is_l = this->mesh_src_->GetElementCollocationId(old_k1);
 
-      auto source_element = this->mesh_src_->get_element(e_k1);
+      auto source_element = this->mesh_src_->GetElement(e_k1);
 
       for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
         il::int_t k0 = b0 + j0;
@@ -123,7 +123,7 @@ inline void BieMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
             this->mesh_rec_->GetElementId(old_k0); //  receiver element
         il::int_t ir_l = this->mesh_rec_->GetElementCollocationId(old_k0);
 
-        auto receiver_element = this->mesh_rec_->get_element(e_k0);
+        auto receiver_element = this->mesh_rec_->GetElement(e_k0);
         std::vector<double> st = this->bie_kernel_->influence(
             *source_element, is_l, *receiver_element,
             ir_l); // column major
