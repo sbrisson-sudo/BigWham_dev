@@ -13,6 +13,7 @@
 #include "elasticity/bie_elastostatic.h"
 #include "elements/boundary_element.h"
 #include "elements/segment.h"
+#include "elements/point.h"
 
 #include "elastic_2dP0_segment.h"
 
@@ -217,7 +218,76 @@ BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>::influence(
 }
 /* -------------------------------------------------------------------------- */
 
+//       Singular Kernel   T : Rectangular Kernel
+template <>
+std::vector<double>
+BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
+    const BoundaryElement &source_elt, il::int_t i_s,
+    const BoundaryElement &receiver_elt, il::int_t i_r) const {
+
+  // switch to the frame of the source element....
+  il::Array<double> xe{2, 0.0};
+  auto Xmid = source_elt.centroid();
+  auto r_col = receiver_elt.collocation_points();
+  for (int i = 0; i < 2; ++i) {
+    xe[i] = r_col(i_r, i) - Xmid[i];
+  }
+  xe = source_elt.ConvertToLocal(xe);
+
+  double h = source_elt.size();
+
+  il::StaticArray2D<double, 2, 3> stress_l =
+      Se_segment_0(h, this->elas_.shear_modulus(), this->elas_.poisson_ratio(),
+                   xe[0], xe[1]);
+
+  il::Array2D<double> stress_shear{2, 2, 0.}, stress_norm{2, 2, 0.};
+  stress_shear(0, 0) = stress_l(0, 0);
+  stress_shear(0, 1) = stress_l(0, 1);
+  stress_shear(1, 1) = stress_l(0, 2);
+  stress_shear(1, 0) = stress_shear(0, 1);
+
+  stress_norm(0, 0) = stress_l(1, 0);
+  stress_norm(0, 1) = stress_l(1, 1);
+  stress_norm(1, 1) = stress_l(1, 2);
+  stress_norm(1, 0) = stress_norm(0, 1);
+
+  // receiver normal and tangent vector in the source local coordinates system
+  auto n = source_elt.ConvertToLocal(receiver_elt.normal());
+
+  //  in the coord sys of the source elt
+  auto tt_s = il::dot(stress_shear, n);
+  auto tt_n = il::dot(stress_norm, n);
+
+  // in local coord sys of the receiver element
+  auto tt_s_local =
+      receiver_elt.ConvertToLocal(source_elt.ConvertToGlobal(tt_s));
+  auto tt_n_local =
+      receiver_elt.ConvertToLocal(source_elt.ConvertToGlobal(tt_n));
+
+  std::vector<double> stnl(4, 0.);
+
+  // shear stress in the receiver coor sys.
+  //  effect of shear
+  //        St(0, 0)
+  stnl[0] = tt_s_local[0];
+  //  effect of normal
+  // St(0, 1)
+  stnl[2] = tt_n_local[0];
+
+  // normal stress in the receiver coor sys.
+  //  effect of shear
+  // St(1, 0)
+  stnl[1] = tt_s_local[1];
+  //  effect of normal
+  // St(1, 1)
+  stnl[3] = tt_n_local[1];
+
+  return stnl;
+}
+/* -------------------------------------------------------------------------- */
+
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>;
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>;
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>;
+template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>;
 } // namespace bie

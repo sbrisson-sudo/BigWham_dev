@@ -120,7 +120,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(SOURCE_FILES "")
 add_subdirectory(src)
 
-message(STATUS ${SOURCE_FILES})
+# message(STATUS ${SOURCE_FILES})
 
 
 add_library(BigWham OBJECT ${SOURCE_FILES})
