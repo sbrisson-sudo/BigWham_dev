@@ -17,11 +17,19 @@
 
 #include "io/bigwham_io_gen.h"
 
+#include "py_bigwham_helper.h"
+
 namespace py = pybind11;
 using namespace bie;
 /* -------------------------------------------------------------------------- */
 
-// get fullBlocks
+class BigWhamIORect : public BigWhamIOGen {
+public:
+  BigWhamIORect() {}
+  ~BigWhamIORect() {}
+};
+/* -------------------------------------------------------------------------- */
+
 class PyGetFullBlocks {
 private:
   std::vector<double> val_list;
@@ -193,22 +201,23 @@ PYBIND11_MODULE(py_bigwham, m) {
 
   /* --------------------------------------------------------------------------
    */
-  py::class_<BigWhamIOGen>(m, "BigWhamIORect", py::dynamic_attr())
-      .def(py::init<>()) 
-      .def("hmat_destructor", &BigWhamIOGen::HmatrixDestructor)
-      .def("set", &BigWhamIOGen::Set)
-      .def("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
-      .def("get_permutation", &BigWhamIOGen::GetPermutation)
-      .def("get_compression_ratio", &BigWhamIOGen::GetCompressionRatio)
-      .def("get_kernel_name", &BigWhamIOGen::kernel_name)
-      .def("get_spatial_dimension", &BigWhamIOGen::spatial_dimension)
-      .def("matrix_size", &BigWhamIOGen::MatrixSize)
-      .def("get_hpattern", &BigWhamIOGen::GetHPattern)
-      .def("convert_to_global", &BigWhamIOGen::ConvertToGlobal)
-      .def("convert_to_local", &BigWhamIOGen::ConvertToLocal)
+
+  py::class_<BigWhamIORect>(m, "BigWhamIORect", py::dynamic_attr())
+      .def(py::init<>())
+      .def("hmat_destructor", &BigWhamIORect::HmatrixDestructor)
+      .def("set", &BigWhamIORect::Set)
+      .def("get_collocation_points", &BigWhamIORect::GetCollocationPoints)
+      .def("get_permutation", &BigWhamIORect::GetPermutation)
+      .def("get_compression_ratio", &BigWhamIORect::GetCompressionRatio)
+      .def("get_kernel_name", &BigWhamIORect::kernel_name)
+      .def("get_spatial_dimension", &BigWhamIORect::spatial_dimension)
+      .def("matrix_size", &BigWhamIORect::MatrixSize)
+      .def("get_hpattern", &BigWhamIORect::GetHPattern)
+      .def("convert_to_global", &BigWhamIORect::ConvertToGlobal)
+      .def("convert_to_local", &BigWhamIORect::ConvertToLocal)
       .def(
           "matvec",
-          [](BigWhamIOGen &self,
+          [](BigWhamIORect &self,
              const std::vector<double> &x) -> decltype(auto) {
             auto v = new std::vector<double>(self.MatVec(x));
             auto capsule = py::capsule(v, [](void *v) {
@@ -218,5 +227,9 @@ PYBIND11_MODULE(py_bigwham, m) {
           },
           " dot product between hmat and a vector x", py::arg("x"),
           py::return_value_policy::reference)
-      .def("get_hmat_time", &BigWhamIOGen::hmat_time);
+      .def("get_hmat_time", &BigWhamIORect::hmat_time);
+  /* --------------------------------------------------------------------------
+   */
+
+  m.def("get_collocation_points", &PyGetCollocationPoints);
 }

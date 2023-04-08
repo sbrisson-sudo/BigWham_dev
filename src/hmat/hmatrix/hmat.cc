@@ -365,6 +365,7 @@ std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> &x) {
   il::Array<T> z{static_cast<il::int_t>(x.size())};
   // permutation of the dofs according to the re-ordering sue to clustering
   il::int_t ncolpoints = this->size(1) / dof_dimension_;
+  il::int_t nrowpoints = this->size(0) / dof_dimension_;
   for (il::int_t i = 0; i < ncolpoints; i++) {
     for (int j = 0; j < dof_dimension_; j++) {
       z[dof_dimension_ * i + j] =
@@ -375,9 +376,9 @@ std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> &x) {
   std::vector<T> yout;
   yout.assign(y.size(), 0.);
   // permut back
-  for (il::int_t i = 0; i < ncolpoints; i++) {
+  for (il::int_t i = 0; i < nrowpoints; i++) {
     for (int j = 0; j < dof_dimension_; j++) {
-      yout[dof_dimension_ * hr_->permutation_1_[i] + j] =
+      yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
           y[dof_dimension_ * i + j];
     }
   }

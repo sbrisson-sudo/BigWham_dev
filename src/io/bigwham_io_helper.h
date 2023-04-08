@@ -56,8 +56,8 @@ std::shared_ptr<Mesh> createMeshFromVect(int spatial_dimension,
   // BEMesh<El> mesh(Coor, Conn);
   auto mesh = std::make_shared<BEMesh<El>>(Coor, Conn);
   mesh->ConstructMesh();
-  std::cout << "in create mesh - done "
-            << "\n";
+  // std::cout << "in create mesh - done "
+  //           << "\n";
   return mesh;
 }
 /* -------------------------------------------------------------------------- */

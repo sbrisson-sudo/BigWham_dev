@@ -110,7 +110,7 @@ inline void BieMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       // from k1 - permute back to original mesh ordering using permutation
       // of
       // the clusters.
-      il::int_t old_k1 = this->hr_->permutation_0_[k1];
+      il::int_t old_k1 = this->hr_->permutation_1_[k1];
       il::int_t e_k1 = this->mesh_src_->GetElementId(old_k1);
       il::int_t is_l = this->mesh_src_->GetElementCollocationId(old_k1);
 
@@ -118,7 +118,7 @@ inline void BieMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
 
       for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
         il::int_t k0 = b0 + j0;
-        il::int_t old_k0 = this->hr_->permutation_1_[k0];
+        il::int_t old_k0 = this->hr_->permutation_0_[k0];
         il::int_t e_k0 =
             this->mesh_rec_->GetElementId(old_k0); //  receiver element
         il::int_t ir_l = this->mesh_rec_->GetElementCollocationId(old_k0);

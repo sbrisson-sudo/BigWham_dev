@@ -1,5 +1,6 @@
 #include "bigwham_io_gen.h"
 #include "bigwham_io_helper.h"
+#include "elements/triangle.h"
 #include "hmat/hierarchical_representation.h"
 #include <memory>
 /* -------------------------------------------------------------------------- */
@@ -21,6 +22,19 @@ void BigWhamIOGen::Set(
   il::Timer tt;
 
   switch (hash_djb2a(kernel_name_)) {
+  case "3DT0-3DT0-H"_sh: {
+    spatial_dimension_ = 3;
+    using src_elem = Triangle<0>;
+    using rec_elem = Triangle<0>;
+    mesh_src_ = createMeshFromVect<src_elem>(
+        spatial_dimension_, /* num vertices */ 3, coor_src, conn_src);
+    mesh_rec_ = createMeshFromVect<rec_elem>(
+        spatial_dimension_, /* num vertices */ 3, coor_rec, conn_rec);
+    ker_obj_ = std::make_shared<
+        BieElastostatic<src_elem, rec_elem, ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    break;
+  }
   case "2DS0-2DP-T"_sh: {
     // 2D Segment0 and 2D Point
     spatial_dimension_ = 2;
@@ -29,7 +43,7 @@ void BigWhamIOGen::Set(
     mesh_src_ = createMeshFromVect<src_elem>(
         spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
     mesh_rec_ = createMeshFromVect<rec_elem>(
-        spatial_dimension_, /* num vertices */ 1, coor_src, conn_src);
+        spatial_dimension_, /* num vertices */ 1, coor_rec, conn_rec);
     ker_obj_ = std::make_shared<
         BieElastostatic<src_elem, rec_elem, ElasticKernelType::T>>(
         elas, spatial_dimension_);
