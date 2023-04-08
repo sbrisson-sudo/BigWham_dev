@@ -288,7 +288,6 @@ void BigWhamIOGen::GetDiagonal(std::vector<double> &val_list) const {
 std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const {
   // in the original / natural ordering
   IL_EXPECT_FAST(this->is_built_);
-  IL_EXPECT_FAST(hmat_->size(0) == hmat_->size(1));
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
   std::vector<double> y = hmat_->matvecOriginal(x);
   return y;
@@ -299,7 +298,6 @@ std::vector<double>
 BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const {
   // in the permutted state.
   IL_EXPECT_FAST(this->is_built_);
-  IL_EXPECT_FAST(hmat_->size(0) == hmat_->size(1));
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
   std::vector<double> y = hmat_->matvec(x);
   return y;
