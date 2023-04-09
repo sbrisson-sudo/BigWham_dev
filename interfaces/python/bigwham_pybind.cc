@@ -128,7 +128,8 @@ PYBIND11_MODULE(py_bigwham, m) {
           },
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
-      .def("get_hmat_time", &BigWhamIOGen::hmat_time);
+      .def("get_hmat_time", &BigWhamIOGen::hmat_time)
+      .def("get_omp_threads", &BigWhamIOGen::GetOmpThreads);
 
   /* --------------------------------------------------------------------------
    */
@@ -166,7 +167,7 @@ PYBIND11_MODULE(py_bigwham, m) {
              auto v = self.ConvertToGlobal(tx);
              return as_pyarray<double>(std::move(v));
            })
-      .def("convert_to_local", 
+      .def("convert_to_local",
            [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToLocal(tx);
@@ -180,7 +181,8 @@ PYBIND11_MODULE(py_bigwham, m) {
             return as_pyarray<double>(std::move(v));
           },
           " dot product between hmat and a vector x in original ordering")
-      .def("get_hmat_time", &BigWhamIORect::hmat_time);
+      .def("get_hmat_time", &BigWhamIORect::hmat_time)
+      .def("get_omp_threads", &BigWhamIORect::GetOmpThreads);
   /* --------------------------------------------------------------------------
    */
 

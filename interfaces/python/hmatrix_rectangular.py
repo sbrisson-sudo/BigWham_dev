@@ -72,6 +72,9 @@ class HmatrixRectangular(LinearOperator):
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
 
+    def get_omp_threads(self) -> int:
+        return self.H_.get_omp_threads()
+
     def getMeshCollocationPoints(self) -> np.ndarray:
         """
         Get collocation points from mesh (no permutations ....)
