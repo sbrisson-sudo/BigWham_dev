@@ -169,6 +169,8 @@ void BigWhamIOGen::SetSelf(const std::vector<double> &coor,
     il::abort();
   }
   }
+  mesh_src_ = mesh_;
+  mesh_rec_ = mesh_;
   tt.Start();
   this->hr_ = HRepresentationSquareMatrix(mesh_, max_leaf_size, eta);
   tt.Stop();
@@ -348,11 +350,26 @@ BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const {
 }
 /* -------------------------------------------------------------------------- */
 
+il::Array<double>
+BigWhamIOGen::ConvertToGlobal(il::ArrayView<double> x_local) const {
+  // Input: x in original state (not permutted)
+  // Output: in original state (not permutted)
+  return mesh_rec_->ConvertToGlobal(x_local);
+}
+/* -------------------------------------------------------------------------- */
+il::Array<double>
+BigWhamIOGen::ConvertToLocal(il::ArrayView<double> x_global) const {
+  // Input: x in original state (not permutted)
+  // Output: in original state (not permutted)
+  return mesh_src_->ConvertToLocal(x_global);
+}
+/* -------------------------------------------------------------------------- */
+
 std::vector<double>
 BigWhamIOGen::ConvertToGlobal(const std::vector<double> &x_local) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
-  return mesh_->ConvertToGlobal(x_local);
+  return mesh_rec_->ConvertToGlobal(x_local);
 }
 /* -------------------------------------------------------------------------- */
 
@@ -360,7 +377,7 @@ std::vector<double>
 BigWhamIOGen::ConvertToLocal(const std::vector<double> &x_global) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
-  return mesh_->ConvertToLocal(x_global);
+  return mesh_src_->ConvertToLocal(x_global);
 }
 /* -------------------------------------------------------------------------- */
 

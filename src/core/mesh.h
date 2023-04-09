@@ -69,7 +69,48 @@ public:
 
   std::vector<double>
   ConvertToLocal(const std::vector<double> &global_vec) const;
+
+  il::Array<double> ConvertToGlobal(il::ArrayView<double> local_vec) const;
+
+  il::Array<double> ConvertToLocal(il::ArrayView<double> global_vec) const;
 };
+/* -------------------------------------------------------------------------- */
+
+inline il::Array<double>
+Mesh::ConvertToGlobal(il::ArrayView<double> local_vec) const {
+  il::Array<double> v;
+  IL_ASSERT(local_vec.size() == num_collocation_points_ * spatial_dimension_);
+  v.Resize(local_vec.size());
+
+#pragma omp parallel for
+  for (auto i = 0; i < num_elements_; i++) {
+    auto rot_mat = element_list_[i]->rotation_matrix_t();
+    il::Range range{i * spatial_dimension_,
+                    i * spatial_dimension_ + spatial_dimension_};
+    il::blas(1.0, rot_mat.view(), local_vec.view(range), 0.0, il::io,
+             v.Edit(range));
+  }
+  return v;
+}
+/* -------------------------------------------------------------------------- */
+inline il::Array<double>
+Mesh::ConvertToLocal(il::ArrayView<double> global_vec) const {
+  il::Array<double> v;
+
+  IL_ASSERT(global_vec.size() == num_collocation_points_ * spatial_dimension_);
+  v.Resize(global_vec.size());
+
+#pragma omp parallel for
+  for (auto i = 0; i < num_elements_; i++) {
+    auto rot_mat = element_list_[i]->rotation_matrix();
+    il::Range range{i * spatial_dimension_,
+                    i * spatial_dimension_ + spatial_dimension_};
+    il::blas(1.0, rot_mat.view(), global_vec.view(range), 0.0, il::io,
+             v.Edit(range));
+  }
+
+  return v;
+}
 
 /* -------------------------------------------------------------------------- */
 

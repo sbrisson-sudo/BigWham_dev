@@ -89,8 +89,18 @@ PYBIND11_MODULE(py_bigwham, m) {
       .def("get_spatial_dimension", &BigWhamIOGen::spatial_dimension)
       .def("matrix_size", &BigWhamIOGen::MatrixSize)
       .def("get_hpattern", &BigWhamIOGen::GetHPattern)
-      .def("convert_to_global", &BigWhamIOGen::ConvertToGlobal)
-      .def("convert_to_local", &BigWhamIOGen::ConvertToLocal)
+      .def("convert_to_global",
+           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
+             auto tx = as_array_view<double>(x);
+             auto v = self.ConvertToGlobal(tx);
+             return as_pyarray<double>(std::move(v));
+           })
+      .def("convert_to_local",
+           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
+             auto tx = as_array_view<double>(x);
+             auto v = self.ConvertToLocal(tx);
+             return as_pyarray<double>(std::move(v));
+           })
       //.def("hdotProductInPermutted", &BigWhamIOGen::hdotProductInPermutted)
       // I change the previous binding of hdotProductInPermutted to return a
       // numpy array!!
@@ -150,8 +160,18 @@ PYBIND11_MODULE(py_bigwham, m) {
       .def("get_spatial_dimension", &BigWhamIORect::spatial_dimension)
       .def("matrix_size", &BigWhamIORect::MatrixSize)
       .def("get_hpattern", &BigWhamIORect::GetHPattern)
-      .def("convert_to_global", &BigWhamIORect::ConvertToGlobal)
-      .def("convert_to_local", &BigWhamIORect::ConvertToLocal)
+      .def("convert_to_global",
+           [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
+             auto tx = as_array_view<double>(x);
+             auto v = self.ConvertToGlobal(tx);
+             return as_pyarray<double>(std::move(v));
+           })
+      .def("convert_to_local", 
+           [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
+             auto tx = as_array_view<double>(x);
+             auto v = self.ConvertToLocal(tx);
+             return as_pyarray<double>(std::move(v));
+           })
       .def(
           "matvec",
           [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
