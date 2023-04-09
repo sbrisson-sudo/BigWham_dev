@@ -32,16 +32,16 @@ public:
 
 class PyGetFullBlocks {
 private:
-  std::vector<double> val_list;
-  std::vector<int> rowN;
-  std::vector<int> columN;
+  il::Array<double> val_list;
+  il::Array<int> rowN;
+  il::Array<int> columN;
 
 public:
   PyGetFullBlocks() = default;
   ~PyGetFullBlocks() = default;
 
   void set(const BigWhamIOGen &BigwhamioObj) {
-    std::vector<int> pos_list;
+    il::Array<int> pos_list;
     int nbfentry;
 
     std::cout << " calling getFullBlocks \n";
@@ -50,8 +50,8 @@ public:
     std::cout << " Preparing the vectors \n";
 
     nbfentry = this->val_list.size();
-    this->rowN.resize(nbfentry);
-    this->columN.resize(nbfentry);
+    this->rowN.Resize(nbfentry);
+    this->columN.Resize(nbfentry);
 
     for (int i = 0; i < nbfentry; i++) {
       this->rowN[i] = pos_list[2 * i];
@@ -62,64 +62,14 @@ public:
   /* --------------------------------------------------------------------------
    */
 
-  std::vector<double> &getgetValList() { return this->val_list; };
-  std::vector<int> &getgetColumnN() { return this->columN; };
-  std::vector<int> &getgetRowN() { return this->rowN; };
-
-  // the following lines are
-  // taken from https://github.com/pybind/pybind11/issues/1042
-  py::array getRowN() {
-    auto v = new std::vector<int>(getgetRowN());
-    this->rowN = std::vector<int>();
-    auto capsule = py::capsule(
-        v, [](void *v) { delete reinterpret_cast<std::vector<int> *>(v); });
-    return py::array(v->size(), v->data(), capsule);
+  pbarray<double> getValList() {
+    return as_pyarray<double>(std::move(this->val_list));
   };
-
-  py::array getColumnN() {
-    auto v = new std::vector<int>(getgetColumnN());
-    this->columN = std::vector<int>();
-    auto capsule = py::capsule(
-        v, [](void *(v)) { delete reinterpret_cast<std::vector<int> *>(v); });
-    return py::array(v->size(), v->data(), capsule);
+  pbarray<int> getColumnN() {
+    return as_pyarray<int>(std::move(this->columN));
   };
-
-  py::array getValList() {
-    auto v = new std::vector<double>(getgetValList());
-    this->val_list = std::vector<double>();
-    auto capsule = py::capsule(
-        v, [](void *v) { delete reinterpret_cast<std::vector<double> *>(v); });
-    return py::array(v->size(), v->data(), capsule);
-  };
+  pbarray<int> getRowN() { return as_pyarray<int>(std::move(this->rowN)); };
 };
-/* -------------------------------------------------------------------------- */
-
-template <typename T>
-void declare_array(py::module &m, const std::string &typestr) {
-  using Class = il::Array2D<T>;
-  std::string pyclass_name = typestr;
-  py::class_<Class>(m, pyclass_name.c_str())
-      .def(py::init<il::int_t, il::int_t, const T &>())
-      .def("shape", &Class::size)
-      .def("__setitem__", [](Class &instance, std::array<il::int_t, 2> i,
-                             const T &value) { instance(i[0], i[1]) = value; })
-      .def("__getitem__",
-           [](const Class &instance, std::array<il::int_t, 2> i) {
-             return instance(i[0], i[1]);
-           })
-      .def("__repr__", [](const Class &instance) {
-        std::string t1 = "Size : " + std::to_string(instance.size(0)) + " X " +
-                         std::to_string(instance.size(1)) + "  \n\n";
-        std::string t2 = "";
-        for (il::int_t i = 0; i < instance.size(0); ++i) {
-          for (il::int_t j = 0; j < instance.size(1); ++j) {
-            t2 += std::to_string(instance(i, j)) + " ";
-          }
-          t2 += "\n";
-        }
-        return t1 + t2;
-      });
-}
 /* -------------------------------------------------------------------------- */
 
 PYBIND11_MODULE(py_bigwham, m) {
@@ -146,16 +96,12 @@ PYBIND11_MODULE(py_bigwham, m) {
       // numpy array!!
       .def(
           "matvec_permute",
-          [](BigWhamIOGen &self,
-             const std::vector<double> &x) -> decltype(auto) {
-            auto v = new std::vector<double>(self.MatVecPerm(x));
-            auto capsule = py::capsule(v, [](void *v) {
-              delete reinterpret_cast<std::vector<double> *>(v);
-            });
-            return py::array(v->size(), v->data(), capsule);
+          [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
+            auto tx = as_array_view<double>(x);
+            auto v = self.MatVecPerm(tx);
+            return as_pyarray<double>(std::move(v));
           },
-          " dot product between hmat and a vector x", py::arg("x"),
-          py::return_value_policy::reference)
+          " dot product between hmat and a vector x", py::arg("x"))
 
       //.def("hdotProduct",            &BigWhamIOGen::matvect, " dot product
       // between hmat and a vector x",py::arg("x"))
@@ -165,23 +111,14 @@ PYBIND11_MODULE(py_bigwham, m) {
       // CP
       .def(
           "matvec",
-          [](BigWhamIOGen &self,
-             const std::vector<double> &x) -> decltype(auto) {
-            auto v = new std::vector<double>(self.MatVec(x));
-            auto capsule = py::capsule(v, [](void *v) {
-              delete reinterpret_cast<std::vector<double> *>(v);
-            });
-            return py::array(v->size(), v->data(), capsule);
+          [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
+            auto tx = as_array_view<double>(x);
+            auto v = self.MatVec(tx);
+            return as_pyarray<double>(std::move(v));
           },
-          " dot product between hmat and a vector x", py::arg("x"),
-          py::return_value_policy::reference)
-
-      //      .def("computeStresses", &BigWhamIOGen::computeStresses,
-      //           "function to compute the stress at a given set of points")
-      //      .def("computeDisplacements", &BigWhamIOGen::computeDisplacements)
+          " dot product between hmat and a vector x in original ordering",
+          py::arg("x"))
       .def("get_hmat_time", &BigWhamIOGen::hmat_time);
-  //      .def("getBlockClstrTime", &BigWhamIOGen::getBlockClstrTime)
-  //      .def("getBinaryClstrTime", &BigWhamIOGen::getBinaryClstrTime);
 
   /* --------------------------------------------------------------------------
    */
@@ -217,19 +154,16 @@ PYBIND11_MODULE(py_bigwham, m) {
       .def("convert_to_local", &BigWhamIORect::ConvertToLocal)
       .def(
           "matvec",
-          [](BigWhamIORect &self,
-             const std::vector<double> &x) -> decltype(auto) {
-            auto v = new std::vector<double>(self.MatVec(x));
-            auto capsule = py::capsule(v, [](void *v) {
-              delete reinterpret_cast<std::vector<double> *>(v);
-            });
-            return py::array(v->size(), v->data(), capsule);
+          [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
+            auto tx = as_array_view<double>(x);
+            auto v = self.MatVec(tx);
+            return as_pyarray<double>(std::move(v));
           },
-          " dot product between hmat and a vector x", py::arg("x"),
-          py::return_value_policy::reference)
+          " dot product between hmat and a vector x in original ordering")
       .def("get_hmat_time", &BigWhamIORect::hmat_time);
   /* --------------------------------------------------------------------------
    */
 
-  m.def("get_collocation_points", &PyGetCollocationPoints);
+  m.def("py_get_collocation_points", &PyGetCollocationPoints);
+  m.def("py_get_permutation", &PyGetPermutation);
 }

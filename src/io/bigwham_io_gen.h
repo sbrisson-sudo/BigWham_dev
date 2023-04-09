@@ -65,9 +65,13 @@ public:
   std::vector<long> GetHPattern() const;
   void GetFullBlocks(std::vector<double> &val_list,
                      std::vector<int> &pos_list) const;
+  void GetFullBlocks(il::Array<double> &val_list,
+                     il::Array<int> &pos_list) const;
   void GetDiagonal(std::vector<double> &val_list) const;
   std::vector<double> MatVec(const std::vector<double> &x) const;
+  il::Array<double> MatVec(il::ArrayView<double> x) const;
   std::vector<double> MatVecPerm(const std::vector<double> &x) const;
+  il::Array<double> MatVecPerm(il::ArrayView<double> x) const;
   std::vector<double> ConvertToGlobal(const std::vector<double> &x_local) const;
   std::vector<double> ConvertToLocal(const std::vector<double> &x_global) const;
   long MatrixSize(const int k) { return hmat_->size(k); };

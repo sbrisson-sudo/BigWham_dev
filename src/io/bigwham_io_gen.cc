@@ -247,6 +247,33 @@ std::vector<long> BigWhamIOGen::GetHPattern() const {
 }
 /* --------------------------------------------------------------------------*/
 
+void BigWhamIOGen::GetFullBlocks(il::Array<double> &val_list,
+                                 il::Array<int> &pos_list) const {
+  // return the full dense block entries of the hmat as
+  // flattened lists
+  // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
+  // output in the original dof state (accounting for the permutation)
+
+  IL_EXPECT_FAST(is_built_);
+
+  il::Array<double> values{};
+  il::Array<int> positions{};
+  hmat_->fullBlocksOriginal(il::io, values, positions);
+  //    std::cout << " checking values size" << values.size() <<  "\n";
+  val_list.Reserve(values.size());
+  for (il::int_t i = 0; i < values.size(); i++) {
+    val_list[i] = values[i];
+  }
+  pos_list.Reserve(positions.size());
+  for (il::int_t i = 0; i < positions.size(); i++) {
+    pos_list[i] = positions[i];
+  }
+  std::cout << "number of entries " << val_list.size() << " - "
+            << pos_list.size() << "\n";
+  std::cout << " End of Bigwhamio getFullBlocks \n";
+}
+/* --------------------------------------------------------------------------*/
+
 void BigWhamIOGen::GetFullBlocks(std::vector<double> &val_list,
                                  std::vector<int> &pos_list) const {
   // return the full dense block entries of the hmat as
@@ -290,6 +317,23 @@ std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const {
   IL_EXPECT_FAST(this->is_built_);
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
   std::vector<double> y = hmat_->matvecOriginal(x);
+  return y;
+}
+/* -------------------------------------------------------------------------- */
+
+il::Array<double> BigWhamIOGen::MatVec(il::ArrayView<double> x) const {
+  // in the original / natural ordering
+  IL_EXPECT_FAST(this->is_built_);
+  IL_EXPECT_FAST(hmat_->size(1) == x.size());
+  auto y = hmat_->matvecOriginal(x);
+  return y;
+}
+/* -------------------------------------------------------------------------- */
+il::Array<double> BigWhamIOGen::MatVecPerm(il::ArrayView<double> x) const {
+  // in the permutted state.
+  IL_EXPECT_FAST(this->is_built_);
+  IL_EXPECT_FAST(hmat_->size(1) == x.size());
+  auto y = hmat_->matvec(x);
   return y;
 }
 /* -------------------------------------------------------------------------- */

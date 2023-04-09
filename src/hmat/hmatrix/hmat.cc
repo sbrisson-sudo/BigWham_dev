@@ -25,7 +25,8 @@ void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> &val_list,
   IL_EXPECT_FAST(permutDOF.size() == size_[0]);
   for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
     for (il::int_t j = 0; j < dof_dimension_; j++) {
-      permutDOF[i * dof_dimension_ + j] = hr_->permutation_1_[i] * dof_dimension_ + j;
+      permutDOF[i * dof_dimension_ + j] =
+          hr_->permutation_1_[i] * dof_dimension_ + j;
     }
   }
   // loop on full rank and get i,j and val
@@ -53,9 +54,7 @@ void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> &val_list,
 }
 /* -------------------------------------------------------------------------- */
 
-template <typename T>
-std::vector<T>
-Hmat<T>::diagonalOriginal() {
+template <typename T> std::vector<T> Hmat<T>::diagonalOriginal() {
   // return diagonal in original state....
   il::int_t diag_size = il::max(size_[0], size_[1]);
   il::int_t ncolpoints = diag_size / dof_dimension_;
@@ -299,7 +298,7 @@ template <typename T> double Hmat<T>::compressionRatio() {
 // H-Matrix vector multiplication without permutation
 // in - il:Array<T>
 // out - il:Array<T>
-template <typename T> il::Array<T> Hmat<T>::matvec(const il::Array<T> &x) {
+template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
   IL_EXPECT_FAST(x.size() == size_[1]);
   il::Array<T> y{size_[0], 0.};
   il::int_t n_B = hr_->pattern_.n_FRB + hr_->pattern_.n_LRB;
@@ -359,6 +358,35 @@ template <typename T> il::Array<T> Hmat<T>::matvec(const il::Array<T> &x) {
 // H-Matrix vector multiplication with permutation for rectangular matrix
 // cases (only 1 permutation) in & out as std::vector todo : write another one
 // for the case of 2 permutations (rect. mat cases (for source != receivers)
+template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
+
+  il::Array<T> z{static_cast<il::int_t>(x.size())};
+  // permutation of the dofs according to the re-ordering sue to clustering
+  il::int_t ncolpoints = this->size(1) / dof_dimension_;
+  il::int_t nrowpoints = this->size(0) / dof_dimension_;
+  for (il::int_t i = 0; i < ncolpoints; i++) {
+    for (int j = 0; j < dof_dimension_; j++) {
+      z[dof_dimension_ * i + j] =
+          x[dof_dimension_ * hr_->permutation_1_[i] + j];
+    }
+  }
+  il::Array<T> y = this->matvec(z.view());
+  il::Array<T> yout;
+  yout.Resize(y.size(), 0.);
+  // permut back
+  for (il::int_t i = 0; i < nrowpoints; i++) {
+    for (int j = 0; j < dof_dimension_; j++) {
+      yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
+          y[dof_dimension_ * i + j];
+    }
+  }
+  return yout;
+}
+/* -------------------------------------------------------------------------- */
+
+// H-Matrix vector multiplication with permutation for rectangular matrix
+// cases (only 1 permutation) in & out as std::vector todo : write another one
+// for the case of 2 permutations (rect. mat cases (for source != receivers)
 template <typename T>
 std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> &x) {
 
@@ -372,7 +400,7 @@ std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> &x) {
           x[dof_dimension_ * hr_->permutation_1_[i] + j];
     }
   }
-  il::Array<T> y = this->matvec(z);
+  il::Array<T> y = this->matvec(z.view());
   std::vector<T> yout;
   yout.assign(y.size(), 0.);
   // permut back
@@ -393,7 +421,7 @@ template <typename T> std::vector<T> Hmat<T>::matvec(const std::vector<T> &x) {
   for (long i = 0; i < xil.size(); i++) {
     xil[i] = x[i];
   }
-  il::Array<T> yil = this->matvec(xil);
+  il::Array<T> yil = this->matvec(xil.view());
   std::vector<T> y;
   y.reserve(static_cast<long>(yil.size()));
   for (long i = 0; i < yil.size(); i++) {

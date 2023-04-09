@@ -161,7 +161,7 @@ TEST(SquareMatGen, segment_0_Hmat_2) {
     x[2 * hr->permutation_0_[i] + 1] =
         4.0 * sqrt(L * L - xcol(i, 0) * xcol(i, 0));
   }
-  y = h_.matvec(x);
+  y = h_.matvec(x.view());
   il::Array<double> rel_err{M.sizeAsBlocks(0), 0.};
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
     rel_err[i] = sqrt((y[2 * i + 1] - 1.) * (y[2 * i + 1] - 1.));

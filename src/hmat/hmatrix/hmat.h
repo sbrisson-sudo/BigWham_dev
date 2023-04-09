@@ -53,9 +53,11 @@ public:
   void fullBlocksOriginal(il::io_t, il::Array<T> &val_list,
                           il::Array<int> &pos_list);
   // H-Matrix vector multiplication without permutation
-  il::Array<T> matvec(const il::Array<T> &x);
+  // il::Array<T> matvec(const il::Array<T> &x);
   std::vector<T> matvec(const std::vector<T> &x);
+  il::Array<T> matvec(il::ArrayView<T> x);
   std::vector<T> matvecOriginal(const std::vector<T> &x);
+  il::Array<T> matvecOriginal(il::ArrayView<T> x);
 
 private:
   void build(const bie::MatrixGenerator<T> &matrix_gen, const double epsilon);

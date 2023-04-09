@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
   // std::cout << "COS \n " << cos.size() << std::endl;
   // std::cout << print_array1D(cos) << std::endl;
 
-  trac_perm = h_.matvec(dd_perm);
+  trac_perm = h_.matvec(dd_perm.view());
 
   // std::cout << "Traction Perm \n " << print_array1D(trac_perm) << std::endl;
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {

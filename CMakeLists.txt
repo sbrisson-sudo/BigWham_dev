@@ -151,7 +151,7 @@ include(BigWhamTools)
 message(STATUS "Building python interface: ${BIGWHAM_PYTHON_INTERFACE}")
 if(BIGWHAM_PYTHON_INTERFACE)
     set(PYBIND11_PYTHON_VERSION 3)
-    add_external_package(pybind11 VERSION 2.2.4 CONFIG)
+    add_external_package(pybind11 VERSION 2.8.0 CONFIG)
     add_subdirectory(interfaces/python)
 endif()
 
