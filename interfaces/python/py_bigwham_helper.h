@@ -26,7 +26,7 @@ template <typename T> inline py::array_t<T> as_pyarray(il::Array<T> &&seq) {
 
 template <typename T>
 inline il::ArrayView<T> as_array_view(const pbarray<T> &c) {
-  il::ArrayView<T> d(c.data(), c.shape(0));
+  il::ArrayView<T> d{c.data(), c.shape(0)};
   return d;
 }
 /* -------------------------------------------------------------------------- */
