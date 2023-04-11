@@ -77,11 +77,16 @@ PYBIND11_MODULE(py_bigwham, m) {
   //    // Binding the mother class Bigwhamio
   //    // option py::dynamic_attr() added to allow new members to be created
   //    dynamically);
+  // Square Self Interaction matrices
   py::class_<BigWhamIOGen>(m, "BigWhamIOSelf", py::dynamic_attr(),
                            py::module_local())
       .def(py::init<>()) // constructor
       .def("hmat_destructor", &BigWhamIOGen::HmatrixDestructor)
-      .def("set", &BigWhamIOGen::SetSelf)
+      .def("set",
+           py::overload_cast<const std::vector<double> &,
+                             const std::vector<int> &, const std::string &,
+                             const std::vector<double> &, const int,
+                             const double, const double>(&BigWhamIOGen::Set))
       .def("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
       .def("get_permutation", &BigWhamIOGen::GetPermutation)
       .def("get_compression_ratio", &BigWhamIOGen::GetCompressionRatio)
@@ -153,7 +158,12 @@ PYBIND11_MODULE(py_bigwham, m) {
   py::class_<BigWhamIORect>(m, "BigWhamIORect", py::dynamic_attr())
       .def(py::init<>())
       .def("hmat_destructor", &BigWhamIORect::HmatrixDestructor)
-      .def("set", &BigWhamIORect::Set)
+      .def("set",
+           py::overload_cast<
+               const std::vector<double> &, const std::vector<int> &,
+               const std::vector<double> &, const std::vector<int> &,
+               const std::string &, const std::vector<double> &, const int,
+               const double, const double>(&BigWhamIORect::Set))
       .def("get_collocation_points", &BigWhamIORect::GetCollocationPoints)
       .def("get_permutation", &BigWhamIORect::GetPermutation)
       .def("get_compression_ratio", &BigWhamIORect::GetCompressionRatio)

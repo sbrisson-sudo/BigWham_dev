@@ -138,12 +138,12 @@ class HmatrixRectangular(LinearOperator):
         p = PatchCollection(
             patches, cmap=matplotlib.cm.PiYG, edgecolors="black", alpha=0.4
         )
-        p.set_array(p_colors)
+        p.set_array(np.array(p_colors))
         ax.add_collection(p)
         ax.set_ylim([data_pattern[:, 0].min(), data_pattern[:, 3].max()])
         ax.set_xlim([data_pattern[:, 1].min(), data_pattern[:, 2].max()])
         ax.set_aspect("equal")
         # fig.colorbar(p)
-        fig.show()
-        plt.show(block=True)
+        # fig.show()
+        # plt.show(block=True)
         return fig

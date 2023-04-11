@@ -50,7 +50,7 @@ public:
   ~BigWhamIOGen() {}
 
   // square matrices
-  void SetSelf(const std::vector<double> &coor, const std::vector<int> &conn,
+  void Set(const std::vector<double> &coor, const std::vector<int> &conn,
                const std::string &kernel, const std::vector<double> &properties,
                const int max_leaf_size, const double eta, const double eps_aca);
 
