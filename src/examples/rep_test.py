@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 ## Assuming build/interfaces/python is aleady in python path
 
 from hmatrix import Hmatrix  # linear operator file

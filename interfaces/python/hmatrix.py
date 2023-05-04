@@ -142,8 +142,8 @@ class Hmatrix(LinearOperator):
         # and setting them after - a constructor should do something!
         fb.set(self.H_)
         val = np.asarray(fb.get_val_list(), dtype=float)
-        col = np.asarray(fb.col(), dtype=int)
-        row = np.asarray(fb.row(), dtype=int)
+        col = np.asarray(fb.get_col(), dtype=int)
+        row = np.asarray(fb.get_row(), dtype=int)
         return csc_matrix((val, (row, col)), shape=self.shape_)
 
     def _getPattern(self) -> np.ndarray:

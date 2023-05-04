@@ -262,11 +262,11 @@ void BigWhamIOGen::GetFullBlocks(il::Array<double> &val_list,
   il::Array<int> positions{};
   hmat_->fullBlocksOriginal(il::io, values, positions);
   //    std::cout << " checking values size" << values.size() <<  "\n";
-  val_list.Reserve(values.size());
+  val_list.Resize(values.size());
   for (il::int_t i = 0; i < values.size(); i++) {
     val_list[i] = values[i];
   }
-  pos_list.Reserve(positions.size());
+  pos_list.Resize(positions.size());
   for (il::int_t i = 0; i < positions.size(); i++) {
     pos_list[i] = positions[i];
   }
