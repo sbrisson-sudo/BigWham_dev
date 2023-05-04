@@ -8,6 +8,7 @@
 //
 // last modifications :: Jan. 12 2021
 
+#include <memory>
 #include <pybind11/chrono.h>
 #include <pybind11/complex.h>
 #include <pybind11/functional.h>
@@ -15,6 +16,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "elements/boundary_element.h"
 #include "io/bigwham_io_gen.h"
 
 #include "py_bigwham_helper.h"
@@ -198,4 +200,163 @@ PYBIND11_MODULE(py_bigwham, m) {
 
   m.def("py_get_collocation_points", &PyGetCollocationPoints);
   m.def("py_get_permutation", &PyGetPermutation);
+
+  /* --------------------------------------------------------------------------
+   */
+  py::class_<Mesh>(m, "Mesh", py::dynamic_attr())
+      .def(py::init([](const std::vector<double> &coor,
+                       const std::vector<int> &conn,
+                       const std::string &elem_type) {
+        std::unique_ptr<Mesh> mesh;
+        switch (hash_djb2a(elem_type)) {
+        case "2DS0"_sh: {
+          int spatial_dimension = 2;
+          int nvertices_per_elt = 2;
+          using EltType = bie::Segment<0>;
+          mesh = CreateUniqueMeshFromVect<EltType>(
+              spatial_dimension, nvertices_per_elt, coor, conn);
+          break;
+        }
+        case "2DS1"_sh: {
+          int spatial_dimension = 2;
+          int nvertices_per_elt = 2;
+          using EltType = bie::Segment<1>;
+          mesh = CreateUniqueMeshFromVect<EltType>(
+              spatial_dimension, nvertices_per_elt, coor, conn);
+          break;
+        }
+        case "3DT0"_sh: {
+          int spatial_dimension = 3;
+          int nvertices_per_elt = 3;
+          using EltType = bie::Triangle<0>;
+          mesh = CreateUniqueMeshFromVect<EltType>(
+              spatial_dimension, nvertices_per_elt, coor, conn);
+          break;
+        }
+        default: {
+          std::cout << "wrong inputs -abort \n";
+          il::abort();
+        }
+        }
+        return mesh;
+      }))
+      .def("get_collocation_points",
+           [](const Mesh &self) {
+             auto v = self.collocation_points();
+
+             il::Array<double> pts{v.size(0) * v.size(1), 0.};
+
+             int index = 0;
+             for (il::int_t i = 0; i < v.size(0); i++) {
+               for (il::int_t j = 0; j < v.size(1); j++) {
+                 pts[index] = v(i, j);
+                 index++;
+               }
+             }
+             return as_pyarray<double>(std::move(pts));
+           })
+      .def("num_elements", &Mesh::num_elements)
+      .def("num_collocation_points", &Mesh::num_collocation_points)
+      .def("get_element_normal",
+           [](const Mesh &self, const il::int_t element_id) {
+             return as_pyarray<double>(
+                 std::move(self.GetElement(element_id)->normal()));
+           })
+      .def("get_element_centroid",
+           [](const Mesh &self, const il::int_t element_id) {
+             return as_pyarray<double>(
+                 std::move(self.GetElement(element_id)->centroid()));
+           })
+      .def("get_element_tangent1",
+           [](const Mesh &self, const il::int_t element_id) {
+             return as_pyarray<double>(
+                 std::move(self.GetElement(element_id)->tangent1()));
+           })
+      .def("get_element_tangent2",
+           [](const Mesh &self, const il::int_t element_id) {
+             return as_pyarray<double>(
+                 std::move(self.GetElement(element_id)->tangent2()));
+           })
+      .def("get_element_size",
+           [](const Mesh &self, const il::int_t element_id) {
+             return self.GetElement(element_id)->size();
+           })
+      .def("convert_to_global",
+           [](const Mesh &self, const pbarray<double> &x) -> decltype(auto) {
+             auto tx = as_array_view<double>(x);
+             auto v = self.ConvertToGlobal(tx);
+             return as_pyarray<double>(std::move(v));
+           })
+      .def("convert_to_local",
+           [](const Mesh &self, const pbarray<double> &x) -> decltype(auto) {
+             auto tx = as_array_view<double>(x);
+             auto v = self.ConvertToLocal(tx);
+             return as_pyarray<double>(std::move(v));
+           });
+  /* --------------------------------------------------------------------------
+   */
+
+  py::class_<BoundaryElement>(m, "BoundaryElement", py::dynamic_attr())
+      .def(py::init(
+          [](const std::vector<double> &verts, const std::string &elem_type) {
+            std::unique_ptr<BoundaryElement> elem;
+            int num_vertices;
+            int spatial_dimension;
+
+            switch (hash_djb2a(elem_type)) {
+            case "2DS0"_sh: {
+              spatial_dimension = 2;
+              num_vertices = 2;
+              using EltType = bie::Segment<0>;
+              elem = std::make_unique<ElemType>();
+              break;
+            }
+            case "2DS1"_sh: {
+              spatial_dimension = 2;
+              num_vertices = 2;
+              using EltType = bie::Segment<1>;
+              elem = std::make_unique<ElemType>();
+              break;
+            }
+            case "3DT0"_sh: {
+              spatial_dimension = 3;
+              num_vertices = 3;
+              using EltType = bie::Triangle<0>;
+              elem = std::make_unique<ElemType>();
+              break;
+            }
+            default: {
+              std::cout << "wrong inputs -abort \n";
+              il::abort();
+            }
+            }
+
+            il::Array2D<double> vertices{num_vertices, spatial_dimension};
+            int index = 0;
+            for (il::int_t i = 0; i < num_vertices; i++) {
+              for (il::int_t j = 0; j < spatial_dimension; j++) {
+                vertices(i, j) = verts[index];
+                index++;
+              }
+            }
+            elem->SetElement(vertices);
+            return elem;
+          }))
+      .def("centroid",
+           [](const BoundaryElement &self) {
+             return as_pyarray<double>(std::move(self.centroid()));
+           })
+      .def("normal",
+           [](const BoundaryElement &self) {
+             return as_pyarray<double>(std::move(self.normal()));
+           })
+      .def("tangent1",
+           [](const BoundaryElement &self) {
+             return as_pyarray<double>(std::move(self.tangent1()));
+           })
+      .def("tangent",
+           [](const BoundaryElement &self) {
+             return as_pyarray<double>(std::move(self.tangent2()));
+           })
+      .def("size", &BoundaryElement::size);
 }
