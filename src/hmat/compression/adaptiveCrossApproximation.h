@@ -18,16 +18,21 @@
 namespace bie {
 
 template <il::int_t p, typename T>
-LowRank<T> adaptiveCrossApproximation(const bie::MatrixGenerator<T>& M,
-                                      il::Range range0, il::Range range1,
-                                      double epsilon) {
+std::unique_ptr<LowRank<T>>
+adaptiveCrossApproximation(const bie::MatrixGenerator<T> &M, il::Range range0,
+                           il::Range range1, double epsilon) {
   const il::int_t n0 = range0.end - range0.begin;
   const il::int_t n1 = range1.end - range1.begin;
 
-  il::Array2D<T> A{n0 * p, 0};
-  il::Array2D<T> B{0, n1 * p};
-  A.Reserve(n0*p,20);
-  B.Reserve(20,n1 * p);
+  auto lrb = std::make_unique<LowRank<T>>();
+
+  auto &A = lrb->A;
+  auto &B = lrb->B;
+  A.Resize(n0 * p, 0);
+  B.Resize(0, n1 * p);
+
+  A.Reserve(n0 * p, 20);
+  B.Reserve(20, n1 * p);
 
   il::Array<il::int_t> i0_used{};
   il::Array<il::int_t> i1_used{};
@@ -41,7 +46,7 @@ LowRank<T> adaptiveCrossApproximation(const bie::MatrixGenerator<T>& M,
   il::Array2D<T> column{n0 * p, p};
   while (true) {
     bie::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
-                        row.Edit());
+                         row.Edit());
     const il::int_t i1_search =
         bie::find_largest_singular_value<p>(row, range1, i1_used);
     if (i1_search == -1) {
@@ -83,7 +88,7 @@ LowRank<T> adaptiveCrossApproximation(const bie::MatrixGenerator<T>& M,
     // Update the Matrices A and B to take into account the new ranks
     A.Resize(n0 * p, (rank + 1) * p);
     bie::residual_column<p>(M, A, B, range0, range1, i1_search, rank, il::io,
-                           column.Edit());
+                            column.Edit());
     for (il::int_t i0 = range0.begin; i0 < range0.end; ++i0) {
       for (il::int_t j1 = 0; j1 < p; ++j1) {
         for (il::int_t j0 = 0; j0 < p; ++j0) {
@@ -94,7 +99,7 @@ LowRank<T> adaptiveCrossApproximation(const bie::MatrixGenerator<T>& M,
     }
     B.Resize((rank + 1) * p, n1 * p);
     bie::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
-                        row.Edit());
+                         row.Edit());
     for (il::int_t i1 = range1.begin; i1 < range1.end; ++i1) {
       il::StaticArray2D<T, p, p> matrix{};
       for (il::int_t j1 = 0; j1 < p; ++j1) {
@@ -174,7 +179,9 @@ LowRank<T> adaptiveCrossApproximation(const bie::MatrixGenerator<T>& M,
     //    frobenius_norm_difference =
     //        il::frobeniusNorm(difference_matrix);
 
-    if (i0_search == -1 || il::abs(frobenius_norm_ab) <=  il::ipow<2>(epsilon) * il::abs(frobenius_low_rank) ||
+    if (i0_search == -1 ||
+        il::abs(frobenius_norm_ab) <=
+            il::ipow<2>(epsilon) * il::abs(frobenius_low_rank) ||
         rank == il::min(n0, n1)) {
       break;
     }
@@ -190,7 +197,7 @@ LowRank<T> adaptiveCrossApproximation(const bie::MatrixGenerator<T>& M,
   //  std::cout << "Relative Error: " << frobenius_norm_difference /
   //  frobenius_norm_matrix << std::endl;
 
-  return bie::LowRank<T>{std::move(A), std::move(B)};
+  return std::move(lrb);
 }
 
-}  // namespace il
+} // namespace bie

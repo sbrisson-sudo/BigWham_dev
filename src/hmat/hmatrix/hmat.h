@@ -16,10 +16,6 @@
 #ifndef BIGWHAM_HMAT_H
 #define BIGWHAM_HMAT_H
 
-#ifdef IL_OPENMP
-#include <omp.h>
-#endif
-
 #include <vector>
 
 #include <hmat/arrayFunctor/matrix_generator.h>
@@ -38,9 +34,11 @@ template <typename T> class Hmat {
   // product (non-permutted way)
 public:
   void hmatMemFree();
-  Hmat() {}
+  Hmat() = default;
   Hmat(const bie::MatrixGenerator<T> &matrix_gen, const double epsilon_aca);
-  ~Hmat() {}
+  Hmat(const std::string &filename);
+
+  ~Hmat() = default;
   void toHmat(const MatrixGenerator<T> &matrix_gen, const double epsilon_aca);
   std::vector<T> diagonal();
   std::vector<T> diagonalOriginal();
@@ -59,9 +57,13 @@ public:
   std::vector<T> matvecOriginal(const std::vector<T> &x);
   il::Array<T> matvecOriginal(il::ArrayView<T> x);
 
+  void writeToFile(const std::string &filename);
+  void readFromFile(const std::string &filename);
+
 private:
   void build(const bie::MatrixGenerator<T> &matrix_gen, const double epsilon);
   void buildFR(const bie::MatrixGenerator<T> &matrix_gen);
+  template <il::int_t dim>
   void buildLR(const bie::MatrixGenerator<T> &matrix_gen, const double epsilon);
 
 private:
@@ -80,6 +82,11 @@ private:
   bool isBuilt_ = false;
   bool isBuilt_LR_ = false;
   bool isBuilt_FR_ = false;
+
+#if defined(IL_OPENMP)
+  int frb_chunk_size_{1};
+  int lrb_chunk_size_{1};
+#endif
 };
 
 } // namespace bie
