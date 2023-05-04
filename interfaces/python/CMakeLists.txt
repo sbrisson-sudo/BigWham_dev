@@ -13,6 +13,11 @@ set(SRC_PYBIND11 "${CMAKE_CURRENT_SOURCE_DIR}/hmatrix.py"
                  "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py")
 
 message(STATUS "Use the following command in terminal to use BigWham python interface:
-export PYTHONPATH=\"${CMAKE_BINARY_DIR}/interfaces/python\"")
+export PYTHONPATH=\"${CMAKE_BINARY_DIR}/interfaces/python\"
+                    OR
+-- Use the following command in your python script
+import sys
+sys.path.append(\"${CMAKE_BINARY_DIR}/interfaces/python\")
+")
 add_custom_target(copy_pybind11_files ALL COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SRC_PYBIND11}
                                            ${CMAKE_BINARY_DIR}/interfaces/python)
