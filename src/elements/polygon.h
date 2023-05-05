@@ -98,44 +98,38 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
     this->tangent1_[j] = vertices_(1, j) - vertices_(0, j);
     this->tangent2_[j] = vertices_(num_vertices_ - 1, j) - vertices_(0, j);
   }
-  double size_s = il::norm(this->tangent1_, il::Norm::L2);
-  double size_t = il::norm(this->tangent2_, il::Norm::L2);
 
-  // check if rectangle
-  if (this->num_vertices_ == 4) {
-    auto dot_1_2 = il::dot(this->tangent1_, this->tangent2_);
-    IL_EXPECT_FAST(std::abs(dot_1_2) <= 1e-6);
-    this->size_ = size_s * size_t; // area of rectangle
-  }
-
-  // check if triangle, calculate its area
-  if (this->num_vertices_ == 3) {
-    il::Array<double> t1xt2{3, 0.};
-    t1xt2[0] = this->tangent1_[1] * this->tangent2_[2] -
-               this->tangent1_[2] * this->tangent2_[1];
-    t1xt2[1] = this->tangent1_[2] * this->tangent2_[0] -
-               this->tangent1_[0] * this->tangent2_[2];
-    t1xt2[2] = this->tangent1_[0] * this->tangent2_[1] -
-               this->tangent1_[1] * this->tangent2_[0];
-    this->size_ = il::norm(t1xt2, il::Norm::L2) / 2.;
-  }
-
-  // normal s and t
-  for (il::int_t k = 0; k < spatial_dimension_; ++k) {
-    this->tangent1_[k] = this->tangent1_[k] / size_s;
-    this->tangent2_[k] = this->tangent2_[k] / size_t;
-  }
-  // normal;
+  // normal: tangent1 X tangent2
   this->normal_[0] = this->tangent1_[1] * this->tangent2_[2] -
                      this->tangent1_[2] * this->tangent2_[1];
   this->normal_[1] = this->tangent1_[2] * this->tangent2_[0] -
                      this->tangent1_[0] * this->tangent2_[2];
   this->normal_[2] = this->tangent1_[0] * this->tangent2_[1] -
                      this->tangent1_[1] * this->tangent2_[0];
+
+  double size_s = il::norm(this->tangent1_, il::Norm::L2);
+  double size_t = il::norm(this->tangent2_, il::Norm::L2);
   double size_n = il::norm(this->normal_, il::Norm::L2);
+
+  // Area
+  // assuming its a paralleogram with tangent_1 and tangent_2
+  if (this->num_vertices_ == 4) {
+    this->size_ = size_n;
+  }
+
+  // triangle,
+  if (this->num_vertices_ == 3) {
+    this->size_ = size_n / 2.;
+  }
+
+  // normal s and t
   for (il::int_t k = 0; k < spatial_dimension_; ++k) {
+    this->tangent1_[k] = this->tangent1_[k] / size_s;
+    this->tangent2_[k] = this->tangent2_[k] / size_t;
     this->normal_[k] = this->normal_[k] / size_n;
   }
+
+  // make tangent2 perperdicular to tangent1
   this->tangent2_[0] = this->normal_[1] * this->tangent1_[2] -
                        this->normal_[2] * this->tangent1_[1];
   this->tangent2_[1] = this->normal_[2] * this->tangent1_[0] -
