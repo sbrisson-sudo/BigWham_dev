@@ -82,6 +82,13 @@ class Hmatrix(LinearOperator):
         """
         return self.H_.matvec(v)
 
+    def write_hmatrix(self, filename):
+        """
+        write Hmatirx in hdf5
+        """
+        self.H_.write_hmatrix(filename)
+        return 0
+
     @property
     def _init_shape(self):
         return self.shape_

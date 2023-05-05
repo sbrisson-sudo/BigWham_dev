@@ -10,8 +10,8 @@
 #ifndef BIGWHAM_POLYGON_H
 #define BIGWHAM_POLYGON_H
 
-#include <il/linearAlgebra/dense/norm.h>
 #include "elements/boundary_element.h"
+#include <il/linearAlgebra/dense/norm.h>
 
 namespace bie {
 
@@ -104,8 +104,20 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
   // check if rectangle
   if (this->num_vertices_ == 4) {
     auto dot_1_2 = il::dot(this->tangent1_, this->tangent2_);
-    IL_EXPECT_FAST(dot_1_2 == 0);
+    IL_EXPECT_FAST(std::abs(dot_1_2) <= 1e-6);
     this->size_ = size_s * size_t; // area of rectangle
+  }
+
+  // check if triangle, calculate its area
+  if (this->num_vertices_ == 3) {
+    il::Array<double> t1xt2{3, 0.};
+    t1xt2[0] = this->tangent1_[1] * this->tangent2_[2] -
+               this->tangent1_[2] * this->tangent2_[1];
+    t1xt2[1] = this->tangent1_[2] * this->tangent2_[0] -
+               this->tangent1_[0] * this->tangent2_[2];
+    t1xt2[2] = this->tangent1_[0] * this->tangent2_[1] -
+               this->tangent1_[1] * this->tangent2_[0];
+    this->size_ = il::norm(t1xt2, il::Norm::L2) / 2.;
   }
 
   // normal s and t
