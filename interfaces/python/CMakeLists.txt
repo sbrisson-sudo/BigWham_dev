@@ -1,4 +1,4 @@
-pybind11_add_module(py_bigwham bigwham_pybind.cc)
+pybind11_add_module(py_bigwham py_bigwham.cc)
 target_link_libraries(py_bigwham PRIVATE BigWhamShared)
 set_target_properties(py_bigwham
   PROPERTIES
