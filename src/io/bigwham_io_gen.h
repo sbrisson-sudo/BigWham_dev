@@ -51,8 +51,8 @@ public:
 
   // square matrices
   void Set(const std::vector<double> &coor, const std::vector<int> &conn,
-               const std::string &kernel, const std::vector<double> &properties,
-               const int max_leaf_size, const double eta, const double eps_aca);
+           const std::string &kernel, const std::vector<double> &properties,
+           const int max_leaf_size, const double eta, const double eps_aca);
 
   // rectangular matrices
   void Set(const std::vector<double> &coor_src,
@@ -61,6 +61,14 @@ public:
            const std::vector<int> &conn_rec, const std::string &kernel,
            const std::vector<double> &properties, const int max_leaf_size,
            const double eta, const double eps_aca);
+
+  void Set(const std::string &filename) {
+    this->hmat_ = std::make_shared<Hmat<double>>(filename);
+  }
+
+  void WriteHmatrix(const std::string &filename) {
+    this->hmat_->writeToFile(filename);
+  }
 
   void HmatDestructor();
   std::vector<double> GetCollocationPoints() const;

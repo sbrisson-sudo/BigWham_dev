@@ -125,15 +125,16 @@ Hmat<T>::Hmat(const bie::MatrixGenerator<T> &matrix_gen,
 }
 /* -------------------------------------------------------------------------- */
 
-template <typename T>
-Hmat<T>::Hmat(const std::string & filename){
+template <typename T> Hmat<T>::Hmat(const std::string &filename) {
   // construction directly
   il::Timer tt;
   tt.Start();
   this->readFromFile(filename);
   tt.Stop();
-  std::cout << "Reading of hmat done in "  << tt.time() <<"\n";std::cout << "Compression ratio - " << this->compressionRatio() <<"\n";
-  std::cout << "Hmat object - built " << "\n";
+  std::cout << "Reading of hmat done in " << tt.time() << "\n";
+  std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
+  std::cout << "Hmat object - built "
+            << "\n";
 }
 /* -------------------------------------------------------------------------- */
 
@@ -418,34 +419,33 @@ template <typename T> std::vector<T> Hmat<T>::matvec(const std::vector<T> &x) {
 
 #if defined(BIGWHAM_HDF5)
 namespace {
-template<typename T> struct HDF5TypeHelper {
+template <typename T> struct HDF5TypeHelper {
   static hid_t type() { throw std::runtime_error("Not implemented"); }
 };
 
-template<> struct HDF5TypeHelper<double> {
-  static hid_t type() { return  H5T_NATIVE_DOUBLE; }
+template <> struct HDF5TypeHelper<double> {
+  static hid_t type() { return H5T_NATIVE_DOUBLE; }
 };
 
-template<> struct HDF5TypeHelper<int64_t> {
-  static hid_t type() { return  H5T_NATIVE_LLONG; }
+template <> struct HDF5TypeHelper<il::int_t> {
+  static hid_t type() { return H5T_NATIVE_LLONG; }
 };
 
-
-template<typename T>
-hid_t getHDF5Type(T /*unused*/) {
+template <typename T> hid_t getHDF5Type(T /*unused*/) {
   return HDF5TypeHelper<T>::type();
 }
 
-
 template <class T> struct is_array_2d : public std::false_type {};
-template <class T> struct is_array_2d<il::Array2D<T>> : public std::true_type {};
-template <class T> struct is_array_2d<il::Array2DView<T>> : public std::true_type {};
-template <class T> struct is_array_2d<il::Array2DEdit<T>> : public std::true_type {};
-
 template <class T>
-inline constexpr bool is_array_2d_v = is_array_2d<T>::value;
+struct is_array_2d<il::Array2D<T>> : public std::true_type {};
+template <class T>
+struct is_array_2d<il::Array2DView<T>> : public std::true_type {};
+template <class T>
+struct is_array_2d<il::Array2DEdit<T>> : public std::true_type {};
 
-}
+template <class T> inline constexpr bool is_array_2d_v = is_array_2d<T>::value;
+
+} // namespace
 #endif
 
 template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
@@ -469,17 +469,18 @@ template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
 
     if constexpr (is_array_2d_v<std::decay_t<decltype(array)>>) {
       dims[0] = hsize_t(array.size(0));
-      dims[1] = hsize_t(array.size(1)); // explicit conversion to avoid the compiler warning
+      dims[1] = hsize_t(
+          array.size(1)); // explicit conversion to avoid the compiler warning
     } else {
       dims[0] = hsize_t(array.size());
       dims[1] = 1;
     }
-    
+
     auto datatype_id = getHDF5Type(std::decay_t<decltype(array.data())>{});
     auto dataspace_id = H5Screate_simple(2, dims, NULL);
     auto dataset_id =
-        H5Dcreate(gid, std::string(name).c_str(), datatype_id,
-                  dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+        H5Dcreate(gid, std::string(name).c_str(), datatype_id, dataspace_id,
+                  H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
     H5Dwrite(dataset_id, datatype_id, H5S_ALL, dataspace_id, H5P_DEFAULT,
              array.data());
     H5Dclose(dataset_id);
@@ -499,12 +500,12 @@ template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
 
   H5Gclose(pattern_gid);
 
-  auto permutation_gid =
-      H5Gcreate(hmat_gid, "permutations", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+  auto permutation_gid = H5Gcreate(hmat_gid, "permutations", H5P_DEFAULT,
+                                   H5P_DEFAULT, H5P_DEFAULT);
   writeArray("rows", permutation_gid, hr_->permutation_0_);
   writeArray("cols", permutation_gid, hr_->permutation_1_);
   H5Gclose(permutation_gid);
-    
+
   auto frb_gid =
       H5Gcreate(hmat_gid, "FRB", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
   il::int_t i_frb = 0;
@@ -576,16 +577,15 @@ template <typename T> void Hmat<T>::readFromFile(const std::string &filename) {
   readArray("LRB", pattern_gid, hr_->pattern_.LRB_pattern);
   H5Gclose(pattern_gid);
 
-  auto permutation_gid =
-      H5Gopen(hmat_gid, "permutations", H5P_DEFAULT);
+  auto permutation_gid = H5Gopen(hmat_gid, "permutations", H5P_DEFAULT);
   readArray("rows", permutation_gid, hr_->permutation_0_);
   readArray("cols", permutation_gid, hr_->permutation_1_);
   H5Gclose(permutation_gid);
-  
+
   std::cout << "Reading HMat from \"" << filename << "\" - " << size_[0] << "x"
             << size_[1] << " - " << dof_dimension_ << std::endl;
-  std::cout << " Number of blocks = " << hr_->pattern_.n_FRB + hr_->pattern_.n_LRB
-            << std::endl;
+  std::cout << " Number of blocks = "
+            << hr_->pattern_.n_FRB + hr_->pattern_.n_LRB << std::endl;
   std::cout << " Number of full blocks = " << hr_->pattern_.n_FRB << std::endl;
 
   auto frbs_gid = H5Gopen(hmat_gid, "FRB", H5P_DEFAULT);
@@ -602,7 +602,8 @@ template <typename T> void Hmat<T>::readFromFile(const std::string &filename) {
   std::cout << std::endl;
   H5Gclose(frbs_gid);
 
-  std::cout << " Number of low rank blocks = " << hr_->pattern_.n_LRB << std::endl;
+  std::cout << " Number of low rank blocks = " << hr_->pattern_.n_LRB
+            << std::endl;
   auto lrbs_gid = H5Gopen(hmat_gid, "LRB", H5P_DEFAULT);
   low_rank_blocks_.resize(hr_->pattern_.n_LRB);
   il::int_t i_lrb = 0;

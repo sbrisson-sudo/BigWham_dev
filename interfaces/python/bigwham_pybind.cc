@@ -84,6 +84,7 @@ PYBIND11_MODULE(py_bigwham, m) {
                            py::module_local())
       .def(py::init<>()) // constructor
       .def("hmat_destructor", &BigWhamIOGen::HmatrixDestructor)
+      .def("set", py::overload_cast<const std::string &>(&BigWhamIORect::Set))
       .def("set",
            py::overload_cast<const std::vector<double> &,
                              const std::vector<int> &, const std::string &,
@@ -96,6 +97,7 @@ PYBIND11_MODULE(py_bigwham, m) {
       .def("get_spatial_dimension", &BigWhamIOGen::spatial_dimension)
       .def("matrix_size", &BigWhamIOGen::MatrixSize)
       .def("get_hpattern", &BigWhamIOGen::GetHPattern)
+      .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
       .def("convert_to_global",
            [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
              auto tx = as_array_view<double>(x);
@@ -166,6 +168,7 @@ PYBIND11_MODULE(py_bigwham, m) {
                const std::vector<double> &, const std::vector<int> &,
                const std::string &, const std::vector<double> &, const int,
                const double, const double>(&BigWhamIORect::Set))
+      .def("set", py::overload_cast<const std::string &>(&BigWhamIORect::Set))
       .def("get_collocation_points", &BigWhamIORect::GetCollocationPoints)
       .def("get_permutation", &BigWhamIORect::GetPermutation)
       .def("get_compression_ratio", &BigWhamIORect::GetCompressionRatio)
@@ -173,6 +176,7 @@ PYBIND11_MODULE(py_bigwham, m) {
       .def("get_spatial_dimension", &BigWhamIORect::spatial_dimension)
       .def("matrix_size", &BigWhamIORect::MatrixSize)
       .def("get_hpattern", &BigWhamIORect::GetHPattern)
+      .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
       .def("convert_to_global",
            [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
              auto tx = as_array_view<double>(x);
