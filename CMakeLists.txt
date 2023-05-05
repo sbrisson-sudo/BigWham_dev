@@ -40,6 +40,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 option(BIGWHAM_PYTHON_INTERFACE "Build Pybind11 binding" ON)
 option(BIGWHAM_MATHEMATICA_INTERFACE "make mathematica interface" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 option(BIGWHAM_TESTING "Build google tests" OFF)
+option(BIGWHAM_HDF5 "Use HDF5 for checkpoint/restart" OFF)
 
 #option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
@@ -144,6 +145,22 @@ mark_as_advanced(BIGWHAM_INCLUDE_DIRS)
 add_executable(BigWham_exe  main.cpp)
 target_link_libraries(BigWham_exe BigWhamShared)
 include(BigWhamTools)
+
+if(BIGWHAM_HDF5)
+    enable_language(C)
+    find_package(HDF5 REQUIRED COMPONENTS C)
+    target_compile_definitions(BigWham PUBLIC BIGWHAM_HDF5)
+    target_link_libraries(BigWham PUBLIC ${HDF5_LIBRARIES})
+    target_include_directories(BigWham PUBLIC ${HDF5_INCLUDE_DIRS})
+
+
+    if(HDF5_IS_PARALLEL)
+        find_package(MPI REQUIRED COMPONENTS C)
+        target_compile_options(BigWham PUBLIC ${MPI_C_COMPILE_OPTIONS})
+        target_link_libraries(BigWham PUBLIC ${MPI_C_LIBRARIES})
+        target_include_directories(BigWham PUBLIC ${MPI_C_INCLUDE_DIRS})
+    endif()
+endif()
 
 ################################################################
 # Pybind --->use with PYTHON version >=3.7
