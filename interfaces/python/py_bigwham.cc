@@ -285,6 +285,101 @@ PYBIND11_MODULE(py_bigwham, m) {
            [](const Mesh &self, const il::int_t element_id) {
              return self.GetElement(element_id)->size();
            })
+      .def("get_equivalent_eigenstrain",
+           /*
+             disp is in global system, 1d array: num_colloc_pts * dim
+             euivalent eigenstrain
+             eig = Sum (u x n + n x u) * area
+             eig = eig11 eig22 eig33 eig13 eig23 eig12
+           */
+           [](const Mesh &self, const pbarray<double> &disp) {
+             auto u = as_array_view<double>(disp);
+             auto dim = self.spatial_dimension();
+             il::Array<double> eig;
+             if (dim == 3) {
+               eig.Resize(6, 0.0);
+               for (il::int_t i = 0; i < self.num_elements(); ++i) {
+                 auto elem = self.GetElement(i);
+                 auto num_elem_col_pts = elem->num_collocation_points();
+                 auto n = elem->normal();
+                 auto size = elem->size();
+                 for (int j = 0; j < num_elem_col_pts; ++j) {
+                   auto id = i * num_elem_col_pts * dim + j * dim;
+                   eig[0] += size * u[id + 0] * n[0];
+                   eig[1] += size * u[id + 1] * n[1];
+                   eig[2] += size * u[id + 2] * n[2];
+                   eig[3] += size * 0.5 * (u[id + 0] * n[2] + u[id + 2] * n[0]);
+                   eig[4] += size * 0.5 * (u[id + 1] * n[2] + u[id + 2] * n[1]);
+                   eig[5] += size * 0.5 * (u[id + 0] * n[1] + u[id + 1] * n[0]);
+                 }
+               }
+             }
+
+             if (dim == 2) {
+               eig.Resize(3, 0.0);
+               for (il::int_t i = 0; i < self.num_elements(); ++i) {
+                 auto elem = self.GetElement(i);
+                 auto num_elem_col_pts = elem->num_collocation_points();
+                 auto n = elem->normal();
+                 auto size = elem->size();
+                 for (int j = 0; j < num_elem_col_pts; ++j) {
+                   auto id = i * num_elem_col_pts * dim + j * dim;
+                   eig[0] += size * u[id + 0] * n[0];
+                   eig[1] += size * u[id + 1] * n[1];
+                   eig[2] += size * 0.5 * (u[id + 0] * n[1] + u[id + 1] * n[0]);
+                 }
+               }
+             }
+
+             return as_pyarray<double>(std::move(eig));
+           })
+      .def("get_farfield_traction",
+           /*
+             sigma_farfield : 6 x 1 vector
+             sig = sig11 sig22 sig33 sig13 sig23 sig12
+           */
+           [](const Mesh &self, const pbarray<double> &sigma) {
+             auto sig = as_array_view<double>(sigma);
+             auto dim = self.spatial_dimension();
+             il::Array<double> trac;
+             trac.Resize(dim * self.num_collocation_points(), 0.0);
+             if (dim == 3) {
+               for (il::int_t i = 0; i < self.num_elements(); ++i) {
+                 auto elem = self.GetElement(i);
+                 auto num_elem_col_pts = elem->num_collocation_points();
+                 auto n = elem->normal();
+                 for (int j = 0; j < num_elem_col_pts; ++j) {
+                   // t0
+                   trac[i * num_elem_col_pts * dim + j * dim + 0] =
+                       sig[0] * n[0] + sig[5] * n[1] + sig[3] * n[2];
+                   // t1
+                   trac[i * num_elem_col_pts * dim + j * dim + 1] =
+                       sig[5] * n[0] + sig[1] * n[1] + sig[4] * n[2];
+                   // t2
+                   trac[i * num_elem_col_pts * dim + j * dim + 2] =
+                       sig[3] * n[0] + sig[4] * n[1] + sig[2] * n[2];
+                 }
+               }
+             }
+
+             if (dim == 2) {
+               for (il::int_t i = 0; i < self.num_elements(); ++i) {
+                 auto elem = self.GetElement(i);
+                 auto num_elem_col_pts = elem->num_collocation_points();
+                 auto n = elem->normal();
+                 for (int j = 0; j < num_elem_col_pts; ++j) {
+                   // t0
+                   trac[i * num_elem_col_pts * dim + j * dim + 0] =
+                       sig[0] * n[0] + sig[2] * n[1];
+                   // t1
+                   trac[i * num_elem_col_pts * dim + j * dim + 1] =
+                       sig[2] * n[0] + sig[1] * n[1];
+                 }
+               }
+             }
+
+             return as_pyarray<double>(std::move(trac));
+           })
       .def("convert_to_global",
            [](const Mesh &self, const pbarray<double> &x) -> decltype(auto) {
              auto tx = as_array_view<double>(x);

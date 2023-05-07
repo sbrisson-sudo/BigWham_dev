@@ -41,6 +41,7 @@ public:
     return element_list_[element_id];
   };
   il::int_t num_elements() const { return num_elements_; };
+  il::int_t spatial_dimension() const { return this->spatial_dimension_; };
   // nodal coordinates related.
   il::Array2D<double> coordinates() const { return coordinates_; };
   // Read a particular element of the coordinates coordinates
