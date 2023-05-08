@@ -48,23 +48,26 @@ public:
   bie::HPattern pattern() { return hr_->pattern_; }
   il::int_t dofDimension() const { return dof_dimension_; }
   il::int_t nbOfEntries();
-  void fullBlocksOriginal(il::io_t, il::Array<T> &val_list,
-                          il::Array<int> &pos_list);
+  void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,
+                          il::Array<int> & pos_list);
   // H-Matrix vector multiplication without permutation
   // il::Array<T> matvec(const il::Array<T> &x);
-  std::vector<T> matvec(const std::vector<T> &x);
+  std::vector<T> matvec(const std::vector<T> & x);
   il::Array<T> matvec(il::ArrayView<T> x);
-  std::vector<T> matvecOriginal(const std::vector<T> &x);
+  std::vector<T> matvecOriginal(const std::vector<T> & x);
   il::Array<T> matvecOriginal(il::ArrayView<T> x);
 
-  void writeToFile(const std::string &filename);
-  void readFromFile(const std::string &filename);
+  void writeToFile(const std::string & filename);
+  void readFromFile(const std::string & filename);
+
+  std::shared_ptr<HRepresentation> getRepresentation() { return hr_; }
 
 private:
-  void build(const bie::MatrixGenerator<T> &matrix_gen, const double epsilon);
-  void buildFR(const bie::MatrixGenerator<T> &matrix_gen);
+  void build(const bie::MatrixGenerator<T> & matrix_gen, const double epsilon);
+  void buildFR(const bie::MatrixGenerator<T> & matrix_gen);
   template <il::int_t dim>
-  void buildLR(const bie::MatrixGenerator<T> &matrix_gen, const double epsilon);
+  void buildLR(const bie::MatrixGenerator<T> & matrix_gen,
+               const double epsilon);
 
 private:
   std::shared_ptr<HRepresentation> hr_;

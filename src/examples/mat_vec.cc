@@ -31,11 +31,9 @@
 #include "core/be_mesh.h"
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
-#include "core/be_mesh.h"
 
-
-#include "elements/triangle.h"
 #include "elasticity/bie_elastostatic.h"
+#include "elements/triangle.h"
 #include "hmat/hierarchical_representation.h"
 #include "hmat/hmatrix/hmat.h"
 #include "hmat/square_matrix_generator.h"
@@ -44,7 +42,7 @@
 using namespace bie;
 /* -------------------------------------------------------------------------- */
 
-int main(int argc, char *argv[]) {
+int main(int argc, char * argv[]) {
 
   std::string f_coord = "mesh_coords.npy";
   std::string f_conn = "mesh_conn.npy";
@@ -83,10 +81,10 @@ int main(int argc, char *argv[]) {
   std::cout << "Number of Collocation points  = " << xcol.size(0) << " X "
             << xcol.size(1) << std::endl;
 
-  auto hr = HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  Hmat<double> hmat("hmat.h5");
+  auto hr = hmat.getRepresentation();
 
   SquareMatrixGenerator<double> M(my_mesh, ker, hr);
-  Hmat<double> hmat("hmat.h5");
 
   il::Array<double> dd{M.size(1), 0.0};
   il::Array<double> dd_perm{M.size(1), 0.0};
@@ -110,12 +108,13 @@ int main(int argc, char *argv[]) {
 
   double y0 = 0.;
   auto start = omp_get_wtime();
-  //for (il::int_t i = 0; i < 1000; ++i) {
+  // for (il::int_t i = 0; i < 1000; ++i) {
   trac_perm = hmat.matvec(dd_perm.view());
   y0 += trac_perm[0];
   //}
   auto end = omp_get_wtime();
-  std::cout << "Hmat matvec: " << (end - start) / 1000 << "s - y0: " << y0 << std::endl;
+  std::cout << "Hmat matvec: " << (end - start) / 1000 << "s - y0: " << y0
+            << std::endl;
 
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
     il::int_t j = hr->permutation_0_[i];

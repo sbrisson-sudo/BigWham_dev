@@ -12,8 +12,8 @@ namespace bie {
 /* -------------------------------------------------------------------------- */
 
 template <typename T>
-void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> &val_list,
-                                 il::Array<int> &pos_list) {
+void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,
+                                 il::Array<int> & pos_list) {
   // return the full blocks in the permutted Original dof state
   // in the val_list and pos_list 1D arrays.
   IL_EXPECT_FAST(isBuilt_FR_);
@@ -118,14 +118,14 @@ template <typename T> std::vector<T> Hmat<T>::diagonal() {
 
 // direct constructor
 template <typename T>
-Hmat<T>::Hmat(const bie::MatrixGenerator<T> &matrix_gen,
+Hmat<T>::Hmat(const bie::MatrixGenerator<T> & matrix_gen,
               const double epsilon_aca) {
   // construction directly
   this->toHmat(matrix_gen, epsilon_aca);
 }
 /* -------------------------------------------------------------------------- */
 
-template <typename T> Hmat<T>::Hmat(const std::string &filename) {
+template <typename T> Hmat<T>::Hmat(const std::string & filename) {
   // construction directly
   il::Timer tt;
   tt.Start();
@@ -140,7 +140,7 @@ template <typename T> Hmat<T>::Hmat(const std::string &filename) {
 
 // Main constructor
 template <typename T>
-void Hmat<T>::toHmat(const MatrixGenerator<T> &matrix_gen,
+void Hmat<T>::toHmat(const MatrixGenerator<T> & matrix_gen,
                      const double epsilon_aca) {
   this->hr_ = matrix_gen.hr();
   // construction directly
@@ -184,7 +184,7 @@ template <typename T> il::int_t Hmat<T>::nbOfEntries() {
 /* -------------------------------------------------------------------------- */
 
 template <typename T>
-void Hmat<T>::buildFR(const bie::MatrixGenerator<T> &matrix_gen) {
+void Hmat<T>::buildFR(const bie::MatrixGenerator<T> & matrix_gen) {
   // construction of the full rank blocks
   std::cout << " Loop on full blocks construction  \n";
   std::cout << " N full blocks " << hr_->pattern_.n_FRB << " \n";
@@ -213,7 +213,7 @@ void Hmat<T>::buildFR(const bie::MatrixGenerator<T> &matrix_gen) {
 /// \param epsilon
 template <typename T>
 template <il::int_t dim>
-void Hmat<T>::buildLR(const bie::MatrixGenerator<T> &matrix_gen,
+void Hmat<T>::buildLR(const bie::MatrixGenerator<T> & matrix_gen,
                       const double epsilon) {
   // constructing the low rank blocks
   dof_dimension_ = matrix_gen.blockSize();
@@ -251,7 +251,7 @@ void Hmat<T>::buildLR(const bie::MatrixGenerator<T> &matrix_gen,
 
 // filling up the h-matrix sub-blocks
 template <typename T>
-void Hmat<T>::build(const bie::MatrixGenerator<T> &matrix_gen,
+void Hmat<T>::build(const bie::MatrixGenerator<T> & matrix_gen,
                     const double epsilon) {
   dof_dimension_ = matrix_gen.blockSize();
   size_[0] = matrix_gen.size(0);
@@ -374,7 +374,7 @@ template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
 // cases (only 1 permutation) in & out as std::vector todo : write another one
 // for the case of 2 permutations (rect. mat cases (for source != receivers)
 template <typename T>
-std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> &x) {
+std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> & x) {
 
   il::Array<T> z{static_cast<il::int_t>(x.size())};
   // permutation of the dofs according to the re-ordering sue to clustering
@@ -401,7 +401,7 @@ std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> &x) {
 /* -------------------------------------------------------------------------- */
 
 // matvect in and outs as std::vector
-template <typename T> std::vector<T> Hmat<T>::matvec(const std::vector<T> &x) {
+template <typename T> std::vector<T> Hmat<T>::matvec(const std::vector<T> & x) {
   il::Array<T> xil{static_cast<il::int_t>(x.size())};
   // todo find a better way to convert il::Array to std::vect and vice versa !
   for (long i = 0; i < xil.size(); i++) {
@@ -419,43 +419,44 @@ template <typename T> std::vector<T> Hmat<T>::matvec(const std::vector<T> &x) {
 
 #if defined(BIGWHAM_HDF5)
 namespace {
-template <typename T> struct HDF5TypeHelper {
-  static hid_t type() { throw std::runtime_error("Not implemented"); }
-};
+  template <typename T> struct HDF5TypeHelper {
+    static hid_t type() { throw std::runtime_error("Not implemented"); }
+  };
 
-template <> struct HDF5TypeHelper<double> {
-  static hid_t type() { return H5T_NATIVE_DOUBLE; }
-};
+  template <> struct HDF5TypeHelper<double> {
+    static hid_t type() { return H5T_NATIVE_DOUBLE; }
+  };
 
-template <> struct HDF5TypeHelper<il::int_t> {
-  static hid_t type() { return H5T_NATIVE_LLONG; }
-};
+  template <> struct HDF5TypeHelper<il::int_t> {
+    static hid_t type() { return H5T_NATIVE_LLONG; }
+  };
 
-template <typename T> hid_t getHDF5Type(T /*unused*/) {
-  return HDF5TypeHelper<T>::type();
-}
+  template <typename T> hid_t getHDF5Type(T /*unused*/) {
+    return HDF5TypeHelper<T>::type();
+  }
 
-template <class T> struct is_array_2d : public std::false_type {};
-template <class T>
-struct is_array_2d<il::Array2D<T>> : public std::true_type {};
-template <class T>
-struct is_array_2d<il::Array2DView<T>> : public std::true_type {};
-template <class T>
-struct is_array_2d<il::Array2DEdit<T>> : public std::true_type {};
+  template <class T> struct is_array_2d : public std::false_type {};
+  template <class T>
+  struct is_array_2d<il::Array2D<T>> : public std::true_type {};
+  template <class T>
+  struct is_array_2d<il::Array2DView<T>> : public std::true_type {};
+  template <class T>
+  struct is_array_2d<il::Array2DEdit<T>> : public std::true_type {};
 
-template <class T> inline constexpr bool is_array_2d_v = is_array_2d<T>::value;
+  template <class T>
+  inline constexpr bool is_array_2d_v = is_array_2d<T>::value;
 
 } // namespace
 #endif
 
-template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
+template <typename T> void Hmat<T>::writeToFile(const std::string & filename) {
 #if defined(BIGWHAM_HDF5)
   auto file_id =
       H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   auto hmat_gid =
       H5Gcreate(file_id, "/hmat", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-  auto writeAttribute = [](auto &&name, auto &&gid, auto &&value) {
+  auto writeAttribute = [](auto && name, auto && gid, auto && value) {
     auto aid = H5Screate(H5S_SCALAR);
     auto attr =
         H5Acreate(gid, name, getHDF5Type(value), aid, H5P_DEFAULT, H5P_DEFAULT);
@@ -464,7 +465,7 @@ template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
     H5Sclose(aid);
   };
 
-  auto writeArray = [](auto &&name, auto &&gid, auto &&array) {
+  auto writeArray = [](auto && name, auto && gid, auto && array) {
     hsize_t dims[2];
 
     if constexpr (is_array_2d_v<std::decay_t<decltype(array)>>) {
@@ -476,7 +477,8 @@ template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
       dims[1] = 1;
     }
 
-    auto datatype_id = getHDF5Type(std::decay_t<decltype(array.data())>{});
+    auto datatype_id = getHDF5Type(
+        std::decay_t<std::remove_pointer_t<decltype(array.data())>>{});
     auto dataspace_id = H5Screate_simple(2, dims, NULL);
     auto dataset_id =
         H5Dcreate(gid, std::string(name).c_str(), datatype_id, dataspace_id,
@@ -509,7 +511,7 @@ template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
   auto frb_gid =
       H5Gcreate(hmat_gid, "FRB", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
   il::int_t i_frb = 0;
-  for (auto &&frb : full_rank_blocks_) {
+  for (auto && frb : full_rank_blocks_) {
     writeArray("frb_" + std::to_string(i_frb), frb_gid, *frb);
     ++i_frb;
   }
@@ -518,7 +520,7 @@ template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
   auto lrbs_gid =
       H5Gcreate(hmat_gid, "LRB", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
   il::int_t i_lrb = 0;
-  for (auto &&lrb : low_rank_blocks_) {
+  for (auto && lrb : low_rank_blocks_) {
     std::string group = "lrb_" + std::to_string(i_lrb);
     auto lrb_gid = H5Gcreate(lrbs_gid, group.c_str(), H5P_DEFAULT, H5P_DEFAULT,
                              H5P_DEFAULT);
@@ -535,20 +537,21 @@ template <typename T> void Hmat<T>::writeToFile(const std::string &filename) {
 #endif
 }
 
-template <typename T> void Hmat<T>::readFromFile(const std::string &filename) {
+template <typename T> void Hmat<T>::readFromFile(const std::string & filename) {
 #if defined(BIGWHAM_HDF5)
   auto file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
   auto hmat_gid = H5Gopen(file_id, "/hmat", H5P_DEFAULT);
 
-  auto readAttribute = [](auto &&name, auto &&gid, auto &&value) {
+  auto readAttribute = [](auto && name, auto && gid, auto && value) {
     auto attr = H5Aopen(gid, name, H5P_DEFAULT);
     H5Aread(attr, getHDF5Type(value), &value);
     H5Aclose(attr);
   };
 
-  auto readArray = [](auto &&name, auto &&gid, auto &&array) {
+  auto readArray = [](auto && name, auto && gid, auto && array) {
     hsize_t dims[2];
-    auto datatype_id = getHDF5Type(std::decay_t<decltype(array.data())>{});
+    auto datatype_id = getHDF5Type(
+        std::decay_t<std::remove_pointer_t<decltype(array.data())>>{});
     auto dataset_id = H5Dopen(gid, std::string(name).c_str(), H5P_DEFAULT);
 
     auto dataspace_id = H5Dget_space(dataset_id);
@@ -568,6 +571,9 @@ template <typename T> void Hmat<T>::readFromFile(const std::string &filename) {
   readAttribute("dof_dimension", hmat_gid, dof_dimension_);
   readAttribute("m", hmat_gid, size_[0]);
   readAttribute("n", hmat_gid, size_[1]);
+
+  hr_ = std::make_shared<HRepresentation>();
+  hr_->is_square_ = size_[0] == size_[1];
 
   auto pattern_gid = H5Gopen(hmat_gid, "pattern", H5P_DEFAULT);
   readAttribute("n_FRB", pattern_gid, hr_->pattern_.n_FRB);
@@ -592,7 +598,7 @@ template <typename T> void Hmat<T>::readFromFile(const std::string &filename) {
   full_rank_blocks_.resize(hr_->pattern_.n_FRB);
   il::int_t i_frb = 0;
   il::int_t i_frb_10_per = hr_->pattern_.n_FRB * 0.1;
-  for (auto &&frb : full_rank_blocks_) {
+  for (auto && frb : full_rank_blocks_) {
     if (i_frb % i_frb_10_per == 0)
       std::cout << "." << std::flush;
     frb = std::make_unique<il::Array2D<T>>();
@@ -608,7 +614,7 @@ template <typename T> void Hmat<T>::readFromFile(const std::string &filename) {
   low_rank_blocks_.resize(hr_->pattern_.n_LRB);
   il::int_t i_lrb = 0;
   il::int_t i_lrb_10_per = hr_->pattern_.n_LRB * 0.1;
-  for (auto &&lrb : low_rank_blocks_) {
+  for (auto && lrb : low_rank_blocks_) {
     if (i_lrb % i_lrb_10_per == 0)
       std::cout << "." << std::flush;
     lrb = std::make_unique<LowRank<T>>();
