@@ -18,7 +18,7 @@
 # external
 import numpy as np
 from scipy.sparse.linalg import LinearOperator, SuperLU
-from scipy.sparse import csc_matrix, csr_matrix, sparray
+from scipy.sparse import csc_matrix
 
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
