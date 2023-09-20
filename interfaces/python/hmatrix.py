@@ -17,12 +17,13 @@
 
 # external
 import numpy as np
-from scipy.sparse.linalg import LinearOperator
-from scipy.sparse import csc_matrix
-from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import LinearOperator, SuperLU
+from scipy.sparse import csc_matrix, csr_matrix, sparray
 
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
+# import numpy.typing as npt
+# NDArrayReal = npt.NDArray[np.float_]
 
 from py_bigwham import BigWhamIOSelf, PyGetFullBlocks
 import matplotlib
@@ -36,7 +37,14 @@ from matplotlib.patches import Rectangle
 ##############################
 class Hmatrix(LinearOperator):
     def __init__(
-        self, kernel, coor, conn, properties, max_leaf_size=100, eta=3, eps_aca=1.0e-3
+        self,
+        kernel: str,
+        coor: np.ndarray,
+        conn: np.ndarray,
+        properties: np.ndarray,
+        max_leaf_size: int = 100,
+        eta: float = 3.0,
+        eps_aca: float = 1.0e-3,
     ):
         """ "
         Name:              Type:                Description:
@@ -82,7 +90,7 @@ class Hmatrix(LinearOperator):
         """
         return self.H_.matvec(v)
 
-    def write_hmatrix(self, filename):
+    def write_hmatrix(self, filename: str) -> int:
         """
         write Hmatirx in hdf5
         """
@@ -144,13 +152,13 @@ class Hmatrix(LinearOperator):
     def getSpatialDimension(self) -> int:
         return self.H_.get_spatial_dimension()
 
-    def _getFullBlocks(self):
+    def _getFullBlocks(self) -> csc_matrix:
         fb = PyGetFullBlocks()  # not fan of this way of creating empty object
         # and setting them after - a constructor should do something!
         fb.set(self.H_)
         val = np.asarray(fb.get_val_list(), dtype=float)
-        col = np.asarray(fb.get_col(), dtype=int)
-        row = np.asarray(fb.get_row(), dtype=int)
+        col = np.asarray(fb.get_col())
+        row = np.asarray(fb.get_row())
         return csc_matrix((val, (row, col)), shape=self.shape_)
 
     def _getPattern(self) -> np.ndarray:
@@ -198,24 +206,24 @@ class Hmatrix(LinearOperator):
         return fig
 
     # a method constructing an ILU Preconditionner of the H matrix
-    def H_ILU_prec(self, fill_factor=5, drop_tol=1e-5):
+    def H_ILU_prec(self, fill_factor=5, drop_tol=1e-5) -> LinearOperator:
         # fb = self._getFullBlocks()
         fbinv = self.H_ILU(fill_factor=fill_factor, drop_tol=drop_tol)
         return LinearOperator(self.shape_, fbinv.solve)
 
-    def H_ILU(self, fill_factor=5, drop_tol=1e-5):
+    def H_ILU(self, fill_factor=5, drop_tol=1e-5) -> SuperLU:
         fb = self._getFullBlocks()
         fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
         return fbILU
 
-    def H_diag(self):
+    def H_diag(self) -> np.ndarray:
         fb = self._getFullBlocks()
         return fb.diagonal()
 
     def H_jacobi_prec(self):
         diag = self.H_diag()  # return a nd.array
         overdiag = 1.0 / diag
-        return diags(overdiag, dtype=float)
+        return diags(overdiag, dtype=np.float_)
 
 
 # --------------------------------

@@ -6,6 +6,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
+from numpy import ndarray as NDArray
 
 
 ##############################
@@ -14,15 +15,15 @@ from matplotlib.patches import Rectangle
 class HmatrixRectangular(LinearOperator):
     def __init__(
         self,
-        kernel,
-        coor_src,
-        conn_src,
-        coor_rec,
-        conn_rec,
-        properties,
-        max_leaf_size=100,
-        eta=3,
-        eps_aca=1.0e-3,
+        kernel : str,
+        coor_src : NDArray,
+        conn_src : NDArray,
+        coor_rec : NDArray,
+        conn_rec : NDArray,
+        properties : NDArray,
+        max_leaf_size : int =100,
+        eta : float=3.0,
+        eps_aca : float=1.0e-3,
     ):
 
         self.kernel_ = kernel
