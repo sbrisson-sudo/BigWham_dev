@@ -26,6 +26,8 @@ from scipy.sparse import diags
 # NDArrayReal = npt.NDArray[np.float_]
 
 from py_bigwham import BigWhamIOSelf, PyGetFullBlocks
+from multimethod import multimeta
+
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
@@ -35,7 +37,9 @@ from matplotlib.patches import Rectangle
 ##############################
 #  Hmatrix class in python   #
 ##############################
-class Hmatrix(LinearOperator):
+# Note using metaclass allows us to overload constructor but arguments must be of same data type
+# for example, eta should be float and not int
+class Hmatrix(LinearOperator, metaclass=multimeta):
     def __init__(
         self,
         kernel: str,
@@ -59,13 +63,13 @@ class Hmatrix(LinearOperator):
         """
         # NOTE: no specific kernel checks are implemented for now - for grown-ups only
 
-        self.kernel_ = kernel
-        self.properties_ = properties
-        self.max_leaf_size_ = max_leaf_size
-        self.eta_ = eta
-        self.eps_aca_ = eps_aca
+        self.kernel_ : str = kernel
+        self.properties_ : np.ndarray = properties
+        self.max_leaf_size_ : int = int(max_leaf_size)
+        self.eta_ : float = float(eta)
+        self.eps_aca_ : float = float(eps_aca)
 
-        self.H_ = BigWhamIOSelf()
+        self.H_ : BigWhamIOSelf = BigWhamIOSelf()
         self.H_.set(
             coor.flatten(),
             conn.flatten(),
@@ -82,6 +86,17 @@ class Hmatrix(LinearOperator):
         self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
         super().__init__(self.dtype_, self.shape_)
 
+    def __init__(self, filename: str):
+        self.H_ : BigWhamIOSelf = BigWhamIOSelf()
+        self.H_.set(filename)
+        self.matvec_size_ = self.H_.matrix_size(0)
+        self.dtype_ = float
+
+        # it is mandatory to define shape and dtype of the dot product
+        self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
+        super().__init__(self.dtype_, self.shape_)
+
+
     def _matvec(self, v: np.ndarray) -> np.ndarray:
         """
         This function implements the dot product.
@@ -95,7 +110,6 @@ class Hmatrix(LinearOperator):
         write Hmatirx in hdf5
         """
         self.H_.write_hmatrix(filename)
-        return 0
 
     @property
     def _init_shape(self):
