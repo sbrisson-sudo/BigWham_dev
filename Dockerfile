@@ -1,13 +1,33 @@
-FROM ubuntu:focal
-MAINTAINER Brice Lecampion <brice.lecampion@epfl.ch>
+FROM ubuntu:jammy
+LABEL maintainer="Brice Lecampion <brice.lecampion@epfl.ch>"
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y wget cpio sudo
+RUN wget -O - https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397.sh > script.sh
+
+# RUN wget -O- https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992858b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397.sh > script.sh
+RUN chmod +x script.sh && ./script.sh -a -s --eula accept
+ENV ONEAPI_ROOT=/opt/intel/oneapi
+ENV MKLROOT=/opt/intel/oneapi
+ENV PATH=$ONEAPI_ROOT/compiler/latest/linux/bin/intel64:$PATH
+ENV LD_LIBRARY_PATH=$ONEAPI_ROOT/compiler/latest/linux/lib/intel64_lin:$LD_LIBRARY_PATH
+
+
+# RUN apt-get -qq update && apt-get -qq -y install wget
+# RUN wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/992857b9-624c-45de-9701-f6445d845359/l_BaseKit_p_2023.2.0.49397.sh
+# RUN sh ./l_BaseKit_p_2023.2.0.49397.sh
+# RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \ | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+# RUN echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
+# RUN apt update
+
 
 # Make sure the package repository is up to date.
 RUN apt-get -qq update && apt-get -qq -y install \
     g++ \
     gfortran \
     libtbb-dev \
+    # intel-oneapi-mkl-devel \
     bc \
     libhugetlbfs-bin \
     libboost-all-dev \
@@ -57,12 +77,18 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install --upgrade setuptools
 RUN python3 -m pip install --upgrade wheel
 RUN python3 -m pip install numpy matplotlib pandas cython -U --force
-RUN python3 -m pip install -Iv pygmsh==6.1.1
-RUN python3 -m pip install -Iv meshio==4.0.11
-RUN python3 -m pip install -Iv atomman==1.3.0
-RUN python3 -m pip uninstall -y scipy
-RUN python3 -m pip uninstall -y cython
-RUN python3 -m pip install git+https://github.com/congma/scipy.git@ce61e02e912d15ea28b37ea036334b9ba266ebb5#egg=scipy
+RUN python3 -m pip install jupyter scipy matplotlib numpy jupyterlab
+RUN python3 -m pip install mpmath
+RUN python3 -m pip install cmake
+RUN python3 -m pip install python-lsp-server
+RUN python3 -m pip install py-ubjson
+RUN python3 -m pip install dataclasses-json
+RUN python3 -m pip install numba
+RUN python3 -m pip install meshio
+RUN python3 -m pip install numpy
+RUN python3 -m pip install dill
+RUN python3 -m pip install pygmsh
+RUN python3 -m pip install multimethod
 
 # install latest version of gmsh
 WORKDIR /opt
