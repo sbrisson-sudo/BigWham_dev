@@ -55,7 +55,7 @@
 
 // Check GCC
 #if __GNUC__
-#if __x86_64__ || __ppc64__
+#if __x86_64__ || __ppc64__ || __aarch64__
 #define IL_64_BIT
 #else
 #define IL_32_BIT

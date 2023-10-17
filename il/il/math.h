@@ -24,6 +24,12 @@
 
 #include <il/core.h>
 
+#ifdef __aarch64__
+namespace std{
+  typedef unsigned long long uint64_t;
+}
+#endif
+
 namespace il {
 
 template <typename T>

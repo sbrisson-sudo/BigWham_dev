@@ -168,6 +168,27 @@ public:
           elas, dimension_);
       break;
     }
+    case "2DP0_U"_sh: {
+            dimension_ = 2;
+            int nvertices_per_elt_ = 2;
+            using EltType = bie::Segment<0>;
+            mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                                conn);
+            ker_obj_ = std::make_shared<
+                    bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::U>>(
+                    elas, dimension_);
+            break;
+    }
+    case "2DP0_T"_sh: {
+            dimension_ = 2;
+            int nvertices_per_elt_ = 2;
+            using EltType = bie::Segment<0>;
+            mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,conn);
+            ker_obj_ = std::make_shared<
+                    bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::T>>(
+                    elas, dimension_);
+            break;
+    }
     case "S3DP0"_sh: {
       dimension_ = 2;
       int nvertices_per_elt_ = 2;

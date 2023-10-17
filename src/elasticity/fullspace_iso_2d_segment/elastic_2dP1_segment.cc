@@ -502,7 +502,7 @@ il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_dp1_dd_nodal(
   return St;
 }
 
-il::StaticArray<double, 3> point_stress_s2d_dp1_dd(
+il::StaticArray<double, 3> point_stress_2d_dp1_dd(
     il::StaticArray<double, 2> &observ_pt, SegmentData &source_elt,
     il::StaticArray<double, 4> &nodal_dd, ElasticProperties &Elas,
     double ker_options) {
