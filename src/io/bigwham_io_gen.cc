@@ -270,9 +270,9 @@ void BigWhamIOGen::GetFullBlocks(il::Array<double> &val_list,
   for (il::int_t i = 0; i < positions.size(); i++) {
     pos_list[i] = positions[i];
   }
-  std::cout << "number of entries " << val_list.size() << " - "
-            << pos_list.size() << "\n";
-  std::cout << " End of Bigwhamio getFullBlocks \n";
+ // std::cout << "number of entries " << val_list.size() << " - "
+ //           << pos_list.size() << "\n";
+ // std::cout << " End of Bigwhamio getFullBlocks \n";
 }
 /* --------------------------------------------------------------------------*/
 
@@ -297,9 +297,9 @@ void BigWhamIOGen::GetFullBlocks(std::vector<double> &val_list,
   for (il::int_t i = 0; i < positions.size(); i++) {
     pos_list.push_back(positions[i]);
   }
-  std::cout << "number of entries " << val_list.size() << " - "
-            << pos_list.size() << "\n";
-  std::cout << " End of Bigwhamio getFullBlocks \n";
+  //std::cout << "number of entries " << val_list.size() << " - "
+  //          << pos_list.size() << "\n";
+  //std::cout << " End of Bigwhamio getFullBlocks \n";
 }
 /* --------------------------------------------------------------------------*/
 

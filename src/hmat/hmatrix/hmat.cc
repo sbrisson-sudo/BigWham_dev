@@ -56,9 +56,9 @@ void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,
     nr = nr + static_cast<int>(aux.size(0) * aux.size(1));
     npos = npos + static_cast<int>(2 * aux.size(0) * aux.size(1));
   }
-  std::cout << "Done Full Block: nval " << val_list.size() << " / "
-            << pos_list.size() / 2 << " n^2 "
-            << (this->size_[0]) * (this->size_[1]) << "\n";
+  // std::cout << "Done Full Block: nval " << val_list.size() << " / "
+  //           << pos_list.size() / 2 << " n^2 "
+  //           << (this->size_[0]) * (this->size_[1]) << "\n";
 }
 /* -------------------------------------------------------------------------- */
 
