@@ -1,5 +1,5 @@
 download_external_project(ltemplate
-  URL "https://github.com/szhorvat/LTemplate.git"
+  URL "https://github.com/GeoEnergyLab-EPFL/LTemplate.git"
   TAG "v${_ltemplate_version}"
   BACKEND GIT
   THIRD_PARTY_SRC_DIR ${_ltemplate_external_dir}
