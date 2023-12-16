@@ -1,0 +1,11 @@
+site_name: BigWham
+site_url: https://bigwham.com
+docs_dir: docs
+
+nav:
+  - Home: index.md
+  - About: about.md
+  - Installation:
+    - Ubuntu: installation/ubuntu.md
+  - Examples:
+    - 2D Griffith Crack: examples/griffith_crack.md
