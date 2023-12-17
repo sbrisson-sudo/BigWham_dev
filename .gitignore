@@ -8,3 +8,4 @@ build/
 .vscode/
 compile_commands.json
 /build_debug/
+/site/*
