@@ -1,0 +1,142 @@
+//
+// This file is_n_a part of HFP.
+//
+// Created by Carlo Peruzzo on 01.01.21.
+// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved.
+// See the LICENSE.TXT file for more details.
+//
+//
+
+#pragma once
+#include <string>
+
+#include <elasticity/3d/Elastic3DR0_mode1Cartesian_element.h>
+#include <hmat/arrayFunctor/MatrixGenerator.h>
+#include "core/ElasticProperties.h"
+#include "core/oldies/FaceData.h"
+#include "core/oldies/Mesh3D.h"
+
+namespace bie {
+
+    template <typename T>
+    class ElasticHMatrix3DR0_mode1Cartesian : public bie::MatrixGenerator<T> {
+     private:
+      il::Array2D<double> point_;
+
+      il::Array<il::int_t> permutation_;
+      const bie::Mesh3D mesh_;
+      //  il::Array2D<il::int_t> binary_ind_pts_at_front_;
+
+     public:
+      bie::ElasticProperties const elas_;
+      ElasticHMatrix3DR0_mode1Cartesian(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+                                        bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas);
+
+      il::int_t size(il::int_t d) const override;
+      il::int_t blockSize() const override;
+      il::int_t sizeAsBlocks(il::int_t d) const override;
+      void set(il::int_t b0, il::int_t b1, il::io_t, il::Array2DEdit<T> M) const override;
+    };
+
+    template <typename T>
+    ElasticHMatrix3DR0_mode1Cartesian<T>::ElasticHMatrix3DR0_mode1Cartesian(il::Array2D<double> &point, const il::Array<il::int_t> &permutation,
+                                                                            bie::Mesh3D &i_meshtools, bie::ElasticProperties &elas)  // il::Array2D<il::int_t> // &binary_ind_pts_at_front
+      : point_{point}, //std::move(point)
+        permutation_{permutation},
+        mesh_{i_meshtools},
+        elas_{elas} //      binary_ind_pts_at_front_{binary_ind_pts_at_front}
+    {
+      IL_EXPECT_FAST(point_.size(1) == 3);  // size(1) point==3 in 3D
+    };
+
+    template <typename T>
+    il::int_t ElasticHMatrix3DR0_mode1Cartesian<T>::size(il::int_t d) const {
+      IL_EXPECT_MEDIUM(d == 0 || d == 1);
+
+      return mesh_.numberCollPts();  // num of nodes * (# of degree of freedom per node)
+    }
+
+    template <typename T>
+    il::int_t ElasticHMatrix3DR0_mode1Cartesian<T>::blockSize() const {
+      return 1;  // # of degree of freedom per node
+    }
+
+    template <typename T>
+    il::int_t ElasticHMatrix3DR0_mode1Cartesian<T>::sizeAsBlocks(il::int_t d) const {
+      IL_EXPECT_MEDIUM(d == 0 || d == 1);
+
+      return (mesh_.numberCollPts());
+    }
+
+    template <typename T>
+    void ElasticHMatrix3DR0_mode1Cartesian<T>::set(il::int_t b0,
+                                                   il::int_t b1,
+                                                   il::io_t,
+                                                   il::Array2DEdit<T> M) const
+                                    {
+        /*  Preliminaries:
+         *  Divide the full Hmat in blocks of 3x3 units. 3 is the # of DD for each node of the mesh.
+         *  Consider a submatrix M that has certain sizes =< sizes of Hmat. The submatrix M considers a number of couples
+         *  node - collocation points thus its dimensions are multiple of 3.
+         *  If we think in terms of nodes rather than degree of freedom the natural choice is
+         *  to loop over the columns or rows jumping of 3 rows or columns per time. Thus we can define a (block)-column index
+         *  and a (block)-row index as to span in such the columns and the rows of Hmat or the matrix M.
+         *
+         *  The purpose of this routine is to fill M.
+         *  Dictionary:
+         *  b1 := is the (block)-column number of the top left 3x3 submatrix of M in the numeration of the HMatrix
+         *  b0 := is the (block)-row number of the top left 3x3 submatrix of M in the numeration of the HMatrix
+         *  j1 := iterator going from 0 to the number of 3x3 submatricies of M in a column - it represents the source node number - it is local
+         *  j0 := iterator going from 0 to the number of 3x3 submatricies of M in a row - it represents the receiver node number - it is local
+         *  k1 := b1 + j1, is the (block)-column number of the "current" source node expressed in the numeration of the HMatrix
+         *  k0 := b1 + j1, is the (block)-column number of the "current" receiver node expressed in the numeration of the HMatrix
+         *  e_k1 := taking the floor of k1/(nodes per element) you obtain the element ID
+         *  e_k0 := taking the floor of k0/(collocation point per element) you obtain the element ID
+         *  -----------
+         *  ( the above expression "current" in k0 and k1, refers to the double loop below)
+         */
+
+          IL_EXPECT_FAST(M.size(0) % blockSize() == 0);
+          IL_EXPECT_FAST(M.size(1) % blockSize() == 0);
+          IL_EXPECT_FAST(b0 + M.size(0) / blockSize() <= point_.size(0));
+          IL_EXPECT_FAST(b1 + M.size(1) / blockSize() <= point_.size(0));
+
+#pragma omp parallel if(M.size(1) / blockSize()>200)
+          {
+#pragma omp for collapse(2)
+            for (il::int_t j1 = 0; j1 < M.size(1);
+                 ++j1) {  // Loop over a subset of source nodes
+
+
+              // Loop over a subset of collocation points
+              for (il::int_t j0 = 0; j0 < M.size(0); ++j0) {
+
+                    il::int_t old_k1;
+                    il::int_t old_k0;
+                    il::int_t e_k1, e_k0;
+
+                    il::int_t k1 = b1 + j1;
+                    old_k1 = permutation_[k1];
+                    e_k1 =old_k1;  // il::floor(old_k1 / number of nodes per element);
+
+                    // get vertices' coordinates of source element
+                    il::Array2D<double> xv = mesh_.getVerticesElt(e_k1);
+                    bie::FaceData elem_data_s(xv, 0);  // 0 = interpolation order
+
+                    il::int_t k0 = b0 + j0;
+                    old_k0 = permutation_[k0];
+                    e_k0 =old_k0;  // il::floor(old_k1 / number of nodes per element);
+
+                    // get vertices' coordinates of receiver element
+                    xv = mesh_.getVerticesElt(e_k0);
+                    bie::FaceData elem_data_r(xv, 0);  // 0 = interpolation order
+
+                    M(j0, j1) = bie::traction_influence_3DR0opening(
+                        elem_data_s, elem_data_r,
+                        elas_);  // https://en.wikipedia.org/wiki/Codomain
+              }
+            }
+          }
+    }
+}  // namespace bie
