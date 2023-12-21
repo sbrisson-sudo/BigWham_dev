@@ -16,8 +16,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "elements/boundary_element.h"
 #include "io/bigwham_io_gen.h"
+#include "io/bigwham_io_helper.h"
+
+#include "elements/boundary_element.h"
+#include "elements/segment.h"
+#include "elements/point.h"
+#include "elements/triangle.h"
 
 #include "py_bigwham_helper.h"
 
@@ -25,14 +30,26 @@ namespace py = pybind11;
 using namespace bie;
 /* -------------------------------------------------------------------------- */
 
-class BigWhamIORect : public BigWhamIOGen {
+class BigWhamIORect : public BigWhamIOGen
+{
 public:
-  BigWhamIORect() {}
-  ~BigWhamIORect() {}
+  BigWhamIORect(const std::vector<double> &coor_src,
+                const std::vector<int> &conn_src,
+                const std::vector<double> &coor_rec,
+                const std::vector<int> &conn_rec, const std::string &kernel,
+                const std::vector<double> &properties)
+      : BigWhamIOGen(coor_src,
+                     conn_src,
+                     coor_rec,
+                     conn_rec, kernel,
+                     properties) {}
+
+  ~BigWhamIORect(){}
 };
 /* -------------------------------------------------------------------------- */
 
-class PyGetFullBlocks {
+class PyGetFullBlocks
+{
 private:
   il::Array<double> val_list;
   il::Array<int> rowN;
@@ -42,39 +59,44 @@ public:
   PyGetFullBlocks() = default;
   ~PyGetFullBlocks() = default;
 
-  void set(const BigWhamIOGen &BigwhamioObj) {
+  void set(const BigWhamIOGen &BigwhamioObj)
+  {
     il::Array<int> pos_list;
     int nbfentry;
 
-    //std::cout << " calling getFullBlocks \n";
+    // std::cout << " calling getFullBlocks \n";
     BigwhamioObj.GetFullBlocks(this->val_list, pos_list);
-    //std::cout << " n entries: " << (this->val_list.size()) << "\n";
-    //std::cout << " Preparing the vectors \n";
+    // std::cout << " n entries: " << (this->val_list.size()) << "\n";
+    // std::cout << " Preparing the vectors \n";
 
     nbfentry = this->val_list.size();
     this->rowN.Resize(nbfentry);
     this->columN.Resize(nbfentry);
 
-    for (int i = 0; i < nbfentry; i++) {
+    for (int i = 0; i < nbfentry; i++)
+    {
       this->rowN[i] = pos_list[2 * i];
       this->columN[i] = pos_list[2 * i + 1];
     }
-    //std::cout << " --- set pyGetFullBlocks completed ---- \n";
+    // std::cout << " --- set pyGetFullBlocks completed ---- \n";
   };
   /* --------------------------------------------------------------------------
    */
 
-  pbarray<double> getValList() {
+  pbarray<double> getValList()
+  {
     return as_pyarray<double>(std::move(this->val_list));
   };
-  pbarray<int> getColumnN() {
+  pbarray<int> getColumnN()
+  {
     return as_pyarray<int>(std::move(this->columN));
   };
   pbarray<int> getRowN() { return as_pyarray<int>(std::move(this->rowN)); };
 };
 /* -------------------------------------------------------------------------- */
 
-PYBIND11_MODULE(py_bigwham, m) {
+PYBIND11_MODULE(py_bigwham, m)
+{
 
   //    // Binding the mother class Bigwhamio
   //    // option py::dynamic_attr() added to allow new members to be created
@@ -82,14 +104,12 @@ PYBIND11_MODULE(py_bigwham, m) {
   // Square Self Interaction matrices
   py::class_<BigWhamIOGen>(m, "BigWhamIOSelf", py::dynamic_attr(),
                            py::module_local())
-      .def(py::init<>()) // constructor
+      .def(py::init<const std::vector<double> &,
+                    const std::vector<int> &, const std::string &,
+                    const std::vector<double> &>()) // constructor
       .def("hmat_destructor", &BigWhamIOGen::HmatrixDestructor)
-      .def("set", py::overload_cast<const std::string &>(&BigWhamIORect::Set))
-      .def("set",
-           py::overload_cast<const std::vector<double> &,
-                             const std::vector<int> &, const std::string &,
-                             const std::vector<double> &, const int,
-                             const double, const double>(&BigWhamIOGen::Set))
+      .def("load_from_file", &BigWhamIOGen::LoadFromFile)
+      .def("build_hierarchical_matrix", &BigWhamIOGen::BuildHierarchicalMatrix)
       .def("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
       .def("get_permutation", &BigWhamIOGen::GetPermutation)
       .def("get_compression_ratio", &BigWhamIOGen::GetCompressionRatio)
@@ -99,27 +119,28 @@ PYBIND11_MODULE(py_bigwham, m) {
       .def("get_hpattern", &BigWhamIOGen::GetHPattern)
       .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
       .def(py::pickle(
-              [](const BigWhamIOGen &self) { // __getstate__
-                  /* Return a tuple that fully encodes the state of the object */
-                  return py::make_tuple(self.kernel_name());
-              },
-              [](py::tuple t) { // __setstate__
-                  if (t.size() != 1)
-                      throw std::runtime_error("Invalid state!");
+          [](const BigWhamIOGen &self) { // __getstate__
+            /* Return a tuple that fully encodes the state of the object */
+            return py::make_tuple(self.kernel_name());
+          },
+          [](py::tuple t) { // __setstate__
+            if (t.size() != 1)
+              throw std::runtime_error("Invalid state!");
 
-                  /* Create a new C++ instance */
-                  BigWhamIOGen p;
-                  return p;
-              }
-          ))
+            /* Create a new C++ instance */
+            BigWhamIOGen p;
+            return p;
+          }))
       .def("convert_to_global",
-           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
+           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
+           {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToGlobal(tx);
              return as_pyarray<double>(std::move(v));
            })
       .def("convert_to_local",
-           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
+           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
+           {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToLocal(tx);
              return as_pyarray<double>(std::move(v));
@@ -129,7 +150,8 @@ PYBIND11_MODULE(py_bigwham, m) {
       // numpy array!!
       .def(
           "matvec_permute",
-          [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
+          [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
+          {
             auto tx = as_array_view<double>(x);
             auto v = self.MatVecPerm(tx);
             return as_pyarray<double>(std::move(v));
@@ -144,7 +166,8 @@ PYBIND11_MODULE(py_bigwham, m) {
       // CP
       .def(
           "matvec",
-          [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto) {
+          [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
+          {
             auto tx = as_array_view<double>(x);
             auto v = self.MatVec(tx);
             return as_pyarray<double>(std::move(v));
@@ -172,15 +195,12 @@ PYBIND11_MODULE(py_bigwham, m) {
    */
 
   py::class_<BigWhamIORect>(m, "BigWhamIORect", py::dynamic_attr())
-      .def(py::init<>())
+      .def(py::init<const std::vector<double> &, const std::vector<int> &,
+                    const std::vector<double> &, const std::vector<int> &,
+                    const std::string &, const std::vector<double> &>())
       .def("hmat_destructor", &BigWhamIORect::HmatrixDestructor)
-      .def("set",
-           py::overload_cast<
-               const std::vector<double> &, const std::vector<int> &,
-               const std::vector<double> &, const std::vector<int> &,
-               const std::string &, const std::vector<double> &, const int,
-               const double, const double>(&BigWhamIORect::Set))
-      .def("set", py::overload_cast<const std::string &>(&BigWhamIORect::Set))
+      .def("build_hierarchical_matrix", &BigWhamIORect::BuildHierarchicalMatrix)
+      .def("load_from_file", &BigWhamIORect::LoadFromFile)
       .def("get_collocation_points", &BigWhamIORect::GetCollocationPoints)
       .def("get_permutation", &BigWhamIORect::GetPermutation)
       .def("get_compression_ratio", &BigWhamIORect::GetCompressionRatio)
@@ -190,20 +210,23 @@ PYBIND11_MODULE(py_bigwham, m) {
       .def("get_hpattern", &BigWhamIORect::GetHPattern)
       .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
       .def("convert_to_global",
-           [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
+           [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto)
+           {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToGlobal(tx);
              return as_pyarray<double>(std::move(v));
            })
       .def("convert_to_local",
-           [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
+           [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto)
+           {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToLocal(tx);
              return as_pyarray<double>(std::move(v));
            })
       .def(
           "matvec",
-          [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto) {
+          [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto)
+          {
             auto tx = as_array_view<double>(x);
             auto v = self.MatVec(tx);
             return as_pyarray<double>(std::move(v));
@@ -224,9 +247,10 @@ PYBIND11_MODULE(py_bigwham, m) {
   py::class_<Mesh>(m, "Mesh", py::dynamic_attr())
       .def(py::init([](const std::vector<double> &coor,
                        const std::vector<int> &conn,
-                       const std::string &elem_type) {
+                       const std::string &elem_type)
+                    {
         std::unique_ptr<Mesh> mesh;
-        switch (hash_djb2a(elem_type)) {
+        switch (bie::hash_djb2a(elem_type)) {
         case "2DP"_sh: {
           int spatial_dimension = 2;
           int nvertices_per_elt = 1;
@@ -272,17 +296,19 @@ PYBIND11_MODULE(py_bigwham, m) {
           il::abort();
         }
         }
-        return mesh;
-      }))
+        return mesh; }))
       .def("get_collocation_points",
-           [](const Mesh &self) {
+           [](const Mesh &self)
+           {
              auto v = self.collocation_points();
 
              il::Array<double> pts{v.size(0) * v.size(1), 0.};
 
              int index = 0;
-             for (il::int_t i = 0; i < v.size(0); i++) {
-               for (il::int_t j = 0; j < v.size(1); j++) {
+             for (il::int_t i = 0; i < v.size(0); i++)
+             {
+               for (il::int_t j = 0; j < v.size(1); j++)
+               {
                  pts[index] = v(i, j);
                  index++;
                }
@@ -292,27 +318,32 @@ PYBIND11_MODULE(py_bigwham, m) {
       .def("num_elements", &Mesh::num_elements)
       .def("num_collocation_points", &Mesh::num_collocation_points)
       .def("get_element_normal",
-           [](const Mesh &self, const il::int_t element_id) {
+           [](const Mesh &self, const il::int_t element_id)
+           {
              return as_pyarray<double>(
                  std::move(self.GetElement(element_id)->normal()));
            })
       .def("get_element_centroid",
-           [](const Mesh &self, const il::int_t element_id) {
+           [](const Mesh &self, const il::int_t element_id)
+           {
              return as_pyarray<double>(
                  std::move(self.GetElement(element_id)->centroid()));
            })
       .def("get_element_tangent1",
-           [](const Mesh &self, const il::int_t element_id) {
+           [](const Mesh &self, const il::int_t element_id)
+           {
              return as_pyarray<double>(
                  std::move(self.GetElement(element_id)->tangent1()));
            })
       .def("get_element_tangent2",
-           [](const Mesh &self, const il::int_t element_id) {
+           [](const Mesh &self, const il::int_t element_id)
+           {
              return as_pyarray<double>(
                  std::move(self.GetElement(element_id)->tangent2()));
            })
       .def("get_element_size",
-           [](const Mesh &self, const il::int_t element_id) {
+           [](const Mesh &self, const il::int_t element_id)
+           {
              return self.GetElement(element_id)->size();
            })
       .def("get_equivalent_eigenstrain",
@@ -322,19 +353,23 @@ PYBIND11_MODULE(py_bigwham, m) {
              eig = Sum (u x n + n x u) * area
              eig = eig11 eig22 eig33 eig13 eig23 eig12
            */
-           [](const Mesh &self, const pbarray<double> &disp) {
+           [](const Mesh &self, const pbarray<double> &disp)
+           {
              auto u = as_array_view<double>(disp);
              auto dim = self.spatial_dimension();
              il::Array<double> eig;
-             if (dim == 3) {
+             if (dim == 3)
+             {
                eig.Resize(6, 0.0);
-               for (il::int_t i = 0; i < self.num_elements(); ++i) {
+               for (il::int_t i = 0; i < self.num_elements(); ++i)
+               {
                  auto elem = self.GetElement(i);
                  auto num_elem_col_pts = elem->num_collocation_points();
                  auto n = elem->normal();
                  auto size = elem->size() / num_elem_col_pts;
                  // std::cout << num_elem_col_pts << std::endl;
-                 for (int j = 0; j < num_elem_col_pts; ++j) {
+                 for (int j = 0; j < num_elem_col_pts; ++j)
+                 {
                    auto id = i * num_elem_col_pts * dim + j * dim;
                    // std::cout << id << std::endl;
                    eig[0] += (size * u[id + 0] * n[0]);
@@ -350,14 +385,17 @@ PYBIND11_MODULE(py_bigwham, m) {
                }
              }
 
-             if (dim == 2) {
+             if (dim == 2)
+             {
                eig.Resize(3, 0.0);
-               for (il::int_t i = 0; i < self.num_elements(); ++i) {
+               for (il::int_t i = 0; i < self.num_elements(); ++i)
+               {
                  auto elem = self.GetElement(i);
                  auto num_elem_col_pts = elem->num_collocation_points();
                  auto n = elem->normal();
                  auto size = elem->size() / num_elem_col_pts;
-                 for (int j = 0; j < num_elem_col_pts; ++j) {
+                 for (int j = 0; j < num_elem_col_pts; ++j)
+                 {
                    auto id = i * num_elem_col_pts * dim + j * dim;
                    eig[0] += size * u[id + 0] * n[0];
                    eig[1] += size * u[id + 1] * n[1];
@@ -373,17 +411,21 @@ PYBIND11_MODULE(py_bigwham, m) {
              sigma_farfield : 6 x 1 vector
              sig = sig11 sig22 sig33 sig13 sig23 sig12
            */
-           [](const Mesh &self, const pbarray<double> &sigma) {
+           [](const Mesh &self, const pbarray<double> &sigma)
+           {
              auto sig = as_array_view<double>(sigma);
              auto dim = self.spatial_dimension();
              il::Array<double> trac;
              trac.Resize(dim * self.num_collocation_points(), 0.0);
-             if (dim == 3) {
-               for (il::int_t i = 0; i < self.num_elements(); ++i) {
+             if (dim == 3)
+             {
+               for (il::int_t i = 0; i < self.num_elements(); ++i)
+               {
                  auto elem = self.GetElement(i);
                  auto num_elem_col_pts = elem->num_collocation_points();
                  auto n = elem->normal();
-                 for (int j = 0; j < num_elem_col_pts; ++j) {
+                 for (int j = 0; j < num_elem_col_pts; ++j)
+                 {
                    // t0
                    trac[i * num_elem_col_pts * dim + j * dim + 0] =
                        sig[0] * n[0] + sig[5] * n[1] + sig[3] * n[2];
@@ -397,12 +439,15 @@ PYBIND11_MODULE(py_bigwham, m) {
                }
              }
 
-             if (dim == 2) {
-               for (il::int_t i = 0; i < self.num_elements(); ++i) {
+             if (dim == 2)
+             {
+               for (il::int_t i = 0; i < self.num_elements(); ++i)
+               {
                  auto elem = self.GetElement(i);
                  auto num_elem_col_pts = elem->num_collocation_points();
                  auto n = elem->normal();
-                 for (int j = 0; j < num_elem_col_pts; ++j) {
+                 for (int j = 0; j < num_elem_col_pts; ++j)
+                 {
                    // t0
                    trac[i * num_elem_col_pts * dim + j * dim + 0] =
                        sig[0] * n[0] + sig[2] * n[1];
@@ -416,13 +461,15 @@ PYBIND11_MODULE(py_bigwham, m) {
              return as_pyarray<double>(std::move(trac));
            })
       .def("convert_to_global",
-           [](const Mesh &self, const pbarray<double> &x) -> decltype(auto) {
+           [](const Mesh &self, const pbarray<double> &x) -> decltype(auto)
+           {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToGlobal(tx);
              return as_pyarray<double>(std::move(v));
            })
       .def("convert_to_local",
-           [](const Mesh &self, const pbarray<double> &x) -> decltype(auto) {
+           [](const Mesh &self, const pbarray<double> &x) -> decltype(auto)
+           {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToLocal(tx);
              return as_pyarray<double>(std::move(v));
@@ -432,34 +479,40 @@ PYBIND11_MODULE(py_bigwham, m) {
 
   py::class_<BoundaryElement>(m, "BoundaryElement", py::dynamic_attr())
       .def(py::init(
-          [](const std::vector<double> &verts, const std::string &elem_type) {
+          [](const std::vector<double> &verts, const std::string &elem_type)
+          {
             std::unique_ptr<BoundaryElement> elem;
             int num_vertices;
             int spatial_dimension;
 
-            switch (hash_djb2a(elem_type)) {
-            case "2DS0"_sh: {
+            switch (bie::hash_djb2a(elem_type))
+            {
+            case "2DS0"_sh:
+            {
               spatial_dimension = 2;
               num_vertices = 2;
               using EltType = bie::Segment<0>;
-              elem = std::make_unique<ElemType>();
+              elem = std::make_unique<EltType>();
               break;
             }
-            case "2DS1"_sh: {
+            case "2DS1"_sh:
+            {
               spatial_dimension = 2;
               num_vertices = 2;
               using EltType = bie::Segment<1>;
-              elem = std::make_unique<ElemType>();
+              elem = std::make_unique<EltType>();
               break;
             }
-            case "3DT0"_sh: {
+            case "3DT0"_sh:
+            {
               spatial_dimension = 3;
               num_vertices = 3;
               using EltType = bie::Triangle<0>;
-              elem = std::make_unique<ElemType>();
+              elem = std::make_unique<EltType>();
               break;
             }
-            default: {
+            default:
+            {
               std::cout << "wrong inputs -abort \n";
               il::abort();
             }
@@ -467,8 +520,10 @@ PYBIND11_MODULE(py_bigwham, m) {
 
             il::Array2D<double> vertices{num_vertices, spatial_dimension};
             int index = 0;
-            for (il::int_t i = 0; i < num_vertices; i++) {
-              for (il::int_t j = 0; j < spatial_dimension; j++) {
+            for (il::int_t i = 0; i < num_vertices; i++)
+            {
+              for (il::int_t j = 0; j < spatial_dimension; j++)
+              {
                 vertices(i, j) = verts[index];
                 index++;
               }
@@ -477,19 +532,23 @@ PYBIND11_MODULE(py_bigwham, m) {
             return elem;
           }))
       .def("centroid",
-           [](const BoundaryElement &self) {
+           [](const BoundaryElement &self)
+           {
              return as_pyarray<double>(std::move(self.centroid()));
            })
       .def("normal",
-           [](const BoundaryElement &self) {
+           [](const BoundaryElement &self)
+           {
              return as_pyarray<double>(std::move(self.normal()));
            })
       .def("tangent1",
-           [](const BoundaryElement &self) {
+           [](const BoundaryElement &self)
+           {
              return as_pyarray<double>(std::move(self.tangent1()));
            })
       .def("tangent",
-           [](const BoundaryElement &self) {
+           [](const BoundaryElement &self)
+           {
              return as_pyarray<double>(std::move(self.tangent2()));
            })
       .def("size", &BoundaryElement::size);

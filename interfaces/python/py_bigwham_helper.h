@@ -1,16 +1,19 @@
-#include "hmat/hierarchical_representation.h"
-#include "il/Array.h"
-#include "io/bigwham_io_gen.h"
-#include "io/bigwham_io_helper.h"
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <vector>
 
-#include "elasticity/fullspace_iso_2d_segment/elastic_2dP0_segment.h"
+#include "il/Array.h"
 
+#include "elasticity/fullspace_iso_2d_segment/elastic_2dP0_segment.h"
+#include "io/bigwham_io_gen.h"
+#include "io/bigwham_io_helper.h"
+#include "hmat/hierarchical_representation.h"
+
+using namespace bie;
 namespace py = pybind11;
 template <typename T>
 using pbarray = py::array_t<T, py::array::c_style | py::array::forcecast>;
+
 /* -------------------------------------------------------------------------- */
 
 template <typename T> inline py::array_t<T> as_pyarray(il::Array<T> &&seq) {
@@ -44,7 +47,7 @@ pbarray<double> PyGetCollocationPoints(const std::vector<double> &coor,
     int spatial_dimension = 3;
     int nvertices_per_elt = 3;
     using EltType = bie::Triangle<0>;
-    mesh = createMeshFromVect<EltType>(spatial_dimension, nvertices_per_elt,
+    mesh = bie::CreateMeshFromVect<EltType>(spatial_dimension, nvertices_per_elt,
                                        coor, conn);
     break;
   }
@@ -129,7 +132,7 @@ pbarray<double> PyComputeStress(const pbarray<double> &pts,
                                 const double nu = 0.0) {
 
   il::Array<double> stress;
-  switch (hash_djb2a(elem_kernel_type)) {
+  switch (bie::hash_djb2a(elem_kernel_type)) {
   case "2DS0-T"_sh: {
     int dim = 2;
     int num_pts = pts.size() / dim;
@@ -194,7 +197,7 @@ pbarray<double> PyComputeDisplacement(const pbarray<double> &pts,
                                       const double nu = 0.3) {
 
   il::Array<double> disp;
-  switch (hash_djb2a(elem_kernel_type)) {
+  switch (bie::hash_djb2a(elem_kernel_type)) {
   case "2DS0-U"_sh: {
     int dim = 2;
     int num_pts = pts.size() / dim;

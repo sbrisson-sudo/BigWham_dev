@@ -69,12 +69,13 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
         self.eta_ : float = float(eta)
         self.eps_aca_ : float = float(eps_aca)
 
-        self.H_ : BigWhamIOSelf = BigWhamIOSelf()
-        self.H_.set(
+        self.H_ : BigWhamIOSelf = BigWhamIOSelf(
             coor.flatten(),
             conn.flatten(),
             kernel,
             properties.flatten(),
+        )
+        self.H_.build_hierarchical_matrix(
             max_leaf_size,
             eta,
             eps_aca,
@@ -88,7 +89,7 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
 
     def __init__(self, filename: str):
         self.H_ : BigWhamIOSelf = BigWhamIOSelf()
-        self.H_.set(filename)
+        self.H_.load_from_file(filename)
         self.matvec_size_ = self.H_.matrix_size(0)
         self.dtype_ = float
 
