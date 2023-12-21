@@ -161,8 +161,7 @@ public:
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
       using EltType = bie::Segment<0>;
-      mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
-                                          conn);
+      mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,conn);
       ker_obj_ = std::make_shared<
           bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
           elas, dimension_);
@@ -183,7 +182,7 @@ public:
             dimension_ = 2;
             int nvertices_per_elt_ = 2;
             using EltType = bie::Segment<0>;
-            mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,conn);
+            mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor, conn);
             ker_obj_ = std::make_shared<
                     bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::T>>(
                     elas, dimension_);

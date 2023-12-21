@@ -89,44 +89,12 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 ################################################################################
 # file definitions
 ################################################################################
-    # # 2D source code
-    #     src/elasticity/FsIsoSp3dSegment/ElasticS3DP0_element.cpp
-    #     src/elasticity/FsIso2dSegment/Elastic2DP1_element.cpp
-    #     src/elasticity/oldies/PostProcessDDM_2d.cpp
-    #     src/elasticity/oldies/PostProcessDDM_3d.cpp
-    # #  - T6 element
-    # src/elasticity/3d/Elastic3DT6_element.cpp
-    # src/elasticity/3d/h_potential_3DT6.cpp
-    # src/elasticity/3d/tensor_utilities_3DT6.cpp
-    # src/elasticity/3d/ElasticHMatrix3DT6.h
-    # #  - T0 element
-    # src/elasticity/3d/Elastic3DT0_element.cpp
-    # src/elasticity/3d/ElasticHMatrix3DT0.h
-    # src/elasticity/3d/ElasticHMatrix3DT0_modes2and3.h
-    # #  - R0 element
-    # src/elasticity/3d/Elastic3DR0_common.cpp
-    # src/elasticity/3d/Elastic3DR0_element.cpp
-    # src/elasticity/3d/Elastic3DR0_mode1Cartesian_element.cpp
-    # src/elasticity/3d/ElasticHMatrix3DR0.h
-    # src/elasticity/3d/ElasticHMatrix3DR0displ.h
-    # src/elasticity/3d/ElasticHMatrix3DR0_mode1Cartesian.h
-    # src/elasticity/3d/ElasticHMatrix3DR0_modes2and3Cartesian.h
-    # #new
-    #     src/elasticity/BieElastostatic.h
-    #     src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h
-    #     src/elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h
-    # src/elasticity/3d/BIE_elastostatic_triangle_0_impls.h
-    #     src/elasticity/FsIso2dSegment/Elastic2D_segment.cpp
-        # src/elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h
-      # )
-
 
 # Source files are added by src subdirectories
 set(SOURCE_FILES "")
 add_subdirectory(src)
 
 # message(STATUS ${SOURCE_FILES})
-
 
 add_library(BigWham OBJECT ${SOURCE_FILES})
 target_compile_features(BigWham PUBLIC cxx_std_17)
@@ -210,11 +178,13 @@ if(BIGWHAM_TESTING)
         src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
         src/core/_test/triangle_test.cc
         src/core/_test/rectangle_test.cc
+        src/core/_test/point_test.cc
         src/_test/bigwhamio_test_2d.cc
         src/elasticity/_test/triangle0_test.cc
         src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc
         src/elasticity/_test/segment0_kernels_test.cc
-      )
+            src/io/_test/bigwham_io_gen_test_2d.cc
+            src/io/_test/bigwham_io_helper_test.cc)
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)

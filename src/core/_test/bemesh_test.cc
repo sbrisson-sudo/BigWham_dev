@@ -15,10 +15,35 @@
 #include "elements/rectangle.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
+#include "elements/point.h"
 
 /* -------------------------------------------------------------------------- */
 
-// 2D mesh test
+// 2D mesh tests
+TEST(bemesh_point_2d,pt_1){
+    int n_elts = 4;
+    il::Array2D<double> coor{n_elts + 1, 2, 0.};
+    il::Array2D<double> eltC{n_elts, 2, 0.};
+    il::Array2D<il::int_t> conn{n_elts, 1};
+    double h = 1;
+    for (int i = 0; i < n_elts + 1; i++) {
+        coor(i, 0) = i * h;
+        coor(i, 1) = i * 2* h;
+    }
+    for (int i = 0; i < n_elts; i++) {
+        conn(i, 0) = i;
+    }
+    bie::BEMesh<bie::Point<2>> my_mesh(coor, conn);
+    my_mesh.ConstructMesh();
+    il::Array2D<double> test = my_mesh.collocation_points();
+    bool t = true;
+    for (int i = 0; i < n_elts; i++) {
+        t = t && ( test(i, 0) == coor(i, 0) ) && ( test(i, 1) == coor(i, 1) ) ;
+    }
+    ASSERT_TRUE(t);
+}
+
+
 TEST(bemesh_seg, seg_0_1) {
   int n_elts = 4;
   il::Array2D<double> coor{n_elts + 1, 2, 0.};

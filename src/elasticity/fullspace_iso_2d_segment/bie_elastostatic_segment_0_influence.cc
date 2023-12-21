@@ -26,8 +26,7 @@ std::vector<double>
 BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
-  //  return  - U elastic kernel - Segment 0 element - note use of simplified3D
-  //  kernel here
+  //  return  - U elastic kernel - Segment 0 element -
   // source_elt : element object of the source element
   // i_s : integert for the source collocation number (0,1)
   // receiver_elt  : element object of the receiver element
@@ -218,8 +217,8 @@ BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>::influence(
 }
 /* -------------------------------------------------------------------------- */
 
-// Singular Kernel   T : Rectangular Kernel
-// Displacement at rec due to displacment discontnuity at src, delta(src)
+// Singular Kernel   T :  Kernel
+// Displacement at rec due to displacment discontinuity at src, delta(src)
 //                               and normal at src, n(src)
 template <>
 std::vector<double>
@@ -249,7 +248,6 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
   xe = source_elt.ConvertToLocal(xe);
 
   double h = source_elt.size();
-
 
   // The below method will give us S(rec - src) 
   // but we need S(src - rec), therefore -xe is taken in input 
@@ -284,25 +282,92 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
 
   std::vector<double> stnl(4, 0.);
 
-  // St(0, 0)
-  // rec displacement in 0 direction due to DD in 0 direction (ModeII)
+
+  //   displacement at receiver pt in 0 direction due to DD in 0 direction (ModeII)
   stnl[0] = tt_s_local[0];
-  // St(0, 1)
-  // rec displacement in 0 direction due to DD in 1 direction (ModeI)
-  stnl[2] = tt_n_local[0];
-  // St(1, 0)
-  // rec displacement in 1 direction due to DD in 0 direction (ModeII)
+  // displacement at receiver pt  in 1 direction due to DD in 0 direction (ModeII)
   stnl[1] = tt_s_local[1];
-  // St(1, 1)
-  // rec displacement in 1 direction due to DD in 1 direction (ModeI)
+  // displacement at receiver pt  in 0 direction due to DD in 1 direction (ModeI)
+  stnl[2] = tt_n_local[0];
+ // displacement at receiver pt  in 1 direction due to DD in 1 direction (ModeI)
   stnl[3] = tt_n_local[1];
 
   return stnl;
 }
 /* -------------------------------------------------------------------------- */
 
+// Kernel W
+// stress at a point due to displacement over a source segment
+    template <>
+    std::vector<double>
+    BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>::influence(
+            const BoundaryElement &source_elt, il::int_t i_s,
+            const BoundaryElement &receiver_elt, il::int_t i_r) const {
+        //  return stress tensor - Hypersingular elastic kernel - Segment 0 element
+        // source_elt : element object of the source element
+        // i_s : integert for the source collocation number (0,1)
+        // receiver_elt  : element object of the receiver element
+        // i_r : integer for the collocation number where to compute the stress tensor
+        // due to shear and normal unit displacement over the source segment
+        // receiver element outputs: column-major (fortran order)
+
+        // vector for the displacement to stress influence matrix
+
+        // switch to the frame of the source element....
+        il::Array<double> xe{2, 0.0};
+        auto Xmid = source_elt.centroid();
+        auto r_col = receiver_elt.collocation_points();
+        for (int i = 0; i < 2; ++i) {
+            xe[i] = r_col(i_r, i) - Xmid[i];
+        }
+        auto xe_local = source_elt.ConvertToLocal(xe);
+
+        double h = source_elt.size();
+
+        il::StaticArray2D<double, 2, 3> stress_l =
+                We_segment_0(h, this->elas_.shear_modulus(), this->elas_.poisson_ratio(),
+                             xe_local[0], xe_local[1]);
+
+        // switch back to global system
+        il::Array2D<double > S_ut_l{2,2,0},S_un_l{2,2,0};
+        S_ut_l(0,0)=stress_l(0,0);    S_ut_l(0,1)=stress_l(0,1);
+        S_ut_l(1,0)=stress_l(0,1);    S_ut_l(1,1)=stress_l(0,2);
+
+        S_un_l(0,0)=stress_l(1,0);    S_un_l(0,1)=stress_l(1,1);
+        S_un_l(1,0)=stress_l(1,1);    S_un_l(1,1)=stress_l(1,2);
+
+        auto R = source_elt.rotation_matrix();
+        auto Rt= source_elt.rotation_matrix_t();
+
+        auto S_ut_g = il::dot(R,il::dot(S_ut_l,Rt));
+        auto S_un_g = il::dot(R,il::dot(S_un_l,Rt));
+
+        std::vector<double> stnl(6, 0.);
+
+        //  effect of shear displacement
+        //  sigma_11
+        stnl[0] = S_ut_g(0,0) ;
+        // sigma_22
+        stnl[1] = S_ut_g(1,1) ;
+        // sigma_12
+        stnl[2] = S_ut_g(0,1) ;
+
+        //  effect of normal displacement
+        //  sigma_11
+        stnl[3] =   S_un_g(0,0) ;
+        //sigma_22
+        stnl[4] = S_un_g(1,1);
+        // sigma_12
+        stnl[5]= S_un_g(0,1);
+
+        return stnl;
+    }
+    /* -------------------------------------------------------------------------- */
+
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>;
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>;
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>;
 template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>;
+template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>;
+
 } // namespace bie

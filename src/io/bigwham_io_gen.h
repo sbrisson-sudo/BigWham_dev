@@ -1,3 +1,13 @@
+//
+// This file is part of BigWham.
+//
+// Created by Brice Lecampion on 15.12.19.
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// file for more details.
+//
+// last modifications :: Dec. 2023 - new interface improvements
+
 #ifndef BIGWHAM_IO_GEN_H
 #define BIGWHAM_IO_GEN_H
 
@@ -6,64 +16,58 @@
 #endif
 
 #include <cstdlib>
+#include <memory>
 
-#include "core/be_mesh.h"
-#include "core/bie_kernel.h"
-#include "core/elastic_properties.h"
-
+#include "hmat/hierarchical_representation.h"
 #include "hmat/bie_matrix_generator.h"
 #include "hmat/hmatrix/hmat.h"
-
-#include "elements/point.h"
-#include "elements/rectangle.h"
-#include "elements/segment.h"
-#include "elements/triangle.h"
-
-#include "elasticity/bie_elastostatic.h"
-#include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d0.h"
-#include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
-
-using namespace bie;
 
 class BigWhamIOGen {
 private:
   std::string kernel_name_;
   il::int_t spatial_dimension_;
   il::int_t dof_dimension_;
+  il::int_t flux_dimension_;
+
   il::int_t max_leaf_size_;
   double eta_;
   double epsilon_aca_;
-  bool is_built_;
 
+  bool is_built_=false;
+  bool is_pattern_built_=false;
   double h_representation_time_;
   double hmat_time_;
 
-  std::shared_ptr<Hmat<double>> hmat_;
-  std::shared_ptr<HRepresentation> hr_;
-  std::shared_ptr<Mesh> mesh_src_;
-  std::shared_ptr<Mesh> mesh_rec_;
-  std::shared_ptr<Mesh> mesh_; // for square matrix
-  std::shared_ptr<BieKernel<double>> ker_obj_;
+  std::shared_ptr<bie::Hmat<double>> hmat_;
+  std::shared_ptr<bie::HRepresentation> hr_;
+  std::shared_ptr<bie::Mesh> mesh_src_;
+  std::shared_ptr<bie::Mesh> mesh_rec_;
+  std::shared_ptr<bie::Mesh> mesh_; // for square matrix
+  std::shared_ptr<bie::BieKernel<double>> ker_obj_; // BieKernel description for the matrix operator
+  std::shared_ptr<bie::BieKernel<double>> ker_obs_u_; // BieKernel description for computing observation of potential/displacement (u) at points
+  std::shared_ptr<bie::BieKernel<double>> ker_obs_q_; // BieKernel description for computing observation of 'flux'/'stress' (q) at points
 
 public:
-  BigWhamIOGen() {}
+    BigWhamIOGen() {};
+    // square matrices
+    BigWhamIOGen(const std::vector<double> &coor, const std::vector<int> &conn,
+               const std::string &kernel, const std::vector<double> &properties) ;
+
+    // rectangular Hmat
+    BigWhamIOGen(const std::vector<double> &coor_src,
+                 const std::vector<int> &conn_src,
+                 const std::vector<double> &coor_rec,
+                 const std::vector<int> &conn_rec, const std::string &kernel,
+                 const std::vector<double> &properties);
   ~BigWhamIOGen() {}
 
-  // square matrices
-  void Set(const std::vector<double> &coor, const std::vector<int> &conn,
-           const std::string &kernel, const std::vector<double> &properties,
-           const int max_leaf_size, const double eta, const double eps_aca);
+  void BuildPattern(const int max_leaf_size, const double eta);
 
-  // rectangular matrices
-  void Set(const std::vector<double> &coor_src,
-           const std::vector<int> &conn_src,
-           const std::vector<double> &coor_rec,
-           const std::vector<int> &conn_rec, const std::string &kernel,
-           const std::vector<double> &properties, const int max_leaf_size,
-           const double eta, const double eps_aca);
+  void BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca); // construct Hierarchical matrix
 
-  void Set(const std::string &filename) {
-    this->hmat_ = std::make_shared<Hmat<double>>(filename);
+  // load from file
+  void LoadFromFile(const std::string &filename) {
+    this->hmat_ = std::make_shared<bie::Hmat<double>>(filename);
   }
 
   void WriteHmatrix(const std::string &filename) {
@@ -87,6 +91,14 @@ public:
   std::vector<double> ConvertToLocal(const std::vector<double> &x_global) const;
   il::Array<double> ConvertToGlobal(il::ArrayView<double> x_local) const;
   il::Array<double> ConvertToLocal(il::ArrayView<double> x_global) const;
+  il::Array<double> ComputePotentials(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const;
+  il::Array<double> ComputeFluxes(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const;
+  il::Array<double> ComputeDisplacements(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
+  {return ComputePotentials(coor_obs, sol_local);};
+  il::Array<double> ComputeStresses(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
+  {return ComputeFluxes(coor_obs,sol_local); }
+  ;
+
   long MatrixSize(const int k) { return hmat_->size(k); };
   double GetCompressionRatio() const {
     IL_EXPECT_FAST(is_built_);

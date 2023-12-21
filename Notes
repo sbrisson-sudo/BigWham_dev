@@ -1,9 +1,15 @@
-Modified November 14, 2021
+Modified November 22, 2023
 
 Important points:
-- now the mathematica link is in another repository - this is   c++ + python bindings
+
 
 TODO:
+
+- only 1 bigwham_io -> change mma interface.
+- implement observation points for stress and displacement kernels
+
+- python bindings kernel
+
 
 Hmat-Lib:
 - write a series of python script for verifications examples

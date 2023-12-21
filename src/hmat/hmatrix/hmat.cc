@@ -1,3 +1,13 @@
+//
+// This file is part of BigWham.
+//
+// Created by Brice Lecampion on 15.12.19.
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// file for more details.
+//
+
+
 #include "hmat.h"
 
 #if defined(IL_OPENMP)
@@ -9,6 +19,29 @@
 #endif
 
 namespace bie {
+/* -------------------------------------------------------------------------- */
+
+
+// direct constructor
+template <typename T>
+Hmat<T>::Hmat(const bie::MatrixGenerator<T> & matrix_gen,
+                  const double epsilon_aca) {
+        // construction directly
+        this->toHmat(matrix_gen, epsilon_aca);
+}
+/* -------------------------------------------------------------------------- */
+
+template <typename T> Hmat<T>::Hmat(const std::string & filename) {
+        // construction directly
+        il::Timer tt;
+        tt.Start();
+        this->readFromFile(filename);
+        tt.Stop();
+        std::cout << "Reading of hmat done in " << tt.time() << "\n";
+        std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
+        std::cout << "Hmat object - built "
+                  << "\n";
+}
 /* -------------------------------------------------------------------------- */
 
 template <typename T>
@@ -111,34 +144,7 @@ template <typename T> std::vector<T> Hmat<T>::diagonal() {
 }
 /* -------------------------------------------------------------------------- */
 
-//   // simple constructor from pattern  -> todo remove
-//   Hmat(const bie::HPattern& pattern){
-//     pattern_=pattern;
-//   };
-
-// direct constructor
-template <typename T>
-Hmat<T>::Hmat(const bie::MatrixGenerator<T> & matrix_gen,
-              const double epsilon_aca) {
-  // construction directly
-  this->toHmat(matrix_gen, epsilon_aca);
-}
-/* -------------------------------------------------------------------------- */
-
-template <typename T> Hmat<T>::Hmat(const std::string & filename) {
-  // construction directly
-  il::Timer tt;
-  tt.Start();
-  this->readFromFile(filename);
-  tt.Stop();
-  std::cout << "Reading of hmat done in " << tt.time() << "\n";
-  std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
-  std::cout << "Hmat object - built "
-            << "\n";
-}
-/* -------------------------------------------------------------------------- */
-
-// Main constructor
+//
 template <typename T>
 void Hmat<T>::toHmat(const MatrixGenerator<T> & matrix_gen,
                      const double epsilon_aca) {
@@ -342,8 +348,6 @@ template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
 /* -------------------------------------------------------------------------- */
 
 // H-Matrix vector multiplication with permutation for rectangular matrix
-// cases (only 1 permutation) in & out as std::vector todo : write another one
-// for the case of 2 permutations (rect. mat cases (for source != receivers)
 template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
 
   il::Array<T> z{static_cast<il::int_t>(x.size())};
@@ -371,8 +375,6 @@ template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
 /* -------------------------------------------------------------------------- */
 
 // H-Matrix vector multiplication with permutation for rectangular matrix
-// cases (only 1 permutation) in & out as std::vector todo : write another one
-// for the case of 2 permutations (rect. mat cases (for source != receivers)
 template <typename T>
 std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> & x) {
 

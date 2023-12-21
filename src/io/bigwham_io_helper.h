@@ -30,12 +30,12 @@ inline constexpr auto operator"" _sh(const char *str, size_t len) {
 /* -------------------------------------------------------------------------- */
 
 template <class El>
-std::shared_ptr<Mesh> createMeshFromVect(int spatial_dimension,
+std::shared_ptr<Mesh> CreateMeshFromVect(int spatial_dimension,
                                          int n_vertex_elt,
                                          const std::vector<double> &coor,
                                          const std::vector<int> &conn) {
   il::int_t npoints = coor.size() / spatial_dimension;
-  il::int_t nelts = conn.size() / spatial_dimension;
+  il::int_t nelts = conn.size() / n_vertex_elt;
   il::Array2D<double> Coor{npoints, spatial_dimension, 0.}; //
   il::Array2D<il::int_t> Conn{nelts, n_vertex_elt, 0};
   // populate mesh  ...
@@ -68,7 +68,7 @@ std::unique_ptr<Mesh> CreateUniqueMeshFromVect(int spatial_dimension,
                                          const std::vector<double> &coor,
                                          const std::vector<int> &conn) {
   il::int_t npoints = coor.size() / spatial_dimension;
-  il::int_t nelts = conn.size() / spatial_dimension;
+  il::int_t nelts = conn.size() / n_vertex_elt;
   il::Array2D<double> Coor{npoints, spatial_dimension, 0.}; //
   il::Array2D<il::int_t> Conn{nelts, n_vertex_elt, 0};
   // populate mesh  ...
@@ -86,7 +86,6 @@ std::unique_ptr<Mesh> CreateUniqueMeshFromVect(int spatial_dimension,
       index++;
     }
   }
-  // BEMesh<El> mesh(Coor, Conn);
   auto mesh = std::make_unique<BEMesh<El>>(Coor, Conn);
   mesh->ConstructMesh();
   // std::cout << "in create mesh - done "

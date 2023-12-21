@@ -11,13 +11,14 @@
 #ifndef BIGWHAM_BIE_MATRIX_GENERATOR_H
 #define BIGWHAM_BIE_MATRIX_GENERATOR_H
 
+#include "il/core/core.h"
+
 #include "hmat/arrayFunctor/matrix_generator.h"
 #include "hmat/hierarchical_representation.h"
 
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 #include "core/mesh.h"
-#include "il/core/core.h"
 
 namespace bie {
 

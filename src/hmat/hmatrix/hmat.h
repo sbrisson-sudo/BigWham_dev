@@ -32,6 +32,34 @@ template <typename T> class Hmat {
   // (neither the mesh etc.) construction from the pattern built from the block
   // cluster tree openmp parallel construction openmp parallel mat_vect dot
   // product (non-permutted way)
+private:
+    void build(const bie::MatrixGenerator<T> & matrix_gen, const double epsilon);
+    void buildFR(const bie::MatrixGenerator<T> & matrix_gen);
+    template <il::int_t dim>
+    void buildLR(const bie::MatrixGenerator<T> & matrix_gen,
+                 const double epsilon);
+
+    std::shared_ptr<HRepresentation> hr_;
+
+    // shall we store the permutation(s) in that object ?
+
+    il::int_t dof_dimension_;            //  dof per collocation points
+    il::StaticArray<il::int_t, 2> size_; // size of tot mat (row, cols)
+
+    std::vector<std::unique_ptr<bie::LowRank<T>>>
+            low_rank_blocks_; // vector of low rank blocks
+    std::vector<std::unique_ptr<il::Array2D<T>>>
+            full_rank_blocks_; // vector of full rank blocks
+
+    bool isBuilt_ = false;
+    bool isBuilt_LR_ = false;
+    bool isBuilt_FR_ = false;
+
+#if defined(IL_OPENMP)
+    int frb_chunk_size_{1};
+    int lrb_chunk_size_{1};
+#endif
+
 public:
   void hmatMemFree();
   Hmat() = default;
@@ -62,34 +90,6 @@ public:
 
   std::shared_ptr<HRepresentation> getRepresentation() { return hr_; }
 
-private:
-  void build(const bie::MatrixGenerator<T> & matrix_gen, const double epsilon);
-  void buildFR(const bie::MatrixGenerator<T> & matrix_gen);
-  template <il::int_t dim>
-  void buildLR(const bie::MatrixGenerator<T> & matrix_gen,
-               const double epsilon);
-
-private:
-  std::shared_ptr<HRepresentation> hr_;
-
-  // shall we store the permutation(s) in that object ?
-
-  il::int_t dof_dimension_;            //  dof per collocation points
-  il::StaticArray<il::int_t, 2> size_; // size of tot mat (row, cols)
-
-  std::vector<std::unique_ptr<bie::LowRank<T>>>
-      low_rank_blocks_; // vector of low rank blocks
-  std::vector<std::unique_ptr<il::Array2D<T>>>
-      full_rank_blocks_; // vector of full rank blocks
-
-  bool isBuilt_ = false;
-  bool isBuilt_LR_ = false;
-  bool isBuilt_FR_ = false;
-
-#if defined(IL_OPENMP)
-  int frb_chunk_size_{1};
-  int lrb_chunk_size_{1};
-#endif
 };
 
 } // namespace bie
