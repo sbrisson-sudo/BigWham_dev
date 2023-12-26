@@ -5,6 +5,11 @@ theme:
   name: material
 
 markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.arithmatex:
       generic: true
 
@@ -19,7 +24,7 @@ extra_css:
 nav:
   - Home: index.md
   - About: about.md
-  - API: 
+  - Developers: 
     - api/api.md
   - Installation:
     - Ubuntu: installation/ubuntu.md
