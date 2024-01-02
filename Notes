@@ -17,17 +17,13 @@ Hmat-Lib:
 - code up LatticeHmat objects with MPI etc.
     -  modify all matrix generator to allow rectangular hmat
     - have a seperate binding for LatticeHmat
-- code up HLU solve on the C++ side [currently a problem with duplicate ludecomposition at link time - not solved with inline or static]
 - Elasticity
     - sub-code organization
     - Code up atomic test (single elements test) for all kernels ?
     - make sure all kernels have displacement coded up
-    - compute Stress and displacement methods in the bigwhamio class
     - tidy up the 3D mesh object
     - tidy up the 3DT6 implementation
-- re-write google tests for basic operations of the C++ code, leave more intrincate benchmarks and physics verification on the mma side.
-  ---> #include "elasticity/AssemblyDDM.h" the file does not exist anymore
-
+- more google tests for basic operations of the C++ code,
 
 
 - OPEN MP

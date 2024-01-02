@@ -38,7 +38,6 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
     std::cout << " Now setting things for kernel ... " << kernel_name_
               << " with properties size " << properties.size() << "\n";
 
-
     switch (hash_djb2a(kernel_name_)) {
         case "2DP0"_sh: {
             IL_ASSERT(properties.size() == 2);
@@ -421,7 +420,7 @@ BigWhamIOGen::ConvertToLocal(const std::vector<double> &x_global) const {
 std::vector<double> BigWhamIOGen::GetCollocationPoints() const {
   IL_EXPECT_FAST(is_built_);
 
-  auto col_pts = mesh_->collocation_points();
+  auto col_pts = mesh_rec_->collocation_points();  // this should be the receiver mesh for  generality
   IL_EXPECT_FAST(col_pts.size(1) == spatial_dimension_);
   il::int_t npoints = col_pts.size(0);
   std::vector<double> flat_col;
@@ -429,7 +428,7 @@ std::vector<double> BigWhamIOGen::GetCollocationPoints() const {
   int index = 0;
   for (il::int_t i = 0; i < col_pts.size(0); i++) {
     for (il::int_t j = 0; j < col_pts.size(1); j++) {
-      flat_col[index] = col_pts(i, j);
+      flat_col[index] = col_pts(hr_->permutation_0_[i], j); // be careful the col_pts have been permutted !
       index++;
     }
   }
