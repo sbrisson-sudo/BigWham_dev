@@ -1,10 +1,24 @@
 site_name: BigWham
 site_url: https://bigwham.com
+repo_url: https://github.com/GeoEnergyLab-EPFL/BigWham/tree/Brice/dev
+
+
 docs_dir: docs
 theme:
   name: material
+  features:
+      - content.code.copy
+      - navigation.tabs
 
 markdown_extensions:
+  - pymdownx.highlight:
+        auto_title: true
+        line_spans: __span
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.arithmatex:
       generic: true
 
@@ -19,12 +33,13 @@ extra_css:
 nav:
   - Home: index.md
   - About: about.md
-  - API: 
+  - Developers: 
     - api/api.md
   - Installation:
     - Ubuntu: installation/ubuntu.md
   - Examples:
     - 2D Griffith Crack: examples/griffith_crack.md
+    - User API: examples/user_api.md
   - Readme (master branch):
     - Readme v1: oldies/readmev1.md
     - Readme v2: oldies/readmev2.md

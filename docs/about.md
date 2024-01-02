@@ -1,4 +1,4 @@
-# Bigwham: About
+# About
 Date: Jan. 15 2023
 
 
