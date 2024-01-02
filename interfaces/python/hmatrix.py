@@ -157,15 +157,12 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
 
     def getCollocationPoints(self) -> np.ndarray:
         """
-
-        :return:
+        Return the coordinates all the collocation points in the mesh
+        :return: array of  coordinates of the collocation points
         """
         n = self.H_.get_spatial_dimension()
         aux = np.asarray(self.H_.get_collocation_points())
         colPts = np.reshape(aux, (int(aux.size / n), n))
-        #permut = self.getPermutation()
-        #colPts = 0.0 * auxpermut
-        #colPts[permut] = auxpermut
         return colPts
 
     def getSpatialDimension(self) -> int:
@@ -226,14 +223,15 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
 
     # a method constructing an ILU Preconditionner of the H matrix
     def H_ILU_prec(self, fill_factor=5, drop_tol=1e-5) -> LinearOperator:
-        # fb = self._getFullBlocks()
-        fbinv = self.H_ILU(fill_factor=fill_factor, drop_tol=drop_tol)
-        return LinearOperator(self.shape_, fbinv.solve)
-
-    def H_ILU(self, fill_factor=5, drop_tol=1e-5) -> SuperLU:
         fb = self._getFullBlocks()
         fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
-        return fbILU
+        return LinearOperator(self.shape_, fbILU.solve)
+
+# this below should be remove as it is a duplicate.
+    # def H_ILU(self, fill_factor=5, drop_tol=1e-5) -> SuperLU:
+    #     fb = self._getFullBlocks()
+    #     fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
+    #     return fbILU
 
     def H_diag(self) -> np.ndarray:
         fb = self._getFullBlocks()
@@ -243,3 +241,31 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
         diag = self.H_diag()  # return a nd.array
         overdiag = 1.0 / diag
         return diags(overdiag, dtype=np.float_)
+
+    def compute_displacements(self,list_coor,local_solu):
+        """
+        Compute the induced displacements - for a given value local_solu of the solution over the source mesh
+        :param list_coor: array of dim 2. containing the coordinates where displacements will be evaluated
+        :param local_solu: vector of solution (in the local system)
+        :return: np.array of the values of the displacement components at the given points
+        """
+        n = self.H_.get_spatial_dimension()
+        assert n == list_coor.shape[1], "Coordinates dimension of the given points is not matching the problem spatial dimension !"
+        u = self.H_.compute_displacements(list_coor.flatten(),local_solu.flatten())
+        return np.reshape(u,(-1,n))
+
+    def compute_stresses(self,list_coor,local_solu):
+        """
+         Compute the induced stresses - for a given value local_solu of the solution over the source mesh
+        :param list_coor:  array of dim 2. containing the coordinates where displacements will be evaluated
+        :param local_solu: vector of solution (in the local system)
+        :return: np.array of the values of the stress components at the given points
+        """
+        n = self.H_.get_spatial_dimension()
+        assert (n==2 or n ==3 ), " Problem spatial dimension must be 2 or 3"
+        assert n == list_coor.shape[1], "Coordinates dimension of the given points is not matching the problem spatial dimension !"
+        nstress = 3
+        if n == 3:
+            nstress = 6
+        sig = self.H_.compute_stresses(list_coor.flatten(),local_solu.flatten())
+        return np.reshape(sig,(-1,nstress))
