@@ -428,7 +428,7 @@ std::vector<double> BigWhamIOGen::GetCollocationPoints() const {
   int index = 0;
   for (il::int_t i = 0; i < col_pts.size(0); i++) {
     for (il::int_t j = 0; j < col_pts.size(1); j++) {
-      flat_col[index] = col_pts(hr_->permutation_0_[i], j); // be careful the col_pts have been permutted !
+      flat_col[index] = col_pts(i, j);
       index++;
     }
   }

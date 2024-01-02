@@ -156,12 +156,16 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
         return self.H_.convert_to_local(x_global)
 
     def getCollocationPoints(self) -> np.ndarray:
+        """
+
+        :return:
+        """
         n = self.H_.get_spatial_dimension()
         aux = np.asarray(self.H_.get_collocation_points())
-        auxpermut = np.reshape(aux, (int(aux.size / n), n))
-        permut = self.getPermutation()
-        colPts = 0.0 * auxpermut
-        colPts[permut] = auxpermut
+        colPts = np.reshape(aux, (int(aux.size / n), n))
+        #permut = self.getPermutation()
+        #colPts = 0.0 * auxpermut
+        #colPts[permut] = auxpermut
         return colPts
 
     def getSpatialDimension(self) -> int:
@@ -239,7 +243,3 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
         diag = self.H_diag()  # return a nd.array
         overdiag = 1.0 / diag
         return diags(overdiag, dtype=np.float_)
-
-
-# --------------------------------
-#
