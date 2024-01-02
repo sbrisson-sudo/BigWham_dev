@@ -40,8 +40,7 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
   hr->is_square_ = true;
   // creation of the cluster
   // first get all collocation points in the mesh
-  // std::cout << " Before call to collocation_points() ...."<< "\n";
-  il::Array2D<double> Xcol = mesh->collocation_points();
+  il::Array2D<double> Xcol = mesh->collocation_points();  // be careful - it is only a shallow copy !
   // std::cout << " Got col points construction ...."<< "\n";
   il::Timer tt;
   tt.Start();
@@ -80,8 +79,8 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
   // creation of the cluster
   // first get all collocation points in the mesh
   il::Timer tt;
-  il::Array2D<double> Xcol_source = source_mesh->collocation_points();
-  il::Array2D<double> Xcol_receiver = receiver_mesh->collocation_points();
+  il::Array2D<double> Xcol_source = source_mesh->collocation_points(); // be careful - it is only a shallow copy !
+  il::Array2D<double> Xcol_receiver = receiver_mesh->collocation_points(); // be careful - it is only a shallow copy !
 
   tt.Start();
   Cluster cluster_s = cluster(max_leaf_size, il::io, Xcol_source);
