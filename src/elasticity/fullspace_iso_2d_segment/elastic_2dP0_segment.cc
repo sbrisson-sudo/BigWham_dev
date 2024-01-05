@@ -80,7 +80,7 @@ il::StaticArray2D<double, 2, 3> Se_segment_0(double h, double G, double nu,
   double x1_2 = x1 * x1;
   double x2_2 = x2 * x2;
   // coef
-  double beta_s = overhalfh / (4. * il::pi * (1 - nu));
+  double beta_s = 1.0 / (4. * il::pi * (1 - nu));
 
   double x1m1 = x1 - 1.;
   double x1p1 = x1 + 1.;
@@ -93,8 +93,24 @@ il::StaticArray2D<double, 2, 3> Se_segment_0(double h, double G, double nu,
   // in-plane case
   if (x2 == 0.) {
     // by convention we take the limit from-below !
-    Se(0, 1) = 0.5;
-    Se(1, 2) = 0.5;
+
+    //Se(0, 1) = 0.5;
+    //Se(1, 2) = 0.5;
+    double ln_x_a = log(il::abs(x1m1/x1p1));
+    // Se_111
+    Se(0,0 ) = beta_s * (3- 2* nu) * ln_x_a;
+    //Se_121
+    Se(0,1)= 0.25 * (x1p1/sqrt(x1p1*x1p1)-x1m1/(sqrt(x1m1*x1m1))) ;
+   // Se_221
+   Se(0,2) = beta_s  * (-1.)*(1-2.*nu) * ln_x_a;
+
+   // Se_112
+   Se(1,0) = beta_s  * il::pi * nu * (x1p1/sqrt(x1p1*x1p1)-x1m1/(sqrt(x1m1*x1m1))) ;
+   // Se_122
+   Se(1,1) =beta_s  * (1-2*nu) *ln_x_a ;
+   // Se_222
+   Se(1,2) =  0.25 * (x1p1/sqrt(x1p1*x1p1)-x1m1/(sqrt(x1m1*x1m1))) ;
+
   } else {
 
     double aux22 = pow(1 + x2_2, 2);
