@@ -301,9 +301,9 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
 
 // Kernel W
 // stress at a point due to displacement over a source segment
-    template <>
-    std::vector<double>
-    BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>::influence(
+template <>
+std::vector<double>
+BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>::influence(
             const BoundaryElement &source_elt, il::int_t i_s,
             const BoundaryElement &receiver_elt, il::int_t i_r) const {
         //  return stress tensor - Hypersingular elastic kernel - Segment 0 element
@@ -364,8 +364,8 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
         stnl[5]= S_un_g(0,1);
 
         return stnl;
-    }
-    /* -------------------------------------------------------------------------- */
+}
+/* -------------------------------------------------------------------------- */
 
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>;
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>;

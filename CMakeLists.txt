@@ -184,7 +184,9 @@ if(BIGWHAM_TESTING)
         src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc
         src/elasticity/_test/segment0_kernels_test.cc
             src/io/_test/bigwham_io_gen_test_2d.cc
-            src/io/_test/bigwham_io_helper_test.cc)
+            src/io/_test/bigwham_io_helper_test.cc
+            src/io/_test/bigwham_io_gen_test_3d.cc
+            )
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)

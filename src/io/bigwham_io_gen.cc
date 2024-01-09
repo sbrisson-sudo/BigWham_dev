@@ -71,6 +71,10 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                                                 coor, conn);
             ker_obj_ = std::make_shared<bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
+            using ObsType = Point<2>;
+            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
+                   elas, spatial_dimension_);
+            // still missing displacement for that element
             break;
         }
         case "S3DP0"_sh: {
@@ -79,7 +83,6 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             spatial_dimension_ = 2;
             dof_dimension_ = 2;
             flux_dimension_ = 3;
-
             int nvertices_per_elt_ = 2;
             using EltType = bie::Segment<0>;
             mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
@@ -105,6 +108,10 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             ker_obj_ = std::make_shared<
                     bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
+            using ObsType = Point<3>;
+            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
+                    elas, spatial_dimension_);
+            //  missing displacement for that element ...
             break;
         }
         case "Axi3DP0"_sh: {
@@ -477,32 +484,32 @@ il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coo
     il::Array<double> obs_potential{npts*dof_dimension_,0.};
 
 // loop on source collocation points
-// todo - need to openmp this loop  or the inner one.
-for (il::int_t i=0;i<mesh_src_->num_collocation_points();i++){
+#pragma omp for
+    for (il::int_t i=0;i<mesh_src_->num_collocation_points();i++){
 
-    il::int_t e_i = this->mesh_src_->GetElementId(i);
-    il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
+        il::int_t e_i = this->mesh_src_->GetElementId(i);
+        il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
 
-    auto source_element = this->mesh_src_->GetElement(e_i);
-    // local solution (assumed in original ordering....)
-    il::Array<double> elt_solu{dof_dimension_};
-    for (il::int_t k=0;k<dof_dimension_;k++){
-        elt_solu[k]=sol_local[i*dof_dimension_+k];
-    }
+        auto source_element = this->mesh_src_->GetElement(e_i);
+        // local solution (assumed in original ordering....)
+        il::Array<double> elt_solu{dof_dimension_};
+        for (il::int_t k=0;k<dof_dimension_;k++){
+            elt_solu[k]=sol_local[i*dof_dimension_+k];
+        }
 
-    // loop on obs points mesh
-    for (il::int_t j_obs =0;j_obs<mesh_obs->num_collocation_points();j_obs++){
-        auto receiver_element = mesh_obs->GetElement(j_obs);
-        il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
-        std::vector<double> st = this->ker_obs_u_->influence(*source_element, is_l, *receiver_element,ir_l);
+        // loop on obs points mesh
+        for (il::int_t j_obs =0;j_obs<mesh_obs->num_collocation_points();j_obs++){
+            auto receiver_element = mesh_obs->GetElement(j_obs);
+            il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
+            std::vector<double> st = this->ker_obs_u_->influence(*source_element, is_l, *receiver_element,ir_l);
 
-        for (il::int_t j=0;j<dof_dimension_;j++){
-            for(il::int_t k=0;k<dof_dimension_;k++){
-                obs_potential[j_obs*dof_dimension_+j]+=st[k*dof_dimension_+j]*elt_solu[k];
+            for (il::int_t j=0;j<dof_dimension_;j++){
+                for(il::int_t k=0;k<dof_dimension_;k++){
+                    obs_potential[j_obs*dof_dimension_+j]+=st[k*dof_dimension_+j]*elt_solu[k];
+                }
             }
         }
     }
-}
 
 return obs_potential;
 }
@@ -540,33 +547,31 @@ il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_ob
     il::Array<double> obs_flux{npts*flux_dimension_,0.};
 
 // loop on source collocation points
-// todo - need to openmp this loop  or the inner one.
-    for (il::int_t i=0;i<mesh_src_->num_collocation_points();i++){
+#pragma omp for
+    for (il::int_t i = 0; i < mesh_src_->num_collocation_points(); i++) {
 
         il::int_t e_i = this->mesh_src_->GetElementId(i);
         il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
 
         auto source_element = this->mesh_src_->GetElement(e_i);
         // local solution (assumed in original ordering....)
-        il::Array<double> elt_solu{dof_dimension_},e_potential{dof_dimension_,0.};
-        for (il::int_t k=0;k<dof_dimension_;k++){
-            elt_solu[k]=sol_local[i*dof_dimension_+k];
+        il::Array<double> elt_solu{dof_dimension_}, e_potential{dof_dimension_, 0.};
+        for (il::int_t k = 0; k < dof_dimension_; k++) {
+            elt_solu[k] = sol_local[i * dof_dimension_ + k];
         }
 
-        // loop on obs points mesh - simplest is to openMP this loop.
-        for (il::int_t j_obs =0;j_obs<mesh_obs->num_collocation_points();j_obs++){
+        // loop on obs points mesh
+        for (il::int_t j_obs = 0; j_obs < mesh_obs->num_collocation_points(); j_obs++) {
             auto receiver_element = mesh_obs->GetElement(j_obs);
             il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
-            std::vector<double> st = this->ker_obs_q_->influence(*source_element, is_l, *receiver_element,ir_l);
+            std::vector<double> st = this->ker_obs_q_->influence(*source_element, is_l, *receiver_element, ir_l);
 
-            for (il::int_t j=0;j<flux_dimension_;j++){
-                for(il::int_t k=0;k<dof_dimension_;k++){
-                    obs_flux[j_obs*flux_dimension_+j]+=st[flux_dimension_*k+j]*elt_solu[k];
+            for (il::int_t j = 0; j < flux_dimension_; j++) {
+                for (il::int_t k = 0; k < dof_dimension_; k++) {
+                    obs_flux[j_obs * flux_dimension_ + j] += st[flux_dimension_ * k + j] * elt_solu[k];
                 }
             }
         }
     }
-
     return obs_flux;
-
 }

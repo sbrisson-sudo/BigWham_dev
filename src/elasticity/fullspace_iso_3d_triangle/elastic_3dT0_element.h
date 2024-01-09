@@ -19,17 +19,6 @@
 
 namespace bie {
 //
-//    il::Array2D<double> traction_influence_3DT0(
-//            bie::FaceData &elem_data_s, // source element
-//            bie::FaceData &elem_data_r, // receiver element
-//            bie::ElasticProperties const &elas_, // elastic properties
-//            il::int_t local_global); // 0 if local-local, 1 if global-global
-//
-//    il::Array2D<double> displacement_influence_3DT0(
-//            bie::FaceData &elem_data_s, // source element
-//            bie::FaceData &elem_data_r, // receiver element
-//            bie::ElasticProperties const &elas_, // elastic properties
-//            il::int_t local_global); // 0 if local-local, 1 if global-global
 
 il::StaticArray2D<double, 3, 6>
 StressesKernelT0(il::StaticArray<double, 3> &x,

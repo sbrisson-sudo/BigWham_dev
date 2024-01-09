@@ -7,12 +7,13 @@
 // file for more details.
 //
 
-#ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS_H
-#define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS_H
+#ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS
+#define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS
 
 #include "elasticity/bie_elastostatic.h"
 #include "elements/boundary_element.h"
 #include "elements/segment.h"
+#include "elements/point.h"
 
 #include "elastic_2dP1_segment.h"
 /* -------------------------------------------------------------------------- */
@@ -66,8 +67,8 @@ BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>::influence(
 
   // columns sxxs, sxys, syys, syyn
   // (knowing that sxxn and sxyn are respectively equal to sxys and syys )
-  il::StaticArray<double, 4> stress_l = stresses_kernel_dp1_dd_nodal(
-      i_s, h, this->elas_.young_modulus_plane_strain(), xe[0], xe[1]);
+  il::StaticArray<double, 4> stress_l = We_segment_1(
+          i_s, h, this->elas_.young_modulus_plane_strain(), xe[0], xe[1]);
 
   // shear traction
   // shear dd
@@ -106,8 +107,79 @@ BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>::influence(
 }
 /* -------------------------------------------------------------------------- */
 
+// Kernel W
+// stress at a point due to displacement over a source segment
+template <>
+std::vector<double>
+BieElastostatic<Segment<1>, Point<2>, ElasticKernelType::W>::influence(
+        const BoundaryElement &source_elt, il::int_t i_s,
+        const BoundaryElement &receiver_elt, il::int_t i_r) const {
+    //  return stress tensor - Hypersingular elastic kernel - Segment 0 element
+    // source_elt : element object of the source element
+    // i_s : integert for the source collocation number (0,1)
+    // receiver_elt  : element object of the receiver element
+    // i_r : integer for the collocation number where to compute the stress tensor
+    // due to shear and normal unit displacement over the source segment
+    // receiver element outputs: column-major (fortran order)
+
+    // vector for the displacement to stress influence matrix
+
+    // switch to the frame of the source element....
+    il::Array<double> xe{2, 0.0};
+    auto Xmid = source_elt.centroid();
+    auto r_col = receiver_elt.collocation_points();
+    for (int i = 0; i < 2; ++i) {
+        xe[i] = r_col(i_r, i) - Xmid[i];
+    }
+    auto xe_local = source_elt.ConvertToLocal(xe);
+
+    double h = source_elt.size();
+
+//   sxxs, sxys, syys, syyn    (knowing that  sxxn and sxyn are respectively equal to sxys and syys )
+    il::StaticArray<double, 4> stress_l = We_segment_1(i_s,h, this->elas_.young_modulus_plane_strain(),
+                         xe_local[0], xe_local[1]);
+
+
+    // switch back to global system
+    il::Array2D<double > S_ut_l{2,2,0},S_un_l{2,2,0};
+    S_ut_l(0,0)=stress_l[0];    S_ut_l(0,1)=stress_l[1];
+    S_ut_l(1,0)=S_ut_l(0,1);    S_ut_l(1,1)=stress_l[2];
+
+    S_un_l(0,0)=stress_l[1];    S_un_l(0,1)=stress_l[2];
+    S_un_l(1,0)=stress_l[2];    S_un_l(1,1)=stress_l[3];
+
+    auto R = source_elt.rotation_matrix();
+    auto Rt= source_elt.rotation_matrix_t();
+
+    auto S_ut_g = il::dot(R,il::dot(S_ut_l,Rt));
+    auto S_un_g = il::dot(R,il::dot(S_un_l,Rt));
+
+    std::vector<double> stnl(6, 0.);
+
+    //  effect of shear displacement
+    //  sigma_11
+    stnl[0] = S_ut_g(0,0) ;
+    // sigma_22
+    stnl[1] = S_ut_g(1,1) ;
+    // sigma_12
+    stnl[2] = S_ut_g(0,1) ;
+
+    //  effect of normal displacement
+    //  sigma_11
+    stnl[3] =   S_un_g(0,0) ;
+    //sigma_22
+    stnl[4] = S_un_g(1,1);
+    // sigma_12
+    stnl[5]= S_un_g(0,1);
+
+    return stnl;
+}
+/* -------------------------------------------------------------------------- */
+
+
 template class BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>;
+template class BieElastostatic<Segment<1>, Point<2>, ElasticKernelType::W>;
 
 } // namespace bie
 
-#endif // BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS_H
+#endif // BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS

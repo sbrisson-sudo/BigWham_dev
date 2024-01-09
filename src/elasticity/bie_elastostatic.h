@@ -59,7 +59,9 @@ public:
     local_co_variables_ = local_co_variables;
   };
 
-  bool local_unknowns() const { return local_unknowns_; };
+  ~BieElastostatic() {};
+
+    bool local_unknowns() const { return local_unknowns_; };
   bool local_covariables() const { return local_co_variables_; };
 
   virtual std::vector<double> influence(const BoundaryElement &source_elt,
