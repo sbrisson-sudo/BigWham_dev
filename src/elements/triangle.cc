@@ -123,8 +123,8 @@ template <> void Triangle<2>::SetCollocationPoints() {
 }
 /* -------------------------------------------------------------------------- */
 
-// template class Triangle<0>;
-// template class Triangle<1>;
-// template class Triangle<2>;
+ template class Triangle<0>;
+ template class Triangle<1>;
+ template class Triangle<2>;
 
 } // namespace bie

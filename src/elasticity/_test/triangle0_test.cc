@@ -54,8 +54,7 @@ TEST(Triangle0, test_stress_1) {
     bie::Point<3> obs;
     obs.SetElement(xobs);
     bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,
-          bie::ElasticKernelType::W> singleT(elas, xy.size(1));
+    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,bie::ElasticKernelType::W> singleT(elas, xy.size(1));
     std::vector<double> test_stress = singleT.influence(source, 0, obs, 0);
     std::cout << "test stress "      << "\n";
     bool test=true;

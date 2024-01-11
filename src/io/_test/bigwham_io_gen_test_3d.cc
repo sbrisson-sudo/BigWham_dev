@@ -101,18 +101,18 @@ TEST(bigwham_io_gen_3d, 3DT0_3) {
     my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
     std::cout << "Compression ratio:" << my_io.GetCompressionRatio()<<"\n";
     auto colpts = my_io.GetCollocationPoints();
-    std::vector<double> obspts(3  , 0.);
-    il::Array<double> dd(3  , 1.);
+    std::vector<double> obspts(6  , 0.);
+    il::Array<double> dd(6  , 1.);
     obspts[2]=10.;obspts[0]=0.3;
     obspts[1]=-2.44;
 
     std::cout <<" dof dim " << my_io.dof_dimension() <<"\n";
 
     il::Array<double> displ =my_io.ComputeDisplacements(obspts,dd.view());
-    for (int i=0;i<6;i++){
+    for (int i=0;i<displ.size();i++){
         std::cout << "displacement: " << displ[i] <<"\n";
     }
 
-    ASSERT_TRUE(abs(displ[2]-0.000148955)<1.e-4 );
+    ASSERT_TRUE(abs(displ[1]+0.301504)<1.e-4 );
 }
 /* -------------------------------------------------------------------------- */

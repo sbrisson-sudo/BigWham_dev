@@ -178,13 +178,11 @@ if(BIGWHAM_TESTING)
         src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
         src/core/_test/triangle_test.cc
         src/core/_test/rectangle_test.cc
-        src/core/_test/point_test.cc
+        src/core/_test/point_test.cc src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc src/elasticity/_test/segment0_kernels_test.cc
         src/_test/bigwhamio_test_2d.cc
         src/elasticity/_test/triangle0_test.cc
-        src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc
-        src/elasticity/_test/segment0_kernels_test.cc
-            src/io/_test/bigwham_io_gen_test_2d.cc
             src/io/_test/bigwham_io_helper_test.cc
+            src/io/_test/bigwham_io_gen_test_2d.cc
             src/io/_test/bigwham_io_gen_test_3d.cc
             )
 

@@ -501,8 +501,8 @@ il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coo
 
         // loop on obs points mesh
         for (il::int_t j_obs =0;j_obs<mesh_obs->num_collocation_points();j_obs++){
-            il::int_t e_r_id = mesh_obs->GetElementId(j_obs);
-            auto receiver_element = mesh_obs->GetElement(j_obs);
+            il::int_t e_j_r = mesh_obs->GetElementId(j_obs);
+            auto receiver_element = mesh_obs->GetElement(e_j_r);
             il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
             std::vector<double> st = this->ker_obs_u_->influence(*source_element, is_l, *receiver_element,ir_l);
             for (il::int_t j=0;j<dof_dimension_;j++){
