@@ -42,40 +42,10 @@ TEST(Triangle0, test_H_1) {
 }
 
 
-TEST(Triangle0, test_stress_1) {
-    // test stress observation single element
-    il::Array2D<double> xy{3, 3, 0.};
-    xy(1, 0) = 1;
-    xy(2, 1) = 1.0;
-
-    bie::Triangle<0> source;
-    source.SetElement(xy);
-    il::Array2D<double> xobs{1,3,1.};
-    bie::Point<3> obs;
-    obs.SetElement(xobs);
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,bie::ElasticKernelType::W> singleT(elas, xy.size(1));
-    std::vector<double> test_stress = singleT.influence(source, 0, obs, 0);
-    std::cout << "test stress "      << "\n";
-    bool test=true;
-
-    for (int i = 0; i < 18; i++) {
-       std::cout << "i: " << i << " - " << test_stress[i] << "\n";
-     }
-    for (int i = 16; i < 18; i++) {
-        test = test && (abs(test_stress[i]-0.012969)< 1.e-4 );
-    }
-
-    ASSERT_TRUE(test );
-    std::cout <<"end test Triangle0.test_stress_1" <<"\n";
-}
-
-
-
 TEST(Triangle0, test_disp_1) {
     // test stress observation single element
     il::Array2D<double> xy{3, 3, 0.};
-    xy(1, 0) = 1;
+    xy(1, 0) = 1.0;
     xy(2, 1) = 1.0;
 
     bie::Triangle<0> source;
@@ -100,6 +70,36 @@ TEST(Triangle0, test_disp_1) {
     ASSERT_TRUE(test );
     std::cout <<"end test Triangle0.test_disp_1" <<"\n";
 }
+
+
+TEST(Triangle0, test_stress_1) {
+    // test stress observation single element
+    il::Array2D<double> xy{3, 3, 0.};
+    xy(1, 0) = 1.0;
+    xy(2, 1) = 1.0;
+
+    bie::Triangle<0> source;
+    source.SetElement(xy);
+    il::Array2D<double> xobs{1,3,1.};
+    bie::Point<3> obs;
+    obs.SetElement(xobs);
+    bie::ElasticProperties elas(1, 0.3);
+    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,bie::ElasticKernelType::W> single_triangle_stress(elas, xy.size(1));
+    std::vector<double> test_stress = single_triangle_stress.influence(source, 0, obs, 0);
+    std::cout << "test stress "      << "\n";
+    bool test=true;
+
+    for (int i = 0; i < test_stress.size(); i++) {
+        std::cout << "i: " << i << " - " << test_stress[i] << "\n";
+    }
+    for (int i = 16; i <  test_stress.size(); i++) {
+        test = test && (abs(test_stress[i]-0.012969)< 1.e-4 );
+    }
+
+    ASSERT_TRUE(test );
+    std::cout <<"end test Triangle0.test_stress_1" <<"\n";
+}
+
 
 
 
