@@ -184,7 +184,7 @@ if(BIGWHAM_TESTING)
             src/io/_test/bigwham_io_helper_test.cc
             src/io/_test/bigwham_io_gen_test_2d.cc
             src/io/_test/bigwham_io_gen_test_3d.cc
-            )
+            src/elements/_test/elements_tests.cpp)
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)
@@ -201,7 +201,7 @@ if(BIGWHAM_TESTING)
         PRIVATE IL_UNIT_TEST
                 IL_FOLDER='\"${IL_FOLDER}\"')
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        target_compile_options(BigWhamElastUnitTest PRIVATE -Wno-terminate -Wno-return-type)
+        target_compile_options(BigWhamElastUnitTest PRIVATE -Wno-terminate -Wno-return-type ) #-Wall -Wextra -pedantic
     endif()
 endif()
 

@@ -285,8 +285,6 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
     return disp_out;
     }
 
-
-template class Point<3>;
 template class BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>;
 template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>;
 template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>;
