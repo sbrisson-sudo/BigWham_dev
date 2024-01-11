@@ -342,8 +342,8 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>::influence(
         auto R = source_elt.rotation_matrix();
         auto Rt= source_elt.rotation_matrix_t();
 
-        auto S_ut_g = il::dot(R,il::dot(S_ut_l,Rt));
-        auto S_un_g = il::dot(R,il::dot(S_un_l,Rt));
+        auto S_ut_g = il::dot(Rt,il::dot(S_ut_l,R));
+        auto S_un_g = il::dot(Rt,il::dot(S_un_l,R));
 
         std::vector<double> stnl(6, 0.);
 
