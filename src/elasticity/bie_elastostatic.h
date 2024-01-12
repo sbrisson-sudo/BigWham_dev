@@ -17,7 +17,7 @@
 
 namespace bie {
 
-enum class ElasticKernelType { U, T, H, S, V, W };
+enum class ElasticKernelType { U, T, H, H_mode1, S, V, W };
 
 /*
 

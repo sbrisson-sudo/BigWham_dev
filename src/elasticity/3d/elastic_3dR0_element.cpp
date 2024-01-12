@@ -12,8 +12,8 @@
 #include <iostream>
 #include <il/linearAlgebra.h>
 #include <il/blas.h>
-#include "elasticity/3d/Elastic3DR0_common.h"
-#include "elasticity/3d/Elastic3DR0_element.h"
+#include "elasticity/3d/elastic_3dR0_common.h"
+#include "elasticity/3d/elastic_3dR0_element.h"
 
 
 namespace bie{
@@ -316,7 +316,9 @@ namespace bie{
         il::int_t I_want_global_DD = 0,
         il::int_t I_want_global_traction = 0)
     {
-
+        /*
+         * FUNCTION USED FOR TESTING
+         * */
         double G = elas_.shear_modulus(), nu = elas_.poisson_ratio();
         il::StaticArray<double,2> a_and_b = get_a_and_b(elem_data_s.getVertices(),elem_data_s.getNoV());
         double a = a_and_b[0], b = a_and_b[1];

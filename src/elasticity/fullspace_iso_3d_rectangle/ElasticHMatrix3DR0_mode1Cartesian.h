@@ -11,7 +11,7 @@
 #pragma once
 #include <string>
 
-#include <elasticity/3d/Elastic3DR0_mode1Cartesian_element.h>
+#include <elasticity/3d/elastic_3dR0_mode1Cartesian_element.h>
 #include <hmat/arrayFunctor/MatrixGenerator.h>
 #include "core/ElasticProperties.h"
 #include "core/oldies/FaceData.h"

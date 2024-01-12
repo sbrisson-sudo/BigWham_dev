@@ -12,7 +12,7 @@
 #include <string>
 
 #include <hmat/arrayFunctor/MatrixGenerator.h>
-#include <elasticity/3d/Elastic3DR0_element.h>
+#include <elasticity/3d/elastic_3dR0_element.h>
 #include "core/ElasticProperties.h"
 #include "core/oldies/FaceData.h"
 #include "core/oldies/Mesh3D.h"

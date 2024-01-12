@@ -12,7 +12,7 @@
 #pragma once
 
 #include <hmat/arrayFunctor/MatrixGenerator.h>
-#include <elasticity/3d/Elastic3DT0_element.h>
+#include <elasticity/3d/elastic_3dT0_element.h>
 #include "core/ElasticProperties.h"
 #include "core/oldies/FaceData.h"
 #include <string>

@@ -25,7 +25,7 @@
 #include <hmat/hmatrix/hmat.h>
 
 #include "core/be_mesh.h"
-// #include "elements/rectangle.h"
+#include "elements/rectangle.h"
 #include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
@@ -222,6 +222,38 @@ public:
           bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
           elas, dimension_);
       break;
+    }
+    case "3DR0_H"_sh: {
+        dimension_ = 3;
+        int nvertices_per_elt_ = 4;
+        using EltType = bie::Rectangle<0>;
+        mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                            conn);
+        ker_obj_ = std::make_shared<
+                bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+                elas, dimension_);
+        break;
+    }
+    case "3DR0_H_mode1"_sh: {
+        dimension_ = 3;
+        int nvertices_per_elt_ = 4;
+        using EltType = bie::Rectangle<0>;
+        mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor, conn);
+        ker_obj_ = std::make_shared<
+                bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H_mode1>>(
+                elas, dimension_);
+        break;
+    }
+    case "3DR0_T"_sh: {
+        dimension_ = 3;
+        int nvertices_per_elt_ = 4;
+        using EltType = bie::Rectangle<0>;
+        mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                            conn);
+        ker_obj_ = std::make_shared<
+                bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::T>>(
+                elas, dimension_);
+        break;
     }
     case "Axi3DP0"_sh: {
       dimension_ = 2;

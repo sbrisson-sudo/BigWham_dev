@@ -12,8 +12,8 @@
 #include <iostream>
 #include <il/linearAlgebra.h>
 #include <il/blas.h>
-#include "elasticity/3d/Elastic3DR0_common.h"
-#include "elasticity/3d/Elastic3DR0_element.h"
+#include "elasticity/3d/elastic_3dR0_common.h"
+#include "elasticity/3d/elastic_3dR0_element.h"
 
 
 namespace bie{
@@ -25,7 +25,8 @@ namespace bie{
     il::StaticArray2D<double, 3, 6> StressesKernelR0(
             double& x, double& y, double& z, double& a, double& b, double& G,
             double& nu) {
-        // x , y , z location where to compute stress
+        //  assume a reference system x' y' z' with origin at the center of a rectangular DD and with axis x', y' parallel to the element's edges
+        //  x , y , z location (with respect to x', y', z') where to compute stress.
         //  a,b  1/2 size of the rectangular DD
         //  G Shear modulus, nu Poisson's ratio'
         //  Rectangular DDon plan z=0   x \in [-a,a], y \in [-b,b]

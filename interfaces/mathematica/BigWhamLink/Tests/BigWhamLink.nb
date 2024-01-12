@@ -440,7 +440,7 @@ version (10.15) than being linked (10.12)\\nld: warning: object file \
 release/libBigWham.a(PostProcessDDM_3d.cpp.o)) was built for newer macOS \
 version (10.15) than being linked (10.12)\\nld: warning: object file \
 (/Users/bricelecampion/Documents/Work/Geomechanics/Codes/BigWham/cmake-build-\
-release/libBigWham.a(Elastic3DR0_element.cpp.o)) was built for newer macOS \
+release/libBigWham.a(elastic_3dR0_element.cpp.o)) was built for newer macOS \
 version (10.15) than being linked (10.12)\\nld: warning: object file \
 (/Users/bricelecampion/Documents/Work/Geomechanics/Codes/BigWham/cmake-build-\
 release/libBigWham.a(Elastic3DT0_element.cpp.o)) was built for newer macOS \
@@ -473,7 +473,7 @@ version (10.15) than being linked (10.12)\\nld: warning: object file \
 release/libBigWham.a(h_potential_3DT6.cpp.o)) was built for newer macOS \
 version (10.15) than being linked (10.12)\\nld: warning: object file \
 (/Users/bricelecampion/Documents/Work/Geomechanics/Codes/BigWham/cmake-build-\
-release/libBigWham.a(Elastic3DR0_common.cpp.o)) was built for newer macOS \
+release/libBigWham.a(elastic_3dR0_common.cpp.o)) was built for newer macOS \
 version (10.15) than being linked (10.12)\\nld: warning: object file \
 (/Users/bricelecampion/Documents/Work/Geomechanics/Codes/BigWham/cmake-build-\
 release/libBigWham.a(element_utilities.cpp.o)) was built for newer macOS \
