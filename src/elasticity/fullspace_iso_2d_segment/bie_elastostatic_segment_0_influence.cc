@@ -7,6 +7,8 @@
 // file for more details.
 //
 
+// Last modifications - Jan 5, 2024
+
 #include <il/StaticArray.h>
 #include <tuple>
 
@@ -76,19 +78,19 @@ BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>::influence(
 }
 /* -------------------------------------------------------------------------- */
 
-//       Singular Kernel   T
+//       Singular Kernel   T - to be checked   / rename properly to differentiate double-layer and adjoint double layer potential
 template <>
 std::vector<double>
 BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
-  //  return tractions - singular elastic kernel - Segment 0 element
+  //  return tractions/displacement - singular elastic kernel - Segment 0 element
   // source_elt : element object of the source element
   // i_s : integert for the source collocation number (0,1)
   // receiver_elt  : element object of the receiver element
   // i_r : integer for the collocation number where to compute the normal and
   // shear stress in the receiver element outputs: column-major (fortran order)
-  // vector for the displacement to traction influence matrix
+  // vector for the traction to traction influence matrix or  displacement to displacement
 
   // switch to the frame of the source element....
   il::Array<double> xe{2, 0.0};
@@ -217,7 +219,7 @@ BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>::influence(
 }
 /* -------------------------------------------------------------------------- */
 
-// Singular Kernel   T :  Kernel
+// Singular Kernel   T :  Kernel   (probably should be renamed - double-layer potential)
 // Displacement at rec due to displacment discontinuity at src, delta(src)
 //                               and normal at src, n(src)
 template <>
@@ -227,14 +229,11 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
 
   /*
-   Traction due to point force at src, f(src)
-   t(rec) = S(src, rec) x n(rec) x f(src) 
-   T(src, rec) =  S(src, rec) x n(rec) 
 
-   Displacement due to displacment discontnuity at src, delta(src)
+   Displacement due to displacement discontnuity at src, delta(src)
                                and normal at src, n(src)
    u(rec) = - S (rec, src) x n(src) x delta(src)
-   T(src, rec) =  - S(rec, src) x n(src) 
+   T(src, rec) =  - S(rec, src) x n(src)
   */
 
   il::Array<double> xe{2, 0.0};
@@ -253,44 +252,48 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
   // but we need S(src - rec), therefore -xe is taken in input 
   il::StaticArray2D<double, 2, 3> stress_l =
       Se_segment_0(h, this->elas_.shear_modulus(), this->elas_.poisson_ratio(),
-                    -xe[0], -xe[1]); /*  careful about (-) sign */
+                    xe[0], xe[1]);
 
-  // Further we need - S(src - rec) /* see the sign */
-  il::Array2D<double> stress_shear{2, 2, 0.}, stress_norm{2, 2, 0.};
-  stress_shear(0, 0) = -stress_l(0, 0); /* careful about (-) sign */
-  stress_shear(0, 1) = -stress_l(0, 1);
-  stress_shear(1, 1) = -stress_l(0, 2);
-  stress_shear(1, 0) = stress_shear(0, 1);
+  il::Array2D<double> Skl_1{2, 2, 0.}, Skl_2{2, 2, 0.};
+  Skl_1(0, 0) = stress_l(0, 0);
+  Skl_1(0, 1) = stress_l(0, 1);
+  Skl_1(1, 1) = stress_l(0, 2);
+  Skl_1(1, 0) = Skl_1(0, 1);
 
-  stress_norm(0, 0) = -stress_l(1, 0); /* careful about (-) sign */
-  stress_norm(0, 1) = -stress_l(1, 1);
-  stress_norm(1, 1) = -stress_l(1, 2);
-  stress_norm(1, 0) = stress_norm(0, 1);
+  Skl_2(0, 0) = stress_l(1, 0);
+  Skl_2(0, 1) = stress_l(1, 1);
+  Skl_2(1, 1) = stress_l(1, 2);
+  Skl_2(1, 0) = Skl_2(0, 1);
 
   // source norrmal vector in local
   auto n = source_elt.ConvertToLocal(source_elt.normal());
 
   //  in the local coord sys of the source elt
-  auto tt_s = il::dot(stress_shear, n);
-  auto tt_n = il::dot(stress_norm, n);
+  //// S_kl^i n_l = T_k^i
+  auto T_k_1 = il::dot(Skl_1, n); // T_k^1
+  auto T_k_2 = il::dot(Skl_2, n);   // T_k^2
+// we must swap ?
+  il::Array<double> u_i_1{2,0.},u_i_2{2,0.};
+  u_i_1[0]=T_k_1[0];u_i_1[1]=T_k_1[0];
+  u_i_2[0]=T_k_1[1];u_i_2[1]=T_k_2[1];
 
   // in local coord sys of the receiver element
-  auto tt_s_local =
-      receiver_elt.ConvertToLocal(source_elt.ConvertToGlobal(tt_s));
-  auto tt_n_local =
-      receiver_elt.ConvertToLocal(source_elt.ConvertToGlobal(tt_n));
+  auto u_i_1_local =
+      receiver_elt.ConvertToLocal(source_elt.ConvertToGlobal(u_i_1));
+  auto u_i_2_local =
+      receiver_elt.ConvertToLocal(source_elt.ConvertToGlobal(u_i_2));
 
   std::vector<double> stnl(4, 0.);
 
-
+  //   u_i =  T_k^i d_k
   //   displacement at receiver pt in 0 direction due to DD in 0 direction (ModeII)
-  stnl[0] = tt_s_local[0];
+  stnl[0] = u_i_1_local[0];
   // displacement at receiver pt  in 1 direction due to DD in 0 direction (ModeII)
-  stnl[1] = tt_s_local[1];
+  stnl[1] = u_i_1_local[1];
   // displacement at receiver pt  in 0 direction due to DD in 1 direction (ModeI)
-  stnl[2] = tt_n_local[0];
+  stnl[2] = u_i_2_local[0];
  // displacement at receiver pt  in 1 direction due to DD in 1 direction (ModeI)
-  stnl[3] = tt_n_local[1];
+  stnl[3] = u_i_2_local[1];
 
   return stnl;
 }
@@ -298,9 +301,9 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
 
 // Kernel W
 // stress at a point due to displacement over a source segment
-    template <>
-    std::vector<double>
-    BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>::influence(
+template <>
+std::vector<double>
+BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>::influence(
             const BoundaryElement &source_elt, il::int_t i_s,
             const BoundaryElement &receiver_elt, il::int_t i_r) const {
         //  return stress tensor - Hypersingular elastic kernel - Segment 0 element
@@ -339,8 +342,8 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
         auto R = source_elt.rotation_matrix();
         auto Rt= source_elt.rotation_matrix_t();
 
-        auto S_ut_g = il::dot(R,il::dot(S_ut_l,Rt));
-        auto S_un_g = il::dot(R,il::dot(S_un_l,Rt));
+        auto S_ut_g = il::dot(Rt,il::dot(S_ut_l,R));
+        auto S_un_g = il::dot(Rt,il::dot(S_un_l,R));
 
         std::vector<double> stnl(6, 0.);
 
@@ -361,8 +364,8 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>::influence(
         stnl[5]= S_un_g(0,1);
 
         return stnl;
-    }
-    /* -------------------------------------------------------------------------- */
+}
+/* -------------------------------------------------------------------------- */
 
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>;
 template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>;

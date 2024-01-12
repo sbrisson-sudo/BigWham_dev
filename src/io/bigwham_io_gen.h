@@ -59,7 +59,7 @@ public:
                  const std::vector<double> &coor_rec,
                  const std::vector<int> &conn_rec, const std::string &kernel,
                  const std::vector<double> &properties);
-  ~BigWhamIOGen() {}
+  ~BigWhamIOGen() {};
 
   void BuildPattern(const int max_leaf_size, const double eta);
 

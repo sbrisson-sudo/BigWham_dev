@@ -9,3 +9,4 @@ build/
 compile_commands.json
 /build_debug/
 /site/*
+compilation_brice.md

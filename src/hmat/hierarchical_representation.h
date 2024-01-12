@@ -40,7 +40,6 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
   hr->is_square_ = true;
   // creation of the cluster
   // first get all collocation points in the mesh
-  // std::cout << " Before call to collocation_points() ...."<< "\n";
   il::Array2D<double> Xcol = mesh->collocation_points();
   // std::cout << " Got col points construction ...."<< "\n";
   il::Timer tt;

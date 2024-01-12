@@ -20,7 +20,7 @@ public:
   Point() : BoundaryElement(dim, 0) {
     this->num_vertices_ = 1;
     this->num_nodes_ = 1;
-    this->num_collocation_points_ = this->num_nodes_;
+    this->num_collocation_points_ = 1;
     this->vertices_.Resize(this->num_vertices_, dim);
     this->collocation_points_.Resize(this->num_collocation_points_, dim);
     this->nodes_.Resize(this->num_nodes_, dim);

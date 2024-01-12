@@ -21,12 +21,13 @@ enum class ElasticKernelType { U, T, H, H_mode1, S, V, W };
 
 /*
 
- Class Square Matrix generator for BIE - note that the element type of the
- source and receiver elements should be the same!
+ Class  for BIE
 
- Es, Er: Element Type, Triangle<0>
+ Es, Er: Element Type, e.g. Triangle<0>
  ElasticKernelType: ElasticKernelType {U,T,H,S,V};
-*/
+
+ (for H-matrix - the 2 element types must be the same usually)
+ */
 template <class Es, class Er, ElasticKernelType k>
 class BieElastostatic : public BieKernel<double> {
   // generic class for uniform  elasticity - isotopric - full-space.
@@ -58,6 +59,8 @@ public:
     local_unknowns_ = local_unknowns;
     local_co_variables_ = local_co_variables;
   };
+
+  ~BieElastostatic() {};
 
   bool local_unknowns() const { return local_unknowns_; };
   bool local_covariables() const { return local_co_variables_; };

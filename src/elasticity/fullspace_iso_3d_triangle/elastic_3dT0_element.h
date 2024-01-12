@@ -19,25 +19,14 @@
 
 namespace bie {
 //
-//    il::Array2D<double> traction_influence_3DT0(
-//            bie::FaceData &elem_data_s, // source element
-//            bie::FaceData &elem_data_r, // receiver element
-//            bie::ElasticProperties const &elas_, // elastic properties
-//            il::int_t local_global); // 0 if local-local, 1 if global-global
-//
-//    il::Array2D<double> displacement_influence_3DT0(
-//            bie::FaceData &elem_data_s, // source element
-//            bie::FaceData &elem_data_r, // receiver element
-//            bie::ElasticProperties const &elas_, // elastic properties
-//            il::int_t local_global); // 0 if local-local, 1 if global-global
 
 il::StaticArray2D<double, 3, 6>
 StressesKernelT0(il::StaticArray<double, 3> &x,
                  il::StaticArray2D<double, 3, 3> &xv, double &G, double &nu);
 
 // Fundamental displacement kernel = displacement influence coefficients
-il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::Array2D<double> &x,
-                                                     il::Array2D<double> &xv,
+il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::StaticArray<double, 3> &x,
+                                                     il::StaticArray2D<double, 3, 3> &xv,
                                                      double &nu);
 
 // function that modify the kernel to be expressed either in local-local or in

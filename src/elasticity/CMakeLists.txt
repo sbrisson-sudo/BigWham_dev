@@ -17,7 +17,7 @@ set(SOURCE_FILES ${SOURCE_FILES}
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_2d_segment/bie_elastostatic_segment_1_influence.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_2d_segment/elastic_2dP1_segment.cc
 
-  ## 3D Special Segment 0
+  ## Simplified 3D  Segment 0
    ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_sp3d_segment/elastic_sp3dP0_element.cc
   
   ## AxisSymm Ring 

@@ -28,9 +28,9 @@ il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_dp1_dd(
     const ElasticProperties &Elas, double ker_options);
 
 // by nodal effect
-il::StaticArray<double, 4> stresses_kernel_dp1_dd_nodal(il::int_t local_node_i,
-                                                        double h, double Ep,
-                                                        double x, double y);
+il::StaticArray<double, 4> We_segment_1(il::int_t local_node_i,
+                                        double h, double Ep,
+                                        double x, double y);
 
 il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_dp1_dd_nodal(
     SegmentData &source_elt, SegmentData &receiver_elt, il::int_t s_col,

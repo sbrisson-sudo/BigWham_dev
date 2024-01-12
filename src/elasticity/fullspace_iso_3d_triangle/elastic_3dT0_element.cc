@@ -932,8 +932,8 @@ double i7_Aux(double &eta, il::StaticArray<double, 3> &q,
 }
 
 // Fundamental displacement kernel = displacement influence coefficients
-il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::Array2D<double> &x,
-                                                     il::Array2D<double> &xv,
+il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::StaticArray<double, 3> &x,
+                                                     il::StaticArray2D<double, 3, 3> &xv,
                                                      double &nu) {
 
   // this routine is based on the works of Nintcheu Fata (2009,2011)
@@ -967,7 +967,7 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::Array2D<double> &x,
   for (il::int_t i = 0; i < 3; i++) {
     y31[i] = y3[i] - y1[i];
     y21[i] = y2[i] - y1[i];
-    y1x[i] = y1[i] - x(0, i);
+    y1x[i] = y1[i] - x[i];
   }
   // local reference system (e1,e2,e3)
   il::StaticArray<double, 3> e1, e2, e3;

@@ -97,7 +97,6 @@ public:
 
 PYBIND11_MODULE(py_bigwham, m)
 {
-
   //    // Binding the mother class Bigwhamio
   //    // option py::dynamic_attr() added to allow new members to be created
   //    dynamically);
@@ -118,6 +117,8 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("matrix_size", &BigWhamIOGen::MatrixSize)
       .def("get_hpattern", &BigWhamIOGen::GetHPattern)
       .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
+      .def("get_hmat_time", &BigWhamIOGen::hmat_time)
+      .def("get_omp_threads", &BigWhamIOGen::GetOmpThreads)
       .def(py::pickle(
           [](const BigWhamIOGen &self) { // __getstate__
             /* Return a tuple that fully encodes the state of the object */
@@ -157,9 +158,6 @@ PYBIND11_MODULE(py_bigwham, m)
             return as_pyarray<double>(std::move(v));
           },
           " dot product between hmat and a vector x", py::arg("x"))
-
-      //.def("hdotProduct",            &BigWhamIOGen::matvect, " dot product
-      // between hmat and a vector x",py::arg("x"))
       // I change the previous binding of matvect to return a numpy array!!
       // todo: is it possible to move the result of the dot product to an
       // std::array? the array is contiguous in memory but not the vector!!!!!!
@@ -174,8 +172,26 @@ PYBIND11_MODULE(py_bigwham, m)
           },
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
-      .def("get_hmat_time", &BigWhamIOGen::hmat_time)
-      .def("get_omp_threads", &BigWhamIOGen::GetOmpThreads);
+      .def(
+              "compute_displacements",
+           [](BigWhamIOGen &self,const std::vector<double> &coor, const pbarray<double> &x)-> decltype(auto)
+           {
+               auto tx = as_array_view<double>(x);
+               auto v = self.ComputeDisplacements(coor,tx);
+               return as_pyarray<double>(std::move(v));
+           },
+           " compute displacement at set of points",
+           py::arg("x"),py::arg("coor"))
+      .def(
+              "compute_stresses",
+              [](BigWhamIOGen &self,const std::vector<double> &coor, const pbarray<double> &x)-> decltype(auto)
+              {
+                      auto tx = as_array_view<double>(x);
+                      auto v = self.ComputeStresses(coor,tx);
+                      return as_pyarray<double>(std::move(v));
+                      },
+                  " compute stresses at set of points",
+                  py::arg("x"),py::arg("coor"));
 
   /* --------------------------------------------------------------------------
    */
@@ -208,7 +224,9 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("get_spatial_dimension", &BigWhamIORect::spatial_dimension)
       .def("matrix_size", &BigWhamIORect::MatrixSize)
       .def("get_hpattern", &BigWhamIORect::GetHPattern)
-      .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
+      .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix) // check here why BigWhamIOGen and not BigWhamIORect ?
+      .def("get_hmat_time", &BigWhamIORect::hmat_time)
+      .def("get_omp_threads", &BigWhamIORect::GetOmpThreads)
       .def("convert_to_global",
            [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto)
            {
@@ -231,9 +249,8 @@ PYBIND11_MODULE(py_bigwham, m)
             auto v = self.MatVec(tx);
             return as_pyarray<double>(std::move(v));
           },
-          " dot product between hmat and a vector x in original ordering")
-      .def("get_hmat_time", &BigWhamIORect::hmat_time)
-      .def("get_omp_threads", &BigWhamIORect::GetOmpThreads);
+          " dot product between hmat and a vector x in original ordering");
+
   /* --------------------------------------------------------------------------
    */
 
@@ -244,6 +261,7 @@ PYBIND11_MODULE(py_bigwham, m)
 
   /* --------------------------------------------------------------------------
    */
+  // todo :: remove this class below - duplicated code - should use bigwhamio
   py::class_<Mesh>(m, "Mesh", py::dynamic_attr())
       .def(py::init([](const std::vector<double> &coor,
                        const std::vector<int> &conn,

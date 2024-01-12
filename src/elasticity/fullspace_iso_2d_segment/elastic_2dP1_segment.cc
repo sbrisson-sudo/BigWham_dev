@@ -153,7 +153,7 @@ il::StaticArray2D<double, 2, 4> stresses_kernel_dp1_dd(double h, double Ep,
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-// new api - for general kernel call for DDs
+//
 il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_dp1_dd(
     SegmentData &source_elt, SegmentData &receiver_elt, il::int_t i_col,
     const ElasticProperties &Elas, double ker_options) {
@@ -261,20 +261,18 @@ il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_dp1_dd(
 ////////////////////////////////////////////////////////////////////////////////
 //      KERNEL FUNCTION WORKING BY NODES - for hmat
 
-il::StaticArray<double, 4> stresses_kernel_dp1_dd_nodal(il::int_t local_node_i,
-                                                        double h, double Ep,
-                                                        double x, double y) {
+il::StaticArray<double, 4> We_segment_1(il::int_t local_node_i,
+                                        double h, double Ep,
+                                        double x, double y) {
   // function computing the stresses at (x,y) induced by a linear DD segment (of
   // total length h) centered on the origin [-h/2,h/2]
   // it returns stresses due to a linear variation from an unit value at the
   // left node (node 1)  to zero at the right node (coordinates 2) for both
-  // shear and
-  // opening displacement discontinuity
+  // shear and opening displacement discontinuity
   // OR stresses due to a linear variation from an unit value at the right
   // coordinates (node 2) to zero at the right node (coordinates 1) for both
-  // shear and
-  // opening
-  // displacement discontinuity
+  // shear and opening displacement discontinuity
+  //
   // Inputs
   // local_node_i :: integer describing if we need to compute the effect of the
   // left (1) or right (2) nodes
@@ -404,9 +402,8 @@ il::StaticArray<double, 4> stresses_kernel_dp1_dd_nodal(il::int_t local_node_i,
   }
 
   // note that we have the following relations : sxxn = sxys,  sxyn = syys
-  // we return a vector with 4 entries
-  //   sxxs, sxys, syys, syyn    (knowing that we sxxn and sxyn are
-  // respectively equal to sxys and syys )
+  // we thus return a vector with 4 entries (instead of 6 or an array of 2*3)
+  //   sxxs, sxys, syys, syyn    (knowing that  sxxn and sxyn are respectively equal to sxys and syys )
 
   return Stress;
 }
@@ -469,7 +466,7 @@ il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_dp1_dd_nodal(
   // columns sxxs, sxys, syys, syyn
   // (knowing that sxxn and sxyn are respectively equal to sxys and syys )
   il::StaticArray<double, 4> stress_l =
-      stresses_kernel_dp1_dd_nodal(s_col, h, Elas.young_modulus_plane_strain(), xe[0], xe[1]);
+          We_segment_1(s_col, h, Elas.young_modulus_plane_strain(), xe[0], xe[1]);
 
   // shear stress
   // shear dd
