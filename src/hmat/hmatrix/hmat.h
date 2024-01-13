@@ -46,10 +46,8 @@ private:
     il::int_t dof_dimension_;            //  dof per collocation points
     il::StaticArray<il::int_t, 2> size_; // size of tot mat (row, cols)
 
-    std::vector<std::unique_ptr<bie::LowRank<T>>>
-            low_rank_blocks_; // vector of low rank blocks
-    std::vector<std::unique_ptr<il::Array2D<T>>>
-            full_rank_blocks_; // vector of full rank blocks
+    std::vector<std::unique_ptr<bie::LowRank<T>>> low_rank_blocks_; // vector of low rank blocks
+    std::vector<std::unique_ptr<il::Array2D<T>>> full_rank_blocks_; // vector of full rank blocks
 
     bool isBuilt_ = false;
     bool isBuilt_LR_ = false;
@@ -71,13 +69,12 @@ public:
   std::vector<T> diagonal();
   std::vector<T> diagonalOriginal();
   double compressionRatio();
-  bool isBuilt() const { return isBuilt_; }
-  il::int_t size(int k) const { return size_[k]; }
+  [[nodiscard]] bool isBuilt() const { return isBuilt_; }
+  [[nodiscard]] il::int_t size(int k) const { return size_[k]; }
   bie::HPattern pattern() { return hr_->pattern_; }
-  il::int_t dofDimension() const { return dof_dimension_; }
+  [[nodiscard]] il::int_t dofDimension() const { return dof_dimension_; }
   il::int_t nbOfEntries();
-  void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,
-                          il::Array<int> & pos_list);
+  void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
   // H-Matrix vector multiplication without permutation
   // il::Array<T> matvec(const il::Array<T> &x);
   std::vector<T> matvec(const std::vector<T> & x);

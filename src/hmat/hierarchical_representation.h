@@ -7,6 +7,8 @@
 // file for more details.
 //
 
+#pragma once
+
 #ifndef BIGWHAM_HIERARCHICAL_REPRESENTATION_H
 #define BIGWHAM_HIERARCHICAL_REPRESENTATION_H
 
@@ -25,8 +27,7 @@ struct HRepresentation {
   HPattern pattern_;
   il::Array<il::int_t> permutation_0_; // for rows
   il::Array<il::int_t> permutation_1_; // for columns
-  bool is_square_ =
-      true; // if true - square matrix, and only permutation_0_ is stored
+  bool is_square_ =true; // if true - square matrix, and only permutation_0_ is stored
 
   HRepresentation() = default;
   ~HRepresentation() = default;
@@ -55,15 +56,13 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
   const il::Tree<SubHMatrix, 4> block_tree =
       hmatrixTreeIxI(Xcol, cluster.partition, eta);
   tt.Stop();
-  std::cout << "Time for binary cluster tree construction  " << tt.time()
-            << "\n";
+  std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
   std::cout << "Binary cluster tree depth = " << block_tree.depth() << "\n";
   hr->pattern_ = createPattern(block_tree);
 
   std::cout << "Number of blocks = " << hr->pattern_.n_B << "\n";
   std::cout << "Number of full blocks = " << hr->pattern_.n_FRB << "\n";
   std::cout << "Number of low rank blocks = " << hr->pattern_.n_LRB << "\n";
-
   std::cout << "Pattern Created \n";
 
   return hr;
@@ -84,16 +83,14 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
 
   tt.Start();
   Cluster cluster_s = cluster(max_leaf_size, il::io, Xcol_source);
-  std::cout << "Cluster tree creation time for the source mesh :  " << tt.time()
-            << "\n";
+  std::cout << "Cluster tree creation time for the source mesh :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
   hr->permutation_1_ = cluster_s.permutation; // sources permutation
 
   tt.Start();
   Cluster cluster_r = cluster(max_leaf_size, il::io, Xcol_receiver);
-  std::cout << "Cluster tree creation time for the source mesh :  " << tt.time()
-            << "\n";
+  std::cout << "Cluster tree creation time for the source mesh :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
   hr->permutation_0_ = cluster_r.permutation; // receivers permutation
@@ -103,8 +100,7 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
       hmatrixTreeIxJ(Xcol_receiver, cluster_r.partition, Xcol_source,
                      cluster_s.partition, eta);
   tt.Stop();
-  std::cout << "Time for binary cluster tree construction  " << tt.time()
-            << "\n";
+  std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
   std::cout << " binary cluster tree depth =" << block_tree.depth() << "\n";
   hr->pattern_ = createPattern(block_tree);
   //        hr.pattern_.nr = receiver_mesh.numberCollocationPoints();
@@ -113,8 +109,9 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
   std::cout << " Number of blocks =" << hr->pattern_.n_B << "\n";
   std::cout << " Number of full blocks =" << hr->pattern_.n_FRB << "\n";
   std::cout << " Number of low rank blocks =" << hr->pattern_.n_LRB << "\n";
+  std::cout << "Pattern Created \n";
 
-  return hr;
+    return hr;
 }
 
 } // namespace bie

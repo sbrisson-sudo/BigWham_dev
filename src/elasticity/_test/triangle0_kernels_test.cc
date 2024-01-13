@@ -22,7 +22,6 @@
 #include "elements/point.h"
 
 
-
 TEST(Triangle0, test_H_1) {
   // test self-effect triangle 0
   il::Array2D<double> xy{3, 3, 0.};

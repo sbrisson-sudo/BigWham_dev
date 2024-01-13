@@ -7,18 +7,19 @@
 // See the LICENSE.TXT file for more details.
 //
 //
+#pragma once
 
 #ifndef BIGWHAM_BIE_MATRIX_GENERATOR_H
 #define BIGWHAM_BIE_MATRIX_GENERATOR_H
 
 #include "il/core/core.h"
 
-#include "hmat/arrayFunctor/matrix_generator.h"
-#include "hmat/hierarchical_representation.h"
-
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 #include "core/mesh.h"
+
+#include "hmat/arrayFunctor/matrix_generator.h"
+#include "hmat/hierarchical_representation.h"
 
 namespace bie {
 
@@ -29,8 +30,7 @@ private:
   const std::shared_ptr<Mesh> mesh_rec_;
   const std::shared_ptr<BieKernel<T>> bie_kernel_;
 
-  il::int_t
-      block_size_;  // dimension of the kernel (3 for 3D elasticity problems)
+  il::int_t block_size_;  // dof dimension of the kernel (e.g. 3 for 3D elasticity problems)
   il::int_t size0_; // total rows of matrix
   il::int_t size1_; // total cols of matrix
   il::int_t num_row_points_; // size0_ / block_size_
@@ -120,14 +120,12 @@ inline void BieMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
       for (il::int_t j0 = 0; j0 < M.size(0) / blockSize(); ++j0) {
         il::int_t k0 = b0 + j0;
         il::int_t old_k0 = this->hr_->permutation_0_[k0];
-        il::int_t e_k0 =
-            this->mesh_rec_->GetElementId(old_k0); //  receiver element
+        il::int_t e_k0 = this->mesh_rec_->GetElementId(old_k0); //  receiver element
         il::int_t ir_l = this->mesh_rec_->GetElementCollocationId(old_k0);
 
         auto receiver_element = this->mesh_rec_->GetElement(e_k0);
-        std::vector<double> st = this->bie_kernel_->influence(
-            *source_element, is_l, *receiver_element,
-            ir_l); // column major
+        std::vector<double> st = this->bie_kernel_->influence(*source_element, is_l,
+                                                              *receiver_element,ir_l); // column major
         // std::cout << "kernel size =" << st.size() << std::endl;
         // std::cout << "DOF dimension =" << dof_dimension_ << std::endl;
         IL_EXPECT_FAST(st.size() == block_size_ * block_size_);

@@ -24,8 +24,7 @@ namespace bie {
 
 // direct constructor
 template <typename T>
-Hmat<T>::Hmat(const bie::MatrixGenerator<T> & matrix_gen,
-                  const double epsilon_aca) {
+Hmat<T>::Hmat(const bie::MatrixGenerator<T> & matrix_gen,const double epsilon_aca) {
         // construction directly
         this->toHmat(matrix_gen, epsilon_aca);
 }
@@ -156,8 +155,7 @@ void Hmat<T>::toHmat(const MatrixGenerator<T> & matrix_gen,
   tt.Stop();
   std::cout << "Creation of hmat done in " << tt.time() << "\n";
   std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
-  std::cout << "Hmat object - built "
-            << "\n";
+  std::cout << "Hmat object - built "<< "\n";
 }
 /* -------------------------------------------------------------------------- */
 
@@ -206,8 +204,7 @@ void Hmat<T>::buildFR(const bie::MatrixGenerator<T> & matrix_gen) {
     const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
     const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
 
-    std::unique_ptr<il::Array2D<T>> a =
-        std::make_unique<il::Array2D<T>>(ni, nj);
+    std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
     matrix_gen.set(i0, j0, il::io, a->Edit());
     full_rank_blocks_[i] = std::move(a);
   }
@@ -312,8 +309,7 @@ template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
 
       auto a = (*full_rank_blocks_[i]).view();
       auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
-      auto ys =
-          yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+      auto ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
 
       il::blas(1.0, a, xs, 1.0, il::io, ys);
     }
@@ -329,8 +325,7 @@ template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
       auto b = low_rank_blocks_[ii]->B.view();
 
       auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
-      auto ys =
-          yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+      auto ys =yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
       auto r = a.size(1);
       il::Array<double> tmp{r, 0.0};
 
@@ -402,7 +397,7 @@ std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> & x) {
 }
 /* -------------------------------------------------------------------------- */
 
-// matvect in and outs as std::vector
+// matvect in and outs as std::vector - not great
 template <typename T> std::vector<T> Hmat<T>::matvec(const std::vector<T> & x) {
   il::Array<T> xil{static_cast<il::int_t>(x.size())};
   // todo find a better way to convert il::Array to std::vect and vice versa !

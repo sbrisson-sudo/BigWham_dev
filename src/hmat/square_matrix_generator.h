@@ -7,6 +7,7 @@
 // See the LICENSE.TXT file for more details.
 //
 //
+#pragma once
 
 #ifndef BIGWHAM_SQMATGENERATOR_H
 #define BIGWHAM_SQMATGENERATOR_H

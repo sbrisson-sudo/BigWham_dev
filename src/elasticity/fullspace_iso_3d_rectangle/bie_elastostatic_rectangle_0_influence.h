@@ -225,24 +225,23 @@ BieElastostatic<Rectangle<0>, Rectangle<0>, ElasticKernelType::T>::influence(
 /* -------------------------------------------------------------------------- */
 
 
-
 //       Singular Kernel   T for displacement observation
-    template <>
-    std::vector<double>
-    BieElastostatic<Rectangle<0>, Point<3>, ElasticKernelType::T>::influence(
-            const BoundaryElement &source_elt, il::int_t i_s,
-            const BoundaryElement &receiver_elt, il::int_t i_r) const {
+template <>
+std::vector<double>
+BieElastostatic<Rectangle<0>, Point<3>, ElasticKernelType::T>::influence(
+        const BoundaryElement &source_elt, il::int_t i_s,
+        const BoundaryElement &receiver_elt, il::int_t i_r) const {
         std::vector<double> zro(3*3);
         fill(zro.begin(), zro.end(), 0.0);
         return zro;
-    }
+}
 
 //       hyperSingular Kernel   W for stress observation
 template <>
 std::vector<double>
 BieElastostatic<Rectangle<0>, Point<3>, ElasticKernelType::W>::influence(
-            const BoundaryElement &source_elt, il::int_t i_s,
-            const BoundaryElement &receiver_elt, il::int_t i_r) const {
+        const BoundaryElement &source_elt, il::int_t i_s,
+        const BoundaryElement &receiver_elt, il::int_t i_r) const {
         std::vector<double> zro(6*3);
         fill(zro.begin(), zro.end(), 0.0);
         return zro;
