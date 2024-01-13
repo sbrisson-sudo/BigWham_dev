@@ -47,7 +47,7 @@ template <int dim>
 inline void Point<dim>::SetElement(const il::Array2D<double> &xv) {
   IL_ASSERT(xv.size(0) == num_vertices_);
   this->vertices_ = xv;
-  for (int i=0; i < dim; i++) {
+  for (il::int_t i=0; i < dim; i++) {
     centroid_[i] = xv(0, i);
   }
   this->SetRotationMatrices();
