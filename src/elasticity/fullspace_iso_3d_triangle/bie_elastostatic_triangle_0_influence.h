@@ -263,15 +263,15 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
         il::Array<double> disp_temp{3,  0.0}; // temporary disp tensor
         il::Array<double> disp_gl{3,  0.0}; // temporary disp tensor
 
-        std::vector<double> disp_out{9,0.};
+        std::vector<double> disp_out(9,0.);
         int k=0;
         for (il::int_t j=0;j<3;j++){
-            for (int i = 0;i<3;i++){
+            for (il::int_t  i = 0;i<3;i++){
                 disp_temp[i]=disp(i,j);
             }
             disp_gl=source_elt.ConvertToGlobal(disp_temp);
-            for (int i = 0;i<3;i++){
-                disp_out[k]=disp_gl[i];
+            for (il::int_t  i = 0;i<3;i++){
+                disp_out[k]=disp_gl[i];// problem here ?
                 k++;
             }
         }
