@@ -25,24 +25,19 @@
 #include <hmat/hmatrix/hmat.h>
 
 #include "core/be_mesh.h"
-// #include "elements/rectangle.h"
-#include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
+#include "elements/rectangle.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
 
 #include "core/bie_kernel.h"
-#include "core/elastic_properties.h"
 #include "elasticity/bie_elastostatic.h"
-#include "hmat/bie_matrix_generator.h"
+#include "elasticity/bie_elastostatic_mode1.h"
 
-#include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d0.h"
+#include "core/elastic_properties.h"
 #include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
-// #include "hmat/square_matrix_generator.h"
-// #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_0_impls.h"
-// #include "elasticity/FsIso2dSegment/BIE_elastostatic_segment_1_impls.h"
-// #include "elasticity/3d/bie_elastostatic_triangle_0_impls.h"
-// #include "elasticity/FsIsoAxiFlatRingUnidirectional/ElasticAxi3DP0_element.h"
-// #include <elasticity/FsIsoSp3dSegment/BieElastostaticSp3d.h>
+#include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d0.h"
+
+#include "hmat/bie_matrix_generator.h"
 
 // utilities for switch with string in C++17
 // https://learnmoderncpp.com/2020/06/01/strings-as-switch-case-labels/
@@ -222,6 +217,38 @@ public:
           bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
           elas, dimension_);
       break;
+    }
+    case "3DR0_H"_sh: {
+        dimension_ = 3;
+        int nvertices_per_elt_ = 4;
+        using EltType = bie::Rectangle<0>;
+        mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                            conn);
+        ker_obj_ = std::make_shared<
+                bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+                elas, dimension_);
+        break;
+    }
+    case "3DR0_H_mode1"_sh: {
+        dimension_ = 3;
+        int nvertices_per_elt_ = 4;
+        using EltType = bie::Rectangle<0>;
+        mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor, conn);
+        ker_obj_ = std::make_shared<
+                bie::BieElastostaticModeI<EltType, EltType, bie::ElasticKernelType::H>>(
+                elas, dimension_);
+        break;
+    }
+    case "3DR0_T"_sh: {
+        dimension_ = 3;
+        int nvertices_per_elt_ = 4;
+        using EltType = bie::Rectangle<0>;
+        mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
+                                            conn);
+        ker_obj_ = std::make_shared<
+                bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::T>>(
+                elas, dimension_);
+        break;
     }
     case "Axi3DP0"_sh: {
       dimension_ = 2;

@@ -22,11 +22,11 @@
 namespace bie {
 /* -------------------------------------------------------------------------- */
 //
-//template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>;
-//template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>;
-//template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>;
-//template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>;
-//template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>;
+template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>;
+template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>;
+template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>;
+template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>;
+template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>;
 
 //  U kernel - pt force displacement
 template <>

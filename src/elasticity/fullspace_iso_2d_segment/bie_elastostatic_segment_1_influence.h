@@ -7,8 +7,11 @@
 // file for more details.
 //
 
+#pragma once
+
 #ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_INFLUENCE
 #define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_INFLUENCE
+
 
 #include "elasticity/bie_elastostatic.h"
 #include "elements/boundary_element.h"
@@ -19,6 +22,9 @@
 /* -------------------------------------------------------------------------- */
 
 namespace bie {
+
+template class BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>;
+template class BieElastostatic<Segment<1>, Point<2>, ElasticKernelType::W>;
 
 template <>
 std::vector<double>
@@ -176,9 +182,6 @@ BieElastostatic<Segment<1>, Point<2>, ElasticKernelType::W>::influence(
 }
 /* -------------------------------------------------------------------------- */
 
-
-template class BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>;
-template class BieElastostatic<Segment<1>, Point<2>, ElasticKernelType::W>;
 
 } // namespace bie
 

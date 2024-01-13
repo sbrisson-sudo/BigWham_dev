@@ -14,8 +14,6 @@
 #include <iostream>
 #include <complex>
 //#include <il/math.h>
-#include <elasticity/3d/constants.h>
-#include <elasticity/3d/tensor_utilities_3DT6.h>
 #include <il/Array2D.h>
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
@@ -24,8 +22,11 @@
 #include <il/linearAlgebra.h>
 #include "core/oldies/element_utilities.h"
 
-#include <elasticity/3d/Elastic3DT6_element.h>
-#include <elasticity/3d/h_potential_3DT6.h>
+#include <elasticity/fullspace_iso_3d_triangle/constants.h>
+#include <elasticity/fullspace_iso_3d_triangle/tensor_utilities_3DT6.h>
+
+#include <elasticity/fullspace_iso_3d_rectangle/Elastic3DT6_element.h>
+#include <elasticity/fullspace_iso_3d_rectangle/h_potential_3DT6.h>
 
 namespace bie {
 

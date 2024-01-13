@@ -9,8 +9,8 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <il/Array2D.h>
-#include "elasticity/3d/Elastic3DR0_common.h"
-#include "elasticity/3d/Elastic3DR0_element.h"
+#include "elasticity/fullspace_iso_3d_rectangle//elastic_3dR0_common.h"
+#include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_element.h"
 #include "elastic3DR0_element_tests_def.h"
 
 //--------------------------------------------------------------------------

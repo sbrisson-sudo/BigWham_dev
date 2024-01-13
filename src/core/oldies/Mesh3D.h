@@ -13,7 +13,9 @@
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/StaticArray2D.h>
-#include <elasticity/3d/constants.h>
+
+
+#include "elasticity/fullspace_iso_3d_triangle/constants.h"
 #include "core/oldies/FaceData.h"
 
 namespace bie {

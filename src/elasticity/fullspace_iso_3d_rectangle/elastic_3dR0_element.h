@@ -19,12 +19,12 @@ il::StaticArray2D<double, 3, 6> StressesKernelR0(
 
 
 
-il::Array2D<double> traction_influence_3DR0(
-            bie::FaceData &elem_data_s, // source element
-            bie::FaceData &elem_data_r, // receiver element
-            bie::ElasticProperties const &elas_, // elastic properties
-            il::int_t I_want_global_DD,
-            il::int_t I_want_global_traction) ;
+//il::Array2D<double> traction_influence_3DR0(
+//            bie::FaceData &elem_data_s, // source element
+//            bie::FaceData &elem_data_r, // receiver element
+//            bie::ElasticProperties const &elas_, // elastic properties
+//            il::int_t I_want_global_DD,
+//            il::int_t I_want_global_traction) ;
 
 
 il::Array2D<double> DisplacementKernelR0(

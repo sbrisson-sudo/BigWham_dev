@@ -6,8 +6,10 @@
 // See the LICENSE.TXT file for more details. 
 //
 
+#pragma once
 
 #include <il/StaticArray.h>
+#include <il/Array2D.h>
 
 namespace bie{
 

@@ -12,7 +12,7 @@
 #include <il/StaticArray2D.h>
 
 #include "elasticity/bie_elastostatic.h"
-#include "elements/boundary_element.h"
+
 #include "elements/triangle.h"
 #include "elements/point.h"
 
@@ -21,10 +21,10 @@
 
 namespace bie {
 
-//template class BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>;
-//template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>;
-//template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>;
-//
+template class BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>;
+template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>;
+template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>;
+
 
 // Hyper-singular Kernel !
 template <>

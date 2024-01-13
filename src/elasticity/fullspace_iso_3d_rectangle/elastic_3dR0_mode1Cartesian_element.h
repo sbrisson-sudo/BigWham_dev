@@ -6,11 +6,11 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-
+#pragma once
 
 #include <il/StaticArray2D.h>
 #include "core/oldies/FaceData.h"
-#include "core/ElasticProperties.h"
+#include "core/elastic_properties.h"
 
 
 namespace bie{

@@ -165,26 +165,29 @@ if(BIGWHAM_TESTING)
     set(TESTED_SOURCE_FILES ${SOURCE_FILES})
     set(UNIT_TEST_FILES
         il/gtest/src/gtest-all.cc
-        src/_test/penny_shaped_crack_analytical_sol.cpp
-        src/core/_test/FaceData_tests.cpp
-        src/elasticity/_test/elastic3DR0_element_tests.cpp
-        # src/_test/elastic3DR0_element_benchmark.cpp
-        src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
-            src/elements/_test/segment_test.cc
-        src/elasticity/_test/segment0_sp3d_test.cc
-        src/core/_test/bemesh_test.cc
-        src/elasticity/_test/elastic_square_matrix_generator_test.cc
-        src/core/_test/hierarchical_representation_test.cc
-        src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
+            src/_test/penny_shaped_crack_analytical_sol.cpp
+            src/core/_test/FaceData_tests.cpp
+            src/elasticity/_test/elastic3DR0_element_tests.cpp
+         # src/_test/elastic3DR0_element_benchmark.cpp
+            src/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
+            src/elasticity/_test/elastic_square_matrix_generator_test.cc
+            src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
+            src/core/_test/bemesh_test.cc
+            src/core/_test/hierarchical_representation_test.cc
             src/elements/_test/triangle_test.cc
             src/elements/_test/rectangle_test.cc
-            src/elements/_test/point_test.cc src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc src/elasticity/_test/segment0_kernels_test.cc
-        src/_test/bigwhamio_test_2d.cc
+            src/elements/_test/point_test.cc
+            src/elements/_test/segment_test.cc
+            src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc
+            src/elasticity/_test/segment0_kernels_test.cc
+            src/elasticity/_test/segment0_sp3d_test.cc
+            src/elasticity/_test/rectangle0_kernels_test.cc
+            src/elasticity/_test/rectangle0_mode1_kernels_test.cc
             src/elasticity/_test/triangle0_kernels_test.cc
             src/io/_test/bigwham_io_helper_test.cc
             src/io/_test/bigwham_io_gen_test_2d.cc
             src/io/_test/bigwham_io_gen_test_3d.cc
-            )
+            src/_test/bigwhamio_test_2d.cc)
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)

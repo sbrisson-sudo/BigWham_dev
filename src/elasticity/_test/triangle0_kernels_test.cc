@@ -13,10 +13,10 @@
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
-#include <il/math.h>
+#include <cmath>
 
 #include "core/elastic_properties.h"
-//#include "elasticity/bie_elastostatic.h"
+#include "elasticity/bie_elastostatic.h"
 #include "elasticity/fullspace_iso_3d_triangle/bie_elastostatic_triangle_0_influence.h"
 #include "elements/triangle.h"
 #include "elements/point.h"

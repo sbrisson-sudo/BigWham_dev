@@ -49,14 +49,14 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             flux_dimension_ = 3;
             int nvertices_per_elt_ = 2;
             using EltType = Segment<0>;
-            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+            mesh_ = bie::CreateMeshFromVect<Segment<0>>(spatial_dimension_, nvertices_per_elt_,
                                                 coor, conn);
-            ker_obj_ = std::make_shared<bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+            ker_obj_ = std::make_shared<bie::BieElastostatic<Segment<0>, Segment<0>, bie::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
             using ObsType = Point<2>;
-            ker_obs_u_=std::make_shared<bie::BieElastostatic<EltType, ObsType, bie::ElasticKernelType::T>>(
+            ker_obs_u_=std::make_shared<bie::BieElastostatic<Segment<0>, ObsType, bie::ElasticKernelType::T>>(
                     elas, spatial_dimension_);
-            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType, ObsType, bie::ElasticKernelType::W>>(
+            ker_obs_q_=std::make_shared<bie::BieElastostatic<Segment<0>, ObsType, bie::ElasticKernelType::W>>(
                     elas, spatial_dimension_);
             break;
         }

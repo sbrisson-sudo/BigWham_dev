@@ -6,13 +6,13 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-#include <il/blas.h>
-#include <il/linearAlgebra.h>
-#include "elasticity/3d/Elastic3DR0_common.h"
-#include "elasticity/3d/Elastic3DR0_mode1Cartesian_element.h"
+
 #include <cmath>
-#include <iostream>
 #include <limits>
+
+
+#include "elasticity/fullspace_iso_3d_rectangle//elastic_3dR0_common.h"
+#include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_mode1Cartesian_element.h"
 
 namespace bie{
     // RONGVED SOLUTION FOR A P0 Rectangular dislocation in a full space
@@ -67,7 +67,6 @@ namespace bie{
         return Stress;
         // DDz (normal) -> szz
     }
-
 
     double traction_influence_3DR0opening(
         FaceData &elem_data_s, // source element
