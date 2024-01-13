@@ -49,7 +49,7 @@ TEST(Rectangle0,rect_0_T_1){
     xyz(3, 1) = hy;
     bie::Rectangle<0> rec0_elt;
     rec0_elt.SetElement(xyz);
-//test self effect H kernel
+//test self effect T kernel
     bie::ElasticProperties elas(1, 0.3);
     bie::BieElastostatic<bie::Rectangle<0>, bie::Rectangle<0>,bie::ElasticKernelType::T> test(elas, xyz.size(1));
     std::vector<double> test_self = test.influence(rec0_elt, 0, rec0_elt, 0);
@@ -61,4 +61,89 @@ TEST(Rectangle0,rect_0_T_1){
     ASSERT_TRUE((rec0_elt.spatial_dimension() == 3) && (test_self[0]==-0.5) && (test_self[4]==-0.5) && (test_self[8]==-0.5) );
 }
 
-// 2 instances at the same time ....
+
+TEST(Rectangle0,rect_0_disp_obs){
+    double hx = 1.;
+    double hy = 2.;
+    il::Array2D<double> xyz{4, 3, 0.0};
+    xyz(1, 0) = hx;
+    xyz(2, 0) = hx;
+    xyz(2, 1) = hy;
+    xyz(3, 1) = hy;
+    bie::Rectangle<0> rec0_elt;
+    rec0_elt.SetElement(xyz);
+    bie::ElasticProperties elas(1, 0.3);
+    il::Array2D<double> xobs{1,3,1.};
+    bie::Point<3> obs;
+    obs.SetElement(xobs);
+    bie::BieElastostatic<bie::Rectangle<0>, bie::Point<3>,bie::ElasticKernelType::T> test_disp(elas, xyz.size(1));
+    std::vector<double> test_disp_ = test_disp.influence(rec0_elt, 0, rec0_elt, 0);
+    std::cout << "test displacement observation - "  <<  test_disp_.size()  << "\n";
+    for (int i = 0; i < test_disp_.size(); i++) {
+        std::cout << "i : " << test_disp_[i] << "\n";
+    }
+
+    ASSERT_TRUE((rec0_elt.spatial_dimension() == 3) );
+}
+
+
+TEST(Rectangle0,rect_0_stress_obs){
+    double hx = 1.;
+    double hy = 2.;
+    il::Array2D<double> xyz{4, 3, 0.0};
+    xyz(1, 0) = hx;
+    xyz(2, 0) = hx;
+    xyz(2, 1) = hy;
+    xyz(3, 1) = hy;
+    bie::Rectangle<0> rec0_elt;
+    rec0_elt.SetElement(xyz);
+    bie::ElasticProperties elas(1, 0.3);
+    il::Array2D<double> xobs{1,3,1.};
+    bie::Point<3> obs;
+    obs.SetElement(xobs);
+    bie::BieElastostatic<bie::Rectangle<0>, bie::Point<3>,bie::ElasticKernelType::W> test_stress(elas, xyz.size(1));
+    std::vector<double> test_stress_ = test_stress.influence(rec0_elt, 0, rec0_elt, 0);
+    std::cout << "test stress - "  <<  test_stress_.size()  << "\n";
+    for (int i = 0; i < test_stress_.size(); i++) {
+        std::cout << "i : " << test_stress_[i] << "\n";
+    }
+
+    ASSERT_TRUE((rec0_elt.spatial_dimension() == 3) );
+}
+
+// with 2 kernels defined
+
+TEST(Rectangle0,rect_0_disp_and_stress_obs){
+    double hx = 1.;
+    double hy = 2.;
+    il::Array2D<double> xyz{4, 3, 0.0};
+    xyz(1, 0) = hx;
+    xyz(2, 0) = hx;
+    xyz(2, 1) = hy;
+    xyz(3, 1) = hy;
+    bie::Rectangle<0> rec0_elt;
+    rec0_elt.SetElement(xyz);
+    bie::ElasticProperties elas(1, 0.3);
+    il::Array2D<double> xobs{1,3,1.};
+    bie::Point<3> obs;
+    obs.SetElement(xobs);
+
+    bie::BieElastostatic<bie::Rectangle<0>, bie::Point<3>,bie::ElasticKernelType::W> test_stress(elas, xyz.size(1));
+    std::vector<double> test_stress_ = test_stress.influence(rec0_elt, 0, rec0_elt, 0);
+    std::cout << "test stress - "  <<  test_stress_.size()  << "\n";
+    for (int i = 0; i < test_stress_.size(); i++) {
+        std::cout << "i : " << test_stress_[i] << "\n";
+    }
+
+    bie::BieElastostatic<bie::Rectangle<0>, bie::Point<3>,bie::ElasticKernelType::T> test_disp(elas, xyz.size(1));
+    std::vector<double> test_disp_ = test_disp.influence(rec0_elt, 0, rec0_elt, 0);
+    std::cout << "test displacement observation - "  <<  test_disp_.size()  << "\n";
+    for (int i = 0; i < test_disp_.size(); i++) {
+        std::cout << "i : " << test_disp_[i] << "\n";
+    }
+
+
+    ASSERT_TRUE((rec0_elt.spatial_dimension() == 3) );
+}
+
+

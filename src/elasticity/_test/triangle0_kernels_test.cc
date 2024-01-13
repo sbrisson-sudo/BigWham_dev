@@ -33,7 +33,7 @@ TEST(Triangle0, test_H_1) {
   bie::ElasticProperties elas(1, 0.3);
   bie::BieElastostatic<bie::Triangle<0>, bie::Triangle<0>,bie::ElasticKernelType::H> test(elas, xy.size(1));
   std::vector<double> test_self = test.influence(source, 0, source, 0);
-   std::cout << "test self effect "
+  std::cout << "test self effect "
              << "\n";
    for (int i = 0; i < 9; i++) {
      std::cout << test_self[i] << "\n";

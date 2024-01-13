@@ -28,6 +28,8 @@
 #include "elasticity/fullspace_iso_2d_segment/bie_elastostatic_segment_0_influence.h"
 #include "elasticity/fullspace_iso_2d_segment/bie_elastostatic_segment_1_influence.h"
 #include "elasticity/fullspace_iso_3d_triangle/bie_elastostatic_triangle_0_influence.h"
+#include "elasticity/fullspace_iso_3d_rectangle/bie_elastostatic_rectangle_0_influence.h"
+#include "elasticity/fullspace_iso_3d_rectangle/bie_elastostatic_rectangle_0_mode1_influence.h"
 
 /* -------------------------------------------------------------------------- */
 using namespace bie;
@@ -97,6 +99,20 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             ker_obj_->set_kernel_properties(prop);
             break;
         }
+        case "Axi3DP0"_sh: {
+            IL_ASSERT(properties.size() == 2);
+            ElasticProperties elas(properties[0], properties[1]);
+            spatial_dimension_ = 2;
+            dof_dimension_ = 2;
+            int nvertices_per_elt_ = 2;
+            using EltType = bie::Segment<0>;
+            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                     coor, conn);
+            ker_obj_ = std::make_shared<bie::ElasticAxiSymmRingKernel>(
+                    elas, spatial_dimension_); // todo - change this API to the new one.... should be std::make_shared<
+            // bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>
+            break;
+        }
         case "3DT0"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
@@ -117,18 +133,41 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                     elas, spatial_dimension_);
             break;
         }
-        case "Axi3DP0"_sh: {
+        case "3DR0"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
-            spatial_dimension_ = 2;
-            dof_dimension_ = 2;
-            int nvertices_per_elt_ = 2;
-            using EltType = bie::Segment<0>;
+            spatial_dimension_ = 3;
+            dof_dimension_ = 3;
+            flux_dimension_ = 6; // 6 stress components
+            int nvertices_per_elt_ = 3;
+            using EltType = bie::Rectangle<0>;
             mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                coor, conn);
-            ker_obj_ = std::make_shared<bie::ElasticAxiSymmRingKernel>(
-                    elas, spatial_dimension_); // todo - change this API to the new one.... should be std::make_shared<
-           // bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>
+                                                     coor, conn);
+            ker_obj_ = std::make_shared<
+                    bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+                    elas, spatial_dimension_);
+            using ObsType = Point<3>;
+            ker_obs_u_=std::make_shared<bie::BieElastostatic<EltType, ObsType, bie::ElasticKernelType::T>>(
+                    elas, spatial_dimension_);
+            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
+                    elas, spatial_dimension_);
+            break;
+        }
+
+        case "3DR0_mode1"_sh: {
+            IL_ASSERT(properties.size() == 2);
+            ElasticProperties elas(properties[0], properties[1]);
+            spatial_dimension_ = 3;
+            dof_dimension_ = 1;
+            flux_dimension_ = 6; // 6 stress components
+            int nvertices_per_elt_ = 3;
+            using EltType = bie::Rectangle<0>;
+            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                     coor, conn);
+            ker_obj_ = std::make_shared<
+                    bie::BieElastostaticModeI<EltType, EltType, bie::ElasticKernelType::H>>(
+                    elas, spatial_dimension_);
+            // observation kernels to implement....
             break;
         }
         default: {
