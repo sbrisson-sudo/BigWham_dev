@@ -7,8 +7,8 @@
 // file for more details.
 //
 
-#ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS
-#define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS
+#ifndef BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_INFLUENCE
+#define BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_INFLUENCE
 
 #include "elasticity/bie_elastostatic.h"
 #include "elements/boundary_element.h"
@@ -182,4 +182,4 @@ template class BieElastostatic<Segment<1>, Point<2>, ElasticKernelType::W>;
 
 } // namespace bie
 
-#endif // BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_IMPLS
+#endif // BIGWHAM_BIE_ELASTOSTATIC_SEGMENT_1_INFLUENCE

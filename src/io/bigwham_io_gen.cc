@@ -25,7 +25,9 @@
 #include "elasticity/bie_elastostatic.h"
 #include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d0.h"
 #include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
-
+#include "elasticity/fullspace_iso_2d_segment/bie_elastostatic_segment_0_influence.h"
+#include "elasticity/fullspace_iso_2d_segment/bie_elastostatic_segment_1_influence.h"
+#include "elasticity/fullspace_iso_3d_triangle/bie_elastostatic_triangle_0_influence.h"
 
 /* -------------------------------------------------------------------------- */
 using namespace bie;
@@ -109,9 +111,9 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                     bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
             using ObsType = Point<3>;
-            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
-                    elas, spatial_dimension_);
             ker_obs_u_=std::make_shared<bie::BieElastostatic<EltType, ObsType, bie::ElasticKernelType::T>>(
+                    elas, spatial_dimension_);
+            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
                     elas, spatial_dimension_);
             break;
         }
@@ -478,8 +480,7 @@ il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coo
             mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
         }
         case 3: {
-            mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<3>>(
-                    spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
         }
     }
 
@@ -542,8 +543,7 @@ il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_ob
             mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
         }
         case 3: {
-            mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<3>>(
-                    spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
         }
     }
 

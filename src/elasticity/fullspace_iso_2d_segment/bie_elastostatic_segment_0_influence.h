@@ -8,7 +8,7 @@
 //
 
 // Last modifications - Jan 5, 2024
-
+#pragma once
 #include <il/StaticArray.h>
 #include <tuple>
 
@@ -21,6 +21,12 @@
 
 namespace bie {
 /* -------------------------------------------------------------------------- */
+//
+//template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>;
+//template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>;
+//template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>;
+//template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>;
+//template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>;
 
 //  U kernel - pt force displacement
 template <>
@@ -366,11 +372,5 @@ BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>::influence(
         return stnl;
 }
 /* -------------------------------------------------------------------------- */
-
-template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::H>;
-template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::U>;
-template class BieElastostatic<Segment<0>, Segment<0>, ElasticKernelType::T>;
-template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::T>;
-template class BieElastostatic<Segment<0>, Point<2>, ElasticKernelType::W>;
 
 } // namespace bie

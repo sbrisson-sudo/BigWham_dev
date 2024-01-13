@@ -6,7 +6,7 @@
 // Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
-
+#pragma once
 #include <il/blas.h>
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
@@ -21,6 +21,10 @@
 
 namespace bie {
 
+//template class BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>;
+//template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>;
+//template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>;
+//
 
 // Hyper-singular Kernel !
 template <>
@@ -62,7 +66,7 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
 
   // get stress influence coefficients - in the local coordinate system of the
   // source element
-  auto stress = StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
+  auto stress = bie::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
 
   // normal vector at the receiver location in the reference system of the
   // source element
@@ -130,13 +134,13 @@ std::vector<double>
 BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
         const BoundaryElement &source_elt, il::int_t i_s,
         const BoundaryElement &receiver_elt, il::int_t i_r) const {
-    //  return tractions - Hypersingular elastic kernel - Triangle 0 element
+    //  return Stresses - Hypersingular elastic kernel - Triangle 0 element
     // source_elt : element object of the source element
     // i_s : integert for the source collocation number (0,1)
     // receiver_elt  : element object of the receiver element
     // i_r : integer for the collocation number where to compute the normal and
-    // shear stress in the receiver element outputs: column-major (fortran order)
-    // vector for the displacement to tractions influence matrix
+    //  stress in the receiver element outputs: column-major (fortran order)
+    // for the different dd dofs
 
     // get constitutive parameters
     double G = this->elas_.shear_modulus();
@@ -148,8 +152,7 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
     // randomly perturb collocation point
     il::StaticArray<double, 3> receiver_coor{0};
     for (int i = 0; i < 3; i++) {
-        receiver_coor[i] =
-                el_cp_r(i_r, i) + sqrt(std::numeric_limits<double>::epsilon());
+        receiver_coor[i] =el_cp_r(i_r, i) + sqrt(std::numeric_limits<double>::epsilon());
     }
 
     // get coordinates vertices of triangular source element
@@ -164,7 +167,7 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
 
     // get stress influence coefficients - in the local coordinate system of the
     // source element
-    auto stress = StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
+    auto stress = bie::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
 
 // rotation matrix of the source element
     auto R = source_elt.rotation_matrix();
@@ -173,10 +176,7 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
     // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source
     // element in the reference system of the source element
     il::Array2D<double> DDs_to_stress_{3, 6, 0.0}; // traction vectors
-   // il::Array<double> traction_temp{3, 0.0};   // temporary traction vector
     il::Array2D<double> sigma_temp{3, 3, 0.0}; // temporary stress tensor
-   // il::Array2D<double> sigma_global{3, 3, 0.0}; // temporary stress tensor
-
 
     for (int i = 0; i < 3; ++i) { // loop over the rows of Stress, i.e., over each
         // DD component effect
@@ -222,11 +222,11 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
 
 // Kernel T
 // Displacements at a point due to displacement discontinuity over a source triangle
-    template <>
-    std::vector<double>
-    BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
-            const BoundaryElement &source_elt, il::int_t i_s,
-            const BoundaryElement &receiver_elt, il::int_t i_r) const {
+template <>
+std::vector<double>
+BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
+        const BoundaryElement &source_elt, il::int_t i_s,
+        const BoundaryElement &receiver_elt, il::int_t i_r) const {
         //  return displacement - singular elastic kernel - Triangle 0 element
         // source_elt : element object of the source element
         // i_s : integert for the source collocation number (0,1)
@@ -260,8 +260,8 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
 
         // get displacement influence coefficients - in the local coordinate system of the
         // source element
-        il::StaticArray2D<double,3,3> disp = DisplacementKernelT0(receiver_coor,el_vertices_s_static,nu);
-    // be careful the return of DisplacementKernelT0 is as  disp(i,j)=  u_i^j d_j
+        il::StaticArray2D<double,3,3> disp = bie::DisplacementKernelT0(receiver_coor,el_vertices_s_static,nu);
+        // be careful the return of DisplacementKernelT0 is as  disp(i,j)=  u_i^j d_j
 
         // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source
         // element in the reference system of the source element
@@ -284,9 +284,5 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
 
     return disp_out;
     }
-
-template class BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>;
-template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>;
-template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>;
 
 } // namespace bie

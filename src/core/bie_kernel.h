@@ -37,9 +37,8 @@ public:
   il::int_t dof_dimension() const { return dof_dimension_; };
   il::int_t spatial_dimension() const { return spatial_dimension_; };
 
-  void set_kernel_properties(const il::Array<double> &prop) {
+  void set_kernel_properties(const il::Array<double> &prop) {};
 
-  }
 };
 
 } // namespace bie

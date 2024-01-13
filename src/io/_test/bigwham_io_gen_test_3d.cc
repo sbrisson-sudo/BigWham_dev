@@ -101,7 +101,7 @@ TEST(bigwham_io_gen_3d, 3DT0_3) {
     my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
     std::cout << "Compression ratio:" << my_io.GetCompressionRatio()<<"\n";
     auto colpts = my_io.GetCollocationPoints();
-    std::vector<double> obspts(12  , 0.);
+    std::vector<double> obspts(6  , 0.); // here if we only use one pt (3) it crashes at runtime !!
     il::Array<double> dd(6  , 1.);
     obspts[2]=10.;obspts[0]=0.3;
     obspts[1]=-2.44;

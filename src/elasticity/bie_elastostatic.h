@@ -6,22 +6,25 @@
 // Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
-
+#pragma once
 #ifndef BIGWHAM_BIEELASTOSTATIC_H
 #define BIGWHAM_BIEELASTOSTATIC_H
+
+#include <vector>
 
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 #include "elements/boundary_element.h"
-#include <vector>
+#include "elements/triangle.h"
+#include "elements/point.h"
 
 namespace bie {
 
-enum class ElasticKernelType { U, T, H, S, V, W };
+enum class ElasticKernelType  { U, T, H, S, V, W }; // should have T and Ttilde as Tt
 
 /*
 
- Class  for BIE
+ Class  for quasi-static elastic BIE
 
  Es, Er: Element Type, e.g. Triangle<0>
  ElasticKernelType: ElasticKernelType {U,T,H,S,V};
@@ -42,17 +45,14 @@ protected:
 public:
   BieElastostatic() : BieKernel<double>(){};
 
-  BieElastostatic(const bie::ElasticProperties &elas, const il::int_t dim)
-      : BieKernel<double>() {
+  BieElastostatic(const bie::ElasticProperties &elas, const il::int_t dim) : BieKernel<double>() {
     elas_ = elas;
     this->dof_dimension_ = dim;
     this->spatial_dimension_ = dim;
     this->local_unknowns_ = true;
     this->local_co_variables_ = true;
   }
-  BieElastostatic(bie::ElasticProperties &elas, il::int_t dim,
-                  bool local_unknowns, bool local_co_variables)
-      : BieKernel<double>() {
+  BieElastostatic(bie::ElasticProperties &elas, il::int_t dim,bool local_unknowns, bool local_co_variables) : BieKernel<double>() {
     elas_ = elas;
     this->dof_dimension_ = dim;
     this->spatial_dimension_ = dim;
@@ -69,7 +69,10 @@ public:
                                         il::int_t i_s,
                                         const BoundaryElement &receiver_elt,
                                         il::int_t i_r) const override;
+
+
 };
+
 
 } // namespace bie
 
