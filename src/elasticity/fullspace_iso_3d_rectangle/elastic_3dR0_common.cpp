@@ -12,7 +12,11 @@
 #include <iostream>
 #include <il/linearAlgebra.h>
 #include <il/blas.h>
+<<<<<<<< HEAD:src/elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_common.cpp
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_common.h"
+========
+#include "elasticity/3d/elastic_3dR0_common.h"
+>>>>>>>> origin/Brice/dev:src/elasticity/3d/elastic_3dR0_common.cpp
 
 
 namespace bie{
