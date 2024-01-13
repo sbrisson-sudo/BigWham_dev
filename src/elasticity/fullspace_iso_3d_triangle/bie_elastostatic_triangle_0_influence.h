@@ -18,7 +18,6 @@
 
 #include "elastic_3dT0_element.h"
 
-
 namespace bie {
 
 template class BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>;
@@ -66,7 +65,7 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
 
   // get stress influence coefficients - in the local coordinate system of the
   // source element
-  auto stress = bie::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
+  il::StaticArray2D<double, 3, 6> stress = bie::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
 
   // normal vector at the receiver location in the reference system of the
   // source element
@@ -141,50 +140,46 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
     // i_r : integer for the collocation number where to compute the normal and
     //  stress in the receiver element outputs: column-major (fortran order)
     // for the different dd dofs
-
-    // get constitutive parameters
+//
+//    // get constitutive parameters
     double G = this->elas_.shear_modulus();
     double nu = this->elas_.poisson_ratio();
-
-    // get coordinates receiver cp
+//
+//    // get coordinates receiver cp
     auto el_cp_r = receiver_elt.collocation_points();
-
     // randomly perturb collocation point
-    il::StaticArray<double, 3> receiver_coor{0};
+    il::StaticArray<double, 3> receiver_coor{0.0};
     for (int i = 0; i < 3; i++) {
         receiver_coor[i] =el_cp_r(i_r, i) + sqrt(std::numeric_limits<double>::epsilon());
     }
 
     // get coordinates vertices of triangular source element
     auto el_vertices_s = source_elt.vertices();
-
     il::StaticArray2D<double, 3, 3> el_vertices_s_static{0};
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             el_vertices_s_static(i, j) = el_vertices_s(i, j);
         }
     }
-
     // get stress influence coefficients - in the local coordinate system of the
     // source element
-    auto stress = bie::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
-
-// rotation matrix of the source element
+    il::StaticArray2D<double, 3, 6> stress= bie::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
+////
+//////// rotation matrix of the source element
     auto R = source_elt.rotation_matrix();
     auto Rt= source_elt.rotation_matrix_t();
-
-    // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source
-    // element in the reference system of the source element
-    il::Array2D<double> DDs_to_stress_{3, 6, 0.0}; // traction vectors
-    il::Array2D<double> sigma_temp{3, 3, 0.0}; // temporary stress tensor
-
+////
+////    // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source
+////    // element in the reference system of the source element
+    il::Array2D<double> DDs_to_stress_{6, 3, 0.0}; // tress tensor  vectors
+    il::Array2D<double> sigma_temp{3,3,0.0}; // temporary stress tensor
+//
     for (int i = 0; i < 3; ++i) { // loop over the rows of Stress, i.e., over each
         // DD component effect
         // definition of temporary stress tensor
         // i = 0 : D1
         // i = 1 : D2
         // i = 2 : D3
-
         sigma_temp(0, 0) = stress(i, 0); // S11
         sigma_temp(0, 1) = stress(i, 3); // S12
         sigma_temp(0, 2) = stress(i, 4); // S13
@@ -194,26 +189,25 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
         sigma_temp(2, 0) = stress(i, 4); // S31
         sigma_temp(2, 1) = stress(i, 5); // S32
         sigma_temp(2, 2) = stress(i, 2); // S33
-
-        auto sigma_global = il::dot(Rt,il::dot(sigma_temp,R));
-
+//
+        auto sig_aux = il::dot(sigma_temp,R);
+        auto sigma_global = il::dot(Rt,sig_aux);
+//
         for (int j = 0; j < 3; ++j) {
-            // fill the traction vectors at receiver element cp due to (DD1,DD2,DD3)
-            // source element
-            DDs_to_stress_(j, i) = sigma_global(j,j);
+    //             fill the traction vectors at receiver element cp due to (DD1,DD2,DD3)
+    //             source element
+            DDs_to_stress_(j,i) = sigma_global(j,j);
         }
-        DDs_to_stress_(3, i) = sigma_global(0, 1);//s12
-        DDs_to_stress_(4, i) = sigma_global(0, 2);//s13
-        DDs_to_stress_(5, i) = sigma_global(1, 2); // s23
-
+        DDs_to_stress_(3,i) = sigma_global(0, 1);//s12
+        DDs_to_stress_(4,i) = sigma_global(0, 2);//s13
+        DDs_to_stress_(5,i) = sigma_global(1, 2); // s23
     }
-
-    // column major format
+//// coulmn major format
     std::vector<double> stnl(18, 0.);
     int k = 0;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 6; j++) {
-            stnl[k] = DDs_to_stress_(j,i);
+    for (int j = 0; j < 3; j++) {
+        for (int i = 0; i < 6; i++) {
+            stnl[k] =DDs_to_stress_(i,j);
             k++;
         }
     }

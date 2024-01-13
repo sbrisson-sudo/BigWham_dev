@@ -10,141 +10,294 @@
 #include <iostream>
 
 #include <il/linearAlgebra.h>
-#include <il/linearAlgebra/dense/blas/dot.h>
 #include <il/linearAlgebra/dense/norm.h>
 
 #include "elastic_3dT0_element.h"
 
 namespace bie {
 
-//    il::Array2D<double> traction_influence_3DT0(
-//            bie::FaceData &elem_data_s, // source element
-//            bie::FaceData &elem_data_r, // receiver element
-//            bie::ElasticProperties const &elas_, // elastic properties
-//            il::int_t local_global = 0){ // 0 if local-local, 1 if
-//            global-global
-//
-//        // get constitutive parameters
-//        double G = elas_.shear_modulus();
-//        double nu = elas_.poisson_ratio();
-//
-//        // get coordinates receiver cp
-//        il::Array2D<double> el_cp_r;
-//        el_cp_r = elem_data_r.collocation_points();
-//
-//        // get coordinates vertices of triangular source element
-//        il::Array2D<double> el_vertices_s;
-//        el_vertices_s = elem_data_s.getVertices();
-//
-//        // get stress influence coefficients - in the local coordinate system
-//        of the source element il::StaticArray2D<double, 3, 6> Stress; Stress =
-//        StressesKernelT0(el_cp_r,el_vertices_s,G,nu);
-//
-//        // index        ->    0    1    2    3    4    5
-//        // DD1 (shear)  -> | s11, s22, s33, s12, s13, s23  |
-//        // DD2 (shear)  -> | s11, s22, s33, s12, s13, s23  |
-//        // DD3 (normal) -> | s11, s22, s33, s12, s13, s23  |
-//
-//        // normal vector at the receiver location in the reference system of
-//        the source element il::Array2D<double> R_source =
-//        elem_data_s.rotationMatrix(true);
-////        il::Array2D<double> RT = transpose(R);
-//        il::Array<double> nr = elem_data_r.getNormal();
-//        nr = il::dot(R_source,nr);
-//
-//        // compute traction vectors at receiver element cp due to
-//        (DD1,DD2,DD3) source element
-//        // in the reference system of the source element
-//        il::Array2D<double> DDs_to_traction_local{3,3,0.0}; // traction
-//        vectors il::Array<double> traction_temp; // temporary traction vector
-//        il::Array2D<double> sigma_temp{3,3,0.0}; // temporary stress tensor
-//
-//        for (int i = 0; i < 3; ++i)
-//        { //loop over the rows of Stress, i.e., over each DD component effect
-//            // definition of temporary stress tensor
-//            sigma_temp(0,0) = Stress(i,0); // S11
-//            sigma_temp(0,1) = Stress(i,3); // S12
-//            sigma_temp(0,2) = Stress(i,4); // S13
-//            sigma_temp(1,0) = Stress(i,3); // S21
-//            sigma_temp(1,1) = Stress(i,1); // S22
-//            sigma_temp(1,2) = Stress(i,5); // S23
-//            sigma_temp(2,0) = Stress(i,4); // S31
-//            sigma_temp(2,1) = Stress(i,5); // S32
-//            sigma_temp(2,2) = Stress(i,2); // S33
-//
-//            // compute temporary traction vector
-//            traction_temp = il::dot(sigma_temp, nr);
-//            for (int j = 0; j < 3; ++j) {
-//                // fill the traction vectors at receiver element cp due to
-//                (DD1,DD2,DD3) source element DDs_to_traction_local(j,i) =
-//                traction_temp[j];
-//                // | t1/D1   t1/D2  t1/D3 |
-//                // | t2/D1   t2/D2  t2/D3 |
-//                // | t3/D1   t3/D2  t3/D3 |
-//                // local DD & local traction
-//                // both in the reference system of the source element
-//            }
-//        }
-//
-//        return
-//        change_local_global(DDs_to_traction_local,local_global,R_source,elem_data_r.rotationMatrix(true));
-//
-//        // | t1 due to D1   t1 due to D2  t1 due to D3 |
-//        // | t2 due to D1   t2 due to D2  t2 due to D3 |
-//        // | t3 due to D1   t3 due to D2  t3 due to D3 |
-//    }
-//
-//    il::Array2D<double> displacement_influence_3DT0(
-//            FaceData &elem_data_s, // source element
-//            FaceData &elem_data_r, // receiver element
-//            ElasticProperties const &elas_, // elastic properties
-//            il::int_t local_global = 0) // 0 if local-local, 1 if
-//            global-global
-//    {
-//
-//        // get constitutive parameters - only nu is needed
-//        double nu = elas_.poisson_ratio();
-//
-//        // get coordinates receiver cp
-//        il::Array2D<double> el_cp_r;
-//        el_cp_r = elem_data_r.collocation_points();
-//
-//        // get coordinates vertices of triangular source element
-//        il::Array2D<double> el_vertices_s;
-//        el_vertices_s = elem_data_s.getVertices();
-//
-//        // compute displacement components at receiver element cp due to
-//        (DD1,DD2,DD3) source element
-//        // in the reference system of the source element
-//
-//        il::StaticArray2D<double, 3, 3> DDs_to_Displacement_local;
-//        DDs_to_Displacement_local =
-//        DisplacementKernelT0(el_cp_r,el_vertices_s,nu);
-//        // index        ->    DD1 (shear)    DD2 (shear)     DD3 (normal)
-//        //   0      -> |       U1,            U1,             U1            |
-//        //   1      -> |       U2,            U2,             U2            |
-//        //   2      -> |       U3,            U3,             U3            |
-//
-//        // convert from static 2D array to dynamic, might be inefficient
-//        il::Array2D<double> X{3,3};
-//        for (int i = 0; i < 3; i++) {
-//            X(0,i) = DDs_to_Displacement_local(0,i);
-//            X(1,i) = DDs_to_Displacement_local(1,i);
-//            X(2,i) = DDs_to_Displacement_local(2,i);
-//        }
-//
-//        return
-//        change_local_global(X,local_global,elem_data_s.rotationMatrix(true),
-//        elem_data_r.rotationMatrix(true));
-//        // | U1/D1   U1/D2  U1/D3 |
-//        // | U2/D1   U2/D2  U2/D3 |
-//        // | U3/D1   U3/D2  U3/D3 |
-//    }
+// generic (and auxiliary) integrals first appearing for stress influence
+// coefficients
 
+// By order of appearance in stress influence coefficients due to DD1
+
+    double i5_Xi(il::StaticArray<double, 3> &delta, il::StaticArray<double, 3> &d,
+                 il::StaticArray<double, 3> &sinAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (delta[i] / d[i]) * sinAlpha[i];
+        }
+        return (1.0 / 3.0) * sum;
+    }
+
+    double i7_Xi_Xi_Xi(il::StaticArray<double, 3> &q, il::StaticArray<double, 3> &d,
+                       il::StaticArray<double, 3> &sinAlpha,
+                       il::StaticArray<double, 3> &cosAlpha,
+                       il::StaticArray<double, 3> &D,
+                       il::StaticArray<double, 3> &Lambda,
+                       il::StaticArray<double, 3> &delta) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (((pow(q[i], 2.0) / d[i]) * pow(sinAlpha[i], 2.0) -
+                     pow(cosAlpha[i], 2.0)) *
+                    D[i] +
+                    2.0 * sinAlpha[i] * cosAlpha[i] * q[i] * Lambda[i] +
+                    (1.0 / d[i]) *
+                    (3.0 - pow(sinAlpha[i], 2.0) +
+                     2.0 * (pow(q[i], 2.0) / d[i]) * pow(sinAlpha[i], 2.0)) *
+                    delta[i]) *
+                   sinAlpha[i];
+        }
+        return (1.0 / 15.0) * sum;
+    }
+
+    double i7_Xi_Zeta_Zeta(il::StaticArray<double, 3> &q,
+                           il::StaticArray<double, 3> &d,
+                           il::StaticArray<double, 3> &sinAlpha,
+                           il::StaticArray<double, 3> &cosAlpha,
+                           il::StaticArray<double, 3> &D,
+                           il::StaticArray<double, 3> &Lambda,
+                           il::StaticArray<double, 3> &delta) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (((pow(q[i], 2.0) / d[i]) * pow(cosAlpha[i], 2.0) -
+                     pow(sinAlpha[i], 2.0)) *
+                    D[i] -
+                    2.0 * sinAlpha[i] * cosAlpha[i] * q[i] * Lambda[i] +
+                    (1.0 / d[i]) *
+                    (pow(sinAlpha[i], 2.0) +
+                     2.0 * (pow(q[i], 2.0) / d[i]) * pow(cosAlpha[i], 2.0)) *
+                    delta[i]) *
+                   sinAlpha[i];
+        }
+        return (1.0 / 15.0) * sum;
+    }
+
+    double i7_Xi(il::StaticArray<double, 3> &d, il::StaticArray<double, 3> &D,
+                 il::StaticArray<double, 3> &delta,
+                 il::StaticArray<double, 3> &sinAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (1.0 / d[i]) * (D[i] + (2.0 / d[i]) * delta[i]) * sinAlpha[i];
+        }
+        return (1.0 / 15.0) * sum;
+    }
+
+    double i7_Xi_Xi_Zeta(il::StaticArray<double, 3> &q,
+                         il::StaticArray<double, 3> &d,
+                         il::StaticArray<double, 3> &sinAlpha,
+                         il::StaticArray<double, 3> &cosAlpha,
+                         il::StaticArray<double, 3> &D,
+                         il::StaticArray<double, 3> &Lambda,
+                         il::StaticArray<double, 3> &delta) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (((pow(q[i], 2.0) / d[i]) * pow(sinAlpha[i], 2.0) -
+                     pow(cosAlpha[i], 2.0)) *
+                    D[i] +
+                    2.0 * sinAlpha[i] * cosAlpha[i] * q[i] * Lambda[i] +
+                    (1.0 / d[i]) *
+                    (pow(cosAlpha[i], 2.0) +
+                     2.0 * (pow(q[i], 2.0) / d[i]) * pow(sinAlpha[i], 2.0)) *
+                    delta[i]) *
+                   cosAlpha[i];
+        }
+        return -(1.0 / 15.0) * sum;
+    }
+
+    double i5_Zeta(il::StaticArray<double, 3> &delta, il::StaticArray<double, 3> &d,
+                   il::StaticArray<double, 3> &cosAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (delta[i] / d[i]) * cosAlpha[i];
+        }
+        return -(1.0 / 3.0) * sum;
+    }
+
+    double i7_Xi_Xi_Aux(double &eta, il::StaticArray<double, 3> &cosAlpha,
+                        il::StaticArray<double, 3> &Lambda,
+                        il::StaticArray<double, 3> &sinAlpha,
+                        il::StaticArray<double, 3> &q,
+                        il::StaticArray<double, 3> &d,
+                        il::StaticArray<double, 3> &D,
+                        il::StaticArray<double, 3> &delta) {
+        double sum1 = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum1 += (cosAlpha[i] * Lambda[i] +
+                     sinAlpha[i] * (q[i] / d[i]) * (D[i] + (2.0 / d[i]) * delta[i])) *
+                    sinAlpha[i];
+        }
+        double sum2 = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum2 += (q[i] / d[i]) * delta[i];
+        }
+        return -(pow(eta, 2.0) / 15.0) * sum1 + (1.0 / 15.0) * sum2;
+    }
+
+    double i5_Zeta_Zeta_Aux(il::StaticArray<double, 3> &L,
+                            il::StaticArray<double, 3> &sinAlpha,
+                            il::StaticArray<double, 3> &q,
+                            il::StaticArray<double, 3> &d,
+                            il::StaticArray<double, 3> &delta,
+                            il::StaticArray<double, 3> &cosAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (L[i] * sinAlpha[i] - (q[i] / d[i]) * delta[i] * cosAlpha[i]) *
+                   cosAlpha[i];
+        }
+        return (1.0 / 3.0) * sum;
+    }
+
+    double i7_Xi_Zeta(il::StaticArray<double, 3> &sinAlpha,
+                      il::StaticArray<double, 3> &Lambda,
+                      il::StaticArray<double, 3> &cosAlpha,
+                      il::StaticArray<double, 3> &q, il::StaticArray<double, 3> &d,
+                      il::StaticArray<double, 3> &D,
+                      il::StaticArray<double, 3> &delta) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (sinAlpha[i] * Lambda[i] -
+                    cosAlpha[i] * (q[i] / d[i]) * (D[i] + (2.0 / d[i]) * delta[i])) *
+                   sinAlpha[i];
+        }
+        return -(1.0 / 15.0) * sum;
+    }
+
+    double i5_Xi_Zeta(il::StaticArray<double, 3> &L,
+                      il::StaticArray<double, 3> &sinAlpha,
+                      il::StaticArray<double, 3> &q, il::StaticArray<double, 3> &d,
+                      il::StaticArray<double, 3> &delta,
+                      il::StaticArray<double, 3> &cosAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (L[i] * sinAlpha[i] - (q[i] / d[i]) * delta[i] * cosAlpha[i]) *
+                   sinAlpha[i];
+        }
+        return -(1.0 / 3.0) * sum;
+    }
+
+// By order of appearance in stress influence coefficients due to DD2
+
+    double i7_Zeta_Zeta_Zeta(il::StaticArray<double, 3> &q,
+                             il::StaticArray<double, 3> &d,
+                             il::StaticArray<double, 3> &sinAlpha,
+                             il::StaticArray<double, 3> &cosAlpha,
+                             il::StaticArray<double, 3> &D,
+                             il::StaticArray<double, 3> &Lambda,
+                             il::StaticArray<double, 3> &delta) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (((pow(q[i], 2.0) / d[i]) * pow(cosAlpha[i], 2.0) -
+                     pow(sinAlpha[i], 2.0)) *
+                    D[i] -
+                    2.0 * sinAlpha[i] * cosAlpha[i] * q[i] * Lambda[i] +
+                    (1.0 / d[i]) *
+                    (3.0 - pow(cosAlpha[i], 2.0) +
+                     2.0 * (pow(q[i], 2.0) / d[i]) * pow(cosAlpha[i], 2.0)) *
+                    delta[i]) *
+                   cosAlpha[i];
+        }
+        return -(1.0 / 15.0) * sum;
+    }
+
+    double i7_Zeta(il::StaticArray<double, 3> &d, il::StaticArray<double, 3> &D,
+                   il::StaticArray<double, 3> &delta,
+                   il::StaticArray<double, 3> &cosAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (1.0 / d[i]) * (D[i] + (2.0 / d[i]) * delta[i]) * cosAlpha[i];
+        }
+        return -(1.0 / 15.0) * sum;
+    }
+
+    double i7_Zeta_Zeta_Aux(double &eta, il::StaticArray<double, 3> &cosAlpha,
+                            il::StaticArray<double, 3> &Lambda,
+                            il::StaticArray<double, 3> &sinAlpha,
+                            il::StaticArray<double, 3> &q,
+                            il::StaticArray<double, 3> &d,
+                            il::StaticArray<double, 3> &D,
+                            il::StaticArray<double, 3> &delta) {
+        double sum1 = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum1 += (sinAlpha[i] * Lambda[i] -
+                     cosAlpha[i] * (q[i] / d[i]) * (D[i] + (2.0 / d[i]) * delta[i])) *
+                    cosAlpha[i];
+        }
+        double sum2 = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum2 += (q[i] / d[i]) * delta[i];
+        }
+        return (pow(eta, 2.0) / 15.0) * sum1 + (1.0 / 15.0) * sum2;
+    }
+
+    double i5_Xi_Xi_Aux(il::StaticArray<double, 3> &L,
+                        il::StaticArray<double, 3> &sinAlpha,
+                        il::StaticArray<double, 3> &q,
+                        il::StaticArray<double, 3> &d,
+                        il::StaticArray<double, 3> &delta,
+                        il::StaticArray<double, 3> &cosAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (L[i] * cosAlpha[i] + (q[i] / d[i]) * delta[i] * sinAlpha[i]) *
+                   sinAlpha[i];
+        }
+        return -(1.0 / 3.0) * sum;
+    }
+
+// By order of appearance in stress influence coefficients due to DD3
+
+    double i5_Aux(il::StaticArray<double, 3> &q, il::StaticArray<double, 3> &d,
+                  il::StaticArray<double, 3> &delta) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += (q[i] / d[i]) * delta[i];
+        }
+        return (1.0 / 3.0) * sum;
+    }
+
+    double i7_Aux(double &eta, il::StaticArray<double, 3> &q,
+                  il::StaticArray<double, 3> &d, il::StaticArray<double, 3> &D,
+                  il::StaticArray<double, 3> &delta) {
+        double sum1 = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum1 += (q[i] / d[i]) * (D[i] + (2.0 / d[i]) * delta[i]);
+        }
+        double sum2 = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum2 += (q[i] / d[i]) * delta[i];
+        }
+        return (pow(eta, 2.0) / 15.0) * sum1 + (1.0 / 5.0) * sum2;
+    }
+
+// generic (and auxiliary) integrals first appearing for displacement influence
+// coefficients
+
+// By order of appearance in displacement influence coefficients due to DD1
+
+    double i3_Xi(il::StaticArray<double, 3> &chi,
+                 il::StaticArray<double, 3> &sinAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += chi[i] * sinAlpha[i];
+        }
+        return sum;
+    }
+
+// By order of appearance in displacement influence coefficients due to DD2
+
+    double i3_Zeta(il::StaticArray<double, 3> &chi,
+                   il::StaticArray<double, 3> &cosAlpha) {
+        double sum = 0.0;
+        for (int i = 0; i < 3; i++) {
+            sum += chi[i] * cosAlpha[i];
+        }
+        return -sum;
+    }
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Fundamental stress kernel = stress influence coefficients
-il::StaticArray2D<double, 3, 6>
-StressesKernelT0(il::StaticArray<double, 3> &x,
-                 il::StaticArray2D<double, 3, 3> &xv, double &G, double &nu) {
+il::StaticArray2D<double, 3, 6> StressesKernelT0(il::StaticArray<double, 3> &x,
+                 il::StaticArray2D<double, 3, 3> &xv,const double G,const double nu) {
   // this routine is based on the works of Nintcheu Fata (2009,2011)
 
   // inputs
@@ -596,8 +749,7 @@ StressesKernelT0(il::StaticArray<double, 3> &x,
 
   // And finally, the stress influence coefficients
 
-  double prefactor =
-      (G / (4.0 * il::pi * (1.0 - nu))); // common prefactor of all coefficients
+  double prefactor =(G / (4.0 * il::pi * (1.0 - nu))); // common prefactor of all coefficients
 
   il::StaticArray2D<double, 3, 6> Stress; // output
 
@@ -678,263 +830,11 @@ StressesKernelT0(il::StaticArray<double, 3> &x,
   return Stress;
 }
 
-// generic (and auxiliary) integrals first appearing for stress influence
-// coefficients
-
-// By order of appearance in stress influence coefficients due to DD1
-
-double i5_Xi(il::StaticArray<double, 3> &delta, il::StaticArray<double, 3> &d,
-             il::StaticArray<double, 3> &sinAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (delta[i] / d[i]) * sinAlpha[i];
-  }
-  return (1.0 / 3.0) * sum;
-}
-
-double i7_Xi_Xi_Xi(il::StaticArray<double, 3> &q, il::StaticArray<double, 3> &d,
-                   il::StaticArray<double, 3> &sinAlpha,
-                   il::StaticArray<double, 3> &cosAlpha,
-                   il::StaticArray<double, 3> &D,
-                   il::StaticArray<double, 3> &Lambda,
-                   il::StaticArray<double, 3> &delta) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (((pow(q[i], 2.0) / d[i]) * pow(sinAlpha[i], 2.0) -
-             pow(cosAlpha[i], 2.0)) *
-                D[i] +
-            2.0 * sinAlpha[i] * cosAlpha[i] * q[i] * Lambda[i] +
-            (1.0 / d[i]) *
-                (3.0 - pow(sinAlpha[i], 2.0) +
-                 2.0 * (pow(q[i], 2.0) / d[i]) * pow(sinAlpha[i], 2.0)) *
-                delta[i]) *
-           sinAlpha[i];
-  }
-  return (1.0 / 15.0) * sum;
-}
-
-double i7_Xi_Zeta_Zeta(il::StaticArray<double, 3> &q,
-                       il::StaticArray<double, 3> &d,
-                       il::StaticArray<double, 3> &sinAlpha,
-                       il::StaticArray<double, 3> &cosAlpha,
-                       il::StaticArray<double, 3> &D,
-                       il::StaticArray<double, 3> &Lambda,
-                       il::StaticArray<double, 3> &delta) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (((pow(q[i], 2.0) / d[i]) * pow(cosAlpha[i], 2.0) -
-             pow(sinAlpha[i], 2.0)) *
-                D[i] -
-            2.0 * sinAlpha[i] * cosAlpha[i] * q[i] * Lambda[i] +
-            (1.0 / d[i]) *
-                (pow(sinAlpha[i], 2.0) +
-                 2.0 * (pow(q[i], 2.0) / d[i]) * pow(cosAlpha[i], 2.0)) *
-                delta[i]) *
-           sinAlpha[i];
-  }
-  return (1.0 / 15.0) * sum;
-}
-
-double i7_Xi(il::StaticArray<double, 3> &d, il::StaticArray<double, 3> &D,
-             il::StaticArray<double, 3> &delta,
-             il::StaticArray<double, 3> &sinAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (1.0 / d[i]) * (D[i] + (2.0 / d[i]) * delta[i]) * sinAlpha[i];
-  }
-  return (1.0 / 15.0) * sum;
-}
-
-double i7_Xi_Xi_Zeta(il::StaticArray<double, 3> &q,
-                     il::StaticArray<double, 3> &d,
-                     il::StaticArray<double, 3> &sinAlpha,
-                     il::StaticArray<double, 3> &cosAlpha,
-                     il::StaticArray<double, 3> &D,
-                     il::StaticArray<double, 3> &Lambda,
-                     il::StaticArray<double, 3> &delta) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (((pow(q[i], 2.0) / d[i]) * pow(sinAlpha[i], 2.0) -
-             pow(cosAlpha[i], 2.0)) *
-                D[i] +
-            2.0 * sinAlpha[i] * cosAlpha[i] * q[i] * Lambda[i] +
-            (1.0 / d[i]) *
-                (pow(cosAlpha[i], 2.0) +
-                 2.0 * (pow(q[i], 2.0) / d[i]) * pow(sinAlpha[i], 2.0)) *
-                delta[i]) *
-           cosAlpha[i];
-  }
-  return -(1.0 / 15.0) * sum;
-}
-
-double i5_Zeta(il::StaticArray<double, 3> &delta, il::StaticArray<double, 3> &d,
-               il::StaticArray<double, 3> &cosAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (delta[i] / d[i]) * cosAlpha[i];
-  }
-  return -(1.0 / 3.0) * sum;
-}
-
-double i7_Xi_Xi_Aux(double &eta, il::StaticArray<double, 3> &cosAlpha,
-                    il::StaticArray<double, 3> &Lambda,
-                    il::StaticArray<double, 3> &sinAlpha,
-                    il::StaticArray<double, 3> &q,
-                    il::StaticArray<double, 3> &d,
-                    il::StaticArray<double, 3> &D,
-                    il::StaticArray<double, 3> &delta) {
-  double sum1 = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum1 += (cosAlpha[i] * Lambda[i] +
-             sinAlpha[i] * (q[i] / d[i]) * (D[i] + (2.0 / d[i]) * delta[i])) *
-            sinAlpha[i];
-  }
-  double sum2 = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum2 += (q[i] / d[i]) * delta[i];
-  }
-  return -(pow(eta, 2.0) / 15.0) * sum1 + (1.0 / 15.0) * sum2;
-}
-
-double i5_Zeta_Zeta_Aux(il::StaticArray<double, 3> &L,
-                        il::StaticArray<double, 3> &sinAlpha,
-                        il::StaticArray<double, 3> &q,
-                        il::StaticArray<double, 3> &d,
-                        il::StaticArray<double, 3> &delta,
-                        il::StaticArray<double, 3> &cosAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (L[i] * sinAlpha[i] - (q[i] / d[i]) * delta[i] * cosAlpha[i]) *
-           cosAlpha[i];
-  }
-  return (1.0 / 3.0) * sum;
-}
-
-double i7_Xi_Zeta(il::StaticArray<double, 3> &sinAlpha,
-                  il::StaticArray<double, 3> &Lambda,
-                  il::StaticArray<double, 3> &cosAlpha,
-                  il::StaticArray<double, 3> &q, il::StaticArray<double, 3> &d,
-                  il::StaticArray<double, 3> &D,
-                  il::StaticArray<double, 3> &delta) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (sinAlpha[i] * Lambda[i] -
-            cosAlpha[i] * (q[i] / d[i]) * (D[i] + (2.0 / d[i]) * delta[i])) *
-           sinAlpha[i];
-  }
-  return -(1.0 / 15.0) * sum;
-}
-
-double i5_Xi_Zeta(il::StaticArray<double, 3> &L,
-                  il::StaticArray<double, 3> &sinAlpha,
-                  il::StaticArray<double, 3> &q, il::StaticArray<double, 3> &d,
-                  il::StaticArray<double, 3> &delta,
-                  il::StaticArray<double, 3> &cosAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (L[i] * sinAlpha[i] - (q[i] / d[i]) * delta[i] * cosAlpha[i]) *
-           sinAlpha[i];
-  }
-  return -(1.0 / 3.0) * sum;
-}
-
-// By order of appearance in stress influence coefficients due to DD2
-
-double i7_Zeta_Zeta_Zeta(il::StaticArray<double, 3> &q,
-                         il::StaticArray<double, 3> &d,
-                         il::StaticArray<double, 3> &sinAlpha,
-                         il::StaticArray<double, 3> &cosAlpha,
-                         il::StaticArray<double, 3> &D,
-                         il::StaticArray<double, 3> &Lambda,
-                         il::StaticArray<double, 3> &delta) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (((pow(q[i], 2.0) / d[i]) * pow(cosAlpha[i], 2.0) -
-             pow(sinAlpha[i], 2.0)) *
-                D[i] -
-            2.0 * sinAlpha[i] * cosAlpha[i] * q[i] * Lambda[i] +
-            (1.0 / d[i]) *
-                (3.0 - pow(cosAlpha[i], 2.0) +
-                 2.0 * (pow(q[i], 2.0) / d[i]) * pow(cosAlpha[i], 2.0)) *
-                delta[i]) *
-           cosAlpha[i];
-  }
-  return -(1.0 / 15.0) * sum;
-}
-
-double i7_Zeta(il::StaticArray<double, 3> &d, il::StaticArray<double, 3> &D,
-               il::StaticArray<double, 3> &delta,
-               il::StaticArray<double, 3> &cosAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (1.0 / d[i]) * (D[i] + (2.0 / d[i]) * delta[i]) * cosAlpha[i];
-  }
-  return -(1.0 / 15.0) * sum;
-}
-
-double i7_Zeta_Zeta_Aux(double &eta, il::StaticArray<double, 3> &cosAlpha,
-                        il::StaticArray<double, 3> &Lambda,
-                        il::StaticArray<double, 3> &sinAlpha,
-                        il::StaticArray<double, 3> &q,
-                        il::StaticArray<double, 3> &d,
-                        il::StaticArray<double, 3> &D,
-                        il::StaticArray<double, 3> &delta) {
-  double sum1 = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum1 += (sinAlpha[i] * Lambda[i] -
-             cosAlpha[i] * (q[i] / d[i]) * (D[i] + (2.0 / d[i]) * delta[i])) *
-            cosAlpha[i];
-  }
-  double sum2 = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum2 += (q[i] / d[i]) * delta[i];
-  }
-  return (pow(eta, 2.0) / 15.0) * sum1 + (1.0 / 15.0) * sum2;
-}
-
-double i5_Xi_Xi_Aux(il::StaticArray<double, 3> &L,
-                    il::StaticArray<double, 3> &sinAlpha,
-                    il::StaticArray<double, 3> &q,
-                    il::StaticArray<double, 3> &d,
-                    il::StaticArray<double, 3> &delta,
-                    il::StaticArray<double, 3> &cosAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (L[i] * cosAlpha[i] + (q[i] / d[i]) * delta[i] * sinAlpha[i]) *
-           sinAlpha[i];
-  }
-  return -(1.0 / 3.0) * sum;
-}
-
-// By order of appearance in stress influence coefficients due to DD3
-
-double i5_Aux(il::StaticArray<double, 3> &q, il::StaticArray<double, 3> &d,
-              il::StaticArray<double, 3> &delta) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += (q[i] / d[i]) * delta[i];
-  }
-  return (1.0 / 3.0) * sum;
-}
-
-double i7_Aux(double &eta, il::StaticArray<double, 3> &q,
-              il::StaticArray<double, 3> &d, il::StaticArray<double, 3> &D,
-              il::StaticArray<double, 3> &delta) {
-  double sum1 = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum1 += (q[i] / d[i]) * (D[i] + (2.0 / d[i]) * delta[i]);
-  }
-  double sum2 = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum2 += (q[i] / d[i]) * delta[i];
-  }
-  return (pow(eta, 2.0) / 15.0) * sum1 + (1.0 / 5.0) * sum2;
-}
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++//
 // Fundamental displacement kernel = displacement influence coefficients
 il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::StaticArray<double, 3> &x,
                                                      il::StaticArray2D<double, 3, 3> &xv,
-                                                     double &nu) {
+                                                     const double nu) {
 
   // this routine is based on the works of Nintcheu Fata (2009,2011)
 
@@ -1425,227 +1325,4 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::StaticArray<double, 3> 
   //   2      -> |       U3,            U3,             U3            |
 }
 
-// generic (and auxiliary) integrals first appearing for displacement influence
-// coefficients
-
-// By order of appearance in displacement influence coefficients due to DD1
-
-double i3_Xi(il::StaticArray<double, 3> &chi,
-             il::StaticArray<double, 3> &sinAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += chi[i] * sinAlpha[i];
-  }
-  return sum;
-}
-
-// By order of appearance in displacement influence coefficients due to DD2
-
-double i3_Zeta(il::StaticArray<double, 3> &chi,
-               il::StaticArray<double, 3> &cosAlpha) {
-  double sum = 0.0;
-  for (int i = 0; i < 3; i++) {
-    sum += chi[i] * cosAlpha[i];
-  }
-  return -sum;
-}
-
-// il::Array2D<double> change_local_global(const il::Array2D<double> &A,
-//                                         il::int_t local_global,
-//                                         const il::Array2D<double> &R_source,
-//                                         const il::Array2D<double>
-//                                         &R_receiver) {
-//   // Note: all inputs and output can be static arrays instead, all are 3-by-3
-//   // matrices
-
-//   // Input:
-//   // - A: is a 3-by-3 matrix such that t = A*d, where t can be the traction
-//   // vector (or the displacement vector) the collocation point of the
-//   receiver
-//   // element (or at the observation point), and d is the displacement
-//   // discontinuity vector at the node of the source element. The matrix A is
-//   // such that both t and d are expressed in the local reference system of
-//   the
-//   // source element
-//   // - local_global:
-//   //      - 0 if d and t want to be expressed at the local reference system
-//   of
-//   //      the source element an the local reference system of the receiver
-//   //      element, respectively
-//   //      - 1 if d and t want to be expressed at the global reference system
-//   // - R_source: is a 3-by-3 rotation matrix that goes from the global
-//   reference
-//   // system to the local reference system of the source element
-//   // - R_receiver: is a 3-by-3 rotation matrix that goes from the global
-//   // reference system to the local reference system of the receiver element
-//   //
-//   // Output:
-//   // The 3-by-3 matrix A (input), but rotated as wished
-
-//   il::Array2D<double> A_rotated{3, 3, 0.};
-//   il::Array2D<double> R_source_transposed{3, 3, 0.};
-
-//   // transpose R_source
-//   for (il::int_t i = 0; i < 3; i++) {
-//     for (il::int_t j = 0; j < 3; j++) {
-//       R_source_transposed(j, i) = R_source(i, j);
-//     }
-//   }
-
-//   if (local_global == 0) // local-local
-//   {
-//     A_rotated = il::dot(R_source_transposed, A);
-//     A_rotated = il::dot(R_receiver, A_rotated);
-//   } else // global-global
-//   {
-//     A_rotated = il::dot(A, R_source);
-//     A_rotated = il::dot(R_source_transposed, A_rotated);
-//   }
-
-//   return A_rotated;
-// }
-
-//    il::Array<double> point_stress_3DT0(il::Array<double> &observ_pt,FaceData
-//    &elem_data_s, // source element
-//            il::Array<double> &dd,
-//            ElasticProperties const &elas_ // elastic properties
-//    )
-//    {
-//        /*
-//         * It returns the stress components:
-//         * S11, S22, S33, S12, S13, S23
-//         * expressed in the global reference system
-//         */
-//        double G = elas_.shear_modulus(), nu = elas_.poisson_ratio();
-//
-//        // get coordinates vertices of triangular source element
-//        il::Array2D<double> el_vertices_s;
-//        el_vertices_s = elem_data_s.getVertices();
-//
-//        // observation point coordinates from 1D array to 2D array
-//        il::Array2D<double> x{1,3,0.};
-//        for (int i = 0; i < 3; ++i) { x(0,i) = observ_pt[i];}
-//
-//        // get stress influence coefficients - in the local reference system
-//        of the source element il::StaticArray2D<double, 3, 6>
-//        stress_influence; stress_influence =
-//        StressesKernelT0(x,el_vertices_s,G,nu);
-//        // Note:
-//        // Stress is in the reference system of the source element
-//        // index        ->    0    1    2    3    4    5
-//        // DD1 (shear)  -> | s11, s22, s33, s12, s13, s23  |
-//        // DD2 (shear)  -> | s11, s22, s33, s12, s13, s23  |
-//        // DD3 (normal) -> | s11, s22, s33, s12, s13, s23  |
-//
-//        // compute the stress tensor at the observation point in the local
-//        reference system of the source element il::Array2D<double>
-//        stress_tensor_local{3,3,0.};
-//        // S11
-//        stress_tensor_local(0,0) = stress_influence(0,0) * dd[0] +
-//        stress_influence(1,0) * dd[1] + stress_influence(2,0) * dd[2];
-//        // s12
-//        stress_tensor_local(0,1) = stress_influence(0,3) * dd[0] +
-//        stress_influence(1,3) * dd[1] + stress_influence(2,3) * dd[2];
-//        // s13
-//        stress_tensor_local(0,2) = stress_influence(0,4) * dd[0] +
-//        stress_influence(1,4) * dd[1] + stress_influence(2,4) * dd[2];
-//        // s21 = s12
-//        stress_tensor_local(1,0) = stress_tensor_local(0,1);
-//        // s22
-//        stress_tensor_local(1,1) = stress_influence(0,1) * dd[0] +
-//        stress_influence(1,1) * dd[1] + stress_influence(2,1) * dd[2];
-//        // s23
-//        stress_tensor_local(1,2) = stress_influence(0,5) * dd[0] +
-//        stress_influence(1,5) * dd[1] + stress_influence(2,5) * dd[2] ;
-//        // s31 = s13
-//        stress_tensor_local(2,0) = stress_tensor_local(0,2);
-//        // s32 = s23
-//        stress_tensor_local(2,1) = stress_tensor_local(1,2);
-//        // s33
-//        stress_tensor_local(2,2) = stress_influence(0,2) * dd[0] +
-//        stress_influence(1,2) * dd[1] + stress_influence(2,2) * dd[2] ;
-//
-//        // rotation matrix from local to global
-//        il::Array2D<double> R_source = elem_data_s.rotationMatrix(false); //
-//        false: R(l->g)
-//        // transpose of rotation matrix, or from global to local
-//        il::Array2D<double> R_source_transposed =
-//        elem_data_s.rotationMatrix(true); // true: R(g->l)
-//
-////        il::Array2D<double> stress_tensor_global =
-/// il::dot(R_source_transposed, il::dot(stress_tensor_local, R_source));
-//        il::Array2D<double> stress_tensor_global = il::dot(R_source,
-//        il::dot(stress_tensor_local, R_source_transposed));
-//
-//        il::Array<double> stress_at_point{6,0.};
-//        stress_at_point[0] = stress_tensor_global(0,0) ; // s11
-//        stress_at_point[1] = stress_tensor_global(1,1) ; // s22
-//        stress_at_point[2] = stress_tensor_global(2,2) ; // s33
-//        stress_at_point[3] = stress_tensor_global(0,1) ; // s12
-//        stress_at_point[4] = stress_tensor_global(0,2) ; // s13
-//        stress_at_point[5] = stress_tensor_global(1,2) ; // s23
-//
-//        return stress_at_point;
-//    }
-
-// il::Array<double>
-// point_displacement_3DT0(il::Array<double> &observ_pt,
-//                         FaceData &elem_data_s, // source element
-//                         il::Array<double> &dd,
-//                         ElasticProperties const &elas_ // elastic properties
-// ) {
-//   /*
-//    * It returns the displacement components:
-//    * u_xx, u_yy, u_zz
-//    * expressed in the global reference system
-//    *
-//    */
-
-//   double G = elas_.shear_modulus(), nu = elas_.poisson_ratio();
-
-//   // get coordinates vertices of triangular source element
-//   il::Array2D<double> el_vertices_s;
-//   el_vertices_s = elem_data_s.getVertices();
-
-//   // observation point coordinates from 1D array to 2D array
-//   il::Array2D<double> x{1, 3, 0.};
-//   for (int i = 0; i < 3; ++i) {
-//     x(0, i) = observ_pt[i];
-//   }
-
-//   // get stress influence coefficients - in the local reference system of the
-//   // source element
-//   il::StaticArray2D<double, 3, 3> disp_influence_aux =
-//       DisplacementKernelT0(x, el_vertices_s, nu);
-//   il::Array2D<double> disp_influence{3, 3};
-//   for (int j = 0; j < 3; j++) {
-//     for (int i = 0; i < 3; i++) {
-//       disp_influence(i, j) = disp_influence_aux(i, j);
-//     }
-//   }
-//   // Note:
-//   // expressed in the reference system of the DD element
-//   // index        ->    DD1 (shear)    DD2 (shear)     DD3 (normal)
-//   //   0      -> |       U1,            U1,             U1            |
-//   //   1      -> |       U2,            U2,             U2            |
-//   //   2      -> |       U3,            U3,             U3            |
-
-//   // Apply immediately the DD in order to get a displacement vector in the
-//   // reference system local to the source element
-//   il::Array<double> displacement_at_point_local = il::dot(disp_influence,
-//   dd);
-
-//   // rotation matrix from local to global
-//   il::Array2D<double> R_source =
-//       elem_data_s.rotationMatrix(false); // false: R(l->g)
-//   // transpose of rotation matrix, or from global to local
-//   il::Array2D<double> R_source_transposed =
-//       elem_data_s.rotationMatrix(true); // true: R(g->l)
-
-//   // Get the displacements in the global reference system
-//   il::Array<double> displacement_at_point =
-//       il::dot(R_source_transposed, displacement_at_point_local);
-
-//   return displacement_at_point;
-// }
 } // namespace bie
