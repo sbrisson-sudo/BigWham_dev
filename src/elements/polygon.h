@@ -83,8 +83,7 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
   this->vertices_.Resize(num_vertices_, spatial_dimension_);
   //
   for (il::int_t j = 0; j < spatial_dimension_; j++) {
-    this->centroid_[j] =
-        0; // always reset centroid when setting the coordinates
+    this->centroid_[j] =0; // always reset centroid when setting the coordinates
     for (il::int_t i = 0; i < num_vertices_; i++) {
       this->vertices_(i, j) = xv(i, j);
     }

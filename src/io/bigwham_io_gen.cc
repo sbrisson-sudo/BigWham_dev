@@ -516,10 +516,17 @@ il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coo
 
     switch (spatial_dimension_) {
         case 2 : {
-            mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bie::CreateMeshFromVect<bie::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            break;
         }
         case 3: {
-            mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bie::CreateMeshFromVect<bie::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            break;
+        }
+        default:
+        {
+            std::cout << "Invalid spatial_dimension ! \n";
+            break;
         }
     }
 
@@ -579,10 +586,17 @@ il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_ob
 
     switch (spatial_dimension_) {
         case 2 : {
-            mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bie::CreateMeshFromVect<bie::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            break;
         }
         case 3: {
-            mesh_obs = bie::CreateUniqueMeshFromVect<bie::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bie::CreateMeshFromVect<bie::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            break;
+        }
+        default:
+        {
+            std::cout << "Invalid spatial_dimension ! \n";
+            break;
         }
     }
 

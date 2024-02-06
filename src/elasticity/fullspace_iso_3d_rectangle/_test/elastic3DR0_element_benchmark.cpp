@@ -10,7 +10,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include "elastic3DR0_element_benchmark.h"
-#include "penny_shaped_crack_analytical_sol.h"
+#include "elasticity/_test/penny_shaped_crack_analytical_sol.h"
 #include <BigWhamIO.h>
 
 //--------------------------------------------------------------------------

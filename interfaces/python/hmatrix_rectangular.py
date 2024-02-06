@@ -1,3 +1,19 @@
+"""
+ This file is part of BigWham.
+
+ Created by Ankit Gupta
+ Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+ Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
+ file for more details.
+
+ last modifications ::   2024
+
+#######################################################################################
+#       IMPORTANT:                                                                    #
+#       to compile the binding use python >= 3.7                                      #
+#       the interpreter for the .py script should be the same as compile time         #
+#######################################################################################
+"""
 import numpy as np
 from scipy.sparse.linalg import LinearOperator
 

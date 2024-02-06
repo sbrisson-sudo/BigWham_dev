@@ -849,8 +849,8 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::StaticArray<double, 3> 
   // (note the shear modulus does not enter here)
   // output
   //   Displacement = 3 x 3 matrix with the displacement influence coefficients
-  //   arranged as: U1, U2, U3 -> for rows DD1 (shear), DD2 (shear), DD3
-  //   (normal) -> for columns
+  //   arranged as: U1, U2, U3 -> for rows
+  //   DD1 (shear), DD2 (shear), DD3 (normal) -> for columns
 
   double eps_tol = 2.22045e-16; // parameter used for "if conditions" involving
                                 // inequalities due to numerical precision
@@ -1099,7 +1099,7 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::StaticArray<double, 3> 
   // the limits, I understand the case of the edge, but not the cases for the
   // vertices. I just coded up Brice's solution for now, but I didn't include
   // the case inside the element and the case right at the vertices
-  il::StaticArray<double, 3> gamma;
+  il::StaticArray<double, 3> gamma{0.};
 
   if (id == 1) {
     // if the projected source/receiver point lies on vertex 1

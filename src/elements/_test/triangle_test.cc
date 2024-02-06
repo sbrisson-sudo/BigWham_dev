@@ -125,6 +125,32 @@ TEST(triangle, triangle_0_9) {
 }
 /* -------------------------------------------------------------------------- */
 
+
+TEST(triangle, triangle_0_10) {
+    // check tangent 2
+    il::Array2D<double> xyz{3, 3, 2.0};
+    xyz(0, 0) = 1; xyz(1, 0) = 3.;
+    xyz(2, 1) = 4.;
+    bie::Triangle<0> tri0;
+    tri0.SetElement(xyz);
+    il::Array<double> P1{3},P2{3},P3{3};
+    for (il::int_t j=0;j<3;j++){
+        P1[j]=xyz(0,j)-xyz(0,j);
+        P2[j]=xyz(1,j)-xyz(0,j);
+        P3[j]=xyz(2,j)-xyz(0,j);
+    }
+    auto P1a = tri0.ConvertToLocal(P1);
+    auto P2a = tri0.ConvertToLocal(P2);
+    auto P3a = tri0.ConvertToLocal(P3);
+    std::cout <<" P1 local " << P1a[0] <<" |  " << P1a[1] <<" |  " << P1a[2] <<"\n";
+    std::cout <<" P2 local " << P2a[0] <<" |  " << P2a[1] <<" |  " << P2a[2] <<"\n";
+    std::cout <<" P3 local " << P3a[0] <<" |  " << P3a[1] <<" |  " << P3a[2] <<"\n";
+
+    ASSERT_TRUE(P2a[0] == 2 && P2a[1] == 0 && P2a[2] == 0);
+}
+/* -------------------------------------------------------------------------- */
+
+
 TEST(triangle, triangle_2_0) {
   // check # nodes
   il::Array2D<double> xyz{3, 3, 0.0};

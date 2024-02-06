@@ -254,7 +254,6 @@ TEST(bigwham_io_gen_2d, 2DP0_3) {
         std::cout << "x " << obs_coor[2*i] << " y " << obs_coor[2*i+1] << "\n";
     }
     il::Array<double> test_disp= my_io.ComputeDisplacements(obs_coor, x.view());
-    il::Array<double> test_stress= my_io.ComputeStresses(obs_coor, x.view());
 
     bool tt = true;
     for (il::int_t  i=0;i<n_obs;i++){
@@ -263,6 +262,7 @@ TEST(bigwham_io_gen_2d, 2DP0_3) {
         std::cout << "u_y " << test_disp[i*2+1] <<"\n";
     }
 
+    il::Array<double> test_stress= my_io.ComputeStresses(obs_coor, x.view());
     for (il::int_t  i=0;i<n_obs;i++){
         std::cout << "s_xx " << test_stress[i*3] <<"\n";
         std::cout << "s_yy " << test_stress[i*3+1] <<"\n";

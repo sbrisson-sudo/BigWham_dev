@@ -167,7 +167,7 @@ if(BIGWHAM_TESTING)
         il/gtest/src/gtest-all.cc
             src/elasticity/_test/penny_shaped_crack_analytical_sol.cpp
             src/core/_test/FaceData_tests.cpp
-            src/elasticity/_test/elastic3DR0_element_tests.cpp
+            src/elasticity/fullspace_iso_3d_rectangle/_test/elastic3DR0_element_tests.cpp
          # src/_test/elastic3DR0_element_benchmark.cpp
             src/elasticity/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
             src/elasticity/_test/elastic_square_matrix_generator_test.cc
@@ -179,15 +179,15 @@ if(BIGWHAM_TESTING)
             src/elements/_test/point_test.cc
             src/elements/_test/segment_test.cc
             src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc
-            src/elasticity/_test/segment0_kernels_test.cc
-            src/elasticity/_test/segment0_sp3d_test.cc
-            src/elasticity/_test/rectangle0_kernels_test.cc
-            src/elasticity/_test/rectangle0_mode1_kernels_test.cc
-            src/elasticity/_test/triangle0_kernels_test.cc
+            src/elasticity/fullspace_iso_2d_segment/_test/segment0_kernels_test.cc
+            src/elasticity/fullspace_iso_sp3d_segment/_test/segment0_sp3d_test.cc
+            src/elasticity/fullspace_iso_3d_rectangle/_test/rectangle0_kernels_test.cc
+            src/elasticity/fullspace_iso_3d_rectangle/_test/rectangle0_mode1_kernels_test.cc
+            src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_kernels_test.cc
             src/io/_test/bigwham_io_helper_test.cc
             src/io/_test/bigwham_io_gen_test_2d.cc
             src/io/_test/bigwham_io_gen_test_3d.cc
-            src/_test/bigwhamio_test_2d.cc)
+            src/_test/bigwhamio_test_2d.cc src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_tests.cpp)
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)

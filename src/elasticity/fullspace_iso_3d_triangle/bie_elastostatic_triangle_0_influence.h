@@ -17,6 +17,7 @@
 #include "elements/point.h"
 
 #include "elastic_3dT0_element.h"
+#include "elastic_3dT0_element_af.h" // artefact free displacement kernel
 
 namespace bie {
 
@@ -98,8 +99,7 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
     // convert to global from local src element coordinate system
     auto traction_temp_global = source_elt.ConvertToGlobal(traction_temp);
     // convert to local rec element coordinate system
-    auto traction_temp_local_rec =
-        receiver_elt.ConvertToLocal(traction_temp_global);
+    auto traction_temp_local_rec =receiver_elt.ConvertToLocal(traction_temp_global);
 
     for (int j = 0; j < 3; ++j) {
       // fill the traction vectors at receiver element cp due to (DD1,DD2,DD3)
@@ -190,8 +190,8 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
         sigma_temp(2, 1) = stress(i, 5); // S32
         sigma_temp(2, 2) = stress(i, 2); // S33
 //
-        auto sig_aux = il::dot(sigma_temp,R);
-        auto sigma_global = il::dot(Rt,sig_aux);
+        //auto sig_aux = il::dot(sigma_temp,R);
+        auto sigma_global = il::dot(Rt,il::dot(sigma_temp,R));
 //
         for (int j = 0; j < 3; ++j) {
     //             fill the traction vectors at receiver element cp due to (DD1,DD2,DD3)
@@ -235,11 +235,10 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
         // get coordinates receiver cp
         auto el_cp_r = receiver_elt.collocation_points();
 
-        // randomly perturb collocation point
+
         il::StaticArray<double, 3> receiver_coor{0};
         for (int i = 0; i < 3; i++) {
-            receiver_coor[i] =
-                    el_cp_r(i_r, i) + sqrt(std::numeric_limits<double>::epsilon());
+            receiver_coor[i] =el_cp_r(i_r, i) ; //+ sqrt(std::numeric_limits<double>::epsilon());
         }
 
         // get coordinates vertices of triangular source element
@@ -254,16 +253,16 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
 
         // get displacement influence coefficients - in the local coordinate system of the
         // source element
-        il::StaticArray2D<double,3,3> disp = bie::DisplacementKernelT0(receiver_coor,el_vertices_s_static,nu);
-        // be careful the return of DisplacementKernelT0 is as  disp(i,j)=  u_i^j d_j
+        il::StaticArray2D<double,3,3> disp = bie::DisplacementKernelT0_af(receiver_coor,el_vertices_s_static,nu);
+        // the return of DisplacementKernelT0 is as  disp(i,j)=  u_i^j d_j
 
         // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source
         // element in the reference system of the source element
-        il::Array2D<double> DDs_to_disp_{3, 3, 0.0}; // displaceent vectors
+    //    il::Array2D<double> DDs_to_disp_{3, 3, 0.0}; // displacement vectors
         il::Array<double> disp_temp{3,  0.0}; // temporary disp tensor
         il::Array<double> disp_gl{3,  0.0}; // temporary disp tensor
 
-        std::vector<double> disp_out(9,0.);
+        std::vector<double> disp_out(9,0.0);
         int k=0;
         for (il::int_t j=0;j<3;j++){
             for (il::int_t  i = 0;i<3;i++){
@@ -271,7 +270,7 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
             }
             disp_gl=source_elt.ConvertToGlobal(disp_temp);
             for (il::int_t  i = 0;i<3;i++){
-                disp_out[k]=disp_gl[i];// problem here ?
+                disp_out[k]=disp_gl[i];
                 k++;
             }
         }
