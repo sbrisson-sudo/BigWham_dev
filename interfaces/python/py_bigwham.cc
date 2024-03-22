@@ -454,6 +454,7 @@ PYBIND11_MODULE(py_bigwham, m)
              trac.Resize(dim * self.num_collocation_points(), 0.0);
              if (dim == 3)
              {
+               #pragma omp parallel for
                for (il::int_t i = 0; i < self.num_elements(); ++i)
                {
                  auto elem = self.GetElement(i);
@@ -476,6 +477,7 @@ PYBIND11_MODULE(py_bigwham, m)
 
              if (dim == 2)
              {
+               #pragma omp parallel for
                for (il::int_t i = 0; i < self.num_elements(); ++i)
                {
                  auto elem = self.GetElement(i);
