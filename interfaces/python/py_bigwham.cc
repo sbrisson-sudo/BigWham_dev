@@ -44,7 +44,7 @@ public:
                      conn_rec, kernel,
                      properties) {}
 
-  ~BigWhamIORect(){}
+  ~BigWhamIORect() {}
 };
 /* -------------------------------------------------------------------------- */
 
@@ -173,25 +173,25 @@ PYBIND11_MODULE(py_bigwham, m)
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
       .def(
-              "compute_displacements",
-           [](BigWhamIOGen &self,const std::vector<double> &coor, const pbarray<double> &x)-> decltype(auto)
-           {
-               auto tx = as_array_view<double>(x);
-               auto v = self.ComputeDisplacements(coor,tx);
-               return as_pyarray<double>(std::move(v));
-           },
-           " compute displacement at set of points",
-           py::arg("x"),py::arg("coor"))
+          "compute_displacements",
+          [](BigWhamIOGen &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)
+          {
+            auto tx = as_array_view<double>(x);
+            auto v = self.ComputeDisplacements(coor, tx);
+            return as_pyarray<double>(std::move(v));
+          },
+          " compute displacement at set of points",
+          py::arg("x"), py::arg("coor"))
       .def(
-              "compute_stresses",
-              [](BigWhamIOGen &self,const std::vector<double> &coor, const pbarray<double> &x)-> decltype(auto)
-              {
-                      auto tx = as_array_view<double>(x);
-                      auto v = self.ComputeStresses(coor,tx);
-                      return as_pyarray<double>(std::move(v));
-                      },
-                  " compute stresses at set of points",
-                  py::arg("x"),py::arg("coor"));
+          "compute_stresses",
+          [](BigWhamIOGen &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)
+          {
+            auto tx = as_array_view<double>(x);
+            auto v = self.ComputeStresses(coor, tx);
+            return as_pyarray<double>(std::move(v));
+          },
+          " compute stresses at set of points",
+          py::arg("x"), py::arg("coor"));
 
   /* --------------------------------------------------------------------------
    */
@@ -333,6 +333,23 @@ PYBIND11_MODULE(py_bigwham, m)
              }
              return as_pyarray<double>(std::move(pts));
            })
+      .def(py::pickle(
+          // This is a fake way so that pickle can work for python
+          // mesh objects are usable in python
+          // But it will allow classes in python using Mesh as object to be pickled
+          [](const Mesh &self) { // __getstate__
+            /* Return a tuple that fully encodes the state of the object */
+            return py::make_tuple(0);
+          },
+          [](py::tuple t) { // __setstate__
+            if (t.size() != 1)
+              throw std::runtime_error("Invalid state!");
+
+            /* Create a new C++ instance */
+            // fake
+            auto p = std::make_unique<BEMesh<Segment<0>>>();
+            return p;
+          }))
       .def("num_elements", &Mesh::num_elements)
       .def("num_collocation_points", &Mesh::num_collocation_points)
       .def("get_element_normal",
