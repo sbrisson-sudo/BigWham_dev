@@ -441,7 +441,37 @@ PYBIND11_MODULE(py_bigwham, m)
 
              return as_pyarray<double>(std::move(eig));
            })
-      .def("get_farfield_traction",
+      .def("get_local_traction_from_uniform_stress_2d",
+           /*
+             sigma_farfield : 3 x 1 vector
+             sig = sig11 sig22 sig12
+           */
+           [](const Mesh &self, const pbarray<double> &sigma)
+           {
+             auto sig = as_array_view<double>(sigma);
+             auto dim = self.spatial_dimension();
+             il::Array<double> trac;
+             trac.Resize(dim * self.num_collocation_points(), 0.0);
+#pragma omp parallel for
+             for (il::int_t i = 0; i < self.num_elements(); ++i)
+             {
+               auto elem = self.GetElement(i);
+               auto num_elem_col_pts = elem->num_collocation_points();
+               auto n = elem->normal();
+               for (int j = 0; j < num_elem_col_pts; ++j)
+               {
+                 // t0
+                 trac[i * num_elem_col_pts * dim + j * dim + 0] =
+                     sig[0] * n[0] + sig[2] * n[1];
+                 // t1
+                 trac[i * num_elem_col_pts * dim + j * dim + 1] =
+                     sig[2] * n[0] + sig[1] * n[1];
+               }
+             }
+
+             return as_pyarray<double>(std::move(trac));
+           })
+      .def("get_local_traction_from_uniform_stress_3d",
            /*
              sigma_farfield : 6 x 1 vector
              sig = sig11 sig22 sig33 sig13 sig23 sig12
@@ -452,9 +482,7 @@ PYBIND11_MODULE(py_bigwham, m)
              auto dim = self.spatial_dimension();
              il::Array<double> trac;
              trac.Resize(dim * self.num_collocation_points(), 0.0);
-             if (dim == 3)
-             {
-               #pragma omp parallel for
+#pragma omp parallel for
                for (il::int_t i = 0; i < self.num_elements(); ++i)
                {
                  auto elem = self.GetElement(i);
@@ -473,27 +501,7 @@ PYBIND11_MODULE(py_bigwham, m)
                        sig[3] * n[0] + sig[4] * n[1] + sig[2] * n[2];
                  }
                }
-             }
 
-             if (dim == 2)
-             {
-               #pragma omp parallel for
-               for (il::int_t i = 0; i < self.num_elements(); ++i)
-               {
-                 auto elem = self.GetElement(i);
-                 auto num_elem_col_pts = elem->num_collocation_points();
-                 auto n = elem->normal();
-                 for (int j = 0; j < num_elem_col_pts; ++j)
-                 {
-                   // t0
-                   trac[i * num_elem_col_pts * dim + j * dim + 0] =
-                       sig[0] * n[0] + sig[2] * n[1];
-                   // t1
-                   trac[i * num_elem_col_pts * dim + j * dim + 1] =
-                       sig[2] * n[0] + sig[1] * n[1];
-                 }
-               }
-             }
 
              return as_pyarray<double>(std::move(trac));
            })
