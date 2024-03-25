@@ -441,7 +441,7 @@ PYBIND11_MODULE(py_bigwham, m)
 
              return as_pyarray<double>(std::move(eig));
            })
-      .def("get_local_traction_from_uniform_stress_2d",
+      .def("get_global_traction_from_uniform_stress_2d",
            /*
              sigma_farfield : 3 x 1 vector
              sig = sig11 sig22 sig12
@@ -471,7 +471,7 @@ PYBIND11_MODULE(py_bigwham, m)
 
              return as_pyarray<double>(std::move(trac));
            })
-      .def("get_local_traction_from_uniform_stress_3d",
+      .def("get_global_traction_from_uniform_stress_3d",
            /*
              sigma_farfield : 6 x 1 vector
              sig = sig11 sig22 sig33 sig13 sig23 sig12
