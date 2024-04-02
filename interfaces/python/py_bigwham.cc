@@ -441,6 +441,28 @@ PYBIND11_MODULE(py_bigwham, m)
 
              return as_pyarray<double>(std::move(eig));
            })
+      .def("get_element_normals",
+           /*
+           returns normals of all the elements
+           */
+           [](const Mesh &self)
+           {
+             auto dim = self.spatial_dimension();
+             il::Array<double> normals;
+             normals.Resize(dim * self.num_elements(), 0.0);
+#pragma omp parallel for
+             for (il::int_t i = 0; i < self.num_elements(); ++i)
+             {
+               auto elem = self.GetElement(i);
+               auto n = elem->normal();
+                 // n0
+                 normals[i * dim + 0] = n[0];
+                 // n1
+                 normals[i * dim + 1] = n[1];
+             }
+
+             return as_pyarray<double>(std::move(normals));
+           })
       .def("get_global_traction_from_uniform_stress_2d",
            /*
              sigma_farfield : 3 x 1 vector
