@@ -202,7 +202,7 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
         DDs_to_stress_(4,i) = sigma_global(0, 2);//s13
         DDs_to_stress_(5,i) = sigma_global(1, 2); // s23
     }
-//// coulmn major format
+//// column major format
     std::vector<double> stnl(18, 0.);
     int k = 0;
     for (int j = 0; j < 3; j++) {

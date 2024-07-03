@@ -16,7 +16,6 @@
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 
-
 #include "elements/point.h"
 #include "elements/rectangle.h"
 #include "elements/segment.h"
@@ -78,7 +77,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             using ObsType = Point<2>;
             ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
                    elas, spatial_dimension_);
-            // still missing displacement for that element
+            // still missing displacement for that kernel + element
             break;
         }
         case "S3DP0"_sh: {
@@ -94,9 +93,9 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             ker_obj_ = std::make_shared<
                     bie::BieElastostaticSp3d<EltType, EltType, bie::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
-
             il::Array<double> prop{1, properties[2]};
             ker_obj_->set_kernel_properties(prop);
+            // still missing displacement & stresses representation for that kernel + element
             break;
         }
         case "Axi3DP0"_sh: {
@@ -153,7 +152,6 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                     elas, spatial_dimension_);
             break;
         }
-
         case "3DR0_mode1"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
@@ -168,6 +166,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                     bie::BieElastostaticModeI<EltType, EltType, bie::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
             // observation kernels to implement....
+            // still missing displacement & stresses representation for that kernel + element
             break;
         }
         default: {
@@ -533,28 +532,31 @@ il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coo
     il::Array<double> obs_potential{npts*dof_dimension_,0.};
 
 // loop on source collocation points
+#pragma omp parallel if ( std::sqrt((mesh_src_->num_collocation_points())* (mesh_obs->num_collocation_points()))  > 400)
+    {
 #pragma omp for
-    for (il::int_t i=0;i<mesh_src_->num_collocation_points();i++){
+        for (il::int_t i = 0; i < mesh_src_->num_collocation_points(); i++) {
 
-        il::int_t e_i = this->mesh_src_->GetElementId(i);
-        il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
-        auto source_element = this->mesh_src_->GetElement(e_i);
+            il::int_t e_i = this->mesh_src_->GetElementId(i);
+            il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
+            auto source_element = this->mesh_src_->GetElement(e_i);
 
-        // local solution (assumed in original ordering....)
-        il::Array<double> elt_solu{dof_dimension_};
-        for (il::int_t k=0;k<dof_dimension_;k++){
-            elt_solu[k]=sol_local[i*dof_dimension_+k];
-        }
+            // local solution (assumed in original ordering....)
+            il::Array<double> elt_solu{dof_dimension_};
+            for (il::int_t k = 0; k < dof_dimension_; k++) {
+                elt_solu[k] = sol_local[i * dof_dimension_ + k];
+            }
 
-        // loop on obs points mesh
-        for (il::int_t j_obs =0;j_obs<mesh_obs->num_collocation_points();j_obs++){
-            il::int_t e_j_r = mesh_obs->GetElementId(j_obs);
-            auto receiver_element = mesh_obs->GetElement(e_j_r);
-            il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
-            std::vector<double> st = this->ker_obs_u_->influence(*source_element, is_l, *receiver_element,ir_l);
-            for (il::int_t j=0;j<dof_dimension_;j++){
-                for(il::int_t k=0;k<dof_dimension_;k++){
-                    obs_potential[j_obs*dof_dimension_+j]+=st[k*dof_dimension_+j]*elt_solu[k];
+            // loop on obs points mesh
+            for (il::int_t j_obs = 0; j_obs < mesh_obs->num_collocation_points(); j_obs++) {
+                il::int_t e_j_r = mesh_obs->GetElementId(j_obs);
+                auto receiver_element = mesh_obs->GetElement(e_j_r);
+                il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
+                std::vector<double> st = this->ker_obs_u_->influence(*source_element, is_l, *receiver_element, ir_l);
+                for (il::int_t j = 0; j < dof_dimension_; j++) {
+                    for (il::int_t k = 0; k < dof_dimension_; k++) {
+                        obs_potential[j_obs * dof_dimension_ + j] += st[k * dof_dimension_ + j] * elt_solu[k];
+                    }
                 }
             }
         }
@@ -603,28 +605,31 @@ il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_ob
     il::Array<double> obs_flux{npts*flux_dimension_,0.};
 
 // loop on source collocation points
+#pragma omp parallel if ( std::sqrt((mesh_src_->num_collocation_points())* (mesh_obs->num_collocation_points()))  > 400)
+    {
 #pragma omp for
-    for (il::int_t i = 0; i < mesh_src_->num_collocation_points(); i++) {
+        for (il::int_t i = 0; i < mesh_src_->num_collocation_points(); i++) {
 
-        il::int_t e_i = this->mesh_src_->GetElementId(i);
-        il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
+            il::int_t e_i = this->mesh_src_->GetElementId(i);
+            il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
 
-        auto source_element = this->mesh_src_->GetElement(e_i);
-        // local solution (assumed in original ordering....)
-        il::Array<double> elt_solu{dof_dimension_}, e_potential{dof_dimension_, 0.};
-        for (il::int_t k = 0; k < dof_dimension_; k++) {
-            elt_solu[k] = sol_local[i * dof_dimension_ + k];
-        }
+            auto source_element = this->mesh_src_->GetElement(e_i);
+            // local solution (assumed in original ordering....)
+            il::Array<double> elt_solu{dof_dimension_}, e_potential{dof_dimension_, 0.};
+            for (il::int_t k = 0; k < dof_dimension_; k++) {
+                elt_solu[k] = sol_local[i * dof_dimension_ + k];
+            }
 
-        // loop on obs points mesh
-        for (il::int_t j_obs = 0; j_obs < mesh_obs->num_collocation_points(); j_obs++) {
-            il::int_t e_i_r  = mesh_obs->GetElementId(j_obs);
-            auto receiver_element = mesh_obs->GetElement(e_i_r);
-            il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
-            std::vector<double> st = this->ker_obs_q_->influence(*source_element, is_l, *receiver_element, ir_l);
-            for (il::int_t j = 0; j < flux_dimension_; j++) {
-                for (il::int_t k = 0; k < dof_dimension_; k++) {
-                    obs_flux[j_obs * flux_dimension_ + j] += st[flux_dimension_ * k + j] * elt_solu[k];
+            // loop on obs points mesh
+            for (il::int_t j_obs = 0; j_obs < mesh_obs->num_collocation_points(); j_obs++) {
+                il::int_t e_i_r = mesh_obs->GetElementId(j_obs);
+                auto receiver_element = mesh_obs->GetElement(e_i_r);
+                il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
+                std::vector<double> st = this->ker_obs_q_->influence(*source_element, is_l, *receiver_element, ir_l);
+                for (il::int_t j = 0; j < flux_dimension_; j++) {
+                    for (il::int_t k = 0; k < dof_dimension_; k++) {
+                        obs_flux[j_obs * flux_dimension_ + j] += st[flux_dimension_ * k + j] * elt_solu[k];
+                    }
                 }
             }
         }
