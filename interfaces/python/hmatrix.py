@@ -39,7 +39,7 @@ from matplotlib.patches import Rectangle
 ##############################
 # Note using metaclass allows us to overload constructor but arguments must be of same data type
 # for example, eta should be float and not int
-class Hmatrix(LinearOperator, metaclass=multimeta):
+class Hmatrix(LinearOperator): #, metaclass=multimeta
     def __init__(
         self,
         kernel: str,
@@ -87,15 +87,15 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
         self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
         super().__init__(self.dtype_, self.shape_)
 
-    def __init__(self, filename: str):
-        self.H_ : BigWhamIOSelf = BigWhamIOSelf()
-        self.H_.load_from_file(filename)
-        self.matvec_size_ = self.H_.matrix_size(0)
-        self.dtype_ = float
-
-        # it is mandatory to define shape and dtype of the dot product
-        self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
-        super().__init__(self.dtype_, self.shape_)
+    # def __init__(self, filename: str):
+    #     self.H_ : BigWhamIOSelf = BigWhamIOSelf()
+    #     self.H_.load_from_file(filename)
+    #     self.matvec_size_ = self.H_.matrix_size(0)
+    #     self.dtype_ = float
+    #
+    #     # it is mandatory to define shape and dtype of the dot product
+    #     self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
+    #     super().__init__(self.dtype_, self.shape_)
 
 
     def _matvec(self, v: np.ndarray) -> np.ndarray:
@@ -126,7 +126,7 @@ class Hmatrix(LinearOperator, metaclass=multimeta):
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
 
-    def get_omp_threads(self) -> int:
+    def get_omp_threads(self) -> int :
         return self.H_.get_omp_threads()
 
     def getMeshCollocationPoints(self) -> np.ndarray:

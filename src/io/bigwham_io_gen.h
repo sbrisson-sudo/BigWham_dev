@@ -100,7 +100,7 @@ public:
   [[nodiscard]] il::Array<double> ComputeStresses(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
   {return ComputeFluxes(coor_obs,sol_local); };
 
-  long MatrixSize(const int k) { return hmat_->size(k); };
+  int MatrixSize(const int k) { return hmat_->size(k); };
   [[nodiscard]] double GetCompressionRatio() const {
     IL_EXPECT_FAST(is_built_);
     return hmat_->compressionRatio();
@@ -118,14 +118,14 @@ public:
     this->hmat_->hmatMemFree();
   }
 
-  static int GetOmpThreads() {
+  int GetOmpThreads() {
     int threads = 1;
 #ifdef IL_OPENMP
 #pragma omp parallel
     {
 #pragma omp single
-      // std::cout << "NUM OF OMP THREADS: " << omp_get_num_threads() <<
-      // std::endl;
+       std::cout << "NUM OF OMP THREADS: " << omp_get_num_threads() <<
+       std::endl;
       threads = omp_get_num_threads();
     }
 #endif

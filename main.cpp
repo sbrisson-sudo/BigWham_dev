@@ -38,7 +38,8 @@ int main() {
     std::vector<double> properties{1., 0.};
     BigWhamIOGen my_io{coor, conn, "2DP0", properties};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
-
+    auto nt = my_io.GetOmpThreads() ;
+    std::cout <<"numb of threads " << nt <<"\n";
     il::Array<double> x(my_io.MatrixSize(1),0.);
     for(il::int_t i=0;i<n_elts ;i++){
          x[2*i+1]=4.0*sqrt(L*L-0.25*(coor[2*i]+coor[2*(i+1)])*(coor[2*i]+coor[2*(i+1)]));

@@ -21,6 +21,7 @@
 
 #include <cmath>
 #include <complex>
+#include <cstdint>
 
 #include <il/core.h>
 
