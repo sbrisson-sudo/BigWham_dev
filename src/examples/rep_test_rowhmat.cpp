@@ -36,7 +36,7 @@
 
 #include "cnpy.h"
 
-using namespace bie;
+using namespace bigwham;
 template <typename T> std::string print_array2D(const il::Array2D<T> &);
 template <typename T> std::string print_array1D(const il::Array<T> &);
 template <typename T>
@@ -118,7 +118,7 @@ int main(int argc, char *argv[]) {
   auto hr0 =
       HRepresentationRectangularMatrix(my_mesh, mesh_rec0, max_leaf_size, eta);
   BieMatrixGenerator<double> M0(my_mesh, mesh_rec0, ker, hr0);
-  bie::Hmat<double> hmat0(M0, eps_aca);
+  bigwham::Hmat<double> hmat0(M0, eps_aca);
   auto trac0 = hmat0.matvecOriginal(dd);
 
   for (int j = 0; j < nvert; ++j) {
@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
   auto hr1 =
       HRepresentationRectangularMatrix(my_mesh, mesh_rec1, max_leaf_size, eta);
   BieMatrixGenerator<double> M1(my_mesh, mesh_rec1, ker, hr1);
-  bie::Hmat<double> hmat1(M1, eps_aca);
+  bigwham::Hmat<double> hmat1(M1, eps_aca);
   auto trac1 = hmat1.matvecOriginal(dd);
 
   // std::cout << "Traction \n " << print_array1D(trac) << std::endl;

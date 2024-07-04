@@ -46,25 +46,25 @@ TEST(R0, ip_expressions) {
   ReferenceValues(17,0) = -0.12951122377562768;     //ip233
   ReferenceValues(18,0) = -0.0019957694764766985;   //ip333
 
-  ASSERT_NEAR(ReferenceValues(0,0), bie::ip1(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(1,0), bie::ip2(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(2,0), bie::ip3(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(3,0), bie::ip11(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(4,0), bie::ip12(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(5,0), bie::ip13(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(6,0), bie::ip22(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(7,0), bie::ip23(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(8,0), bie::ip33(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(9,0), bie::ip111(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(10,0), bie::ip112(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(11,0), bie::ip113(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(12,0), bie::ip122(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(13,0), bie::ip123(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(14,0), bie::ip133(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(15,0), bie::ip222(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(16,0), bie::ip223(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(17,0), bie::ip233(x, y, z, xi, eta), 1.e-5);
-  ASSERT_NEAR(ReferenceValues(18,0), bie::ip333(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(0,0), bigwham::ip1(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(1,0), bigwham::ip2(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(2,0), bigwham::ip3(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(3,0), bigwham::ip11(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(4,0), bigwham::ip12(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(5,0), bigwham::ip13(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(6,0), bigwham::ip22(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(7,0), bigwham::ip23(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(8,0), bigwham::ip33(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(9,0), bigwham::ip111(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(10,0), bigwham::ip112(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(11,0), bigwham::ip113(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(12,0), bigwham::ip122(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(13,0), bigwham::ip123(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(14,0), bigwham::ip133(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(15,0), bigwham::ip222(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(16,0), bigwham::ip223(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(17,0), bigwham::ip233(x, y, z, xi, eta), 1.e-5);
+  ASSERT_NEAR(ReferenceValues(18,0), bigwham::ip333(x, y, z, xi, eta), 1.e-5);
 }
 
 
@@ -78,8 +78,8 @@ TEST(R0, Ip_special_expressions) {
     ReferenceValues(0,0) = -0.14308728328344156;       //ip33 limits z->0 and x->a
     ReferenceValues(1,0) = -0.0921292729553324;        //ip33 limits z->0 and y->b
 
-    ASSERT_NEAR(ReferenceValues(0,0), bie::Ip33_lim_z_to_0_and_x_to_a (x=a, y=6.000, a, b), 1.e-5);
-    ASSERT_NEAR(ReferenceValues(1,0), bie::Ip33_lim_z_to_0_and_y_to_b (x=6.000, y=b, a, b), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(0,0), bigwham::Ip33_lim_z_to_0_and_x_to_a (x=a, y=6.000, a, b), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(1,0), bigwham::Ip33_lim_z_to_0_and_y_to_b (x=6.000, y=b, a, b), 1.e-5);
 }
 
 TEST(R0, ip_cheking_limits) {
@@ -96,9 +96,9 @@ TEST(R0, ip_cheking_limits) {
     ReferenceValues(1,0) = 0.1484332679249236;       //ip22, z->0
     ReferenceValues(2,0) = 0.6009252125773314;       //ip33, z->0
 
-    ASSERT_NEAR(ReferenceValues(0,0), bie::ip11(x, y, z, xi, eta), 1.e-5);
-    ASSERT_NEAR(ReferenceValues(1,0), bie::ip22(x, y, z, xi, eta), 1.e-5);
-    ASSERT_NEAR(ReferenceValues(2,0), bie::ip33(x, y, z, xi, eta), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(0,0), bigwham::ip11(x, y, z, xi, eta), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(1,0), bigwham::ip22(x, y, z, xi, eta), 1.e-5);
+    ASSERT_NEAR(ReferenceValues(2,0), bigwham::ip33(x, y, z, xi, eta), 1.e-5);
 }
 
 TEST_F(Test3DR0Stress, stress_expressions_at_non_zero_z) {
@@ -266,33 +266,33 @@ TEST_F(Test3DR0Stress, stress_expressions_at_zero_z_and_y_to_b) {
 
 TEST(R0, singular_stress){
     double x, y, z, a, b;
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = 2., z = 0., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = 2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = -2.,z = 0., a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = -2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = 1., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = 1., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -1., y = -1., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 1., y = -1., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 1., y = 10., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -1., y = 10., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -1., y = -10., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 1., y = -10., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.5, y = 2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -0.5, y = 2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = -0.5, y = -2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.5, y = -2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = 2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = 2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = -2., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = -2.,z = 0., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 0., y = 0.,z = 0., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = 10., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = 10.,z = 0., a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = -10., y = -10., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 10., y = -10., z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(false, bie::is_stress_singular_at_given_location(x = 0.9999, y = -1.99999, z = 0.,a = 1., b = 2., false));
-    ASSERT_EQ(true, bie::is_stress_singular_at_given_location(x = 0.999999999999999999999, y = -1.999999999999999999999,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = 1., y = 2., z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = -1., y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = -1., y = -2.,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = 1., y = -2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = 1., y = 1., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = -1., y = 1., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = -1., y = -1., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = 1., y = -1., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = 1., y = 10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = -1., y = 10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = -1., y = -10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = 1., y = -10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = 0.5, y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = -0.5, y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = -0.5, y = -2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = 0.5, y = -2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = 10., y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = -10., y = 2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = -10., y = -2., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = 10., y = -2.,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = 0., y = 0.,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = 10., y = 10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = -10., y = 10.,z = 0., a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = -10., y = -10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = 10., y = -10., z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(false, bigwham::is_stress_singular_at_given_location(x = 0.9999, y = -1.99999, z = 0.,a = 1., b = 2., false));
+    ASSERT_EQ(true, bigwham::is_stress_singular_at_given_location(x = 0.999999999999999999999, y = -1.999999999999999999999,z = 0., a = 1., b = 2., false));
 };
 
 TEST(R0, displ_expr) {
@@ -305,7 +305,7 @@ TEST(R0, displ_expr) {
     a = 1.;
     b = 2.;
     nu = 0.3;
-    Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
+    Displacement = bigwham::DisplacementKernelR0( x, y, z, a, b, nu);
     // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
     //   0      -> |       Ux,            Ux,             Ux            |
     //   1      -> |       Uy,            Uy,             Uy            |
@@ -348,7 +348,7 @@ TEST(R0, displ_expr) {
     a = 1.;
     b = 2.;
     nu = 0.3;
-    Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
+    Displacement = bigwham::DisplacementKernelR0( x, y, z, a, b, nu);
     // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
     //   0      -> |       Ux,            Ux,             Ux            |
     //   1      -> |       Uy,            Uy,             Uy            |
@@ -398,7 +398,7 @@ TEST(R0, displ_expr_on_the_elem_plane) {
     a = 1.;
     b = 2.;
     nu = 0.3;
-    Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
+    Displacement = bigwham::DisplacementKernelR0( x, y, z, a, b, nu);
     // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
     //   0      -> |       Ux,            Ux,             Ux            |
     //   1      -> |       Uy,            Uy,             Uy            |
@@ -441,7 +441,7 @@ TEST(R0, displ_expr_on_the_elem_plane) {
     a = 1.;
     b = 2.;
     nu = 0.3;
-    Displacement = bie::DisplacementKernelR0( x, y, z, a, b, nu);
+    Displacement = bigwham::DisplacementKernelR0( x, y, z, a, b, nu);
     // index        ->    DDx (shear)    DDy (shear)     DDz (normal)
     //   0      -> |       Ux,            Ux,             Ux            |
     //   1      -> |       Uy,            Uy,             Uy            |

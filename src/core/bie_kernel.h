@@ -15,7 +15,7 @@
 
 #include "elements/boundary_element.h"
 
-namespace bie {
+namespace bigwham {
 
 template <typename T> class BieKernel {
 protected:
@@ -41,5 +41,5 @@ public:
 
 };
 
-} // namespace bie
+} // namespace bigwham
 #endif // BIGWHAM_BIEKERNEL_H

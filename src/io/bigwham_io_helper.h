@@ -10,7 +10,7 @@
 
 #include "core/be_mesh.h"
 
-namespace bie {
+namespace bigwham {
 
 /* -------------------------------------------------------------------------- */
 // utilities for switch with string in C++17
@@ -94,6 +94,6 @@ std::unique_ptr<Mesh> CreateUniqueMeshFromVect(int spatial_dimension,
 }
 /* -------------------------------------------------------------------------- */
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_IO_HELPER_H

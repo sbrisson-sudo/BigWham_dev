@@ -14,7 +14,7 @@
 
 #include "elasticity/fullspace_iso_3d_triangle/tensor_utilities_3DT6.h"
 
-namespace bie {
+namespace bigwham {
 // Vector and triple tensor multiplication
 // for stress stored as 6-component vector (or 6*N matrix)
 

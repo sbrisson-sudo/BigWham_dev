@@ -16,9 +16,9 @@
 // This an example of a Matrix Generator needed to code for the implementation
 // of a BIE kernel
 
-namespace bie {
+namespace bigwham {
 
-template <typename T> class GaussianMatrix : public bie::MatrixGenerator<T> {
+template <typename T> class GaussianMatrix : public bigwham::MatrixGenerator<T> {
 private:
   il::int_t n_;
   il::Range range0_;
@@ -105,4 +105,4 @@ void GaussianMatrix<T>::set(il::int_t b0, il::int_t b1, il::io_t,
   }
 }
 
-} // namespace bie
+} // namespace bigwham

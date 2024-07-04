@@ -55,7 +55,7 @@ inline constexpr auto operator"" _sh(const char *str, size_t len) {
 
 //////////////////////////// utility for mesh object creation from std::vector
 template <class El>
-std::shared_ptr<bie::Mesh> createMeshFromVect(int spatial_dimension,
+std::shared_ptr<bigwham::Mesh> createMeshFromVect(int spatial_dimension,
                                               int n_vertex_elt,
                                               const std::vector<double> &coor,
                                               const std::vector<int> &conn) {
@@ -79,7 +79,7 @@ std::shared_ptr<bie::Mesh> createMeshFromVect(int spatial_dimension,
     }
   }
   // BEMesh<El> mesh(Coor, Conn);
-  auto mesh = std::make_shared<bie::BEMesh<El>>(Coor, Conn);
+  auto mesh = std::make_shared<bigwham::BEMesh<El>>(Coor, Conn);
   mesh->ConstructMesh();
   std::cout << "in create mesh - done "
             << "\n";
@@ -90,9 +90,9 @@ std::shared_ptr<bie::Mesh> createMeshFromVect(int spatial_dimension,
 //////////////////////////// the 'infamous' Bigwhamio class
 class Bigwhamio {
 private:
-  bie::Hmat<double> hmat_; // the  Hmat object
-  std::shared_ptr<bie::Mesh> mesh_;
-  std::shared_ptr<bie::BieKernel<double>> ker_obj_;
+  bigwham::Hmat<double> hmat_; // the  Hmat object
+  std::shared_ptr<bigwham::Mesh> mesh_;
+  std::shared_ptr<bigwham::BieKernel<double>> ker_obj_;
 
   il::Array<il::int_t>
       permutation_; // permutation list of the collocation points
@@ -141,7 +141,7 @@ public:
     max_leaf_size_ = max_leaf_size;
     eta_ = eta;
     epsilon_aca_ = eps_aca;
-    bie::ElasticProperties elas(properties[0], properties[1]);
+    bigwham::ElasticProperties elas(properties[0], properties[1]);
     std::cout << " Now setting things for kernel ... " << kernel_
               << " with properties size " << properties.size() << "\n";
     il::Timer tt;
@@ -155,42 +155,42 @@ public:
     case "2DP0"_sh: {
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
-      using EltType = bie::Segment<0>;
+      using EltType = bigwham::Segment<0>;
       mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,conn);
       ker_obj_ = std::make_shared<
-          bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+          bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
           elas, dimension_);
       break;
     }
     case "2DP0_U"_sh: {
             dimension_ = 2;
             int nvertices_per_elt_ = 2;
-            using EltType = bie::Segment<0>;
+            using EltType = bigwham::Segment<0>;
             mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
                                                 conn);
             ker_obj_ = std::make_shared<
-                    bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::U>>(
+                    bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::U>>(
                     elas, dimension_);
             break;
     }
     case "2DP0_T"_sh: {
             dimension_ = 2;
             int nvertices_per_elt_ = 2;
-            using EltType = bie::Segment<0>;
+            using EltType = bigwham::Segment<0>;
             mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor, conn);
             ker_obj_ = std::make_shared<
-                    bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::T>>(
+                    bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::T>>(
                     elas, dimension_);
             break;
     }
     case "S3DP0"_sh: {
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
-      using EltType = bie::Segment<0>;
+      using EltType = bigwham::Segment<0>;
       mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
                                           conn);
-      ker_obj_ = std::make_shared<bie::BieElastostaticSp3d<
-          EltType, EltType, bie::ElasticKernelType::H>>(elas, dimension_);
+      ker_obj_ = std::make_shared<bigwham::BieElastostaticSp3d<
+          EltType, EltType, bigwham::ElasticKernelType::H>>(elas, dimension_);
 
       il::Array<double> prop{1, properties[2]};
       ker_obj_->set_kernel_properties(prop);
@@ -199,65 +199,65 @@ public:
     case "2DP1"_sh: {
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
-      using EltType = bie::Segment<1>;
+      using EltType = bigwham::Segment<1>;
       mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
                                           conn);
       ker_obj_ = std::make_shared<
-          bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+          bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
           elas, dimension_);
       break;
     }
     case "3DT0"_sh: {
       dimension_ = 3;
       int nvertices_per_elt_ = 3;
-      using EltType = bie::Triangle<0>;
+      using EltType = bigwham::Triangle<0>;
       mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
                                           conn);
       ker_obj_ = std::make_shared<
-          bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+          bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
           elas, dimension_);
       break;
     }
     case "3DR0_H"_sh: {
         dimension_ = 3;
         int nvertices_per_elt_ = 4;
-        using EltType = bie::Rectangle<0>;
+        using EltType = bigwham::Rectangle<0>;
         mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
                                             conn);
         ker_obj_ = std::make_shared<
-                bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+                bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
                 elas, dimension_);
         break;
     }
     case "3DR0_H_mode1"_sh: {
         dimension_ = 3;
         int nvertices_per_elt_ = 4;
-        using EltType = bie::Rectangle<0>;
+        using EltType = bigwham::Rectangle<0>;
         mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor, conn);
         ker_obj_ = std::make_shared<
-                bie::BieElastostaticModeI<EltType, EltType, bie::ElasticKernelType::H>>(
+                bigwham::BieElastostaticModeI<EltType, EltType, bigwham::ElasticKernelType::H>>(
                 elas, dimension_);
         break;
     }
     case "3DR0_T"_sh: {
         dimension_ = 3;
         int nvertices_per_elt_ = 4;
-        using EltType = bie::Rectangle<0>;
+        using EltType = bigwham::Rectangle<0>;
         mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
                                             conn);
         ker_obj_ = std::make_shared<
-                bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::T>>(
+                bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::T>>(
                 elas, dimension_);
         break;
     }
     case "Axi3DP0"_sh: {
       dimension_ = 2;
       int nvertices_per_elt_ = 2;
-      using EltType = bie::Segment<0>;
+      using EltType = bigwham::Segment<0>;
       mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
                                           conn);
       ker_obj_ =
-          std::make_shared<bie::ElasticAxiSymmRingKernel>(elas, dimension_);
+          std::make_shared<bigwham::ElasticAxiSymmRingKernel>(elas, dimension_);
       break;
     }
     default: {
@@ -277,7 +277,7 @@ public:
     h_representation_time_ = tt.time();
     tt.Reset();
     tt.Start();
-    bie::BieMatrixGenerator<double> M(mesh_, mesh_, ker_obj_, hr);
+    bigwham::BieMatrixGenerator<double> M(mesh_, mesh_, ker_obj_, hr);
     hmat_.toHmat(M, epsilon_aca_);
     tt.Stop();
     permutation_ = hr->permutation_0_;
@@ -387,7 +387,7 @@ public:
 
     IL_EXPECT_FAST(is_built_);
 
-    bie::HPattern pattern = hmat_.pattern();
+    bigwham::HPattern pattern = hmat_.pattern();
 
     long numberofblocks = pattern.n_B;
     long len = 6 * numberofblocks;

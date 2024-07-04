@@ -27,7 +27,7 @@
 #include "py_bigwham_helper.h"
 
 namespace py = pybind11;
-using namespace bie;
+using namespace bigwham;
 /* -------------------------------------------------------------------------- */
 
 class BigWhamIORect : public BigWhamIOGen

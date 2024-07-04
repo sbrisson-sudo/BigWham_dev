@@ -14,7 +14,7 @@
 #include <il/StaticArray2D.h>
 #include <il/StaticArray.h>
 
-namespace bie {
+namespace bigwham {
 
 // Vector and triple tensor multiplication
 // for stress stored as 6-component vector (or 6*N matrix)

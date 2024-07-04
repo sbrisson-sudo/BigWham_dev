@@ -13,7 +13,7 @@
 #include "elements/boundary_element.h"
 #include <il/linearAlgebra/dense/norm.h>
 
-namespace bie {
+namespace bigwham {
 
 // class for polygon element - with fixed number of vertex ;(
 template <int p> class Polygon : public BoundaryElement {

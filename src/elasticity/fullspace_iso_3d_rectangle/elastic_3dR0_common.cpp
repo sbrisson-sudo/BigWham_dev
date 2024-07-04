@@ -16,7 +16,7 @@
 
 
 
-namespace bie{
+namespace bigwham{
     // RONGVED SOLUTION FOR A P0 Rectangular dislocation in a full space
     // dislocation is centered on the origin in the plane z=0 , (-a,a) in x (-b,b)
     // in y

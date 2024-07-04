@@ -15,7 +15,7 @@
 #include <il/Array2D.h>
 #include "hmat/hmatrix/HMatrixType.h"
 
-namespace bie{
+namespace bigwham{
 
 // structure for storing the h-mat pattern - note irrespective of the number of dofs per nodes
 struct HPattern {
@@ -33,7 +33,7 @@ struct HPattern {
 };
 
 // function to get the matrix pattern from the binary cluster tree
-HPattern createPattern(const il::Tree<bie::SubHMatrix, 4>& tree);
+HPattern createPattern(const il::Tree<bigwham::SubHMatrix, 4>& tree);
 
 }
 

@@ -12,15 +12,13 @@
 #include <il/blas.h>
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
-
-#include "elasticity/bie_elastostatic_mode1.h"
 #include "elements/rectangle.h"
 
+#include "elasticity/bie_elastostatic_mode1.h"
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_mode1Cartesian_element.h"
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_common.h"
 
-
-namespace bie {
+namespace bigwham {
 
 template <>
 std::vector<double>

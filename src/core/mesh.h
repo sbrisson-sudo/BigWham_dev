@@ -7,7 +7,7 @@
 
 #include "elements/boundary_element.h"
 
-namespace bie {
+namespace bigwham {
 
 class Mesh {
 protected:
@@ -159,6 +159,6 @@ Mesh::ConvertToLocal(const std::vector<double> &global_vec) const {
   return v;
 }
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_MESH_H

@@ -27,10 +27,10 @@ TEST(Triangle0, test_H_1) {
   il::Array2D<double> xy{3, 3, 0.};
   xy(1, 0) = 1;
   xy(2, 1) = 1.0;
-  bie::Triangle<0> source;
+  bigwham::Triangle<0> source;
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
-  bie::BieElastostatic<bie::Triangle<0>, bie::Triangle<0>,bie::ElasticKernelType::H> test(elas, xy.size(1));
+  bigwham::ElasticProperties elas(1, 0.3);
+  bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Triangle<0>,bigwham::ElasticKernelType::H> test(elas, xy.size(1));
   std::vector<double> test_self = test.influence(source, 0, source, 0);
   std::cout << "test self effect "
              << "\n";
@@ -46,13 +46,13 @@ TEST(Triangle0, test_disp_1) {
     xy(1, 0) = 1.0;
     xy(2, 1) = 1.0;
 
-    bie::Triangle<0> source;
+    bigwham::Triangle<0> source;
     source.SetElement(xy);
     il::Array2D<double> xobs{1,3,1.};
-    bie::Point<3> obs;
+    bigwham::Point<3> obs;
     obs.SetElement(xobs);
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,bie::ElasticKernelType::T> singleT(elas, xy.size(1));
+    bigwham::ElasticProperties elas(1, 0.3);
+    bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::T> singleT(elas, xy.size(1));
     std::cout << singleT.spatial_dimension() <<"\n";
     std::vector<double> test_displ = singleT.influence(source, 0, obs, 0);
     std::cout << "test displacement "      << "\n";
@@ -75,14 +75,14 @@ TEST(Triangle0, test_disp_2) {
     xy(1, 0) = 1.0;
     xy(2, 1) = 1.0;
 
-    bie::Triangle<0> source;
+    bigwham::Triangle<0> source;
     source.SetElement(xy);
     il::Array2D<double> colots = source.collocation_points();
     il::Array2D<double> xobs{1,3,1.};
-    bie::Point<3> obs;
+    bigwham::Point<3> obs;
     obs.SetElement(xobs);
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,bie::ElasticKernelType::T> singleT(elas, xy.size(1));
+    bigwham::ElasticProperties elas(1, 0.3);
+    bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::T> singleT(elas, xy.size(1));
     std::cout << singleT.spatial_dimension() <<"\n";
     std::vector<double> test_displ = singleT.influence(source, 0, obs, 0);
     std::cout << "test displacement "      << "\n";
@@ -106,13 +106,13 @@ TEST(Triangle0, test_stress_1) {
     xy(1, 0) = 1.0;
     xy(2, 1) = 1.0;
 
-    bie::Triangle<0> source;
+    bigwham::Triangle<0> source;
     source.SetElement(xy);
     il::Array2D<double> xobs{1,3,1.};
-    bie::Point<3> obs;
+    bigwham::Point<3> obs;
     obs.SetElement(xobs);
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,bie::ElasticKernelType::W> single_triangle_stress(elas, xy.size(1));
+    bigwham::ElasticProperties elas(1, 0.3);
+    bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::W> single_triangle_stress(elas, xy.size(1));
     std::vector<double> test_stress = single_triangle_stress.influence(source, 0, obs, 0);
     std::cout << "test stress "      << "\n";
     bool test=true;
@@ -136,10 +136,10 @@ TEST(Triangle0,test_Several_kernels){
     il::Array2D<double> elt_coor{3,3,0.};
     elt_coor(1,0)=1.;
     elt_coor(2,1)=1.;
-    bie::Triangle<0> source_elt;
+    bigwham::Triangle<0> source_elt;
     source_elt.SetElement(elt_coor);
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Triangle<0>, bie::Triangle<0>,bie::ElasticKernelType::H> testH(elas, 3);
+    bigwham::ElasticProperties elas(1, 0.3);
+    bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Triangle<0>,bigwham::ElasticKernelType::H> testH(elas, 3);
     std::vector<double> self_effect = testH.influence(source_elt, 0, source_elt, 0);
     std::cout << "test self effect " << "\n";
      for (int i = 0; i < 9; i++) {
@@ -147,10 +147,10 @@ TEST(Triangle0,test_Several_kernels){
      }
 
     il::Array2D<double> obs_corr{1,3,1.};
-    bie::Point<3> obs_pt;
+    bigwham::Point<3> obs_pt;
     obs_pt.SetElement(obs_corr);
 
-    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,bie::ElasticKernelType::T> singleT(elas, 3);
+    bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::T> singleT(elas, 3);
     std::cout << singleT.spatial_dimension() <<"\n";
     std::vector<double> test_displ = singleT.influence(source_elt, 0, obs_pt, 0);
     std::cout << "test displacement "      << "\n";
@@ -158,7 +158,7 @@ TEST(Triangle0,test_Several_kernels){
         std::cout << "i: " << i << " - " << test_displ[i] << "\n";
     }
 
-    bie::BieElastostatic<bie::Triangle<0>, bie::Point<3>,bie::ElasticKernelType::W> singleTW(elas, 3);
+    bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::W> singleTW(elas, 3);
     std::cout << singleTW.spatial_dimension() <<"\n";
     auto test_stres = singleTW.influence(source_elt, 0, obs_pt, 0);
     std::cout << "test stress "      << "\n";

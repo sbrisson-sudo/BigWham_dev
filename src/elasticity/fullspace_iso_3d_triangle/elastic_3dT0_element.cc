@@ -14,7 +14,7 @@
 
 #include "elastic_3dT0_element.h"
 
-namespace bie {
+namespace bigwham {
 
 // generic (and auxiliary) integrals first appearing for stress influence
 // coefficients
@@ -1325,4 +1325,4 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::StaticArray<double, 3> 
   //   2      -> |       U3,            U3,             U3            |
 }
 
-} // namespace bie
+} // namespace bigwham

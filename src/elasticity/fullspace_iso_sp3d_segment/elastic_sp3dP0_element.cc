@@ -214,7 +214,7 @@ double rectangular_integration(double x, double y, double z, double a, double b,
           Func(x, y, z, ma, mb));
 }
 
-namespace bie {
+namespace bigwham {
 //
 //// Fundamental stress kernel - only  effect of DD_x(e_1) and DD_z (e3)
 //// this function output the 3D stress in the 3D frame for completeness ?
@@ -423,7 +423,7 @@ il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_s3d_dp0_dd(
   // because it's a piece-wise DD half is filled with zero (single node)
 
   // switch to the frame of the source element....
-  il::StaticArray2D<double, 2, 2> R = bie::rotationMatrix2D(source_elt.theta());
+  il::StaticArray2D<double, 2, 2> R = bigwham::rotationMatrix2D(source_elt.theta());
 
   il::StaticArray2D<double, 2, 2> Rt = R;
   Rt(0, 1) = R(1, 0);
@@ -506,7 +506,7 @@ il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_s3d_dp0_dd_nodal(
   // it's a piece-wise DD half is filled with zero
 
   // switch to the frame of the source element....
-  il::StaticArray2D<double, 2, 2> R = bie::rotationMatrix2D(source_elt.theta());
+  il::StaticArray2D<double, 2, 2> R = bigwham::rotationMatrix2D(source_elt.theta());
 
   il::StaticArray2D<double, 2, 2> Rt = R;
   Rt(0, 1) = R(1, 0);
@@ -583,7 +583,7 @@ il::StaticArray<double, 3> point_stress_s3d_dp0_dd(
   // positive tension / positive overlap DD;
 
   // the tensor to switch to the frame of the source element....
-  il::StaticArray2D<double, 2, 2> R = bie::rotationMatrix2D(source_elt.theta());
+  il::StaticArray2D<double, 2, 2> R = bigwham::rotationMatrix2D(source_elt.theta());
 
   // the inverse rotation...
   il::StaticArray2D<double, 2, 2> Rt = R;
@@ -626,4 +626,4 @@ il::StaticArray<double, 3> point_stress_s3d_dp0_dd(
 
   return stress_g;
 };
-} // namespace bie
+} // namespace bigwham

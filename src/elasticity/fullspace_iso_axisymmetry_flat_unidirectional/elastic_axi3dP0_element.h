@@ -18,7 +18,7 @@
 
 using ElemType = bie::Segment<0>;
 
-namespace bie {
+namespace bigwham {
 
 class ElasticAxiSymmRingKernel
     : public BieElastostatic<ElemType, ElemType, ElasticKernelType::H> {
@@ -114,6 +114,6 @@ inline double ElasticAxiSymmRingKernel::stress_disk_dislocation(
   return IF;
 }
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_ELASTICAXI3DP0_ELEMENT_H

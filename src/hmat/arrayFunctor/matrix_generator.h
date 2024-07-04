@@ -12,7 +12,7 @@
 #include <il/Array2DView.h>
 #include <hmat/hierarchical_representation.h>
 
-namespace bie {
+namespace bigwham {
 
 template <typename T>
 class MatrixGenerator {
@@ -27,7 +27,7 @@ class MatrixGenerator {
 };
 
 template <typename T>
-il::Array2D<T> toArray2D(const bie::MatrixGenerator<T>& M) {
+il::Array2D<T> toArray2D(const bigwham::MatrixGenerator<T>& M) {
   il::Array2D<T> ans{M.size(0), M.size(1)};
   M.set(0, 0, il::io, ans.Edit());
   return ans;

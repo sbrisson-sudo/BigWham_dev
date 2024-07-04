@@ -11,7 +11,7 @@
 
 #include "penny_shaped_crack_analytical_sol.h"
 
-namespace bie{
+namespace bigwham{
     double pi_() {return 3.14159265358979323846;}
 
     double r_(double &x, double &y){return sqrt(x * x + y * y);}

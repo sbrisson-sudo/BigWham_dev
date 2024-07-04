@@ -10,7 +10,7 @@
 #include <iostream>
 #include <math.h>
 
-namespace bie {
+namespace bigwham {
 
 // ------------------------------------------------------------------------------------
 /*
@@ -145,4 +145,4 @@ double sig_zy_sl_(double &x, double &y, double &z, double &a, double &G,
 double sig_zx_sl_(double &x, double &y, double &z, double &a, double &G,
                   double &nu, double &px, double &py);
 
-} // namespace bie
+} // namespace bigwham

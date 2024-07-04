@@ -20,11 +20,11 @@ TEST(SP3D, test_seg_0_dof_dim) {
 
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1.0;
-  bie::Segment<0> source;
+  bigwham::Segment<0> source;
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
-  bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                       bie::ElasticKernelType::H>
+  bigwham::ElasticProperties elas(1, 0.3);
+  bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                       bigwham::ElasticKernelType::H>
       test(elas, xy.size(1));
   ASSERT_TRUE(test.dof_dimension() == 2);
 }
@@ -33,11 +33,11 @@ TEST(SP3D, test_seg_0_dof_dim) {
 TEST(SP3D, test_seg_0_dim) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1.0;
-  bie::Segment<0> source;
+  bigwham::Segment<0> source;
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
-  bie::BieElastostaticSp3d<bie::Segment<0>, bie::Segment<0>,
-                           bie::ElasticKernelType::H>
+  bigwham::ElasticProperties elas(1, 0.3);
+  bigwham::BieElastostaticSp3d<bigwham::Segment<0>, bigwham::Segment<0>,
+                           bigwham::ElasticKernelType::H>
       test(elas, xy.size(1));
   ASSERT_TRUE(test.spatial_dimension() == 2);
 }
@@ -47,11 +47,11 @@ TEST(SP3D, test_seg_0_self) {
 
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1.0;
-  bie::Segment<0> source;
+  bigwham::Segment<0> source;
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
-  bie::BieElastostaticSp3d<bie::Segment<0>, bie::Segment<0>,
-                           bie::ElasticKernelType::H>
+  bigwham::ElasticProperties elas(1, 0.3);
+  bigwham::BieElastostaticSp3d<bigwham::Segment<0>, bigwham::Segment<0>,
+                           bigwham::ElasticKernelType::H>
       test(elas, xy.size(1));
   il::Array<double> prop{1, 1000.};
   test.set_kernel_properties(prop);
@@ -64,9 +64,9 @@ TEST(SP3D, test_seg_0_self) {
   // old way // would have to be removed at some point !
   il::StaticArray2D<double, 2, 2> xys{0.};
   xys(1, 0) = 1.0;
-  bie::SegmentData auxi(xys, 0);
+  bigwham::SegmentData auxi(xys, 0);
   il::StaticArray2D<double, 2, 2> stnl =
-      bie::normal_shear_stress_kernel_s3d_dp0_dd_nodal(auxi, auxi, 0, 0, elas,
+      bigwham::normal_shear_stress_kernel_s3d_dp0_dd_nodal(auxi, auxi, 0, 0, elas,
                                                        prop[0]);
   // for (int i = 0; i < 2; i++) {
   //   std::cout << stnl(i, 0) << "-" << stnl(i, 1) << "\n";
@@ -83,9 +83,9 @@ TEST(SP3D, test_seg_0_1) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(0, 1) = 2.4;
   xy(1, 0) = 3.0;
-  bie::Segment<0> source;
+  bigwham::Segment<0> source;
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
+  bigwham::ElasticProperties elas(1, 0.3);
   // std::cout << "test on inclined elt "
   //           << "\n";
   il::Array2D<double> xy_r{2, 2, 0.};
@@ -93,10 +93,10 @@ TEST(SP3D, test_seg_0_1) {
   xy_r(1, 0) = 5.0;
   xy_r(0, 1) = 1.0;
   xy_r(1, 1) = 0.0;
-  bie::Segment<0> receiver;
+  bigwham::Segment<0> receiver;
   receiver.SetElement(xy_r);
-  bie::BieElastostaticSp3d<bie::Segment<0>, bie::Segment<0>,
-                           bie::ElasticKernelType::H>
+  bigwham::BieElastostaticSp3d<bigwham::Segment<0>, bigwham::Segment<0>,
+                           bigwham::ElasticKernelType::H>
       test(elas, xy.size(1));
   il::Array<double> prop{1, 1000.};
   test.set_kernel_properties(prop);
@@ -112,10 +112,10 @@ TEST(SP3D, test_seg_0_1) {
     xys_r(i, 0) = xy_r(i, 0);
     xys_r(i, 1) = xy_r(i, 1);
   }
-  bie::SegmentData auxi_s(xys, 0);
-  bie::SegmentData auxi_r(xys_r, 0);
+  bigwham::SegmentData auxi_s(xys, 0);
+  bigwham::SegmentData auxi_r(xys_r, 0);
   il::StaticArray2D<double, 2, 2> stnl =
-      bie::normal_shear_stress_kernel_s3d_dp0_dd_nodal(auxi_s, auxi_r, 0, 0,
+      bigwham::normal_shear_stress_kernel_s3d_dp0_dd_nodal(auxi_s, auxi_r, 0, 0,
                                                        elas, prop[0]);
   //    for (int i=0;i<2;i++){
   //        std::cout << stnl(i,0) <<"-"  <<stnl(i,1)  <<"\n";

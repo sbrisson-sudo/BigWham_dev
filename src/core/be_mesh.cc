@@ -4,7 +4,7 @@
 #include "elements/triangle.h"
 #include "elements/point.h"
 
-namespace bie {
+namespace bigwham {
 /* -------------------------------------------------------------------------- */
 
 template <class ElemType>
@@ -56,4 +56,4 @@ template class BEMesh<Rectangle<0>>;
 template class BEMesh<Point<2>>;
 template class BEMesh<Point<3>>;
 
-} // namespace bie
+} // namespace bigwham

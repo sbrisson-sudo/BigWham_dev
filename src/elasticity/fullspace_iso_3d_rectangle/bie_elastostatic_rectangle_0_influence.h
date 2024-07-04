@@ -21,7 +21,7 @@
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_common.h"
 
 
-namespace bie {
+namespace bigwham {
     template class BieElastostatic<Rectangle<0>, Rectangle<0>, ElasticKernelType::H>;
     template class BieElastostatic<Rectangle<0>, Rectangle<0>, ElasticKernelType::T>;
     template class BieElastostatic<Rectangle<0>, Point<3>, ElasticKernelType::T>;

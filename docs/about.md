@@ -70,7 +70,7 @@ effect of one node of the receiver element (or receiver points in the case of ob
   - In addition, the integral equations is defined by its underlying physics / fundamental solutions - a.k.a kernel - which include 
   material properties (isotropy or not), if the fundamental solution is for the full-space, or Half-space, or... 
   in addition, if the fundamental solution is for displacement, stress, eigenstress...
-  - a boundary element can be in 3D but the underlying bie be scalar !    the spatial dimension is not necessarily equal to the dof_dimensions
+  - a boundary element can be in 3D but the underlying bigwham be scalar !    the spatial dimension is not necessarily equal to the dof_dimensions
   
 ## Proposal / new implementation as 25.01.2023:
   - Boundary Element class hieararchy with interpolation order as template parameter : {segment<0>,segment<1>,rectangle<0>,triangle<0>,triangle<2> ....}

@@ -19,7 +19,7 @@
 
 #include "core/elastic_properties.h"
 
-namespace bie {
+namespace bigwham {
 //
 
 il::StaticArray2D<double, 3, 6>
@@ -31,6 +31,6 @@ il::StaticArray2D<double, 3, 3> DisplacementKernelT0(il::StaticArray<double, 3> 
                                                      double nu);
 
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_EXE_ELASTIC3DT0_ELEMENT_H

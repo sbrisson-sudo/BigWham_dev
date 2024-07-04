@@ -24,11 +24,11 @@ TEST(Rectangle0,rect_0_H_1){
     xyz(2, 0) = hx;
     xyz(2, 1) = hy;
     xyz(3, 1) = hy;
-    bie::Rectangle<0> rec0_elt;
+    bigwham::Rectangle<0> rec0_elt;
     rec0_elt.SetElement(xyz);
 //test self effect H kernel
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Rectangle<0>, bie::Rectangle<0>,bie::ElasticKernelType::H> test(elas, xyz.size(1));
+    bigwham::ElasticProperties elas(1, 0.3);
+    bigwham::BieElastostatic<bigwham::Rectangle<0>, bigwham::Rectangle<0>,bigwham::ElasticKernelType::H> test(elas, xyz.size(1));
     std::vector<double> test_self = test.influence(rec0_elt, 0, rec0_elt, 0);
     std::cout << "test self effect H "     << "\n";
     for (int i = 0; i < test_self.size(); i++) {
@@ -47,11 +47,11 @@ TEST(Rectangle0,rect_0_T_1){
     xyz(2, 0) = hx;
     xyz(2, 1) = hy;
     xyz(3, 1) = hy;
-    bie::Rectangle<0> rec0_elt;
+    bigwham::Rectangle<0> rec0_elt;
     rec0_elt.SetElement(xyz);
 //test self effect T kernel
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Rectangle<0>, bie::Rectangle<0>,bie::ElasticKernelType::T> test(elas, xyz.size(1));
+    bigwham::ElasticProperties elas(1, 0.3);
+    bigwham::BieElastostatic<bigwham::Rectangle<0>, bigwham::Rectangle<0>,bigwham::ElasticKernelType::T> test(elas, xyz.size(1));
     std::vector<double> test_self = test.influence(rec0_elt, 0, rec0_elt, 0);
     std::cout << "test self effect T"     << "\n";
     for (int i = 0; i < test_self.size(); i++) {
@@ -70,13 +70,13 @@ TEST(Rectangle0,rect_0_disp_obs){
     xyz(2, 0) = hx;
     xyz(2, 1) = hy;
     xyz(3, 1) = hy;
-    bie::Rectangle<0> rec0_elt;
+    bigwham::Rectangle<0> rec0_elt;
     rec0_elt.SetElement(xyz);
-    bie::ElasticProperties elas(1, 0.3);
+    bigwham::ElasticProperties elas(1, 0.3);
     il::Array2D<double> xobs{1,3,1.};
-    bie::Point<3> obs;
+    bigwham::Point<3> obs;
     obs.SetElement(xobs);
-    bie::BieElastostatic<bie::Rectangle<0>, bie::Point<3>,bie::ElasticKernelType::T> test_disp(elas, xyz.size(1));
+    bigwham::BieElastostatic<bigwham::Rectangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::T> test_disp(elas, xyz.size(1));
     std::vector<double> test_disp_ = test_disp.influence(rec0_elt, 0, rec0_elt, 0);
     std::cout << "test displacement observation - "  <<  test_disp_.size()  << "\n";
     for (int i = 0; i < test_disp_.size(); i++) {
@@ -95,13 +95,13 @@ TEST(Rectangle0,rect_0_stress_obs){
     xyz(2, 0) = hx;
     xyz(2, 1) = hy;
     xyz(3, 1) = hy;
-    bie::Rectangle<0> rec0_elt;
+    bigwham::Rectangle<0> rec0_elt;
     rec0_elt.SetElement(xyz);
-    bie::ElasticProperties elas(1, 0.3);
+    bigwham::ElasticProperties elas(1, 0.3);
     il::Array2D<double> xobs{1,3,1.};
-    bie::Point<3> obs;
+    bigwham::Point<3> obs;
     obs.SetElement(xobs);
-    bie::BieElastostatic<bie::Rectangle<0>, bie::Point<3>,bie::ElasticKernelType::W> test_stress(elas, xyz.size(1));
+    bigwham::BieElastostatic<bigwham::Rectangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::W> test_stress(elas, xyz.size(1));
     std::vector<double> test_stress_ = test_stress.influence(rec0_elt, 0, rec0_elt, 0);
     std::cout << "test stress - "  <<  test_stress_.size()  << "\n";
     for (int i = 0; i < test_stress_.size(); i++) {
@@ -121,21 +121,21 @@ TEST(Rectangle0,rect_0_disp_and_stress_obs){
     xyz(2, 0) = hx;
     xyz(2, 1) = hy;
     xyz(3, 1) = hy;
-    bie::Rectangle<0> rec0_elt;
+    bigwham::Rectangle<0> rec0_elt;
     rec0_elt.SetElement(xyz);
-    bie::ElasticProperties elas(1, 0.3);
+    bigwham::ElasticProperties elas(1, 0.3);
     il::Array2D<double> xobs{1,3,1.};
-    bie::Point<3> obs;
+    bigwham::Point<3> obs;
     obs.SetElement(xobs);
 
-    bie::BieElastostatic<bie::Rectangle<0>, bie::Point<3>,bie::ElasticKernelType::W> test_stress(elas, xyz.size(1));
+    bigwham::BieElastostatic<bigwham::Rectangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::W> test_stress(elas, xyz.size(1));
     std::vector<double> test_stress_ = test_stress.influence(rec0_elt, 0, rec0_elt, 0);
     std::cout << "test stress - "  <<  test_stress_.size()  << "\n";
     for (int i = 0; i < test_stress_.size(); i++) {
         std::cout << "i : " << test_stress_[i] << "\n";
     }
 
-    bie::BieElastostatic<bie::Rectangle<0>, bie::Point<3>,bie::ElasticKernelType::T> test_disp(elas, xyz.size(1));
+    bigwham::BieElastostatic<bigwham::Rectangle<0>, bigwham::Point<3>,bigwham::ElasticKernelType::T> test_disp(elas, xyz.size(1));
     std::vector<double> test_disp_ = test_disp.influence(rec0_elt, 0, rec0_elt, 0);
     std::cout << "test displacement observation - "  <<  test_disp_.size()  << "\n";
     for (int i = 0; i < test_disp_.size(); i++) {

@@ -22,7 +22,7 @@
 #include "elastic_2dP1_segment.h"
 
 
-namespace bie {
+namespace bigwham {
 
 il::StaticArray2D<double, 2, 4> stresses_kernel_dp1_dd(double h, double Ep,
                                                        double x, double y) {
@@ -173,7 +173,7 @@ il::StaticArray2D<double, 2, 4> normal_shear_stress_kernel_dp1_dd(
   // ker_options : dummy argument here (double) - needed for agnostic call ..
 
   // switch to the frame of the source element....
-  il::StaticArray2D<double, 2, 2> R = bie::rotationMatrix2D(source_elt.theta());
+  il::StaticArray2D<double, 2, 2> R = bigwham::rotationMatrix2D(source_elt.theta());
 
   il::StaticArray2D<double, 2, 2> Rt = R;
   Rt(0, 1) = R(1, 0);
@@ -437,7 +437,7 @@ il::StaticArray2D<double, 2, 2> normal_shear_stress_kernel_dp1_dd_nodal(
   // second row normal traction (effect of shear and opening DD)
 
   // switch to the frame of the source element....
-  il::StaticArray2D<double, 2, 2> R = bie::rotationMatrix2D(source_elt.theta());
+  il::StaticArray2D<double, 2, 2> R = bigwham::rotationMatrix2D(source_elt.theta());
 
   il::StaticArray2D<double, 2, 2> Rt = R;
   Rt(0, 1) = R(1, 0);
@@ -523,7 +523,7 @@ il::StaticArray<double, 3> point_stress_2d_dp1_dd(
   // positive tension / positive overlap DD;
 
   // the tensor to switch to the frame of the source element....
-  il::StaticArray2D<double, 2, 2> R = bie::rotationMatrix2D(source_elt.theta());
+  il::StaticArray2D<double, 2, 2> R = bigwham::rotationMatrix2D(source_elt.theta());
 
   // the inverse rotation...
   il::StaticArray2D<double, 2, 2> Rt = R;
@@ -592,6 +592,6 @@ il::StaticArray<double, 3> point_stress_2d_dp1_dd(
 };
 
 //------------------------------------------------------------------------------
-}  // namespace bie
+}  // namespace bigwham
 
 

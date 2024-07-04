@@ -18,7 +18,7 @@
 #include <il/linearAlgebra.h>
 
 
-namespace bie {
+namespace bigwham {
 
 //   Rotation Matrix
 il::StaticArray2D<double, 2, 2> rotationMatrix2D(double theta);
@@ -115,7 +115,7 @@ class SegmentData {
 
 // Returning the collocation point in the global frame
 
-    R = bie::rotationMatrix2D(theta_);
+    R = bigwham::rotationMatrix2D(theta_);
 
     for (int i = 0; i < p + 1; ++i) {
 

@@ -12,7 +12,7 @@
 
 #include <il/core.h>
 
-namespace bie {
+namespace bigwham {
 
 class ElasticProperties {
 private:
@@ -74,6 +74,6 @@ public:
   bool isotropic() const { return isotropic_; }
 };
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIE_ELASTICPROPERTIES_H

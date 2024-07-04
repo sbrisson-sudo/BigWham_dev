@@ -18,7 +18,7 @@
 #include "core/oldies/Mesh2D.h"
 #include "core/oldies/SegmentData.h"
 
-namespace bie {
+namespace bigwham {
 
 il::StaticArray2D<double, 2, 4> stresses_kernel_dp1_dd(double h, double Ep,
                                                        double x, double y);

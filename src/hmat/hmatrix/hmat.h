@@ -25,7 +25,7 @@
 
 #include "hmat/hierarchical_representation.h"
 
-namespace bie {
+namespace bigwham {
 
 template <typename T> class Hmat {
   // this is a new Hmat class wich does not contains the matrix-generator
@@ -33,10 +33,10 @@ template <typename T> class Hmat {
   // cluster tree openmp parallel construction openmp parallel mat_vect dot
   // product (non-permutted way)
 private:
-    void build(const bie::MatrixGenerator<T> & matrix_gen, const double epsilon);
-    void buildFR(const bie::MatrixGenerator<T> & matrix_gen);
+    void build(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon);
+    void buildFR(const bigwham::MatrixGenerator<T> & matrix_gen);
     template <il::int_t dim>
-    void buildLR(const bie::MatrixGenerator<T> & matrix_gen,
+    void buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
                  const double epsilon);
 
     std::shared_ptr<HRepresentation> hr_;
@@ -46,7 +46,7 @@ private:
     il::int_t dof_dimension_;            //  dof per collocation points
     il::StaticArray<il::int_t, 2> size_; // size of tot mat (row, cols)
 
-    std::vector<std::unique_ptr<bie::LowRank<T>>> low_rank_blocks_; // vector of low rank blocks
+    std::vector<std::unique_ptr<bigwham::LowRank<T>>> low_rank_blocks_; // vector of low rank blocks
     std::vector<std::unique_ptr<il::Array2D<T>>> full_rank_blocks_; // vector of full rank blocks
 
     bool isBuilt_ = false;
@@ -61,7 +61,7 @@ private:
 public:
   void hmatMemFree();
   Hmat() = default;
-  Hmat(const bie::MatrixGenerator<T> &matrix_gen, const double epsilon_aca);
+  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca);
   Hmat(const std::string &filename);
 
   ~Hmat() = default;
@@ -71,7 +71,7 @@ public:
   double compressionRatio();
   [[nodiscard]] bool isBuilt() const { return isBuilt_; }
   [[nodiscard]] il::int_t size(int k) const { return size_[k]; }
-  bie::HPattern pattern() { return hr_->pattern_; }
+  bigwham::HPattern pattern() { return hr_->pattern_; }
   [[nodiscard]] il::int_t dofDimension() const { return dof_dimension_; }
   il::int_t nbOfEntries();
   void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
@@ -89,7 +89,7 @@ public:
 
 };
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_HMAT_H
 

@@ -14,7 +14,7 @@
 
 // todo :: I don t like such a file - it is used only by the the 3D code function and have little content
 
-namespace bie {
+namespace bigwham {
 
  //   const double pi = il::pi; //3.1415926535897932385;   // is this needed as il::pi does it -> change everywhere
     const std::complex<double> ii = std::complex<double>{0.0, 1.0};

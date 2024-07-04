@@ -15,11 +15,11 @@
 #include <hmat/compression/routines.h>
 #include <hmat/hmatrix/LowRank.h>
 
-namespace bie {
+namespace bigwham {
 
 template <il::int_t p, typename T>
 std::unique_ptr<LowRank<T>>
-adaptiveCrossApproximation(const bie::MatrixGenerator<T> &M, il::Range range0,
+adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range0,
                            il::Range range1, double epsilon) {
   const il::int_t n0 = range0.end - range0.begin;
   const il::int_t n1 = range1.end - range1.begin;
@@ -45,10 +45,10 @@ adaptiveCrossApproximation(const bie::MatrixGenerator<T> &M, il::Range range0,
   il::Array2D<T> row{p, n1 * p};
   il::Array2D<T> column{n0 * p, p};
   while (true) {
-    bie::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
+    bigwham::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
                          row.Edit());
     const il::int_t i1_search =
-        bie::find_largest_singular_value<p>(row, range1, i1_used);
+        bigwham::find_largest_singular_value<p>(row, range1, i1_used);
     if (i1_search == -1) {
       break;
     }
@@ -87,7 +87,7 @@ adaptiveCrossApproximation(const bie::MatrixGenerator<T> &M, il::Range range0,
 
     // Update the Matrices A and B to take into account the new ranks
     A.Resize(n0 * p, (rank + 1) * p);
-    bie::residual_column<p>(M, A, B, range0, range1, i1_search, rank, il::io,
+    bigwham::residual_column<p>(M, A, B, range0, range1, i1_search, rank, il::io,
                             column.Edit());
     for (il::int_t i0 = range0.begin; i0 < range0.end; ++i0) {
       for (il::int_t j1 = 0; j1 < p; ++j1) {
@@ -98,7 +98,7 @@ adaptiveCrossApproximation(const bie::MatrixGenerator<T> &M, il::Range range0,
       }
     }
     B.Resize((rank + 1) * p, n1 * p);
-    bie::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
+    bigwham::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
                          row.Edit());
     for (il::int_t i1 = range1.begin; i1 < range1.end; ++i1) {
       il::StaticArray2D<T, p, p> matrix{};
@@ -166,7 +166,7 @@ adaptiveCrossApproximation(const bie::MatrixGenerator<T> &M, il::Range range0,
     frobenius_low_rank +=
         2 * il::real(scalar_product) + il::real(frobenius_norm_ab);
 
-    i0_search = bie::searchI0<p>(A, range0, range1, i0_used, i1_search, rank);
+    i0_search = bigwham::searchI0<p>(A, range0, range1, i0_used, i1_search, rank);
     ++rank;
 
     //    il::Array2D<T> low_rank =
@@ -200,4 +200,4 @@ adaptiveCrossApproximation(const bie::MatrixGenerator<T> &M, il::Range range0,
   return std::move(lrb);
 }
 
-} // namespace bie
+} // namespace bigwham

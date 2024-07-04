@@ -12,7 +12,7 @@
 
 #include "il/StaticArray2D.h"
 
-namespace bie {
+namespace bigwham {
 
 il::StaticArray2D<double, 2, 2> Ue_segment_0(double h, double G, double nu,
                                              double x1_o, double y1_o);
@@ -23,5 +23,5 @@ il::StaticArray2D<double, 2, 3> Se_segment_0(double h, double G, double nu,
 il::StaticArray2D<double, 2, 3> We_segment_0(double h, double G, double nu,
                                              double x1_o, double y1_o);
 
-} // namespace bie
+} // namespace bigwham
 #endif // BIGWHAM_ELASTIC2D_SEGMENT_H

@@ -16,7 +16,7 @@
 #include <il/StaticArray3D.h>
 #include <il/StaticArray4D.h>
 
-namespace bie {
+namespace bigwham {
 
     il::StaticArray4D<std::complex<double>, 6, 4, 3, 9> s_ij_gen_h(double nu, std::complex<double> eix,double h, std::complex<double> d);
 

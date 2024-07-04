@@ -20,7 +20,7 @@
 #include "core/oldies/FaceData.h"
 #include "core/ElasticProperties.h"
 
-namespace bie {
+namespace bigwham {
 
 // Element-to-point influence matrix (submatrix of the global one)
 // (Integration of a kernel of the elasticity equation over a triangular element

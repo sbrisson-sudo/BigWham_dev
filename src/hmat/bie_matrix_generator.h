@@ -21,7 +21,7 @@
 #include "hmat/arrayFunctor/matrix_generator.h"
 #include "hmat/hierarchical_representation.h"
 
-namespace bie {
+namespace bigwham {
 
 template <typename T> class BieMatrixGenerator : public MatrixGenerator<T> {
 
@@ -140,5 +140,5 @@ inline void BieMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
     }
   }
 }
-} // namespace bie
+} // namespace bigwham
 #endif // BIGWHAM_BIE_MATRIX_GENERATOR_H

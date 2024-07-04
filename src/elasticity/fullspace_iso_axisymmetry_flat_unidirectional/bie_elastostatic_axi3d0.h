@@ -16,11 +16,12 @@
 
 #include "elliptic_integral.h"
 
-using ElemType = bie::Segment<0>;
 
-namespace bie {
+namespace bigwham {
 
-class ElasticAxiSymmRingKernel
+    using ElemType = bigwham::Segment<0>;
+
+    class ElasticAxiSymmRingKernel
     : public BieElastostatic<ElemType, ElemType, ElasticKernelType::H> {
 
 public:
@@ -114,6 +115,6 @@ inline double ElasticAxiSymmRingKernel::stress_disk_dislocation(
   return IF;
 }
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_ELASTICAXI3DP0_ELEMENT_H

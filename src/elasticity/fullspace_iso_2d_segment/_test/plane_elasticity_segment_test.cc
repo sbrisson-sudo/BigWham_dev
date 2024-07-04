@@ -21,7 +21,7 @@ TEST(elas_fs_iso_segment, U_0_1) {
   double nu = 0.2;
   double x1 = 0.;
   double x2 = -1.3;
-  auto Ue = bie::Ue_segment_0(h, G, nu, x1, x2);
+  auto Ue = bigwham::Ue_segment_0(h, G, nu, x1, x2);
   il::StaticArray2D<double, 2, 2> U_exact{0.};
   U_exact(0, 0) = -0.0408623;
   U_exact(1, 1) = 0.00587676;
@@ -40,7 +40,7 @@ TEST(elas_fs_iso_segment, U_0_2) {
   double nu = 0.2;
   double x1 = 0.;
   double x2 = 0.;
-  auto Ue = bie::Ue_segment_0(h, G, nu, x1, x2);
+  auto Ue = bigwham::Ue_segment_0(h, G, nu, x1, x2);
   il::StaticArray2D<double, 2, 2> U_exact{0.};
   U_exact(0, 0) = 0.0303152;
   U_exact(1, 1) = 0.0208417;
@@ -58,7 +58,7 @@ TEST(elas_fs_iso_segment, U_0_3) {
   double nu = 0.22;
   double x1 = 0.2;
   double x2 = 0.8;
-  auto Ue = bie::Ue_segment_0(h, G, nu, x1, x2);
+  auto Ue = bigwham::Ue_segment_0(h, G, nu, x1, x2);
   il::StaticArray2D<double, 2, 2> U_exact{0.};
   // {{0.00202768, 0.000574292}, {0.000574292, 0.0044795}}
   U_exact(0, 0) = 0.00202768;
@@ -80,7 +80,7 @@ TEST(elas_fs_iso_segment, U_0_4) {
   double nu = 0.22;
   double x1 = 0.8;
   double x2 = -0.2;
-  auto Ue = bie::Ue_segment_0(h, G, nu, x1, x2);
+  auto Ue = bigwham::Ue_segment_0(h, G, nu, x1, x2);
   il::StaticArray2D<double, 2, 2> U_exact{0.};
   // {{0.0091904, -0.00109817}, {-0.00109817, 0.00593223}}
   U_exact(0, 0) = 0.0091904;
@@ -101,7 +101,7 @@ TEST(elas_fs_iso_segment, S_0_1) {
   double nu = 0.2;
   double x1 = 0.3;
   double x2 = 8.0;
-  auto Se = bie::Se_segment_0(h, G, nu, x1, x2);
+  auto Se = bigwham::Se_segment_0(h, G, nu, x1, x2);
   il::StaticArray2D<double, 2, 3> S_exact{0.};
   //  {{{-0.000580783}, {-0.0151433}}, {{-0.0151433}, {-0.00125313}}}
   S_exact(0, 0) = -0.000580783;
@@ -128,7 +128,7 @@ TEST(elas_fs_iso_segment, S_0_2) {
   double nu = 0.2;
   double x1 = 10.3;
   double x2 = 0;
-  auto Se = bie::Se_segment_0(h, G, nu, x1, x2);
+  auto Se = bigwham::Se_segment_0(h, G, nu, x1, x2);
   il::StaticArray2D<double, 2, 3> S_exact{0.};
   //
   S_exact(0, 0) = -0.0503775;
@@ -156,7 +156,7 @@ TEST(elas_fs_iso_segment, W_0_1) {
   double nu = 0.2;
   double x1 = 10.3;
   double x2 = 0;
-  auto We = bie::We_segment_0(h, G, nu, x1, x2);
+  auto We = bigwham::We_segment_0(h, G, nu, x1, x2);
   il::StaticArray2D<double, 2, 3> W_exact{0.};
   //
   W_exact(0, 0) = 0.;
@@ -184,7 +184,7 @@ TEST(elas_fs_iso_segment, W_0_2) {
   double nu = 0.2;
   double x1 = 1.3;
   double x2 = -2.4;
-  auto We = bie::We_segment_0(h, G, nu, x1, x2);
+  auto We = bigwham::We_segment_0(h, G, nu, x1, x2);
   il::StaticArray2D<double, 2, 3> W_exact{0.};
   //
   W_exact(0, 0) = 0.0077946525229993305;

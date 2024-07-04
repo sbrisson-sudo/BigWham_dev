@@ -8,14 +8,14 @@
 //
 #pragma once
 
-namespace bie {
+namespace bigwham {
 
 enum class HMatrixType { FullRank, LowRank, Hierarchical, FullLu };
 
 struct SubHMatrix {
   il::Range range0;
   il::Range range1;
-  bie::HMatrixType type;
+  bigwham::HMatrixType type;
 };
 
-}  // namespace bie
+}  // namespace bigwham

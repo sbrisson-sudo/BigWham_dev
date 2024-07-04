@@ -21,7 +21,7 @@
 #include "elastic_2dP1_segment.h"
 /* -------------------------------------------------------------------------- */
 
-namespace bie {
+namespace bigwham {
 
 template class BieElastostatic<Segment<1>, Segment<1>, ElasticKernelType::H>;
 template class BieElastostatic<Segment<1>, Point<2>, ElasticKernelType::W>;

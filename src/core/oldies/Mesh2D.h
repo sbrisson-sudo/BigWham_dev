@@ -135,7 +135,7 @@ class Mesh2D {  // class for   1D segment elements
 
   il::Array2D<double> collocation_points();
 
-  bie::SegmentData getElementData(il::int_t ne)  const;
+  bigwham::SegmentData getElementData(il::int_t ne)  const;
 };
 
 }

@@ -19,7 +19,7 @@
 #include "elastic_3dT0_element.h"
 #include "elastic_3dT0_element_af.h" // artefact free displacement kernel
 
-namespace bie {
+namespace bigwham {
 
 template class BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>;
 template class BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>;
@@ -66,7 +66,7 @@ BieElastostatic<Triangle<0>, Triangle<0>, ElasticKernelType::H>::influence(
 
   // get stress influence coefficients - in the local coordinate system of the
   // source element
-  il::StaticArray2D<double, 3, 6> stress = bie::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
+  il::StaticArray2D<double, 3, 6> stress = bigwham::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
 
   // normal vector at the receiver location in the reference system of the
   // source element
@@ -163,7 +163,7 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::W>::influence(
     }
     // get stress influence coefficients - in the local coordinate system of the
     // source element
-    il::StaticArray2D<double, 3, 6> stress= bie::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
+    il::StaticArray2D<double, 3, 6> stress= bigwham::StressesKernelT0(receiver_coor, el_vertices_s_static, G, nu);
 ////
 //////// rotation matrix of the source element
     auto R = source_elt.rotation_matrix();
@@ -253,7 +253,7 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
 
         // get displacement influence coefficients - in the local coordinate system of the
         // source element
-        il::StaticArray2D<double,3,3> disp = bie::DisplacementKernelT0_af(receiver_coor,el_vertices_s_static,nu);
+        il::StaticArray2D<double,3,3> disp = bigwham::DisplacementKernelT0_af(receiver_coor,el_vertices_s_static,nu);
         // the return of DisplacementKernelT0 is as  disp(i,j)=  u_i^j d_j
 
         // compute traction vectors at receiver element cp due to (DD1,DD2,DD3) source
@@ -278,4 +278,4 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
     return disp_out;
     }
 
-} // namespace bie
+} // namespace bigwham

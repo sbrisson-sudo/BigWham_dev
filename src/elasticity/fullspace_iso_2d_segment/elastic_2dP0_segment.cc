@@ -12,7 +12,7 @@
 
 #include "elastic_2dP0_segment.h"
 
-namespace bie {
+namespace bigwham {
 
 // Function for the
 // integral of the fundamental displacement due to point force over a segment of
@@ -208,4 +208,4 @@ il::StaticArray2D<double, 2, 3> We_segment_0(double h, double G, double nu,
   return We;
 }
 
-} // namespace bie
+} // namespace bigwham

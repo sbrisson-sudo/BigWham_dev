@@ -33,7 +33,7 @@ TEST(bemesh_point_2d,pt_1){
     for (int i = 0; i < n_elts; i++) {
         conn(i, 0) = i;
     }
-    bie::BEMesh<bie::Point<2>> my_mesh(coor, conn);
+    bigwham::BEMesh<bigwham::Point<2>> my_mesh(coor, conn);
     my_mesh.ConstructMesh();
     il::Array2D<double> test = my_mesh.collocation_points();
     bool t = true;
@@ -58,7 +58,7 @@ TEST(bemesh_seg, seg_0_1) {
     conn(i, 1) = i + 1;
     eltC(i, 0) = (coor(i, 0) + coor(i + 1, 0)) / 2.;
   }
-  bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
+  bigwham::BEMesh<bigwham::Segment<0>> my_mesh(coor, conn);
   my_mesh.ConstructMesh();
   il::Array2D<double> test = my_mesh.collocation_points();
   bool t = true;
@@ -85,7 +85,7 @@ TEST(bemesh_seg, seg_0_2) {
     eltC(i, 0) = (coor(i, 0) + coor(i + 1, 0)) / 2.;
     eltC(i, 1) = (coor(i, 1) + coor(i + 1, 1)) / 2.;
   }
-  bie::BEMesh<bie::Segment<0>> my_mesh(coor, conn);
+  bigwham::BEMesh<bigwham::Segment<0>> my_mesh(coor, conn);
   my_mesh.ConstructMesh();
   il::Array2D<double> test = my_mesh.collocation_points();
   bool t = true;
@@ -111,7 +111,7 @@ TEST(bemesh_seg, seg_1_1) {
     conn(i, 1) = i + 1;
     eltC(i, 0) = (coor(i, 0) + coor(i + 1, 0)) / 2.;
   }
-  bie::BEMesh<bie::Segment<1>> my_mesh(coor, conn);
+  bigwham::BEMesh<bigwham::Segment<1>> my_mesh(coor, conn);
   my_mesh.ConstructMesh();
   il::Array2D<double> test = my_mesh.collocation_points();
   bool t = true;
@@ -142,7 +142,7 @@ TEST(bemesh_triangle, triangle_0_1) {
   conn(1, 0) = 2;
   conn(1, 1) = 1;
   conn(1, 2) = 3;
-  bie::BEMesh<bie::Triangle<0>> my_mesh(xyz, conn);
+  bigwham::BEMesh<bigwham::Triangle<0>> my_mesh(xyz, conn);
   my_mesh.ConstructMesh();
   il::Array2D<double> test = my_mesh.collocation_points();
   ASSERT_TRUE(test.size(0) == my_mesh.num_collocation_points() &&
@@ -167,14 +167,14 @@ TEST(bemesh_triangle, triangle_0_2) {
   conn(1, 0) = 2;
   conn(1, 1) = 1;
   conn(1, 2) = 3;
-  bie::BEMesh<bie::Triangle<0>> my_mesh(xyz, conn);
+  bigwham::BEMesh<bigwham::Triangle<0>> my_mesh(xyz, conn);
   my_mesh.ConstructMesh();
   il::Array2D<double> test = my_mesh.collocation_points();
-  bie::Triangle<0> tri_a;
+  bigwham::Triangle<0> tri_a;
   il::Array2D<double> xv = my_mesh.vertices(0);
   tri_a.SetElement(xv);
   xv = my_mesh.vertices(1);
-  bie::Triangle<0> tri_b;
+  bigwham::Triangle<0> tri_b;
   tri_b.SetElement(xv);
   auto ndots = il::dot(tri_a.normal(), tri_b.normal());
   // std::cout << " normal elt 1::" << tri_a.get_normal()[0] << "-"
@@ -222,10 +222,10 @@ TEST(bemesh_rectangle, rect_0_1) {
   //   std::cout << " elt #" << c << " conn - " << conn(c, 0) << "-" << conn(c, 1)
   //             << "-" << conn(c, 2) << "-" << conn(c, 3) << "\n";
   // }
-  bie::BEMesh<bie::Rectangle<0>> my_mesh(coor, conn);
+  bigwham::BEMesh<bigwham::Rectangle<0>> my_mesh(coor, conn);
   my_mesh.ConstructMesh();
   il::Array2D<double> test = my_mesh.collocation_points();
-  bie::Rectangle<0> rec_a;
+  bigwham::Rectangle<0> rec_a;
   il::Array2D<double> xv = my_mesh.vertices(0);
   rec_a.SetElement(xv);
 

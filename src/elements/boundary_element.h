@@ -14,7 +14,7 @@
 #include <il/Array2D.h>
 #include <il/blas.h>
 
-namespace bie {
+namespace bigwham {
 
 // base class for boundary element
 class BoundaryElement {
@@ -101,6 +101,6 @@ public:
   virtual void SetElement(const il::Array2D<double> &coords_vertices) = 0;
 };
 
-}; // namespace bie
+}; // namespace bigwham
 
 #endif // BIGWHAM_BOUNDARYELEMENT_H

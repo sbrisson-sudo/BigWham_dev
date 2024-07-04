@@ -12,7 +12,7 @@
 
 #include "elements/polygon.h"
 
-namespace bie {
+namespace bigwham {
 
 template <int p> class Triangle : public Polygon<p> {
 private:
@@ -50,5 +50,5 @@ public:
   virtual void SetCollocationPoints() override;
   virtual void SetNodes() override;
 };
-} // namespace bie
+} // namespace bigwham
 #endif // BIGWHAM_TRIANGLE_H

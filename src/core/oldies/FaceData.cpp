@@ -16,7 +16,7 @@
 
 #include "FaceData.h"
 
-namespace bie {
+namespace bigwham {
 
 //////////////////////////////////////////////////////////////////////////
 //        CONSTRUCTOR
@@ -583,4 +583,4 @@ il::int_t FaceData::maxAbsArray(il::StaticArray<double, 3> x) {
   }
   return index;
 }
-} // namespace bie
+} // namespace bigwham

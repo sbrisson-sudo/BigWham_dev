@@ -21,7 +21,7 @@
 
 #include <hmat/hmatrix/HMatrixType.h>
 
-namespace bie {
+namespace bigwham {
 
 struct Cluster {
   il::Tree<il::Range, 2> partition;
@@ -35,28 +35,28 @@ void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
                  il::Array<il::int_t>& permutation);
 
 // block-cluster Tree I*I
-il::Tree<bie::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,
-                                        const il::Tree<il::Range, 2>& tree,
-                                        double eta);
+il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,
+                                                const il::Tree<il::Range, 2>& tree,
+                                                double eta);
 
 void hmatrixTreeIxI_rec(const il::Array2D<double>& node,
                      const il::Tree<il::Range, 2>& range_tree, double eta,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
-                     il::Tree<bie::SubHMatrix, 4>& hmatrix_tree);
+                     il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
 
 // block-cluster Tree I*J
-il::Tree<bie::SubHMatrix, 4> hmatrixTreeIxJ(const il::Array2D<double>& node0,
-                                        const il::Tree<il::Range, 2>& tree0,
-                                        const il::Array2D<double>& node1,
-                                        const il::Tree<il::Range, 2>& tree1,
-                                        double eta);
+il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxJ(const il::Array2D<double>& node0,
+                                                const il::Tree<il::Range, 2>& tree0,
+                                                const il::Array2D<double>& node1,
+                                                const il::Tree<il::Range, 2>& tree1,
+                                                double eta);
 
 void hmatrixTreeIxJ_rec(const il::Array2D<double>& node0,
                      const il::Tree<il::Range, 2>& range_tree0,
                      const il::Array2D<double>& node1,
                      const il::Tree<il::Range, 2>& range_tree1, double eta,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
-                     il::Tree<bie::SubHMatrix, 4>& hmatrix_tree);
+                     il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
 
 
 

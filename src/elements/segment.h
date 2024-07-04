@@ -15,7 +15,7 @@
 #include "elements/boundary_element.h"
 #include "il/container/2d/Array2D.h"
 
-namespace bie {
+namespace bigwham {
 
 template <int p> class Segment : public BoundaryElement {
 
@@ -130,6 +130,6 @@ template <int p> inline void Segment<p>::SetNodes() {
                                             // points for 0 element
 };
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_SEGMENT_H

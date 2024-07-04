@@ -18,13 +18,13 @@
 #include "hdf5.h"
 #endif
 
-namespace bie {
+namespace bigwham {
 /* -------------------------------------------------------------------------- */
 
 
 // direct constructor
 template <typename T>
-Hmat<T>::Hmat(const bie::MatrixGenerator<T> & matrix_gen,const double epsilon_aca) {
+Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca) {
         // construction directly
         this->toHmat(matrix_gen, epsilon_aca);
 }
@@ -188,7 +188,7 @@ template <typename T> il::int_t Hmat<T>::nbOfEntries() {
 /* -------------------------------------------------------------------------- */
 
 template <typename T>
-void Hmat<T>::buildFR(const bie::MatrixGenerator<T> & matrix_gen) {
+void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
   // construction of the full rank blocks
   std::cout << " Loop on full blocks construction  \n";
   std::cout << " N full blocks " << hr_->pattern_.n_FRB << " \n";
@@ -216,7 +216,7 @@ void Hmat<T>::buildFR(const bie::MatrixGenerator<T> & matrix_gen) {
 /// \param epsilon
 template <typename T>
 template <il::int_t dim>
-void Hmat<T>::buildLR(const bie::MatrixGenerator<T> & matrix_gen,
+void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
                       const double epsilon) {
   // constructing the low rank blocks
   dof_dimension_ = matrix_gen.blockSize();
@@ -240,8 +240,8 @@ void Hmat<T>::buildLR(const bie::MatrixGenerator<T> & matrix_gen,
     // we need 7a LRA generator virtual template similar to the Matrix
     // generator... here we have an if condition for the LRA call dependent on
     // dof_dimension_
-    auto lra = bie::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1,
-                                                    epsilon);
+    auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1,
+                                                        epsilon);
 
     // store the rank in the low_rank pattern
     hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
@@ -254,7 +254,7 @@ void Hmat<T>::buildLR(const bie::MatrixGenerator<T> & matrix_gen,
 
 // filling up the h-matrix sub-blocks
 template <typename T>
-void Hmat<T>::build(const bie::MatrixGenerator<T> & matrix_gen,
+void Hmat<T>::build(const bigwham::MatrixGenerator<T> & matrix_gen,
                     const double epsilon) {
   dof_dimension_ = matrix_gen.blockSize();
   size_[0] = matrix_gen.size(0);
@@ -637,4 +637,4 @@ template <typename T> void Hmat<T>::readFromFile(const std::string & filename) {
 
 template class Hmat<double>;
 
-} // namespace bie
+} // namespace bigwham

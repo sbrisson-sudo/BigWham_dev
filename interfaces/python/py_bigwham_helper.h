@@ -7,7 +7,7 @@
 #include "io/bigwham_io_gen.h"
 #include "io/bigwham_io_helper.h"
 
-using namespace bie;
+using namespace bigwham;
 namespace py = pybind11;
 template <typename T>
 using pbarray = py::array_t<T, py::array::c_style | py::array::forcecast>;

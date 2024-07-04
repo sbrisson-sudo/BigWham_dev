@@ -11,22 +11,23 @@
 
 #include "elasticity/bie_elastostatic.h"
 
-namespace bie{
+namespace bigwham {
 
-template <class Es, class Er, ElasticKernelType k>
+
+template <class Es, class Er,ElasticKernelType k>
 class BieElastostaticModeI : public BieElastostatic<Es, Er, k> {
     using BieElastostatic<Es, Er, k>::BieElastostatic;
 
 public:
     BieElastostaticModeI() : BieElastostatic<Es, Er, k>() {};
-    BieElastostaticModeI(bie::ElasticProperties& elas,il::int_t dim) :
+    BieElastostaticModeI(bigwham::ElasticProperties& elas,il::int_t dim) :
     BieElastostatic<Es, Er, k>() {
         this->elas_ = elas;
         this->dof_dimension_ = 1;
         this->spatial_dimension_ = dim;
     };
 
-    BieElastostaticModeI(bie::ElasticProperties&elas,
+    BieElastostaticModeI(bigwham::ElasticProperties&elas,
     il::int_t dim, bool local_unknowns, bool local_co_variables):BieElastostatic<Es, Er, k>() {
         this->elas_ = elas;
         this->dof_dimension_ = 1;

@@ -35,7 +35,7 @@
 
 #include "cnpy.h"
 
-using namespace bie;
+using namespace bigwham;
 template <typename T> std::string print_array2D(const il::Array2D<T> &);
 template <typename T> std::string print_array1D(const il::Array<T> &);
 template <typename T>
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
   auto hr = HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
 
   SquareMatrixGenerator<double> M(my_mesh, ker, hr);
-  bie::Hmat<double> h_(M, eps_aca);
+  bigwham::Hmat<double> h_(M, eps_aca);
 
   il::Array<double> dd{M.size(1), 0.0};
   il::Array<double> dd_perm{M.size(1), 0.0};

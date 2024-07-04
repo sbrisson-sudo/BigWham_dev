@@ -21,7 +21,7 @@
 
 #include "core/mesh.h"
 
-namespace bie {
+namespace bigwham {
 
 struct HRepresentation {
   HPattern pattern_;
@@ -45,7 +45,7 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
   // std::cout << " Got col points construction ...."<< "\n";
   il::Timer tt;
   tt.Start();
-  Cluster cluster = bie::cluster(max_leaf_size, il::io, Xcol);
+  Cluster cluster = bigwham::cluster(max_leaf_size, il::io, Xcol);
   std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
@@ -114,6 +114,6 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
     return hr;
 }
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_HIERARCHICAL_REPRESENTATION_H

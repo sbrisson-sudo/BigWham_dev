@@ -21,7 +21,7 @@
 #include "core/mesh.h"
 #include "hmat/hierarchical_representation.h"
 
-namespace bie {
+namespace bigwham {
 
 /*
 
@@ -29,7 +29,7 @@ namespace bie {
  source and receiver elements should be the same!
 
  El: Element Type, Triangle<0>
- Bie_def: Kernel Type, BieElastostatic<Tri0, Tri0, bie::ElasticKernelType::H>
+ Bie_def: Kernel Type, BieElastostatic<Tri0, Tri0, bigwham::ElasticKernelType::H>
 */
 template <typename T> class SquareMatrixGenerator : public MatrixGenerator<T> {
 
@@ -131,6 +131,6 @@ void SquareMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
   }
 }
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_SQMATGENERATOR_H

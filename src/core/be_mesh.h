@@ -16,7 +16,7 @@
 #include "core/mesh.h"
 #include "elements/boundary_element.h"
 
-namespace bie {
+namespace bigwham {
 
 // Class for Boundary element mesh
 // a BE mesh has a element with dimension -1 compared to the spatial
@@ -73,7 +73,7 @@ public:
   virtual void ConstructMesh() override;
 };
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_BEMESH_H
 

@@ -8,7 +8,7 @@
 
 #include "elements/point.h"
 
-namespace bie{
+namespace bigwham{
 
     template class   Point<2>;
     template class   Point<3>;

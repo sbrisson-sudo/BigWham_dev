@@ -39,7 +39,7 @@
 #include "hmat/square_matrix_generator.h"
 /* -------------------------------------------------------------------------- */
 
-using namespace bie;
+using namespace bigwham;
 /* -------------------------------------------------------------------------- */
 
 int main(int argc, char * argv[]) {

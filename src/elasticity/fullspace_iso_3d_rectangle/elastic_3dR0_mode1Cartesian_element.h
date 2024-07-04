@@ -13,7 +13,7 @@
 #include "core/elastic_properties.h"
 
 
-namespace bie{
+namespace bigwham{
 double StressesKernelR0opening(
     double& xx, double& yy, double& zz, double& a, double& b, double& G,
     double& nu) ;
@@ -22,9 +22,9 @@ bool is_stress_singular_at_given_location(double&x, double& y, double& z, double
 
 
 double traction_influence_3DR0opening(
-            bie::FaceData &elem_data_s, // source element
-            bie::FaceData &elem_data_r, // receiver element
-            bie::ElasticProperties const &elas_ // elastic properties
+        bigwham::FaceData &elem_data_s, // source element
+            bigwham::FaceData &elem_data_r, // receiver element
+            bigwham::ElasticProperties const &elas_ // elastic properties
             ) ;
 
 

@@ -17,7 +17,7 @@
 #include <il/StaticArray2D.h>
 #include <il/StaticArray.h>
 
-namespace bie{
+namespace bigwham{
 
     // interface for test
     il::StaticArray2D<double,3,3> AngDisDisp(double x, double y, double z, double alpha, double nu);

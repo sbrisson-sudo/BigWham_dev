@@ -11,7 +11,7 @@
 #include <il/StaticArray.h>
 #include <il/Array2D.h>
 
-namespace bie{
+namespace bigwham{
 
 typedef double (*vFunctionCall)(double& x, double& y, double& z, double& xi, double& eta);
 

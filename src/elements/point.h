@@ -12,7 +12,7 @@
 
 #include "boundary_element.h"
 
-namespace bie {
+namespace bigwham {
 // dim = 2: for 2 dimensional problems
 // dim = 3: for 3 dimensional problems
 template <int dim> class Point : public BoundaryElement {
@@ -74,6 +74,6 @@ template <int dim> inline void Point<dim>::SetRotationMatrices() {
   }
 }
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_POINT_H

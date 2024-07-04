@@ -18,7 +18,7 @@
 #include "core/oldies/Mesh2D.h"
 #include "core/oldies/SegmentData.h"
 
-namespace bie {
+namespace bigwham {
 
 
 // Simplified 3D kernel - piece wise constant

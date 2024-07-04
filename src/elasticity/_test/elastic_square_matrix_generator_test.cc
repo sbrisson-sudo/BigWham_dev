@@ -31,15 +31,15 @@ TEST(SquareMatGen, segment_0_1) {
   xy(1, 0) = 1.0;
   il::Array2D<il::int_t> conn{1, 2, 0};
   conn(0, 1) = 1;
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(xy, conn);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(xy, conn);
   my_mesh->ConstructMesh();
-  bie::ElasticProperties elas(1, 0.3);
+  bigwham::ElasticProperties elas(1, 0.3);
   auto test =
-      std::make_shared<bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                                            bie::ElasticKernelType::H>>(
+      std::make_shared<bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                                            bigwham::ElasticKernelType::H>>(
           elas, xy.size(1));
-  auto hr = bie::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
-  bie::SquareMatrixGenerator<double> M(my_mesh, test, hr);
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
+  bigwham::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   ASSERT_TRUE(M.size(1) == 2 && M.size(0) == 2);
 }
 /* -------------------------------------------------------------------------- */
@@ -50,15 +50,15 @@ TEST(SquareMatGen, segment_0_2) {
   xy(1, 0) = 1.0;
   il::Array2D<il::int_t> conn{1, 2, 0};
   conn(0, 1) = 1;
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(xy, conn);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(xy, conn);
   my_mesh->ConstructMesh();
-  bie::ElasticProperties elas(1, 0.3);
+  bigwham::ElasticProperties elas(1, 0.3);
   auto test =
-      std::make_shared<bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                                            bie::ElasticKernelType::H>>(
+      std::make_shared<bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                                            bigwham::ElasticKernelType::H>>(
           elas, xy.size(1));
-  auto hr = bie::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
-  bie::SquareMatrixGenerator<double> M(my_mesh, test, hr);
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
+  bigwham::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   ASSERT_TRUE(M.blockSize() == 2 &&
               M.sizeAsBlocks(0) == my_mesh->num_elements());
 }
@@ -70,17 +70,17 @@ TEST(SquareMatGen, segment_0_3) {
   xy(1, 0) = 1.0;
   il::Array2D<il::int_t> conn{1, 2, 0};
   conn(0, 1) = 1;
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(xy, conn);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(xy, conn);
   my_mesh->ConstructMesh();
-  bie::ElasticProperties elas(1, 0.3);
+  bigwham::ElasticProperties elas(1, 0.3);
   auto test =
-      std::make_shared<bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                                            bie::ElasticKernelType::H>>(
+      std::make_shared<bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                                            bigwham::ElasticKernelType::H>>(
           elas, xy.size(1));
   // il::Array<double> prop{1, 1000.};
   // test->set_kernel_properties(prop);
-  auto hr = bie::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
-  bie::SquareMatrixGenerator<double> M(my_mesh, test, hr);
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
+  bigwham::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   il::Array2D<double> A{M.size(0), M.size(1), 0.0};
   il::Array2DEdit<double> v = A.Edit();
   M.set(0, 0, il::io, v);
@@ -110,18 +110,18 @@ TEST(SquareMatGen, segment_0_Hmat_1) {
     conn(i, 0) = i;
     conn(i, 1) = i + 1;
   }
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(coor, conn);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(coor, conn);
   my_mesh->ConstructMesh();
-  bie::ElasticProperties elas(1, 0.3);
+  bigwham::ElasticProperties elas(1, 0.3);
   auto ker =
-      std::make_shared<bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                                            bie::ElasticKernelType::H>>(
+      std::make_shared<bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                                            bigwham::ElasticKernelType::H>>(
           elas, coor.size(1));
 
   il::int_t max_leaf_size = 32;
-  auto hr = bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, 1.0);
-  bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
-  bie::Hmat<double> h_(M, 1.e-3);
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, 1.0);
+  bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
+  bigwham::Hmat<double> h_(M, 1.e-3);
   ASSERT_TRUE(h_.isBuilt()); // h_.isBuilt()
 }
 /* -------------------------------------------------------------------------- */
@@ -141,20 +141,20 @@ TEST(SquareMatGen, segment_0_Hmat_2) {
     conn(i, 0) = i;
     conn(i, 1) = i + 1;
   }
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<0>>>(coor, conn);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(coor, conn);
   my_mesh->ConstructMesh();
   auto xcol = my_mesh->collocation_points();
-  bie::ElasticProperties elas(1, 0.0);
+  bigwham::ElasticProperties elas(1, 0.0);
   auto ker =
-      std::make_shared<bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                                            bie::ElasticKernelType::H>>(
+      std::make_shared<bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                                            bigwham::ElasticKernelType::H>>(
           elas, coor.size(1));
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
-  auto hr = bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
-  bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, eps_aca);
+  bigwham::Hmat<double> h_(M, eps_aca);
   // simple opening mode...
   il::Array<double> x{M.size(1), 0.0}, y{M.size(1), 0.0};
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
@@ -196,19 +196,19 @@ TEST(SquareMatGen, segment_1_Hmat_1_segs_45_a1) {
   ien(1, 0) = 1;
   ien(1, 1) = 2;
 
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<1>>>(xy, ien);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<1>>>(xy, ien);
   my_mesh->ConstructMesh();
-  bie::ElasticProperties elas(1., 0.);
+  bigwham::ElasticProperties elas(1., 0.);
   auto ker =
-      std::make_shared<bie::BieElastostatic<bie::Segment<1>, bie::Segment<1>,
-                                            bie::ElasticKernelType::H>>(
+      std::make_shared<bigwham::BieElastostatic<bigwham::Segment<1>, bigwham::Segment<1>,
+                                            bigwham::ElasticKernelType::H>>(
           elas, xy.size(1));
   il::int_t max_leaf_size = 320;
   double eta = 0.0;
-  auto hr = bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
-  bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, eps_aca);
+  bigwham::Hmat<double> h_(M, eps_aca);
   /// analytical results from mathematica integration for that particular
   // case
   // we compare the results of the assembly w.t the mma code
@@ -324,20 +324,20 @@ TEST(SquareMatGen, segment_1_Hmat_1_two_adjacent_segs) {
   ien(1, 0) = 1;
   ien(1, 1) = 2;
 
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Segment<1>>>(xy, ien);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<1>>>(xy, ien);
   my_mesh->ConstructMesh();
-  bie::ElasticProperties elas(1., 0.);
+  bigwham::ElasticProperties elas(1., 0.);
   auto ker =
-      std::make_shared<bie::BieElastostatic<bie::Segment<1>, bie::Segment<1>,
-                                            bie::ElasticKernelType::H>>(
+      std::make_shared<bigwham::BieElastostatic<bigwham::Segment<1>, bigwham::Segment<1>,
+                                            bigwham::ElasticKernelType::H>>(
           elas, xy.size(1));
 
   il::int_t max_leaf_size = 320;
   double eta = 0.0;
-  auto hr = bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
-  bie::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, eps_aca);
+  bigwham::Hmat<double> h_(M, eps_aca);
   /// analytical results from mathematica integration for that particular
   // case
   // we compare the results of the assembly w.t the mma code
@@ -452,20 +452,20 @@ TEST(SquareMatGen, Triangle_0_1) {
   conn(1, 1) = 1;
   conn(1, 2) = 3;
 
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Triangle<0>>>(coor, conn);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Triangle<0>>>(coor, conn);
   my_mesh->ConstructMesh();
   il::Array2D<double> xcol = my_mesh->collocation_points();
-  bie::ElasticProperties elas(1, 0.0);
+  bigwham::ElasticProperties elas(1, 0.0);
 
-  using Kernel = bie::BieElastostatic<bie::Triangle<0>, bie::Triangle<0>,
-                                      bie::ElasticKernelType::H>;
+  using Kernel = bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Triangle<0>,
+                                      bigwham::ElasticKernelType::H>;
   auto ker = std::make_shared<Kernel>(elas, dim);
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
-  auto hr = bie::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
-  bie ::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, eps_aca);
+  bigwham::Hmat<double> h_(M, eps_aca);
   il::Array<double> val_list;
   il::Array<int> pos_list;
   h_.fullBlocksOriginal(il::io, val_list, pos_list);
@@ -505,21 +505,21 @@ TEST(RectangleMatGen, Triangle_0_1) {
   conn(1, 1) = 1;
   conn(1, 2) = 3;
 
-  auto my_mesh = std::make_shared<bie::BEMesh<bie::Triangle<0>>>(coor, conn);
+  auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Triangle<0>>>(coor, conn);
   my_mesh->ConstructMesh();
   il::Array2D<double> xcol = my_mesh->collocation_points();
-  bie::ElasticProperties elas(1, 0.0);
+  bigwham::ElasticProperties elas(1, 0.0);
 
-  using Kernel = bie::BieElastostatic<bie::Triangle<0>, bie::Triangle<0>,
-                                      bie::ElasticKernelType::H>;
+  using Kernel = bigwham::BieElastostatic<bigwham::Triangle<0>, bigwham::Triangle<0>,
+                                      bigwham::ElasticKernelType::H>;
   auto ker = std::make_shared<Kernel>(elas, dim);
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
-  auto hr = bie::HRepresentationRectangularMatrix(my_mesh, my_mesh,
+  auto hr = bigwham::HRepresentationRectangularMatrix(my_mesh, my_mesh,
                                                   max_leaf_size, eta);
-  bie::BieMatrixGenerator<double> M(my_mesh, my_mesh, ker, hr);
+  bigwham::BieMatrixGenerator<double> M(my_mesh, my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bie::Hmat<double> h_(M, eps_aca);
+  bigwham::Hmat<double> h_(M, eps_aca);
   il::Array<double> val_list;
   il::Array<int> pos_list;
   h_.fullBlocksOriginal(il::io, val_list, pos_list);

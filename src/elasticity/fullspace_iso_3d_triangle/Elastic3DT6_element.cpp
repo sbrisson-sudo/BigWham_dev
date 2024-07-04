@@ -28,7 +28,7 @@
 #include <elasticity/fullspace_iso_3d_rectangle/Elastic3DT6_element.h>
 #include <elasticity/fullspace_iso_3d_rectangle/h_potential_3DT6.h>
 
-namespace bie {
+namespace bigwham {
 
 // Element-to-point influence matrix (submatrix of the global one)
 // (Integration of a kernel of the elasticity equation over a triangular element

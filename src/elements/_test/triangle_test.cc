@@ -20,7 +20,7 @@ TEST(triangle, triangle_0_1) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
 
   ASSERT_TRUE(tri0.spatial_dimension() == 3);
@@ -31,7 +31,7 @@ TEST(triangle, triangle_0_2) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
   ASSERT_TRUE(tri0.num_collocation_points() == 1);
 }
@@ -42,7 +42,7 @@ TEST(triangle, triangle_0_3) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
   auto R = tri0.rotation_matrix();
   ASSERT_TRUE(R(0, 0) == 1 && R(1, 1) == 1 && R(2, 2) == 1 && R(0, 1) == 0 &&
@@ -56,7 +56,7 @@ TEST(triangle, triangle_0_4) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
   auto x = tri0.centroid();
   ASSERT_TRUE(x[0] == 1. / 3 && x[1] == 1. / 3 && x[2] == 0.);
@@ -68,7 +68,7 @@ TEST(triangle, triangle_0_5) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
   auto x = tri0.nodes();
   ASSERT_TRUE(abs(x(0, 0) - 1. / 3) < 1.e-12 &&
@@ -81,7 +81,7 @@ TEST(triangle, triangle_0_6) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
   auto x = tri0.vertices();
   ASSERT_TRUE(x(0, 0) == xyz(0, 0) && x(0, 1) == xyz(0, 1) &&
@@ -94,7 +94,7 @@ TEST(triangle, triangle_0_7) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
   auto x = tri0.normal();
   ASSERT_TRUE(x[0] == 0 && x[1] == 0 && x[2] == 1);
@@ -106,7 +106,7 @@ TEST(triangle, triangle_0_8) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
   auto x = tri0.tangent1();
   ASSERT_TRUE(x[0] == 1 && x[1] == 0 && x[2] == 0);
@@ -118,7 +118,7 @@ TEST(triangle, triangle_0_9) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<0> tri0;
+  bigwham::Triangle<0> tri0;
   tri0.SetElement(xyz);
   auto x = tri0.tangent2();
   ASSERT_TRUE(x[0] == 0 && x[1] == 1 && x[2] == 0);
@@ -131,7 +131,7 @@ TEST(triangle, triangle_0_10) {
     il::Array2D<double> xyz{3, 3, 2.0};
     xyz(0, 0) = 1; xyz(1, 0) = 3.;
     xyz(2, 1) = 4.;
-    bie::Triangle<0> tri0;
+    bigwham::Triangle<0> tri0;
     tri0.SetElement(xyz);
     il::Array<double> P1{3},P2{3},P3{3};
     for (il::int_t j=0;j<3;j++){
@@ -156,7 +156,7 @@ TEST(triangle, triangle_2_0) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<2> tri2;
+  bigwham::Triangle<2> tri2;
   tri2.SetElement(xyz);
   auto x = tri2.nodes();
   ASSERT_TRUE(tri2.num_nodes() == 6);
@@ -168,7 +168,7 @@ TEST(triangle, triangle_2_1) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<2> tri2;
+  bigwham::Triangle<2> tri2;
   tri2.SetElement(xyz);
   auto x = tri2.nodes();
   // std::cout << x(0, 0);
@@ -181,7 +181,7 @@ TEST(triangle, triangle_2_2) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<2> tri2;
+  bigwham::Triangle<2> tri2;
   tri2.SetElement(xyz);
   auto x = tri2.nodes();
   // std::cout << x(0, 0);
@@ -194,7 +194,7 @@ TEST(triangle, triangle_2_3) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<2> tri2;
+  bigwham::Triangle<2> tri2;
   tri2.SetElement(xyz);
   auto R = tri2.rotation_matrix();
   ASSERT_TRUE(R(0, 0) == 1 && R(1, 1) == 1 && R(2, 2) == 1 && R(0, 1) == 0 &&
@@ -208,7 +208,7 @@ TEST(triangle, triangle_2_4) {
   il::Array2D<double> xyz{3, 3, 0.0};
   xyz(1, 0) = 1.;
   xyz(2, 1) = 1.;
-  bie::Triangle<2> tri2;
+  bigwham::Triangle<2> tri2;
   tri2.SetElement(xyz);
   auto xcol = tri2.collocation_points();
   ASSERT_TRUE(xcol.size(0) == 6 && xcol.size(1) == 3);

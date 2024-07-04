@@ -22,7 +22,7 @@
 
 TEST(T0_ker,AngDislocation_1){
     // test angular dislocation displacement in angular dislocation system
-    il::StaticArray2D<double,3,3> test_ad=bie::AngDisDisp(2.4,-3., 0.2, il::pi/2., 0.15);
+    il::StaticArray2D<double,3,3> test_ad=bigwham::AngDisDisp(2.4,-3., 0.2, il::pi/2., 0.15);
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_ad(i,0) << " | " << test_ad(i,1) << " | "<< test_ad(i,2) << "\n";
     }
@@ -38,7 +38,7 @@ TEST(T0_ker,TDSetupD_1){
     il::Array<double> SideVec{3,0.};
     SideVec[1]=1;SideVec[2]=1;
 
-    il::StaticArray2D<double,3,3>  test_ad=bie::TDSetupD(x_obs,il::pi/2.+il::pi, 0.25,TriVertex,SideVec);
+    il::StaticArray2D<double,3,3>  test_ad=bigwham::TDSetupD(x_obs,il::pi/2.+il::pi, 0.25,TriVertex,SideVec);
 
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_ad(i,0) << " | " << test_ad(i,1) << " | "<< test_ad(i,2) << "\n";
@@ -55,9 +55,9 @@ TEST(T0_ker,TDSetupD_2){
     il::Array<double> SideVec{3,0.};
     SideVec[1]=1;SideVec[2]=1;TriVertex[1]=1;
 
-    il::StaticArray2D<double,3,3>  test_ad=bie::TDSetupD(x_obs,il::pi/2.+il::pi, 0.25,TriVertex,SideVec);
+    il::StaticArray2D<double,3,3>  test_ad=bigwham::TDSetupD(x_obs,il::pi/2.+il::pi, 0.25,TriVertex,SideVec);
 
-//    il::StaticArray2D<double,3,3> test_ad=bie::AngDisDisp(2.,-3., 0.2, il::pi/2., 0.15);
+//    il::StaticArray2D<double,3,3> test_ad=bigwham::AngDisDisp(2.,-3., 0.2, il::pi/2., 0.15);
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_ad(i,0) << " | " << test_ad(i,1) << " | "<< test_ad(i,2) << "\n";
     }
@@ -72,9 +72,9 @@ TEST(T0_ker,TDSetupD_3){
     il::Array<double> SideVec{3,0.};
     SideVec[1]=1;SideVec[2]=1;TriVertex[1]=0;
 
-    il::StaticArray2D<double,3,3>  test_ad=bie::TDSetupD(x_obs,il::pi/2.+il::pi, 0.25,TriVertex,SideVec);
+    il::StaticArray2D<double,3,3>  test_ad=bigwham::TDSetupD(x_obs,il::pi/2.+il::pi, 0.25,TriVertex,SideVec);
 
-//    il::StaticArray2D<double,3,3> test_ad=bie::AngDisDisp(2.,-3., 0.2, il::pi/2., 0.15);
+//    il::StaticArray2D<double,3,3> test_ad=bigwham::AngDisDisp(2.,-3., 0.2, il::pi/2., 0.15);
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_ad(i,0) << " | " << test_ad(i,1) << " | "<< test_ad(i,2) << "\n";
     }
@@ -93,7 +93,7 @@ TEST(T0_ker,TDSetupD_4){
     std::cout << " p        " << TriVertex[0] << ","  << TriVertex[1] << "," << TriVertex[2] << "\n";
     std::cout << " SideVec  " << SideVec[0] << ","  << SideVec[1] << "," << SideVec[2] << "\n";
     std::cout << " x_obs    " << x_obs[0] << ","  << x_obs[1] << "," << x_obs[2] << "\n";
-    il::StaticArray2D<double,3,3>  test_ad=bie::TDSetupD(x_obs,1.5708, 0.25,TriVertex,SideVec);
+    il::StaticArray2D<double,3,3>  test_ad=bigwham::TDSetupD(x_obs,1.5708, 0.25,TriVertex,SideVec);
     std::cout << " ---\n";
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_ad(i,0) << " | " << test_ad(i,1) << " | "<< test_ad(i,2) << "\n";
@@ -112,7 +112,7 @@ TEST(T0_ker,TDSetupD_4){
 ////    for (il::int_t i=0;i<3;i++){
 ////        x_obs[i]+=sqrt(std::numeric_limits<double>::epsilon());
 ////    }
-//    il::StaticArray2D<double,3,3>  test_tdcs=bie::Displacements_TDCS(x_obs,P,0.25);
+//    il::StaticArray2D<double,3,3>  test_tdcs=bigwham::Displacements_TDCS(x_obs,P,0.25);
 //
 //    for (il::int_t i=0;i<3;i++){
 //        std::cout   << test_tdcs(i,0) << " | " << test_tdcs(i,1) << " | "<< test_tdcs(i,2) << "\n";
@@ -129,7 +129,7 @@ TEST(T0_ker,disp_efcs_1){
     P(1,0)=1.0; // P2
     P(2,1)=1.0;  // P3
 
-    il::StaticArray2D<double,3,3>  test_efcs=bie::Displacements_EFCS(x_obs,P,0.25);
+    il::StaticArray2D<double,3,3>  test_efcs=bigwham::Displacements_EFCS(x_obs,P,0.25);
 
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_efcs(i,0) << " | " << test_efcs(i,1) << " | "<< test_efcs(i,2) << "\n";
@@ -145,7 +145,7 @@ TEST(T0_ker,disp_efcs_2){
     P(1,0)=1.0; // P2
     P(2,1)=1.0;  // P3
 
-    il::StaticArray2D<double,3,3>  test_efcs=bie::Displacements_EFCS(x_obs,P,0.25);
+    il::StaticArray2D<double,3,3>  test_efcs=bigwham::Displacements_EFCS(x_obs,P,0.25);
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_efcs(i,0) << " | " << test_efcs(i,1) << " | "<< test_efcs(i,2) << "\n";
     }
@@ -160,7 +160,7 @@ TEST(T0_ker,disp_efcs_3){
     P(1,0)=1.0; // P2
     P(2,1)=1.0;  // P3
 
-    il::StaticArray2D<double,3,3>  test_efcs=bie::Displacements_EFCS(x_obs,P,0.5);
+    il::StaticArray2D<double,3,3>  test_efcs=bigwham::Displacements_EFCS(x_obs,P,0.5);
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_efcs(i,0) << " | " << test_efcs(i,1) << " | "<< test_efcs(i,2) << "\n";
     }
@@ -178,7 +178,7 @@ TEST(T0_ker,disp_efcs_4){
     P(1,0)=1.2; // P2
     P(2,1)=1.3;  P(2,0)=0.5; // P3
 
-    il::StaticArray2D<double,3,3>  test_efcs=bie::Displacements_EFCS(x_obs,P,0.3);
+    il::StaticArray2D<double,3,3>  test_efcs=bigwham::Displacements_EFCS(x_obs,P,0.3);
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_efcs(i,0) << " | " << test_efcs(i,1) << " | "<< test_efcs(i,2) << "\n";
     }
@@ -194,7 +194,7 @@ TEST(T0_ker,disp_efcs_5){
     P(1,0)=1.2; P(1,1)=0.2;// P2
     P(2,1)=1.3;  P(2,0)=0.5;   // P3
 
-    il::StaticArray2D<double,3,3>  test_efcs=bie::Displacements_EFCS(x_obs,P,0.3);
+    il::StaticArray2D<double,3,3>  test_efcs=bigwham::Displacements_EFCS(x_obs,P,0.3);
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_efcs(i,0) << " | " << test_efcs(i,1) << " | "<< test_efcs(i,2) << "\n";
     }
@@ -209,7 +209,7 @@ TEST(T0_ker,disp_efcs_6){
     P(1,0)=1.2; // P2
     P(2,1)=1.3;  P(2,0)=0.5;  P(2,2)=0.5; // P3
 
-    il::StaticArray2D<double,3,3>  test_efcs=bie::Displacements_EFCS(x_obs,P,0.3);
+    il::StaticArray2D<double,3,3>  test_efcs=bigwham::Displacements_EFCS(x_obs,P,0.3);
     for (il::int_t i=0;i<3;i++){
         std::cout   << test_efcs(i,0) << " | " << test_efcs(i,1) << " | "<< test_efcs(i,2) << "\n";
     }
@@ -226,7 +226,7 @@ TEST(T0_ker,disp_af_1){
     il::StaticArray<double, 3> obsP{0.};
     obsP[0]=1./3.;
     obsP[1]=1./3.;
-    auto res = bie::DisplacementKernelT0_af(obsP,elVertex,0.25);
+    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
 
     for (il::int_t i=0;i<3;i++){
         std::cout   << res(i,0)  << " | " << res(i,1)  << " | "<< res(i,2)  << "\n";
@@ -245,7 +245,7 @@ TEST(T0_ker,disp_af_2){
     il::StaticArray<double, 3> obsP{0.};
     obsP[0]=3.;
     obsP[1]=-0.3;
-    auto res = bie::DisplacementKernelT0_af(obsP,elVertex,0.25);
+    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
     bool test = true;
 
     for (il::int_t i=0;i<3;i++){
@@ -265,7 +265,7 @@ TEST(T0_ker,disp_af_3){
     il::StaticArray<double, 3> obsP{0.};
     obsP[0]=3.; obsP[2]=2.;
 
-    il::StaticArray2D<double,3,3> res = bie::DisplacementKernelT0_af(obsP,elVertex,0.25);
+    il::StaticArray2D<double,3,3> res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
 
     for (il::int_t i=0;i<3;i++){
         std::cout   << res(i,0)  << " | " << res(i,1)  << " | "<< res(i,2)  << "\n";
@@ -284,7 +284,7 @@ TEST(T0_ker,disp_af_4){
     il::StaticArray<double, 3> obsP{0.};
     obsP[0]=3.; obsP[2]=2.;
 
-    il::StaticArray2D<double,3,3> res = bie::DisplacementKernelT0_af(obsP,elVertex,0.25);
+    il::StaticArray2D<double,3,3> res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
 
     for (il::int_t i=0;i<3;i++){
         std::cout   << res(i,0)  << " | " << res(i,1)  << " | "<< res(i,2)  << "\n";
@@ -305,7 +305,7 @@ TEST(T0_ker,disp_1){
     for (il::int_t i=0;i<3;i++){
         obsP[i]+=sqrt(std::numeric_limits<double>::epsilon());
     }
-    auto res = bie::DisplacementKernelT0(obsP,elVertex,0.25);
+    auto res = bigwham::DisplacementKernelT0(obsP,elVertex,0.25);
 
     bool test = true;
 
@@ -334,7 +334,7 @@ TEST(T0_ker,disp_1_1){
     obsP[0]=4.;
     obsP[2]=0.4;
 
-    auto res = bie::DisplacementKernelT0_af(obsP,elVertex,0.25);
+    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
 
     bool test = true;
 
@@ -366,7 +366,7 @@ TEST(T0_ker,disp_2){
     for (il::int_t i=0;i<3;i++){
         obsP[i]+=sqrt(std::numeric_limits<double>::epsilon());
     }
-    auto res = bie::DisplacementKernelT0(obsP,elVertex,0.25);
+    auto res = bigwham::DisplacementKernelT0(obsP,elVertex,0.25);
     bool test = true;
 
     il::StaticArray2D<double, 3, 3> mma_res;
@@ -395,7 +395,7 @@ TEST(T0_ker,disp_2_1){
     obsP[0]=45.;
     obsP[2]=0.;
 
-    auto res = bie::DisplacementKernelT0_af(obsP,elVertex,0.25);
+    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
     bool test = true;
 
     il::StaticArray2D<double, 3, 3> mma_res;
@@ -423,7 +423,7 @@ TEST(T0_ker,disp_3_1){
 
     il::StaticArray<double, 3> obsP{il::value,{1.24, 0.02, -0.12}};
 
-    auto res = bie::DisplacementKernelT0_af(obsP,elVertex,0.35);
+    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.35);
     bool test = true;
 
     il::StaticArray2D<double, 3, 3> mma_res;

@@ -26,14 +26,14 @@ TEST(hmat, gaussian_1) {
   for (il::int_t i = 0; i < n; i++) {
     points(i, 0) = 1.0 * i;
   }
-  bie::Cluster cluster = bie::cluster(32, il::io, points);
-  const il::Tree<bie::SubHMatrix, 4> block_tree =
-      bie::hmatrixTreeIxI(points, cluster.partition, 3.);
-  auto hr = std::make_shared<bie::HRepresentation>();
-  hr->pattern_ = bie::createPattern(block_tree);
+  bigwham::Cluster cluster = bigwham::cluster(32, il::io, points);
+  const il::Tree<bigwham::SubHMatrix, 4> block_tree =
+      bigwham::hmatrixTreeIxI(points, cluster.partition, 3.);
+  auto hr = std::make_shared<bigwham::HRepresentation>();
+  hr->pattern_ = bigwham::createPattern(block_tree);
   hr->permutation_0_ = cluster.permutation;
-  bie::GaussianMatrix<double> M{n, beta, hr};
-  bie::Hmat<double> h_(M, 1.e-3);
+  bigwham::GaussianMatrix<double> M{n, beta, hr};
+  bigwham::Hmat<double> h_(M, 1.e-3);
   std::cout << " n FB " << hr->pattern_.n_FRB << "\n";
   std::cout << " Size " << M.size(0) << " -" << M.size(1) << "\n";
   std::cout << " Compression " << h_.compressionRatio() << "\n";
@@ -48,14 +48,14 @@ TEST(hmat, gaussian_hmat_diag) {
   for (il::int_t i = 0; i < n; i++) {
     points(i, 0) = 1.0 * i;
   }
-  bie::Cluster cluster = bie::cluster(32, il::io, points);
-  const il::Tree<bie::SubHMatrix, 4> block_tree =
-      bie::hmatrixTreeIxI(points, cluster.partition, 3.);
-  auto hr = std::make_shared<bie::HRepresentation>();
-  hr->pattern_ = bie::createPattern(block_tree);
+  bigwham::Cluster cluster = bigwham::cluster(32, il::io, points);
+  const il::Tree<bigwham::SubHMatrix, 4> block_tree =
+      bigwham::hmatrixTreeIxI(points, cluster.partition, 3.);
+  auto hr = std::make_shared<bigwham::HRepresentation>();
+  hr->pattern_ = bigwham::createPattern(block_tree);
   hr->permutation_0_ = cluster.permutation;
-  bie::GaussianMatrix<double> M{n, alpha, hr};
-  bie::Hmat<double> h_(M, 1.e-3);
+  bigwham::GaussianMatrix<double> M{n, alpha, hr};
+  bigwham::Hmat<double> h_(M, 1.e-3);
   std::cout << " n FB " << hr->pattern_.n_FRB << "\n";
   std::cout << " Size " << M.size(0) << " -" << M.size(1) << "\n";
   std::cout << " Compression " << h_.compressionRatio() << "\n";

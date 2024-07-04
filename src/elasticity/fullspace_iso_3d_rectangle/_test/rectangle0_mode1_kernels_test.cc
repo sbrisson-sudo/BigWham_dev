@@ -22,11 +22,11 @@ TEST(Rectangle0_mode1,rect_0_H_1){
     xyz(2, 0) = hx;
     xyz(2, 1) = hy;
     xyz(3, 1) = hy;
-    bie::Rectangle<0> rec0_elt;
+    bigwham::Rectangle<0> rec0_elt;
     rec0_elt.SetElement(xyz);
 //test self effect H kernel
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostaticModeI<bie::Rectangle<0>, bie::Rectangle<0>,bie::ElasticKernelType::H> test(elas, xyz.size(1));
+    bigwham::ElasticProperties elas(1, 0.3);
+    bigwham::BieElastostaticModeI<bigwham::Rectangle<0>, bigwham::Rectangle<0>,bigwham::ElasticKernelType::H> test(elas, xyz.size(1));
     std::vector<double> test_self = test.influence(rec0_elt, 0, rec0_elt, 0);
     std::cout << "test self effect H "     << "\n";
     for (int i = 0; i < test_self.size(); i++) {

@@ -40,14 +40,14 @@ private:
   double h_representation_time_;
   double hmat_time_;
 
-  std::shared_ptr<bie::Hmat<double>> hmat_;
-  std::shared_ptr<bie::HRepresentation> hr_;
-  std::shared_ptr<bie::Mesh> mesh_src_;
-  std::shared_ptr<bie::Mesh> mesh_rec_;
-  std::shared_ptr<bie::Mesh> mesh_; // for square matrix
-  std::shared_ptr<bie::BieKernel<double>> ker_obj_; // BieKernel description for the matrix operator
-  std::shared_ptr<bie::BieKernel<double>> ker_obs_u_; // BieKernel description for computing observation of potential/displacement (u) at points
-  std::shared_ptr<bie::BieKernel<double>> ker_obs_q_; // BieKernel description for computing observation of 'flux'/'stress' (q) at points
+  std::shared_ptr<bigwham::Hmat<double>> hmat_;
+  std::shared_ptr<bigwham::HRepresentation> hr_;
+  std::shared_ptr<bigwham::Mesh> mesh_src_;
+  std::shared_ptr<bigwham::Mesh> mesh_rec_;
+  std::shared_ptr<bigwham::Mesh> mesh_; // for square matrix
+  std::shared_ptr<bigwham::BieKernel<double>> ker_obj_; // BieKernel description for the matrix operator
+  std::shared_ptr<bigwham::BieKernel<double>> ker_obs_u_; // BieKernel description for computing observation of potential/displacement (u) at points
+  std::shared_ptr<bigwham::BieKernel<double>> ker_obs_q_; // BieKernel description for computing observation of 'flux'/'stress' (q) at points
 
 public:
     BigWhamIOGen() {};
@@ -69,7 +69,7 @@ public:
 
   // load from file
   void LoadFromFile(const std::string &filename) {
-    this->hmat_ = std::make_shared<bie::Hmat<double>>(filename);
+    this->hmat_ = std::make_shared<bigwham::Hmat<double>>(filename);
   }
 
   void WriteHmatrix(const std::string &filename) {

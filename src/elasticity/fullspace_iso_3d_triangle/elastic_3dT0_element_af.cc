@@ -21,7 +21,7 @@
 #include "elastic_3dT0_element_af.h"
 
 
-namespace bie{
+namespace bigwham{
 
     il::StaticArray2D<double,3,3> AngDisDisp(double x, double y, double z, double alpha, double nu) {
         // Displacement from an angular dislocation in an elastic isotropic full space
@@ -423,7 +423,7 @@ namespace bie{
 
         // note : here we switch to positive DD in overlap convention for consistency with other DD kernels
 
-        bie::Triangle<0> elt;
+        bigwham::Triangle<0> elt;
         il::Array2D<double> xyz{3,3,0.};
         il::Array<double> x_obs{3,0.};
        // il::StaticArray2D<double, 3, 3> el_vertices_s_static{0};

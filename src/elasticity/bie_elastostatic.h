@@ -18,9 +18,9 @@
 #include "elements/triangle.h"
 #include "elements/point.h"
 
-namespace bie {
+namespace bigwham {
 
-enum class ElasticKernelType  { U, T, H, S, V, W }; // should have T and Ttilde as Tt
+enum class ElasticKernelType { U, T, H, S, V, W }; // should have T and Ttilde as Tt
 
 /*
 
@@ -38,21 +38,21 @@ class BieElastostatic : public BieKernel<double> {
   // or / derived from this one.
 
 protected:
-  bie::ElasticProperties elas_;
+  bigwham::ElasticProperties elas_;
   bool local_unknowns_;
   bool local_co_variables_;
 
 public:
   BieElastostatic() : BieKernel<double>(){};
 
-  BieElastostatic(const bie::ElasticProperties &elas, const il::int_t dim) : BieKernel<double>() {
+  BieElastostatic(const bigwham::ElasticProperties &elas, const il::int_t dim) : BieKernel<double>() {
     elas_ = elas;
     this->dof_dimension_ = dim;
     this->spatial_dimension_ = dim;
     this->local_unknowns_ = true;
     this->local_co_variables_ = true;
   }
-  BieElastostatic(bie::ElasticProperties &elas, il::int_t dim,bool local_unknowns, bool local_co_variables) : BieKernel<double>() {
+  BieElastostatic(bigwham::ElasticProperties &elas, il::int_t dim,bool local_unknowns, bool local_co_variables) : BieKernel<double>() {
     elas_ = elas;
     this->dof_dimension_ = dim;
     this->spatial_dimension_ = dim;
@@ -74,6 +74,6 @@ public:
 };
 
 
-} // namespace bie
+} // namespace bigwham
 
-#endif // BIGWHAM_BIEELASTOSTA
+#endif

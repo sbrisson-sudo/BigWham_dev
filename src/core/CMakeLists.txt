@@ -1,7 +1,5 @@
 set(SOURCE_FILES ${SOURCE_FILES}
     ${CMAKE_CURRENT_SOURCE_DIR}/be_mesh.cc
-    
     ${CMAKE_CURRENT_SOURCE_DIR}/oldies/FaceData.cpp
     PARENT_SCOPE
 )
-

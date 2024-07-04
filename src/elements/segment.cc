@@ -8,7 +8,7 @@
 
 #include "elements/segment.h"
 
-namespace bie{
+namespace bigwham{
 
     template class   Segment<0>;
     template class   Segment<1>;

@@ -26,11 +26,11 @@ TEST(TwoDP0, test_seg_0_dof_dim) {
 
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1.0;
-  bie::Segment<0> source{};
+  bigwham::Segment<0> source{};
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
-  bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                       bie::ElasticKernelType::H>
+  bigwham::ElasticProperties elas(1, 0.3);
+  bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                       bigwham::ElasticKernelType::H>
       test(elas, 2);
   ASSERT_TRUE(test.dof_dimension() == 2);
 }
@@ -39,11 +39,11 @@ TEST(TwoDP0, test_seg_0_dof_dim) {
 TEST(TwoDP0, test_seg_0_dim) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1.0;
-  bie::Segment<0> source{};
+  bigwham::Segment<0> source{};
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
-  bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                       bie::ElasticKernelType::H>
+  bigwham::ElasticProperties elas(1, 0.3);
+  bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                       bigwham::ElasticKernelType::H>
       test(elas, xy.size(1));
   ASSERT_TRUE(test.spatial_dimension() == 2);
 }
@@ -52,22 +52,22 @@ TEST(TwoDP0, test_seg_0_dim) {
 TEST(TwoDP0,test_several_kernels){
     il::Array2D<double> xy{2, 2, 0.};
     xy(1, 0) = 1.0;
-    bie::Segment<0> source{};
+    bigwham::Segment<0> source{};
     source.SetElement(xy);
-    bie::ElasticProperties elas(1, 0.3);
-    bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,bie::ElasticKernelType::H> testH(elas, xy.size(1));
+    bigwham::ElasticProperties elas(1, 0.3);
+    bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,bigwham::ElasticKernelType::H> testH(elas, xy.size(1));
 
     std::vector<double> test_self = testH.influence(source, 0, source, 0);
 
     il::Array2D<double> xy_obs{1, 2, 0.};
     xy_obs(0, 0) = 10.0;
-    bie::Point<2> obs_pts;
+    bigwham::Point<2> obs_pts;
     obs_pts.SetElement(xy_obs);
 
-    bie::BieElastostatic<bie::Segment<0>, bie::Point<2>,bie::ElasticKernelType::T> test_obsT(elas, xy.size(1));
+    bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Point<2>,bigwham::ElasticKernelType::T> test_obsT(elas, xy.size(1));
     auto test_disp = test_obsT.influence(source,0,obs_pts,0);
     std::cout << "test disp size ::" << test_disp.size() <<"\n";
-    bie::BieElastostatic<bie::Segment<0>, bie::Point<2>,bie::ElasticKernelType::W> test_obsW(elas, xy.size(1));
+    bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Point<2>,bigwham::ElasticKernelType::W> test_obsW(elas, xy.size(1));
     auto test_stress = test_obsW.influence(source,0,obs_pts,0);
     std::cout << "test stress size ::" << test_stress.size() <<"\n";
 
@@ -79,18 +79,18 @@ TEST(TwoDP0, test_seg_0_self) {
 
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1.0;
-  bie::Segment<0> source;
+  bigwham::Segment<0> source;
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
-  bie::BieElastostaticSp3d<bie::Segment<0>, bie::Segment<0>,
-                       bie::ElasticKernelType::H>
+  bigwham::ElasticProperties elas(1, 0.3);
+  bigwham::BieElastostaticSp3d<bigwham::Segment<0>, bigwham::Segment<0>,
+                       bigwham::ElasticKernelType::H>
       reftest(elas, xy.size(1));
   il::Array<double> prop{1, 1000.};
   reftest.set_kernel_properties(prop);
   std::vector<double> test_self_sp3d = reftest.influence(source, 0, source, 0);
 
-  bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                       bie::ElasticKernelType::H>
+  bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                       bigwham::ElasticKernelType::H>
       test(elas, xy.size(1));
   std::vector<double> test_self = test.influence(source, 0, source, 0);
 
@@ -108,9 +108,9 @@ TEST(TwoDP0, test_seg_0_1) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(0, 1) = 2.4;
   xy(1, 0) = 3.0;
-  bie::Segment<0> source;
+  bigwham::Segment<0> source;
   source.SetElement(xy);
-  bie::ElasticProperties elas(1, 0.3);
+  bigwham::ElasticProperties elas(1, 0.3);
   // std::cout << "test on inclined elt "
   //           << "\n";
   il::Array2D<double> xy_r{2, 2, 0.};
@@ -118,16 +118,16 @@ TEST(TwoDP0, test_seg_0_1) {
   xy_r(1, 0) = 5.0;
   xy_r(0, 1) = 1.0;
   xy_r(1, 1) = 0.0;
-  bie::Segment<0> receiver;
+  bigwham::Segment<0> receiver;
   receiver.SetElement(xy_r);
-  bie::BieElastostatic<bie::Segment<0>, bie::Segment<0>,
-                       bie::ElasticKernelType::H>
+  bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
+                       bigwham::ElasticKernelType::H>
       test(elas, xy.size(1));
 
   std::vector<double> test_st = test.influence(source, 0, receiver, 0);
 
-  bie::BieElastostaticSp3d<bie::Segment<0>, bie::Segment<0>,
-                           bie::ElasticKernelType::H>
+  bigwham::BieElastostaticSp3d<bigwham::Segment<0>, bigwham::Segment<0>,
+                           bigwham::ElasticKernelType::H>
       reftest(elas, xy.size(1));
   il::Array<double> prop{1, 10000.};
   reftest.set_kernel_properties(prop);

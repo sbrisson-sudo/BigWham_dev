@@ -15,7 +15,7 @@
 #include <il/StaticArray.h>
 #include <il/Array2D.h>
 
-namespace bie {
+namespace bigwham {
 
 class FaceData {
 

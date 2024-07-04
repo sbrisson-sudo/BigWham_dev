@@ -17,7 +17,7 @@
 #include "elastic_sp3dP0_element.h"
 #include "il/container/1d/Array.h"
 
-namespace bie {
+namespace bigwham {
 
 // a dummy derived class for simplified 3D P0 kernel....
 template <class Es, class Er, ElasticKernelType k>
@@ -27,7 +27,7 @@ class BieElastostaticSp3d : public BieElastostatic<Es, Er, k> {
 public:
   BieElastostaticSp3d() : BieElastostatic<Es, Er, k>(){};
 
-  BieElastostaticSp3d(bie::ElasticProperties &elas, il::int_t dim)
+  BieElastostaticSp3d(bigwham::ElasticProperties &elas, il::int_t dim)
       : BieElastostatic<Es, Er, k>() {
     IL_EXPECT_FAST(dim == 2);
     this->elas_ = elas;
@@ -36,7 +36,7 @@ public:
     this->kernel_properties_ = il::Array<double>(1, 10000.0);
   };
 
-  BieElastostaticSp3d(bie::ElasticProperties &elas, il::int_t dim,
+  BieElastostaticSp3d(bigwham::ElasticProperties &elas, il::int_t dim,
                       bool local_unknowns, bool local_co_variables)
       : BieElastostatic<Es, Er, k>() {
     IL_EXPECT_FAST(dim == 2);
@@ -126,6 +126,6 @@ BieElastostaticSp3d<Segment<0>, Segment<0>, ElasticKernelType::H>::influence(
   return stnl;
 }
 
-} // namespace bie
+} // namespace bigwham
 
 #endif // BIGWHAM_BIEELASTOSTATICSP3D_H

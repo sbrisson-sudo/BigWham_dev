@@ -31,7 +31,7 @@
 #include "elasticity/fullspace_iso_3d_rectangle/bie_elastostatic_rectangle_0_mode1_influence.h"
 
 /* -------------------------------------------------------------------------- */
-using namespace bie;
+using namespace bigwham;
 
 // square matrix case
 BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<int> &conn, const std::string &kernel, const std::vector<double> &properties) {
@@ -50,14 +50,14 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             flux_dimension_ = 3;
             int nvertices_per_elt_ = 2;
             using EltType = Segment<0>;
-            mesh_ = bie::CreateMeshFromVect<Segment<0>>(spatial_dimension_, nvertices_per_elt_,
+            mesh_ = bigwham::CreateMeshFromVect<Segment < 0>>(spatial_dimension_, nvertices_per_elt_,
                                                 coor, conn);
-            ker_obj_ = std::make_shared<bie::BieElastostatic<Segment<0>, Segment<0>, bie::ElasticKernelType::H>>(
+            ker_obj_ = std::make_shared < bigwham::BieElastostatic<Segment < 0>, Segment < 0 >, bigwham::ElasticKernelType::H >> (
                     elas, spatial_dimension_);
             using ObsType = Point<2>;
-            ker_obs_u_=std::make_shared<bie::BieElastostatic<Segment<0>, ObsType, bie::ElasticKernelType::T>>(
+            ker_obs_u_= std::make_shared < bigwham::BieElastostatic<Segment < 0>, ObsType, bigwham::ElasticKernelType::T >> (
                     elas, spatial_dimension_);
-            ker_obs_q_=std::make_shared<bie::BieElastostatic<Segment<0>, ObsType, bie::ElasticKernelType::W>>(
+            ker_obs_q_= std::make_shared < bigwham::BieElastostatic<Segment < 0>, ObsType, bigwham::ElasticKernelType::W >> (
                     elas, spatial_dimension_);
             break;
         }
@@ -69,13 +69,13 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             dof_dimension_ = 2;
             flux_dimension_ = 3;
             int nvertices_per_elt_ = 2;
-            using EltType = bie::Segment<1>;
-            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                coor, conn);
-            ker_obj_ = std::make_shared<bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+            using EltType = bigwham::Segment<1>;
+            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                         coor, conn);
+            ker_obj_ = std::make_shared<bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
             using ObsType = Point<2>;
-            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
+            ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
                    elas, spatial_dimension_);
             // still missing displacement for that kernel + element
             break;
@@ -87,11 +87,11 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             dof_dimension_ = 2;
             flux_dimension_ = 3;
             int nvertices_per_elt_ = 2;
-            using EltType = bie::Segment<0>;
-            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                     coor, conn);
+            using EltType = bigwham::Segment<0>;
+            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                         coor, conn);
             ker_obj_ = std::make_shared<
-                    bie::BieElastostaticSp3d<EltType, EltType, bie::ElasticKernelType::H>>(
+                    bigwham::BieElastostaticSp3d<EltType, EltType, bigwham::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
             il::Array<double> prop{1, properties[2]};
             ker_obj_->set_kernel_properties(prop);
@@ -104,12 +104,12 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             spatial_dimension_ = 2;
             dof_dimension_ = 2;
             int nvertices_per_elt_ = 2;
-            using EltType = bie::Segment<0>;
-            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                     coor, conn);
-            ker_obj_ = std::make_shared<bie::ElasticAxiSymmRingKernel>(
+            using EltType = bigwham::Segment<0>;
+            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                         coor, conn);
+            ker_obj_ = std::make_shared<bigwham::ElasticAxiSymmRingKernel>(
                     elas, spatial_dimension_); // todo - change this API to the new one.... should be std::make_shared<
-            // bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>
+            // bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>
             break;
         }
         case "3DT0"_sh: {
@@ -119,16 +119,16 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             dof_dimension_ = 3;
             flux_dimension_ = 6; // 6 stress components
             int nvertices_per_elt_ = 3;
-            using EltType = bie::Triangle<0>;
-            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                coor, conn);
+            using EltType = bigwham::Triangle<0>;
+            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                         coor, conn);
             ker_obj_ = std::make_shared<
-                    bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+                    bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
             using ObsType = Point<3>;
-            ker_obs_u_=std::make_shared<bie::BieElastostatic<EltType, ObsType, bie::ElasticKernelType::T>>(
+            ker_obs_u_=std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
                     elas, spatial_dimension_);
-            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
+            ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
                     elas, spatial_dimension_);
             break;
         }
@@ -139,16 +139,16 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             dof_dimension_ = 3;
             flux_dimension_ = 6; // 6 stress components
             int nvertices_per_elt_ = 3;
-            using EltType = bie::Rectangle<0>;
-            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                     coor, conn);
+            using EltType = bigwham::Rectangle<0>;
+            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                         coor, conn);
             ker_obj_ = std::make_shared<
-                    bie::BieElastostatic<EltType, EltType, bie::ElasticKernelType::H>>(
+                    bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
             using ObsType = Point<3>;
-            ker_obs_u_=std::make_shared<bie::BieElastostatic<EltType, ObsType, bie::ElasticKernelType::T>>(
+            ker_obs_u_=std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
                     elas, spatial_dimension_);
-            ker_obs_q_=std::make_shared<bie::BieElastostatic<EltType,ObsType, bie::ElasticKernelType::W>>(
+            ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
                     elas, spatial_dimension_);
             break;
         }
@@ -159,11 +159,11 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             dof_dimension_ = 1;
             flux_dimension_ = 6; // 6 stress components
             int nvertices_per_elt_ = 3;
-            using EltType = bie::Rectangle<0>;
-            mesh_ = bie::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                     coor, conn);
+            using EltType = bigwham::Rectangle<0>;
+            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                         coor, conn);
             ker_obj_ = std::make_shared<
-                    bie::BieElastostaticModeI<EltType, EltType, bie::ElasticKernelType::H>>(
+                    bigwham::BieElastostaticModeI<EltType, EltType, bigwham::ElasticKernelType::H>>(
                     elas, spatial_dimension_);
             // observation kernels to implement....
             // still missing displacement & stresses representation for that kernel + element
@@ -197,9 +197,9 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
             flux_dimension_ = 6 ;
             using src_elem = Triangle<0>;
             using rec_elem = Triangle<0>;
-            mesh_src_ = bie::CreateMeshFromVect<src_elem>(
+            mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
                     spatial_dimension_, /* num vertices */ 3, coor_src, conn_src);
-            mesh_rec_ = bie::CreateMeshFromVect<rec_elem>(
+            mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
                     spatial_dimension_, /* num vertices */ 3, coor_rec, conn_rec);
             ker_obj_ = std::make_shared<
                     BieElastostatic<src_elem, rec_elem, ElasticKernelType::H>>(
@@ -214,9 +214,9 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
             flux_dimension_ = 3;
             using src_elem = Segment<0>;
             using rec_elem = Point<2>;
-            mesh_src_ = bie::CreateMeshFromVect<src_elem>(
+            mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
                     spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
-            mesh_rec_ = bie::CreateMeshFromVect<rec_elem>(
+            mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
                     spatial_dimension_, /* num vertices */ 1, coor_rec, conn_rec);
             ker_obj_ = std::make_shared<
                     BieElastostatic<src_elem, rec_elem, ElasticKernelType::T>>(
@@ -259,7 +259,7 @@ void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double
   std::cout << "--------------------\n";
   std::cout << "Populating Hierarchical matrix ...\n";
   tt.Start();
-  bie::BieMatrixGenerator<double> M(mesh_src_, mesh_rec_, ker_obj_, hr_);
+  bigwham::BieMatrixGenerator<double> M(mesh_src_, mesh_rec_, ker_obj_, hr_);
   hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_);
   tt.Stop();
   hmat_time_ = tt.time();
@@ -292,7 +292,7 @@ std::vector<long> BigWhamIOGen::GetHPattern() const {
 
   IL_EXPECT_FAST(is_pattern_built_ || is_built_);
 
-  bie::HPattern pattern =hr_->pattern_;
+  bigwham::HPattern pattern =hr_->pattern_;
   if (is_built_) {
       pattern =hmat_->pattern();
   }
@@ -505,7 +505,7 @@ il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coo
     IL_EXPECT_FAST(this->ker_obs_u_!= nullptr);
 
     il::int_t npts = coor_obs.size() / spatial_dimension_;
-    std::shared_ptr<bie::Mesh> mesh_obs;
+    std::shared_ptr<bigwham::Mesh> mesh_obs;
     std::vector<int> conn_obs(npts,0);
     for (int i =0 ; i<npts;i++){
         // dummy connectivity for a mesh of points.
@@ -515,11 +515,11 @@ il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coo
 
     switch (spatial_dimension_) {
         case 2 : {
-            mesh_obs = bie::CreateMeshFromVect<bie::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
             break;
         }
         case 3: {
-            mesh_obs = bie::CreateMeshFromVect<bie::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
             break;
         }
         default:
@@ -578,7 +578,7 @@ il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_ob
 
     il::int_t npts = coor_obs.size() / spatial_dimension_;
 
-    std::shared_ptr<bie::Mesh> mesh_obs;
+    std::shared_ptr<bigwham::Mesh> mesh_obs;
     std::vector<int> conn_obs(npts,0);
     for (int i =0 ; i<npts;i++){
         // dummy connectivity for a mesh of points.
@@ -588,11 +588,11 @@ il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_ob
 
     switch (spatial_dimension_) {
         case 2 : {
-            mesh_obs = bie::CreateMeshFromVect<bie::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
             break;
         }
         case 3: {
-            mesh_obs = bie::CreateMeshFromVect<bie::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
+            mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
             break;
         }
         default:

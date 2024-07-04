@@ -24,7 +24,7 @@ protected:
 void Test3DR0Stress::TestStress(double x, double y, double  z, double  a, double  b, double G, double nu, il::Array2D<double> ReferenceStress)
 {
     il::StaticArray2D<double, 3, 6> Stress;
-    Stress = bie::StressesKernelR0(x, y,  z,  a,  b, G, nu);
+    Stress = bigwham::StressesKernelR0(x, y,  z,  a,  b, G, nu);
 
     // stress due to displacement discontinuity DDx (shear)
     ASSERT_NEAR(ReferenceStress(0, 0), Stress(0, 0), 1.e-5);// sxx

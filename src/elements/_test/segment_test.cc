@@ -20,7 +20,7 @@
 TEST(Segment, test_n_vert) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1.0;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   int n_vert = seg.num_vertices();
   ASSERT_TRUE(n_vert == 2);
@@ -31,7 +31,7 @@ TEST(Segment, test_centroid) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1.0;
 
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
 
   auto center = seg.centroid();
@@ -44,7 +44,7 @@ TEST(Segment, test_size_1) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 6.40;
 
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   double size = seg.size();
 
@@ -55,7 +55,7 @@ TEST(Segment, test_size_1) {
 TEST(Segment, test_n_s_1) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 6.40;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   auto normal = seg.normal();
   auto tang = seg.tangent1();
@@ -68,7 +68,7 @@ TEST(Segment, test_size_2) { // 45 deg element
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1;
   xy(1, 1) = 1;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   double size = seg.size();
 
@@ -80,7 +80,7 @@ TEST(Segment, test_n_s_2) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1;
   xy(1, 1) = 1;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   auto normal = seg.normal();
   auto tang = seg.tangent1();
@@ -93,7 +93,7 @@ TEST(Segment, test_rotation_a) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1;
   xy(1, 1) = 1;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   auto normal = seg.normal();
   auto tang = seg.tangent1();
@@ -111,7 +111,7 @@ TEST(Segment, test_rotation_b) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1;
   xy(1, 1) = 1;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   auto tang = seg.tangent1();
   auto rot = seg.rotation_matrix_t();
@@ -128,7 +128,7 @@ TEST(Segment, test_rotation_c) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 1;
   xy(1, 1) = 1;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   auto tang = seg.tangent1();
   auto rot = seg.rotation_matrix();
@@ -146,7 +146,7 @@ TEST(Segment, test_rotation_c) {
 TEST(Segment, test_collocation0_1) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 4.;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   double size = seg.size();
   auto mycol = seg.collocation_points();
@@ -158,7 +158,7 @@ TEST(Segment, test_collocation0_1) {
 TEST(Segment, test_collocation0_2) {
   il::Array2D<double> xy{2, 2, 5.};
   xy(1, 0) = 5. + 4.;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   double size = seg.size();
   auto mycol = seg.collocation_points();
@@ -170,7 +170,7 @@ TEST(Segment, test_collocation0_2) {
 TEST(Segment, test_collocation1_1) {
   il::Array2D<double> xy{2, 2, 0.};
   xy(1, 0) = 2.;
-  bie::Segment<1> seg;
+  bigwham::Segment<1> seg;
   seg.SetElement(xy);
   double size = seg.size();
   auto mycol = seg.collocation_points();
@@ -185,7 +185,7 @@ TEST(Segment, test_collocation1_1) {
 TEST(Segment, test_dim_0) {
   il::Array2D<double> xy{2, 2, 5.};
   xy(1, 0) = 5. + 4.;
-  bie::Segment<0> seg;
+  bigwham::Segment<0> seg;
   seg.SetElement(xy);
   int mydim = seg.spatial_dimension();
   ASSERT_TRUE(mydim == 2);
@@ -195,7 +195,7 @@ TEST(Segment, test_dim_0) {
 TEST(Segment, test_dim_1) {
   il::Array2D<double> xy{2, 2, 5.};
   xy(1, 0) = 5. + 4.;
-  bie::Segment<1> seg;
+  bigwham::Segment<1> seg;
   seg.SetElement(xy);
   int mydim = seg.spatial_dimension();
   ASSERT_TRUE(mydim == 2);

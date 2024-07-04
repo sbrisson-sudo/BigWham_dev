@@ -34,8 +34,8 @@ TEST(mesh_from_vect,test_pts_2d_u){
         k=k+2;
     }
     std::cout << "creating mesh obj \n";
-    using EltType = bie::Point<2>;
-    std::unique_ptr<bie::Mesh> mesh_obs=bie::CreateUniqueMeshFromVect<EltType>(2, 1, coor, conn);
+    using EltType = bigwham::Point<2>;
+    std::unique_ptr<bigwham::Mesh> mesh_obs=bigwham::CreateUniqueMeshFromVect<EltType>(2, 1, coor, conn);
     bool t = true;
     auto colpts =  mesh_obs->collocation_points();
     std::cout << "n elts :: " << mesh_obs->num_elements() <<"\n";
@@ -64,8 +64,8 @@ TEST(mesh_from_vect,test_pts_2d_s){
         k=k+2;
     }
     std::cout << "creating mesh obj \n";
-    using EltType = bie::Point<2>;
-    std::shared_ptr<bie::Mesh> mesh_obs= bie::CreateMeshFromVect<EltType>(2, 1, coor, conn);
+    using EltType = bigwham::Point<2>;
+    std::shared_ptr<bigwham::Mesh> mesh_obs= bigwham::CreateMeshFromVect<EltType>(2, 1, coor, conn);
     bool t = true;
     auto colpts =  mesh_obs->collocation_points();
     std::cout << "n elts :: " << mesh_obs->num_elements() <<"\n";
