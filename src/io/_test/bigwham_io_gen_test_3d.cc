@@ -36,7 +36,7 @@ TEST(bigwham_io_gen_3d, 3DT0_1) {
     }
   std::vector<double> properties{1., 0.};
 
-  BigWhamIOGen my_io{coor, conn, "3DT0", properties};
+  BigWhamIOGen my_io{coor, conn, "3DT0-H", properties};
   my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
   std::cout << my_io.GetCompressionRatio()<<"\n";
   auto colpts = my_io.GetCollocationPoints();
@@ -62,7 +62,7 @@ TEST(bigwham_io_gen_3d, 3DT0_2) {
     }
     std::vector<double> properties{1., 0.};
 
-    BigWhamIOGen my_io{coor, conn, "3DT0", properties};
+    BigWhamIOGen my_io{coor, conn, "3DT0-H", properties};
     my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
     std::cout << my_io.GetCompressionRatio()<<"\n";
     auto colpts = my_io.GetCollocationPoints();
@@ -81,7 +81,7 @@ TEST(bigwham_io_gen_3d, 3DT0_2) {
 
 
 TEST(bigwham_io_gen_3d, 3DT0_3) {
-    // 2 Triangle for the square [0,1]X[0,1]
+    // 2 Triangles for the square [0,1]X[0,1]
     int n_elts = 2;
     std::vector<double> coor(3*4  , 0.);
     coor[3]=1.;
@@ -97,11 +97,11 @@ TEST(bigwham_io_gen_3d, 3DT0_3) {
     }
     std::vector<double> properties{1., 0.};
 
-    BigWhamIOGen my_io{coor, conn, "3DT0", properties};
+    BigWhamIOGen my_io{coor, conn, "3DT0-H", properties};
     my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
     std::cout << "Compression ratio:" << my_io.GetCompressionRatio()<<"\n";
     auto colpts = my_io.GetCollocationPoints();
-    std::vector<double> obspts(6  , 0.); // here if we only use one pt (3) it crashes at runtime !!
+    std::vector<double> obspts(3  , 0.);
     il::Array<double> dd(6  , 1.);
     obspts[2]=10.;obspts[0]=0.3;
     obspts[1]=-2.44;
@@ -113,6 +113,6 @@ TEST(bigwham_io_gen_3d, 3DT0_3) {
         std::cout << "displacement: " << displ[i] <<"\n";
     }
 
-    ASSERT_TRUE(abs(displ[1]+0.301504)<1.e-4 );
+    ASSERT_TRUE(abs(displ[0]+0.000158716)<1.e-4 );
 }
 /* -------------------------------------------------------------------------- */

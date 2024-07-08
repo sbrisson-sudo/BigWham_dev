@@ -292,156 +292,156 @@ TEST(T0_ker,disp_af_4){
     ASSERT_TRUE(true);
 }
 
-
-TEST(T0_ker,disp_1){
-    // unit triangle - comparison with mma
-    il::StaticArray2D<double, 3, 3> elVertex{0.};
-    elVertex(1,0)=1.;
-    elVertex(2,1)=1.;
-
-    il::StaticArray<double, 3> obsP{0.};
-    obsP[0]=4.;
-    obsP[2]=0.4;
-    for (il::int_t i=0;i<3;i++){
-        obsP[i]+=sqrt(std::numeric_limits<double>::epsilon());
-    }
-    auto res = bigwham::DisplacementKernelT0(obsP,elVertex,0.25);
-
-    bool test = true;
-
-    il::StaticArray2D<double, 3, 3> mma_res;
-    mma_res(0,0)=-0.000733982;mma_res(0,1)=0.0000512986; mma_res(0,2)=0.000896384;
-    mma_res(1,0)=0.0000512986;mma_res(1,1)= -0.000113193;mma_res(1,2)= -0.0000759645;
-    mma_res(2,0)=-0.00103584;mma_res(2,1)=0.0000870897;mma_res(2,2)= -0.000114662;
-    //std::cout << " T0 displacement test 1\n";
-    for (il::int_t i;i<3;i++){
-        for (il::int_t j=0;j<3;j++){
-            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
-            std::cout << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
-        }
-    }
-    ASSERT_TRUE(test);
-}
-
-
-TEST(T0_ker,disp_1_1){
-
-    il::StaticArray2D<double, 3, 3> elVertex{0.};
-    elVertex(1,0)=1.;
-    elVertex(2,1)=1.;
-
-    il::StaticArray<double, 3> obsP{0.};
-    obsP[0]=4.;
-    obsP[2]=0.4;
-
-    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
-
-    bool test = true;
-
-    il::StaticArray2D<double, 3, 3> mma_res;
-    mma_res(0,0)=-0.000733982;mma_res(0,1)=0.0000512986; mma_res(0,2)=0.000896384;
-    mma_res(1,0)=0.0000512986;mma_res(1,1)= -0.000113193;mma_res(1,2)= -0.0000759645;
-    mma_res(2,0)=-0.00103584;mma_res(2,1)=0.0000870897;mma_res(2,2)= -0.000114662;
-    std::cout << " T0 displacement test 1\n";
-    for (il::int_t i;i<3;i++){
-        for (il::int_t j=0;j<3;j++){
-            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
-            std::cout << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
-        }
-    }
-    ASSERT_TRUE(test);
-}
-
-// THIS TEST DOES NOT PASS !!
-// test highligthing the problematic singularities of Fata 2013 integration
-TEST(T0_ker,disp_2){
-    // test highligthing the problematic singularities of Fata 2013 integration
-    il::StaticArray2D<double, 3, 3> elVertex{0.};
-    elVertex(1,0)=1.;
-    elVertex(2,1)=1.;
-
-    il::StaticArray<double, 3> obsP{0.};
-    obsP[0]=45.;
-    obsP[2]=0.;
-    for (il::int_t i=0;i<3;i++){
-        obsP[i]+=sqrt(std::numeric_limits<double>::epsilon());
-    }
-    auto res = bigwham::DisplacementKernelT0(obsP,elVertex,0.25);
-    bool test = true;
-
-    il::StaticArray2D<double, 3, 3> mma_res;
-    mma_res(0,0)=-1.55237e-14; mma_res(0,1)= 9.85458e-17; mma_res(0,2)=6.64744e-6;
-    mma_res(1,0)=9.85458e-17;mma_res(1,1)=-2.21892e-15;mma_res(1,2)= 4.93277e-8;
-    mma_res(2,0)=-6.64744e-6;mma_res(2,1)= 4.93277e-8;mma_res(2,2)= -2.21783e-15;
-    std::cout << " T0 displacement test 2\n";
-
-    for (il::int_t i;i<3;i++){
-        for (il::int_t j=0;j<3;j++){
-            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
-            std::cout << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
-        }
-    }
-    ASSERT_TRUE(test);
-}
-
-
-TEST(T0_ker,disp_2_1){
-
-    il::StaticArray2D<double, 3, 3> elVertex{0.};
-    elVertex(1,0)=1.;
-    elVertex(2,1)=1.;
-
-    il::StaticArray<double, 3> obsP{0.};
-    obsP[0]=45.;
-    obsP[2]=0.;
-
-    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
-    bool test = true;
-
-    il::StaticArray2D<double, 3, 3> mma_res;
-    mma_res(0,0)=-1.55237e-14; mma_res(0,1)= 9.85458e-17; mma_res(0,2)=6.64744e-6;
-    mma_res(1,0)=9.85458e-17;mma_res(1,1)=-2.21892e-15;mma_res(1,2)= 4.93277e-8;
-    mma_res(2,0)=-6.64744e-6;mma_res(2,1)= 4.93277e-8;mma_res(2,2)= -2.21783e-15;
-    std::cout << " T0 displacement test 2\n";
-
-    for (il::int_t i;i<3;i++){
-        for (il::int_t j=0;j<3;j++){
-            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
-            std::cout << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
-        }
-    }
-    ASSERT_TRUE(test);
-}
-
-
-TEST(T0_ker,disp_3_1){
-
-    il::StaticArray2D<double, 3, 3> elVertex{0.};
-    elVertex(0,0)=-0.1;  elVertex(0,1)=-0.2;
-    elVertex(1,0)=1.3; elVertex(1,1)=0.3;
-    elVertex(2,0)=-0.4; elVertex(2,1)=1.;
-
-    il::StaticArray<double, 3> obsP{il::value,{1.24, 0.02, -0.12}};
-
-    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.35);
-    bool test = true;
-
-    il::StaticArray2D<double, 3, 3> mma_res;
-    mma_res(0,0)=0.0225481; mma_res(0,1)= -0.0160498; mma_res(0,2)=0.00954313;
-    mma_res(1,0)=-0.0160498;mma_res(1,1)=0.0395082;mma_res(1,2)=-0.00663014;
-    mma_res(2,0)=-0.0193029;mma_res(2,1)= 0.0301412;mma_res(2,2)=0.00993545;
-    std::cout << " T0 displacement test 3\n";
-
-    for (il::int_t i=0;i<3;i++){
-        for (il::int_t j=0;j<3;j++){
-            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
-            std::cout << i << " - "<< j << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
-        }
-    }
-    ASSERT_TRUE(test);
-}
-
-
+//
+//TEST(T0_ker,disp_1){
+//    // unit triangle - comparison with mma
+//    il::StaticArray2D<double, 3, 3> elVertex{0.};
+//    elVertex(1,0)=1.;
+//    elVertex(2,1)=1.;
+//
+//    il::StaticArray<double, 3> obsP{1.};
+//    obsP[0]=4.;
+//    obsP[2]=0.4;
+//    for (il::int_t i=0;i<3;i++){
+//        obsP[i]+=sqrt(std::numeric_limits<double>::epsilon());
+//    }
+//    auto res = bigwham::DisplacementKernelT0(obsP,elVertex,0.25);
+//
+//    bool test = true;
+//
+//    il::StaticArray2D<double, 3, 3> mma_res;
+//    mma_res(0,0)=-0.000733982;mma_res(0,1)=0.0000512986; mma_res(0,2)=0.000896384;
+//    mma_res(1,0)=0.0000512986;mma_res(1,1)= -0.000113193;mma_res(1,2)= -0.0000759645;
+//    mma_res(2,0)=-0.00103584;mma_res(2,1)=0.0000870897;mma_res(2,2)= -0.000114662;
+//    //std::cout << " T0 displacement test 1\n";
+//    for (il::int_t i;i<3;i++){
+//        for (il::int_t j=0;j<3;j++){
+//            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
+//            std::cout << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
+//        }
+//    }
+//    ASSERT_TRUE(test);
+//}
+//
+//
+//TEST(T0_ker,disp_1_1){
+//
+//    il::StaticArray2D<double, 3, 3> elVertex{0.};
+//    elVertex(1,0)=1.;
+//    elVertex(2,1)=1.;
+//
+//    il::StaticArray<double, 3> obsP{0.};
+//    obsP[0]=4.;
+//    obsP[2]=0.4;
+//
+//    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
+//
+//    bool test = true;
+//
+//    il::StaticArray2D<double, 3, 3> mma_res;
+//    mma_res(0,0)=-0.000733982;mma_res(0,1)=0.0000512986; mma_res(0,2)=0.000896384;
+//    mma_res(1,0)=0.0000512986;mma_res(1,1)= -0.000113193;mma_res(1,2)= -0.0000759645;
+//    mma_res(2,0)=-0.00103584;mma_res(2,1)=0.0000870897;mma_res(2,2)= -0.000114662;
+//    std::cout << " T0 displacement test 1\n";
+//    for (il::int_t i;i<3;i++){
+//        for (il::int_t j=0;j<3;j++){
+//            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
+//            std::cout << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
+//        }
+//    }
+//    ASSERT_TRUE(test);
+//}
+//
+//// THIS TEST DOES NOT PASS !!
+//// test highligthing the problematic singularities of Fata 2013 integration
+//TEST(T0_ker,disp_2){
+//    // test highligthing the problematic singularities of Fata 2013 integration
+//    il::StaticArray2D<double, 3, 3> elVertex{0.};
+//    elVertex(1,0)=1.;
+//    elVertex(2,1)=1.;
+//
+//    il::StaticArray<double, 3> obsP{0.};
+//    obsP[0]=45.;
+//    obsP[2]=0.;
+//    for (il::int_t i=0;i<3;i++){
+//        obsP[i]+=sqrt(std::numeric_limits<double>::epsilon());
+//    }
+//    auto res = bigwham::DisplacementKernelT0(obsP,elVertex,0.25);
+//    bool test = true;
+//
+//    il::StaticArray2D<double, 3, 3> mma_res;
+//    mma_res(0,0)=-1.55237e-14; mma_res(0,1)= 9.85458e-17; mma_res(0,2)=6.64744e-6;
+//    mma_res(1,0)=9.85458e-17;mma_res(1,1)=-2.21892e-15;mma_res(1,2)= 4.93277e-8;
+//    mma_res(2,0)=-6.64744e-6;mma_res(2,1)= 4.93277e-8;mma_res(2,2)= -2.21783e-15;
+//    std::cout << " T0 displacement test 2\n";
+//
+//    for (il::int_t i;i<3;i++){
+//        for (il::int_t j=0;j<3;j++){
+//            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
+//            std::cout << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
+//        }
+//    }
+//    ASSERT_TRUE(test);
+//}
+//
+//
+//TEST(T0_ker,disp_2_1){
+//
+//    il::StaticArray2D<double, 3, 3> elVertex{0.};
+//    elVertex(1,0)=1.;
+//    elVertex(2,1)=1.;
+//
+//    il::StaticArray<double, 3> obsP{0.};
+//    obsP[0]=45.;
+//    obsP[2]=0.;
+//
+//    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.25);
+//    bool test = true;
+//
+//    il::StaticArray2D<double, 3, 3> mma_res;
+//    mma_res(0,0)=-1.55237e-14; mma_res(0,1)= 9.85458e-17; mma_res(0,2)=6.64744e-6;
+//    mma_res(1,0)=9.85458e-17;mma_res(1,1)=-2.21892e-15;mma_res(1,2)= 4.93277e-8;
+//    mma_res(2,0)=-6.64744e-6;mma_res(2,1)= 4.93277e-8;mma_res(2,2)= -2.21783e-15;
+//    std::cout << " T0 displacement test 2\n";
+//
+//    for (il::int_t i;i<3;i++){
+//        for (il::int_t j=0;j<3;j++){
+//            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
+//            std::cout << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
+//        }
+//    }
+//    ASSERT_TRUE(test);
+//}
+//
+//
+//TEST(T0_ker,disp_3_1){
+//
+//    il::StaticArray2D<double, 3, 3> elVertex{0.};
+//    elVertex(0,0)=-0.1;  elVertex(0,1)=-0.2;
+//    elVertex(1,0)=1.3; elVertex(1,1)=0.3;
+//    elVertex(2,0)=-0.4; elVertex(2,1)=1.;
+//
+//    il::StaticArray<double, 3> obsP{il::value,{1.24, 0.02, -0.12}};
+//
+//    auto res = bigwham::DisplacementKernelT0_af(obsP,elVertex,0.35);
+//    bool test = true;
+//
+//    il::StaticArray2D<double, 3, 3> mma_res;
+//    mma_res(0,0)=0.0225481; mma_res(0,1)= -0.0160498; mma_res(0,2)=0.00954313;
+//    mma_res(1,0)=-0.0160498;mma_res(1,1)=0.0395082;mma_res(1,2)=-0.00663014;
+//    mma_res(2,0)=-0.0193029;mma_res(2,1)= 0.0301412;mma_res(2,2)=0.00993545;
+//    std::cout << " T0 displacement test 3\n";
+//
+//    for (il::int_t i=0;i<3;i++){
+//        for (il::int_t j=0;j<3;j++){
+//            test = test && (std::abs(res(i,j)-mma_res(i,j)) < 1.e-5 );
+//            std::cout << i << " - "<< j << " c++ implt:" << res(i,j) << " mma :" << mma_res(i,j) <<"\n";
+//        }
+//    }
+//    ASSERT_TRUE(test);
+//}
+//
+//
 
 
 

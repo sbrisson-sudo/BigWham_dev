@@ -25,6 +25,7 @@ set(SOURCE_FILES ${SOURCE_FILES}
   
   ## AxisSymm Ring 
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_axisymmetry_flat_unidirectional/elliptic_integral.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_axisymmetry_flat_unidirectional/elastic_Axi3dP0_element.cc
 
 
-  PARENT_SCOPE)
+        PARENT_SCOPE)

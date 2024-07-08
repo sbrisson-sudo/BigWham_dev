@@ -41,7 +41,7 @@ TEST(bigwham_io_gen_2d, Sp3D0_1_1) {
   }
 
   std::vector<double> properties{1., 0., 100};
-  BigWhamIOGen my_io{coor, conn, "S3DP0", properties};
+  BigWhamIOGen my_io{coor, conn, "S3DP0-H", properties};
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
   ASSERT_TRUE(abs(my_io.GetCompressionRatio() - 0.12664) < 1e-4);
@@ -70,7 +70,7 @@ TEST(bigwham_io_gen_2d, Sp3D0_1_2) {
   }
 
   std::vector<double> properties{1., 0., 100};
-  BigWhamIOGen my_io{coor, conn, "S3DP0", properties};
+  BigWhamIOGen my_io{coor, conn, "S3DP0-H", properties};
 
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
   ASSERT_TRUE(my_io.dof_dimension() == 2 &&
@@ -101,7 +101,7 @@ TEST(bigwham_io_gen_2d, Sp3D0_1_3) {
   }
 
   std::vector<double> properties{1., 0., 100};
-  BigWhamIOGen my_io{coor, conn, "S3DP0", properties};
+  BigWhamIOGen my_io{coor, conn, "S3DP0-H", properties};
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
   std::vector<double> x(my_io.MatrixSize(1), 0.);
@@ -146,7 +146,7 @@ TEST(bigwham_io_gen_2d, 2DP0_1) {
   }
 
   std::vector<double> properties{1., 0.};
-  BigWhamIOGen my_io{coor, conn, "2DP0", properties};
+  BigWhamIOGen my_io{coor, conn, "2DP0-H", properties};
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
   std::vector<double> x(my_io.MatrixSize(1), 0.);
@@ -191,7 +191,7 @@ TEST(bigwham_io_gen_2d, 2DP0_2) {
     }
 
     std::vector<double> properties{1., 0.};
-    BigWhamIOGen my_io{coor, conn, "2DP0", properties};
+    BigWhamIOGen my_io{coor, conn, "2DP0-H", properties};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
     std::vector<double> x(my_io.MatrixSize(1), 0.);
@@ -235,7 +235,7 @@ TEST(bigwham_io_gen_2d, 2DP0_3) {
     }
 
     std::vector<double> properties{1., 0.};
-    BigWhamIOGen my_io{coor, conn, "2DP0", properties};
+    BigWhamIOGen my_io{coor, conn, "2DP0-H", properties};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
     il::Array<double> x(my_io.MatrixSize(1),0.);

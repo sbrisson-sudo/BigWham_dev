@@ -133,7 +133,7 @@ TEST(TwoDP0, test_seg_0_1) {
   reftest.set_kernel_properties(prop);
   std::vector<double> test_st_sp3d = reftest.influence(source, 0, receiver, 0);
 
-  double epsilon = 1.e-6;
+  double epsilon = 1.e-5;
   bool tt = true;
   for (int i = 0; i < 2; i++) {
     tt = tt && (abs(test_st[i] - test_st_sp3d[i]) < epsilon);

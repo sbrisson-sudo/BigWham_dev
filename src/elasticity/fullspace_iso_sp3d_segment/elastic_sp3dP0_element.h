@@ -20,7 +20,6 @@
 
 namespace bigwham {
 
-
 // Simplified 3D kernel - piece wise constant
 il::StaticArray2D<double, 2, 3> stresses_kernel_s3d_p0_dd(
             double a, double b,

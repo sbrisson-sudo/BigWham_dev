@@ -35,7 +35,7 @@
 
 #include "core/elastic_properties.h"
 #include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
-#include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d0.h"
+#include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d_uni.h"
 
 #include "hmat/bie_matrix_generator.h"
 
@@ -256,8 +256,8 @@ public:
       using EltType = bigwham::Segment<0>;
       mesh_ = createMeshFromVect<EltType>(dimension_, nvertices_per_elt_, coor,
                                           conn);
-      ker_obj_ =
-          std::make_shared<bigwham::ElasticAxiSymmRingKernel>(elas, dimension_);
+      ker_obj_ = std::make_shared<bigwham::BieElastostaticAxi3D<EltType,EltType,bigwham::ElasticKernelType::H>>(
+                elas, dimension_);
       break;
     }
     default: {

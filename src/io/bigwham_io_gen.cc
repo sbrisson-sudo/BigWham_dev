@@ -22,7 +22,7 @@
 #include "elements/triangle.h"
 
 #include "elasticity/bie_elastostatic.h"
-#include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d0.h"
+#include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d_uni.h"
 #include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
 #include "elasticity/fullspace_iso_2d_segment/bie_elastostatic_segment_0_influence.h"
 #include "elasticity/fullspace_iso_2d_segment/bie_elastostatic_segment_1_influence.h"
@@ -42,7 +42,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
               << " with properties size " << properties.size() << "\n";
 
     switch (hash_djb2a(kernel_name_)) {
-        case "2DP0"_sh: {
+        case "2DP0-H"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
             spatial_dimension_ = 2;
@@ -61,7 +61,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                     elas, spatial_dimension_);
             break;
         }
-       case "2DP1"_sh: {
+       case "2DP1-H"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
 
@@ -80,7 +80,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             // still missing displacement for that kernel + element
             break;
         }
-        case "S3DP0"_sh: {
+        case "S3DP0-H"_sh: {
             IL_ASSERT(properties.size() == 3);
             ElasticProperties elas(properties[0], properties[1]);
             spatial_dimension_ = 2;
@@ -98,7 +98,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             // still missing displacement & stresses representation for that kernel + element
             break;
         }
-        case "Axi3DP0"_sh: {
+        case "Axi3DP0-H"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
             spatial_dimension_ = 2;
@@ -107,12 +107,11 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             using EltType = bigwham::Segment<0>;
             mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
                                                          coor, conn);
-            ker_obj_ = std::make_shared<bigwham::ElasticAxiSymmRingKernel>(
-                    elas, spatial_dimension_); // todo - change this API to the new one.... should be std::make_shared<
-            // bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>
+            ker_obj_ = std::make_shared<bigwham::BieElastostaticAxi3D<EltType,EltType,bigwham::ElasticKernelType::H>>(
+                    elas, spatial_dimension_);
             break;
         }
-        case "3DT0"_sh: {
+        case "3DT0-H"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
             spatial_dimension_ = 3;
@@ -132,7 +131,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                     elas, spatial_dimension_);
             break;
         }
-        case "3DR0"_sh: {
+        case "3DR0-H"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
             spatial_dimension_ = 3;
@@ -152,7 +151,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                     elas, spatial_dimension_);
             break;
         }
-        case "3DR0_mode1"_sh: {
+        case "3DR0-H-mode1"_sh: {
             IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
             spatial_dimension_ = 3;

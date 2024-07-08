@@ -10,16 +10,16 @@
 #ifndef BIGWHAM_BIEELASTOSTATICSP3D_H
 #define BIGWHAM_BIEELASTOSTATICSP3D_H
 
+#include "il/container/1d/Array.h"
+
 #include "core/elastic_properties.h"
 #include "elasticity/bie_elastostatic.h"
 #include "elements/segment.h"
-
 #include "elastic_sp3dP0_element.h"
-#include "il/container/1d/Array.h"
 
 namespace bigwham {
 
-// a dummy derived class for simplified 3D P0 kernel....
+// a dummy derived class for simplified 3D P0 kernel ....
 template <class Es, class Er, ElasticKernelType k>
 class BieElastostaticSp3d : public BieElastostatic<Es, Er, k> {
   using BieElastostatic<Es, Er, k>::BieElastostatic;
@@ -33,7 +33,7 @@ public:
     this->elas_ = elas;
     this->dof_dimension_ = dim;
     this->spatial_dimension_ = dim;
-    this->kernel_properties_ = il::Array<double>(1, 10000.0);
+    this->kernel_properties_ = il::Array<double>(1, 1000.0);
   };
 
   BieElastostaticSp3d(bigwham::ElasticProperties &elas, il::int_t dim,
@@ -43,7 +43,7 @@ public:
     this->elas_ = elas;
     this->dof_dimension_ = dim;
     this->spatial_dimension_ = dim;
-    this->kernel_properties_ = il::Array<double>(1, 10000.0);
+    this->kernel_properties_ = il::Array<double>(1, 1000.0);
     this->local_unknowns_ = local_unknowns;
     this->local_co_variables_ = local_co_variables;
   };
