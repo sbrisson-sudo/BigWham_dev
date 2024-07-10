@@ -21,7 +21,7 @@ namespace bigwham {
 class Mesh {
 protected:
   il::int_t spatial_dimension_;
-  il::int_t num_coords_;
+  il::int_t num_vertex_;
   il::int_t num_elements_;
   std::vector<std::shared_ptr<BoundaryElement>> element_list_;
   // Coordinates of the nodes - size: number of nodes x problem dimension
@@ -36,7 +36,7 @@ public:
   Mesh(){};
   Mesh(const il::Array2D<double> &coordinates,
        const il::Array2D<il::int_t> &connectivity) {
-    num_coords_ = coordinates.size(0);
+      num_vertex_ = coordinates.size(0);
     spatial_dimension_ = coordinates.size(1);
     num_elements_ = connectivity.size(0);
     coordinates_ = coordinates;
@@ -50,7 +50,9 @@ public:
     return element_list_[element_id];
   };
   il::int_t num_elements() const { return num_elements_; };
-  il::int_t spatial_dimension() const { return this->spatial_dimension_; };
+  il::int_t num_vertex() const { return num_vertex_; };
+
+    il::int_t spatial_dimension() const { return this->spatial_dimension_; };
   // nodal coordinates related.
   il::Array2D<double> coordinates() const { return coordinates_; };
   // Read a particular element of the coordinates coordinates

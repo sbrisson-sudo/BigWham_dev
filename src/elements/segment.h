@@ -59,8 +59,7 @@ template <int p>
 inline void Segment<p>::SetElement(const il::Array2D<double> &xv) {
   IL_ASSERT(xv.size(0) == num_vertices_);
   for (il::int_t j = 0; j < spatial_dimension_; j++) {
-    this->centroid_[j] =
-        0.0; // always reset centroid when setting the coordinates
+    this->centroid_[j] = 0.0; // always reset centroid when setting the coordinates
     for (il::int_t i = 0; i < num_vertices_; i++) {
       this->vertices_(i, j) = xv(i, j);
     }

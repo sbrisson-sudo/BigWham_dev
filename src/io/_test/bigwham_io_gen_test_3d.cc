@@ -116,3 +116,37 @@ TEST(bigwham_io_gen_3d, 3DT0_3) {
     ASSERT_TRUE(abs(displ[0]+0.000158716)<1.e-4 );
 }
 /* -------------------------------------------------------------------------- */
+
+
+
+TEST(bigwham_io_gen_3d, 3DR0_1) {
+    // 1 Rectangle for the square [0,1]X[0,1]
+    int n_elts =  1;
+    int n_vertex = 4;
+    std::vector<double> coor(3*4  , 0.);
+    double h=0.5;
+    coor[0]=-0.5; coor[1]=-0.5;
+    coor[3]=-0.5;coor[4]=0.5;
+    coor[6]=0.5;coor[7]=0.5;
+    coor[9]=0.5; coor[10]=-0.5;
+    std::vector<int> conn(n_elts * 4, 0);
+    int k = 0;
+    for (int i = 0; i < n_elts; i++) {
+        conn[k] = i;
+        conn[k + 1] = i + 1;
+        conn[k + 2] = i + 2;
+        conn[k + 3] = i + 3;
+        k = k + 4;
+    }
+    std::vector<double> properties{1., 0.};
+
+    BigWhamIOGen my_io{coor, conn, "3DR0-H", properties};
+    std::cout << my_io.kernel_name() <<"\n";
+    my_io.BuildHierarchicalMatrix(32, 0.0, 1.e-3);
+    std::cout << my_io.GetCompressionRatio()<<"\n";
+    auto colpts = my_io.GetCollocationPoints();
+    std::cout << colpts[0] <<"\n";
+    ASSERT_TRUE((abs(colpts[0]-0.) < 1e-4 )  && (abs(colpts[1]-0.) < 1e-4)  && (abs(colpts[3]-0.) < 1e-4 ) );
+}
+/* -------------------------------------------------------------------------- */
+

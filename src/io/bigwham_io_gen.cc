@@ -137,7 +137,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             spatial_dimension_ = 3;
             dof_dimension_ = 3;
             flux_dimension_ = 6; // 6 stress components
-            int nvertices_per_elt_ = 3;
+            int nvertices_per_elt_ = 4;
             using EltType = bigwham::Rectangle<0>;
             mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
                                                          coor, conn);
@@ -157,7 +157,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
             spatial_dimension_ = 3;
             dof_dimension_ = 1;
             flux_dimension_ = 6; // 6 stress components
-            int nvertices_per_elt_ = 3;
+            int nvertices_per_elt_ = 4;
             using EltType = bigwham::Rectangle<0>;
             mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
                                                          coor, conn);
