@@ -21,13 +21,14 @@
 #include <il/StaticArray4D.h>
 #include <il/linearAlgebra.h>
 
-#include "core/oldies/element_utilities.h"
+//#include "core/oldies/element_utilities.h"
 #include "elasticity/fullspace_iso_3d_triangle/constants.h"
 #include "elasticity/fullspace_iso_3d_triangle/tensor_utilities_3DT6.h"
 #include "elasticity/fullspace_iso_3d_rectangle/Elastic3DT6_element.h"
 #include "elasticity/fullspace_iso_3d_rectangle/h_potential_3DT6.h"
 
 namespace bigwham {
+
 
 // Element-to-point influence matrix (submatrix of the global one)
 // (Integration of a kernel of the elasticity equation over a triangular element

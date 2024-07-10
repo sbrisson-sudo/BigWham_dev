@@ -32,7 +32,7 @@ namespace bigwham{
         double EPSILON;
         EPSILON = 100000 * std::numeric_limits<double>::epsilon();
 
-        if (!is_stress_singular_at_given_location(x, y, z ,a, b))
+        if (!is_stress_singular_at_given_location(x, y, z ,a, b,true))
         {
             double Ce = G / (4. * il::pi * (1. - nu));
             // compute the Is function derivatives....
@@ -64,41 +64,6 @@ namespace bigwham{
         else { Stress = NAN;}
         return Stress;
         // DDz (normal) -> szz
-    }
-
-    double traction_influence_3DR0opening(
-        FaceData &elem_data_s, // source element
-        FaceData &elem_data_r, // receiver element
-        ElasticProperties const &elas_ // elastic properties
-        )
-    {
-
-        double G = elas_.shear_modulus(), nu = elas_.poisson_ratio();
-        il::StaticArray<double,2> a_and_b = get_a_and_b(elem_data_s.getVertices(),elem_data_s.getNoV());
-        double a = a_and_b[0], b = a_and_b[1];
-
-        il::Array2D<double> el_cp_s;
-        el_cp_s = elem_data_s.collocation_points();
-
-        il::Array2D<double> el_cp_r;
-        el_cp_r = elem_data_r.collocation_points();
-
-        il::Array<double> dsr{3};
-        for (int i = 0; i < 3; ++i) { dsr[i] = el_cp_r(0,i) - el_cp_s(0,i);}
-
-        double Stress;
-
-        Stress = StressesKernelR0opening(dsr[0],
-                                  dsr[1],
-                                  dsr[2],
-                                  a, b,
-                                  G,nu);
-
-        // in the reference system of the source element both in the domain and in the codomain
-        // szz
-
-        return Stress; // thisis coincident with the traction on the plane  t3/Dnormal
-
     }
 
 }
