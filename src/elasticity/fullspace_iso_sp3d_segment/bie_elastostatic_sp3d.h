@@ -60,7 +60,7 @@ BieElastostaticSp3d<Segment<0>, Segment<0>, ElasticKernelType::H>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
   //  return tractions - Hypersingular elastic kernel - Segment 0 element - note
-  //  use of simplified3D kernel here
+  //  use of simplified3D kernel from Wu & Olson (2015).
   // source_elt : element object of the source element
   // i_s : integert for the source collocation number (0,1)
   // receiver_elt  : element object of the receiver element
@@ -78,17 +78,12 @@ BieElastostaticSp3d<Segment<0>, Segment<0>, ElasticKernelType::H>::influence(
   }
   xe = source_elt.ConvertToLocal(xe);
 
-
   double h = source_elt.size();
   double ker_options = this->kernel_properties_[0];
 
-  // std::cout << "before"
-  //           << "\n";
   il::StaticArray2D<double, 2, 3> stress_l = stresses_kernel_s3d_p0_dd(
       h / 2., ker_options / 2., this->elas_.shear_modulus(),
       this->elas_.poisson_ratio(), xe[0], xe[1]);
-  // std::cout << "here"
-  //           << "\n";
 
   auto n = source_elt.ConvertToLocal(receiver_elt.normal());
   auto s = source_elt.ConvertToLocal(receiver_elt.tangent1());
