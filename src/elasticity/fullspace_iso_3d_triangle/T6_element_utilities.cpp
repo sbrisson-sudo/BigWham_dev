@@ -17,7 +17,7 @@
 #include <il/linearAlgebra/dense/norm.h>
 
 #include "elasticity/fullspace_iso_3d_triangle/constants.h"
-#include "element_utilities.h"
+#include "T6_element_utilities.h"
 
 namespace bie {
 
