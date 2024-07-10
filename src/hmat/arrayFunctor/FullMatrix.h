@@ -2,16 +2,19 @@
 // This file is part of BigWham.
 //
 // Created by Francois Fayard - 2018
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 #pragma once
 
+#ifndef BIGWHAM_FULLMATRIX_H
+#define BIGWHAM_FULLMATRIX_H
+
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include <Hmat-lib/arrayFunctor/MatrixGenerator.h>
+#include "Hmat-lib/arrayFunctor/MatrixGenerator.h"
 
 namespace il {
 
@@ -65,3 +68,5 @@ void FullMatrix<T>::set(il::int_t b0, il::int_t b1, il::io_t,
 }
 
 }  // namespace il
+
+#endif

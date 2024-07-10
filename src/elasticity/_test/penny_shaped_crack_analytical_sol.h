@@ -1,9 +1,9 @@
 //
-// This file is part of HFPx3D.
+// This file is part of BigWham.
 //
 // Created by Carlo Peruzzo on 01.01.21.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
 

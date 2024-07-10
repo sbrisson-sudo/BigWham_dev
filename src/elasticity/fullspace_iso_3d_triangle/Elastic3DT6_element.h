@@ -3,7 +3,7 @@
 //
 // Created by D. Nikolski on 1/12/2017.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2017.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details. 
 //
 
@@ -11,6 +11,7 @@
 #define INC_HFPX3D_ELAST_KER_INT_H
 
 #include <complex>
+
 #include <il/StaticArray.h>
 #include <il/StaticArray3D.h>
 #include <il/StaticArray4D.h>

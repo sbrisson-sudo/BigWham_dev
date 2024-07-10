@@ -1,14 +1,17 @@
 //
-// This file is part of HFPx3D.
+// This file is part of BigWham.
 //
 // Created by Carlo Peruzzo on 01.01.21.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
-#include <gtest/gtest.h>
 #include <iostream>
+
+#include <gtest/gtest.h>
+
 #include <il/Array2D.h>
+
 #include "elasticity/fullspace_iso_3d_rectangle//elastic_3dR0_common.h"
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_element.h"
 #include "elastic3DR0_element_tests_def.h"

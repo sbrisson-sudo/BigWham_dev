@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on  29.March.2023
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
 //
@@ -12,12 +12,11 @@
 #ifndef BIGWHAM_BIE_MATRIX_GENERATOR_H
 #define BIGWHAM_BIE_MATRIX_GENERATOR_H
 
-#include "il/core/core.h"
+#include <il/core/core.h>
 
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 #include "core/mesh.h"
-
 #include "hmat/arrayFunctor/matrix_generator.h"
 #include "hmat/hierarchical_representation.h"
 

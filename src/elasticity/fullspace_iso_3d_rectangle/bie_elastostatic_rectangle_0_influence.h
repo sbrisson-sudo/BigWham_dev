@@ -3,7 +3,7 @@
 //
 // Created by Carlo Peruzzo on 01.01.24.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 // modifications - Brice Lecampion
@@ -14,12 +14,10 @@
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
 
-#include "elasticity/bie_elastostatic.h"
 #include "elements/rectangle.h"
-
+#include "elasticity/bie_elastostatic.h"
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_element.h"
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_common.h"
-
 
 namespace bigwham {
     template class BieElastostatic<Rectangle<0>, Rectangle<0>, ElasticKernelType::H>;

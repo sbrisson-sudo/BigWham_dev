@@ -2,11 +2,10 @@
 // This file is part of BigWham.
 //
 // Created by Brice Lecampion on 15.12.19.
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
-
 
 #include "hmat.h"
 

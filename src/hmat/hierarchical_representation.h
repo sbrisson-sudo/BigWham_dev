@@ -2,8 +2,8 @@
 // This file is part of BigWham.
 //
 // Created by Brice Lecampion on 26.01.23.
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
@@ -13,12 +13,12 @@
 #define BIGWHAM_HIERARCHICAL_REPRESENTATION_H
 
 #include <memory>
+
 #include <il/Array.h>
 #include <il/Timer.h>
 
 #include "hmat/cluster/cluster.h"
 #include "hmat/hmatrix/h_pattern.h"
-
 #include "core/mesh.h"
 
 namespace bigwham {

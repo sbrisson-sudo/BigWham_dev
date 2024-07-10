@@ -1,10 +1,10 @@
 //
 // This file is part of BigWham.
 //
-// Created by Brice Lecampion on 13.01.23.
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
-// file for more details.
+// Created by Brice Lecampion on 01.02.23.
+// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
+// See the LICENSE.TXT file for more details.
 //
 
 #ifndef BIGWHAM_BEMESH_H

@@ -3,9 +3,10 @@
 //
 // Created by Brice Lecampion on 24.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
+
 #include <memory>
 
 #include <gtest/gtest.h>
@@ -17,7 +18,6 @@
 #include "hmat/hierarchical_representation.h"
 #include "hmat/hmatrix/hmat.h"
 #include "hmat/square_matrix_generator.h"
-
 #include "core/be_mesh.h"
 #include "elasticity/bie_elastostatic.h"
 #include "elements/segment.h"

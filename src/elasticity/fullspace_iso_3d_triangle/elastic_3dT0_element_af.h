@@ -13,7 +13,6 @@
 #ifndef BIGWHAM_ELASTIC_3DT0_ELEMENT_AF_H
 #define BIGWHAM_ELASTIC_3DT0_ELEMENT_AF_H
 
-
 #include <il/StaticArray2D.h>
 #include <il/StaticArray.h>
 

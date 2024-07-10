@@ -7,8 +7,8 @@
 // file for more details.
 //
 
-#ifndef HMATRIX_CLUSTER_H
-#define HMATRIX_CLUSTER_H
+#ifndef BIGWHAM_CLUSTER_H
+#define BIGWHAM_CLUSTER_H
 
 #include <limits>
 
@@ -19,7 +19,7 @@
 #include <il/Tree.h>
 #include <il/algorithmArray2D.h>
 
-#include <hmat/hmatrix/HMatrixType.h>
+#include "hmat/hmatrix/HMatrixType.h"
 
 namespace bigwham {
 
@@ -261,4 +261,4 @@ inline il::int_t BinaryTree::depth() const { return depth_; }
 
 }
 
-#endif  // HMATRIX_CLUSTER_H
+#endif

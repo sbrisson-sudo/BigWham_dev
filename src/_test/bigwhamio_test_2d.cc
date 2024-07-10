@@ -6,6 +6,7 @@
 // Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
+
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>

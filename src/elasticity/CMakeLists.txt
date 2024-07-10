@@ -8,9 +8,9 @@ set(SOURCE_FILES ${SOURCE_FILES}
         #   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_triangle/bie_elastostatic_triangle_0_influence.h
 
   ## 3D Rect 0 Element
-  ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_rectangle/elastic_3dR0_common.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_rectangle/elastic_3dR0_element.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_rectangle/elastic_3dR0_mode1Cartesian_element.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_rectangle/elastic_3dR0_common.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_rectangle/elastic_3dR0_element.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_rectangle/elastic_3dR0_mode1Cartesian_element.cc
 
   ## 2D Segment 0
      #   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_2d_segment/bie_elastostatic_segment_0_influence.h

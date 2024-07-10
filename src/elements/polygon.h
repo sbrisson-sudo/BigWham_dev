@@ -2,7 +2,7 @@
 // This file is part of BigWham.
 //
 // Created by Brice Lecampion on 13.02.23.
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
 // Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
@@ -10,8 +10,9 @@
 #ifndef BIGWHAM_POLYGON_H
 #define BIGWHAM_POLYGON_H
 
-#include "elements/boundary_element.h"
 #include <il/linearAlgebra/dense/norm.h>
+
+#include "elements/boundary_element.h"
 
 namespace bigwham {
 

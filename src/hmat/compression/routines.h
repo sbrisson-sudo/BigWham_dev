@@ -8,6 +8,9 @@
 //
 #pragma once
 
+#ifndef BIGWHAM_ROUTINES_H
+#define BIGWHAM_ROUTINES_H
+
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/algorithmArray.h>
@@ -16,7 +19,7 @@
 #include <il/linearAlgebra/dense/factorization/LU.h>
 #include <il/linearAlgebra/dense/factorization/Singular.h>
 
-#include <hmat/arrayFunctor/matrix_generator.h>
+#include "hmat/arrayFunctor/matrix_generator.h"
 
 namespace bigwham {
 
@@ -182,3 +185,5 @@ il::int_t searchI0(const il::Array2D<T> &A, il::Range range0,
 }
 
 }  // namespace bigwham
+
+#endif

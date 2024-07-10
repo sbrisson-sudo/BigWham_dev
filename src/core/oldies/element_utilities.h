@@ -7,12 +7,12 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-// todo - move this file to elasticity/3d ?
 
-#ifndef BIE_ELEM_UTILITIES_H
-#define BIE_ELEM_UTILITIES_H
+#ifndef BIGWHAM_ELEM_UTILITIES_H
+#define BIGWHAM_ELEM_UTILITIES_H
 
 #include <complex>
+
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
 

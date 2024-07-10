@@ -3,16 +3,15 @@
 //
 // Created by D. Nikolski on 1/24/2017.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2017.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details. 
-//
-
 //
 
 #ifndef HFP_H_POTENTIAL_H
 #define HFP_H_POTENTIAL_H
 
 #include <complex>
+
 #include <il/StaticArray3D.h>
 #include <il/StaticArray4D.h>
 

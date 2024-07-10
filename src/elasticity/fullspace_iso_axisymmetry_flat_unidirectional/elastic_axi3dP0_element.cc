@@ -10,7 +10,6 @@
 #include <il/math.h>
 
 #include "elastic_axi3dP0_element.h"
-
 #include "elliptic_integral.h"
 
 namespace bigwham{

@@ -8,16 +8,14 @@
 
 #include <cstdlib>
 #include <memory>
-//
+#include <cmath>
+
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
-#include <cmath>
 
 #include "core/elastic_properties.h"
-
 #include "elasticity/fullspace_iso_3d_triangle/elastic_3dT0_element.h"
-
 #include "elasticity/fullspace_iso_3d_triangle/elastic_3dT0_element_af.h"
 
 TEST(T0_ker,AngDislocation_1){

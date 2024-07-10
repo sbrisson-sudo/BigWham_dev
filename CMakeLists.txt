@@ -114,7 +114,7 @@ set(BIGWHAM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/src;${PROJECT_SOURCE_DIR}/il"
     CACHE PATH "BigWham include dirs")
 mark_as_advanced(BIGWHAM_INCLUDE_DIRS)
 
-add_executable(BigWham_exe  main.cpp)
+add_executable(BigWham_exe main.cc)
 target_link_libraries(BigWham_exe BigWhamShared)
 include(BigWhamTools)
 
@@ -165,11 +165,11 @@ if(BIGWHAM_TESTING)
     set(TESTED_SOURCE_FILES ${SOURCE_FILES})
     set(UNIT_TEST_FILES
         il/gtest/src/gtest-all.cc
-            src/elasticity/_test/penny_shaped_crack_analytical_sol.cpp
+            src/elasticity/_test/penny_shaped_crack_analytical_sol.cc
             src/core/_test/FaceData_tests.cpp
-            src/elasticity/fullspace_iso_3d_rectangle/_test/elastic3DR0_element_tests.cpp
+            src/elasticity/fullspace_iso_3d_rectangle/_test/elastic3DR0_element_tests.cc
          # src/_test/elastic3DR0_element_benchmark.cpp
-            src/elasticity/_test/penny_shaped_crack_analytical_sol_benchmark.cpp
+            src/elasticity/_test/penny_shaped_crack_analytical_sol_benchmark.cc
             src/elasticity/_test/elastic_square_matrix_generator_test.cc
             src/hmat/hmatrix/_test/Hmat_test_gaussian_mat.cpp
             src/core/_test/bemesh_test.cc

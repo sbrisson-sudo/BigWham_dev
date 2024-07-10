@@ -14,12 +14,11 @@
 
 #include <string>
 
-#include <hmat/arrayFunctor/matrix_generator.h>
-
 #include "core/bie_kernel.h"
 #include "core/elastic_properties.h"
 #include "core/mesh.h"
 #include "hmat/hierarchical_representation.h"
+#include "hmat/arrayFunctor/matrix_generator.h"
 
 namespace bigwham {
 

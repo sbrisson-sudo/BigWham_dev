@@ -3,9 +3,10 @@
 //
 // Created by Brice Lecampion on 26.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
+
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>

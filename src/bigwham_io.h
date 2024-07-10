@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 15.12.19.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 // last modifications ::January 31. 2023 - cleaning up and using the new code
@@ -22,21 +22,17 @@
 #include <il/Dynamic.h>
 #include <il/Map.h>
 
-#include <hmat/hmatrix/hmat.h>
-
+#include "hmat/hmatrix/hmat.h"
 #include "core/be_mesh.h"
 #include "elements/rectangle.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
-
 #include "core/bie_kernel.h"
 #include "elasticity/bie_elastostatic.h"
 #include "elasticity/bie_elastostatic_mode1.h"
-
 #include "core/elastic_properties.h"
 #include "elasticity/fullspace_iso_sp3d_segment/bie_elastostatic_sp3d.h"
 #include "elasticity/fullspace_iso_axisymmetry_flat_unidirectional/bie_elastostatic_axi3d_uni.h"
-
 #include "hmat/bie_matrix_generator.h"
 
 // utilities for switch with string in C++17

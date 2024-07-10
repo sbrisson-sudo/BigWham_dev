@@ -1,3 +1,11 @@
+//
+// This file is part of BigWham.
+//
+// Created by Brice Lecampion on 01.02.23.
+// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
+// See the LICENSE.TXT file for more details.
+//
 #include "core/be_mesh.h"
 #include "elements/rectangle.h"
 #include "elements/segment.h"

@@ -2,17 +2,17 @@
 // This file is part of BigWham.
 //
 // Created by Brice Lecampion on 08.09.21.
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
 #ifndef BIGWHAM_TOHPATTERN_H
 #define BIGWHAM_TOHPATTERN_H
 
-
 #include <il/Tree.h>
 #include <il/Array2D.h>
+
 #include "hmat/hmatrix/HMatrixType.h"
 
 namespace bigwham{

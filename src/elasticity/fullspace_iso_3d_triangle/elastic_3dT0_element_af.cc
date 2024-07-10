@@ -5,9 +5,11 @@
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland, Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
+
 // implementation of  Nikkhoo M. and Walter T.R., 2015. Triangular dislocation: An analytical, artefact-free solution.
 //  Geophysical Journal International
 // with modifications (notably moving to the dislocation convention of positive DD in overlap)
+
 #include <cmath>
 #include <iostream>
 
@@ -19,7 +21,6 @@
 
 #include "elements/triangle.h"
 #include "elastic_3dT0_element_af.h"
-
 
 namespace bigwham{
 

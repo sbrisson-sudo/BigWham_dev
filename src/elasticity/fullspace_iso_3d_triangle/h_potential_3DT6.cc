@@ -3,7 +3,7 @@
 //
 // Created by D. Nikolski on 1/24/2017.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2017.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details. 
 //
 
@@ -19,14 +19,15 @@
 // Stress components (vs local Cartesian coordinate system of the element)
 // combined as S11+S22, S11-S22+2*I*S12, S13+I*S23, S33
 
+#include <complex>
+
 #include <il/StaticArray.h>
 #include <il/StaticArray3D.h>
 #include <il/StaticArray4D.h>
 #include <il/math.h>
-#include <complex>
 
-#include <elasticity/fullspace_iso_3d_triangle/constants.h>
-#include <elasticity/fullspace_iso_3d_triangle/h_potential_3DT6.h>
+//#include "elasticity/fullspace_iso_3d_triangle/constants.h"
+#include "elasticity/fullspace_iso_3d_triangle/h_potential_3DT6.h"
 
 namespace bigwham {
 

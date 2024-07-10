@@ -3,14 +3,14 @@
 //
 // Created by Brice Lecampion on 17.03.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
 #ifndef BIGWHAM_BIEELASTOSTATICSP3D_H
 #define BIGWHAM_BIEELASTOSTATICSP3D_H
 
-#include "il/container/1d/Array.h"
+#include <il/container/1d/Array.h>
 
 #include "core/elastic_properties.h"
 #include "elasticity/bie_elastostatic.h"

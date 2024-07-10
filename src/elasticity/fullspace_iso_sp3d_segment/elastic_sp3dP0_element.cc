@@ -3,21 +3,18 @@
 //
 // Created by Brice Lecampion on 10.12.16.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2017.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
 //
-//
+
 #include <limits>
 
-// Inclusion from Inside Loop library
 #include <il/linearAlgebra.h>
 #include <il/math.h>
 
-// Inclusion from the project
 #include "core/elastic_properties.h"
 #include "core/oldies/Mesh2D.h"
-
 #include "elastic_sp3dP0_element.h"
 
 // contains fundamental plane-strain elasticity kernels.

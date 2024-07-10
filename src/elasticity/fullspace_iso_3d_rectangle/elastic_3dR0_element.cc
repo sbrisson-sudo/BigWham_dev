@@ -2,7 +2,7 @@
 // This file part of BigWham
 //
 // Created by Brice Lecampion on 04.02.19.
-// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2019.  All rights reserved.
+// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details. 
 //
 
@@ -11,9 +11,9 @@
 
 #include <il/linearAlgebra.h>
 #include <il/blas.h>
+
 #include "elasticity/fullspace_iso_3d_rectangle//elastic_3dR0_common.h"
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_element.h"
-
 
 namespace bigwham{
     // RONGVED SOLUTION FOR A P0 Rectangular dislocation in a full space

@@ -2,18 +2,21 @@
 // This file is part of BigWham.
 //
 // Created by Francois Fayard - 2018
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 #pragma once
+
+#ifndef BIGWHAM_ADAPTIVECROSSAPPROXIMATION_H
+#define BIGWHAM_ADAPTIVECROSSAPPROXIMATION_H
 
 #include <il/Timer.h>
 #include <il/linearAlgebra/dense/blas/blas_static.h>
 #include <il/math.h>
 
-#include <hmat/compression/routines.h>
-#include <hmat/hmatrix/LowRank.h>
+#include "hmat/compression/routines.h"
+#include "hmat/hmatrix/LowRank.h"
 
 namespace bigwham {
 
@@ -201,3 +204,5 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
 }
 
 } // namespace bigwham
+
+#endif

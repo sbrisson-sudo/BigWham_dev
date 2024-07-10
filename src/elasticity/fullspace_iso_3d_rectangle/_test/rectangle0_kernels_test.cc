@@ -9,6 +9,7 @@
 
 
 #include <gtest/gtest.h>
+
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/math.h>

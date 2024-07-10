@@ -1,21 +1,27 @@
 //
+// This file is part of BigWham.
+//
 // Created by Alexis Sáez Uribe on 30/05/2022.
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne),
+// Switzerland, Geo-Energy Laboratory, 2016-2024.  All rights reserved.
+// See the LICENSE.TXT file for more details.
+//
+//
 // Edited by Ankit on 16 March 2023
 // modified new API by Brice on 4 July 2024
 
 #ifndef BIGWHAM_ELASTICAXI3DP0_ELEMENT_H
 #define BIGWHAM_ELASTICAXI3DP0_ELEMENT_H
 
-#include <il/StaticArray2D.h>
 #include <vector>
+
+#include <il/StaticArray2D.h>
 
 #include "core/elastic_properties.h"
 #include "elements/boundary_element.h"
 #include "elasticity/bie_elastostatic.h"
 #include "elements/segment.h"
 #include "elastic_axi3dP0_element.h"
-
-
 
 namespace bigwham {
 

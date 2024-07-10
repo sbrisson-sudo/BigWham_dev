@@ -3,20 +3,20 @@
 //
 // Created by Brice Lecampion on 23.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
 // Last modifications - Jan 5, 2024
 #pragma once
-#include <il/StaticArray.h>
 #include <tuple>
+
+#include <il/StaticArray.h>
 
 #include "elasticity/bie_elastostatic.h"
 #include "elements/boundary_element.h"
 #include "elements/segment.h"
 #include "elements/point.h"
-
 #include "elastic_2dP0_segment.h"
 
 namespace bigwham {

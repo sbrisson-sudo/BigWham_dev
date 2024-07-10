@@ -3,7 +3,7 @@
 //
 // Created by D. Nikolski on 1/24/2017.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2017.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details. 
 //
 
@@ -13,20 +13,19 @@
 
 #include <iostream>
 #include <complex>
-//#include <il/math.h>
+
 #include <il/Array2D.h>
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
 #include <il/StaticArray3D.h>
 #include <il/StaticArray4D.h>
 #include <il/linearAlgebra.h>
+
 #include "core/oldies/element_utilities.h"
-
-#include <elasticity/fullspace_iso_3d_triangle/constants.h>
-#include <elasticity/fullspace_iso_3d_triangle/tensor_utilities_3DT6.h>
-
-#include <elasticity/fullspace_iso_3d_rectangle/Elastic3DT6_element.h>
-#include <elasticity/fullspace_iso_3d_rectangle/h_potential_3DT6.h>
+#include "elasticity/fullspace_iso_3d_triangle/constants.h"
+#include "elasticity/fullspace_iso_3d_triangle/tensor_utilities_3DT6.h"
+#include "elasticity/fullspace_iso_3d_rectangle/Elastic3DT6_element.h"
+#include "elasticity/fullspace_iso_3d_rectangle/h_potential_3DT6.h"
 
 namespace bigwham {
 
@@ -71,8 +70,8 @@ namespace bigwham {
 
         // searching for "degenerate" edges:
         // point x (collocation pt) projects onto an edge line or a vertex
-        bool IsDegen = il::abs(d[0]) < bie::h_tol || abs(d[1]) < bie::h_tol || // moved form abs to il::abs() CP2021
-                il::abs(d[2]) < bie::h_tol; // (d[0]*d[1]*d[2]==0); // moved form abs to il::abs() CP2021
+        bool IsDegen = il::abs(d[0]) < bigwham::h_tol || abs(d[1]) < bigwham::h_tol || // moved form abs to il::abs() CP2021
+                il::abs(d[2]) < bigwham::h_tol; // (d[0]*d[1]*d[2]==0); // moved form abs to il::abs() CP2021
         il::StaticArray2D<bool, 2, 3> is_90_ang{false};
 
         // calculating angles (phi, psi, chi)
@@ -97,7 +96,7 @@ namespace bigwham {
                 double com_chi = 0.5 * il::pi - fabs(chi(k, j));
                 // reprooving for "degenerate" edges
                 // (chi angles too close to 90 degrees)
-                if (fabs(com_chi) < bie::a_tol) {
+                if (fabs(com_chi) < bigwham::a_tol) {
                     //if (std::fabs(sin_mon) < h_tol) {
                     is_90_ang(k, j) = true;
                     IsDegen = true;
@@ -116,16 +115,16 @@ namespace bigwham {
                                 //--> m=1 , n=2
                                 //--> m=2 , n=0
             std::complex<double> dm = d[m];
-            if (il::abs(dm) >= bie::h_tol && !is_90_ang(0, m) && !is_90_ang(1, m)) { // moved form abs to il::abs() CP2021
+            if (il::abs(dm) >= bigwham::h_tol && !is_90_ang(0, m) && !is_90_ang(1, m)) { // moved form abs to il::abs() CP2021
                 std::complex<double>
                         // exp(I * chi(0, m))
                         eixm = exp(std::complex<double>(0.0, chi(0, m))),
                 // exp(I * chi(1, m))
                         eixn = exp(std::complex<double>(0.0, chi(1, m)));
                 // limit case (point x on the element's plane)
-                if (fabs(h) < bie::h_tol) {
-                    il::StaticArray3D<std::complex<double>, 6, 4, 3> s_incr_n =bie::s_integral_lim(kernel_id, poiss_r, eixn, dm),
-                            s_incr_m =bie::s_integral_lim(kernel_id, poiss_r, eixm, dm);
+                if (fabs(h) < bigwham::h_tol) {
+                    il::StaticArray3D<std::complex<double>, 6, 4, 3> s_incr_n =bigwham::s_integral_lim(kernel_id, poiss_r, eixn, dm),
+                            s_incr_m =bigwham::s_integral_lim(kernel_id, poiss_r, eixm, dm);
                     for (int l = 0; l < 3; ++l){
                         for (int k = 0; k < 4; ++k) {
                             for (int j = 0; j < 6; ++j)  {
@@ -140,13 +139,13 @@ namespace bigwham {
                     am = (chi(0, m) < 0) ? -am : am;
                     // constituing functions of the integrals
                     il::StaticArray<std::complex<double>, 9>
-                            f_n = bie::integral_cst_fun(h, dm, an, chi(1, m), eixn),
-                            f_m = bie::integral_cst_fun(h, dm, am, chi(0, m), eixm);
+                            f_n = bigwham::integral_cst_fun(h, dm, an, chi(1, m), eixn),
+                            f_m = bigwham::integral_cst_fun(h, dm, am, chi(0, m), eixm);
                     // coefficients, by 2nd index:
                     // 0: S11+S22; 1: S11-S22+2*I*S12; 2: S13+S23; 3: S33
                     il::StaticArray4D<std::complex<double>, 6, 4, 3, 9>
-                            c_n = bie::s_integral_gen(kernel_id, poiss_r, eixn, h, dm),
-                            c_m = bie::s_integral_gen(kernel_id, poiss_r, eixm, h, dm);
+                            c_n = bigwham::s_integral_gen(kernel_id, poiss_r, eixn, h, dm),
+                            c_m = bigwham::s_integral_gen(kernel_id, poiss_r, eixm, h, dm);
                     // combining constituing functions & coefficients
                     blas(1.0, c_n, f_n, 1.0, il::io, s_ij_infl_mon);
                     blas(-1.0, c_m, f_m, 1.0, il::io, s_ij_infl_mon);
@@ -158,11 +157,11 @@ namespace bigwham {
                         // exp(I * phi[m])
                                 eipm = exp(std::complex<double>(0.0, phi[m]));
                         il::StaticArray<std::complex<double>, 5>
-                                f_n_red = bie::integral_cst_fun_red(h, dm, an),
-                                f_m_red = bie::integral_cst_fun_red(h, dm, am);
+                                f_n_red = bigwham::integral_cst_fun_red(h, dm, an),
+                                f_m_red = bigwham::integral_cst_fun_red(h, dm, am);
                         il::StaticArray4D<std::complex<double>, 6, 4, 3, 5>
-                                c_n_red = bie::s_integral_red(kernel_id, poiss_r, eipn, h),
-                                c_m_red = bie::s_integral_red(kernel_id, poiss_r, eipm, h);
+                                c_n_red = bigwham::s_integral_red(kernel_id, poiss_r, eipn, h),
+                                c_m_red = bigwham::s_integral_red(kernel_id, poiss_r, eipm, h);
                         blas(1.0, c_n_red, f_n_red, 1.0,il::io, s_ij_infl_mon);
                         blas(-1.0, c_m_red, f_m_red, 1.0,il::io, s_ij_infl_mon);
                     }
@@ -321,10 +320,10 @@ namespace bigwham {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-il::Array2D<double> traction_influence_3DT6(bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
+il::Array2D<double> traction_influence_3DT6(bigwham::FaceData &elem_data_s, bigwham::FaceData &elem_data_r,
                                             il::int_t n_s,  // n_s is a node of the "source" element
                                             il::int_t  n_t,  // n_t is the collocation point of the "target" element
-                                            bie::ElasticProperties const &elas_,
+                                            bigwham::ElasticProperties const &elas_,
                                             il::int_t I_want_global_DD,
                                             il::int_t I_want_global_traction) {
 

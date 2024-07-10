@@ -1,17 +1,17 @@
 //
-// This file is part of HFPx3D.
+// This file is part of BigWham.
 //
 // Created by Carlo Peruzzo on 01.03.21.
-// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2021.  All rights reserved.
+// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details. 
 //
 
 #pragma once
 
 #include <il/StaticArray2D.h>
+
 #include "core/oldies/FaceData.h"
 #include "core/elastic_properties.h"
-
 
 namespace bigwham{
 double StressesKernelR0opening(

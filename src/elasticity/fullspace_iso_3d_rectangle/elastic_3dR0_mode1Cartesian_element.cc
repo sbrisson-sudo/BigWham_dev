@@ -1,15 +1,13 @@
 //
-// This file is part of HFPx3D.
+// This file is part of BigWham.
 //
 // Created by Carlo Peruzzo on 01.03.21.
-// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2021.  All rights reserved.
+// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2024.  All rights reserved.
 // See the LICENSE.TXT file for more details. 
 //
 
-
 #include <cmath>
 #include <limits>
-
 
 #include "elasticity/fullspace_iso_3d_rectangle//elastic_3dR0_common.h"
 #include "elasticity/fullspace_iso_3d_rectangle/elastic_3dR0_mode1Cartesian_element.h"

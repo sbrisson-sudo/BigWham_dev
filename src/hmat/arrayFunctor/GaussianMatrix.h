@@ -2,14 +2,19 @@
 // This file is part of BigWham.
 //
 // Created by Francois Fayard - 2018
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 #pragma once
 
+#ifndef BIGWHAM_GAUSSIANMATRIX_H
+#define BIGWHAM_GAUSSIANMATRIX_H
+
 #include <memory>
+
 #include <il/math.h>
+
 #include "hmat/arrayFunctor/matrix_generator.h"
 #include "hmat/hierarchical_representation.h"
 
@@ -106,3 +111,5 @@ void GaussianMatrix<T>::set(il::int_t b0, il::int_t b1, il::io_t,
 }
 
 } // namespace bigwham
+
+#endif

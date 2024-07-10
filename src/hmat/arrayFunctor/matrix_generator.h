@@ -2,14 +2,20 @@
 // This file is part of BigWham.
 //
 // Created by Francois Fayard - 2018
-// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+// Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
+
 #pragma once
+
+
+#ifndef BIGWHAM_MATRIX_GENERATOR_H
+#define BIGWHAM_MATRIX_GENERATOR_H
 
 #include <il/Array2D.h>
 #include <il/Array2DView.h>
+
 #include <hmat/hierarchical_representation.h>
 
 namespace bigwham {
@@ -34,3 +40,5 @@ il::Array2D<T> toArray2D(const bigwham::MatrixGenerator<T>& M) {
 }
 
 }
+
+#endif

@@ -3,20 +3,20 @@
 //
 // Created by Brice Lecampion on 26.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
-//
+
+#include <memory>
+
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
 #include <il/math.h>
-#include <memory>
 //
 #include "hmat/cluster/cluster.h"
 #include "hmat/hierarchical_representation.h"
 #include "hmat/hmatrix/hmat.h"
 #include "hmat/hmatrix/h_pattern.h"
-
 #include "hmat/arrayFunctor/GaussianMatrix.h"
 
 TEST(hmat, gaussian_1) {

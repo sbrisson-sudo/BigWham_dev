@@ -3,12 +3,13 @@
 //
 // Created by Brice Lecampion on 08.02.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
-#include <gtest/gtest.h>
 #include <iostream>
+
+#include <gtest/gtest.h>
 
 #include <il/StaticArray2D.h>
 

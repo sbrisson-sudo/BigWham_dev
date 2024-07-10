@@ -3,24 +3,23 @@
 //
 // Created by Brice Lecampion on 01.02.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
 #include <cstdlib>
 #include <memory>
+#include <cmath>
 
 #include <gtest/gtest.h>
 #include <il/Array.h>
 #include <il/Array2D.h>
-#include <cmath>
 
 #include "core/elastic_properties.h"
 #include "elasticity/bie_elastostatic.h"
 #include "elasticity/fullspace_iso_3d_triangle/bie_elastostatic_triangle_0_influence.h"
 #include "elements/triangle.h"
 #include "elements/point.h"
-
 
 TEST(Triangle0, test_H_1) {
   // test self-effect triangle 0

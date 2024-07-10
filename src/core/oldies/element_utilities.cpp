@@ -9,12 +9,12 @@
 
 #include <cmath>
 #include <complex>
+
 #include <il/math.h>
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
 #include <il/linearAlgebra.h>
 #include <il/linearAlgebra/dense/norm.h>
-
 
 #include "elasticity/fullspace_iso_3d_triangle/constants.h"
 #include "element_utilities.h"

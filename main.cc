@@ -36,7 +36,7 @@ int main() {
     }
 
     std::vector<double> properties{1., 0.};
-    BigWhamIOGen my_io{coor, conn, "2DP0", properties};
+    BigWhamIOGen my_io{coor, conn, "2DP0-H", properties};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
     auto nt = my_io.GetOmpThreads() ;
     std::cout <<"numb of threads " << nt <<"\n";
