@@ -33,13 +33,8 @@ extra_css:
 nav:
   - Home: index.md
   - About: about.md
-  - Developers: 
-    - api/api.md
   - Installation:
     - Ubuntu: installation/ubuntu.md
+    - MacOS: installation/macos.md
   - Examples:
     - 2D Griffith Crack: examples/griffith_crack.md
-    - User API: examples/user_api.md
-  - Readme (master branch):
-    - Readme v1: oldies/readmev1.md
-    - Readme v2: oldies/readmev2.md
