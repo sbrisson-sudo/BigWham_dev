@@ -7,9 +7,7 @@ set_target_properties(py_bigwham
     BUILD_RPATH "${CBLAS_LIBRARY_DIRS};${PROJECT_BINARY_DIR}"
 )
 
-set(SRC_PYBIND11 "${CMAKE_CURRENT_SOURCE_DIR}/hmatrix.py"
-                 "${CMAKE_CURRENT_SOURCE_DIR}/hmatrix_rectangular.py"
-                 # "${CMAKE_CURRENT_SOURCE_DIR}/hmatrix_mpi.py"
+set(SRC_PYBIND11 "${CMAKE_CURRENT_SOURCE_DIR}/bigwham4py.py"
                  "${CMAKE_CURRENT_SOURCE_DIR}/__init__.py")
 
 message(STATUS "Use the following command in terminal to use BigWham python interface:
