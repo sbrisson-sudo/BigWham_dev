@@ -38,6 +38,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(BIGWHAM_PYTHON_INTERFACE "Build Pybind11 binding" ON)
+option(BIGWHAM_JULIA_INTERFACE "Build Julia binding" OFF)
 option(BIGWHAM_MATHEMATICA_INTERFACE "make mathematica interface" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 option(BIGWHAM_TESTING "Build google tests" OFF)
 option(BIGWHAM_HDF5 "Use HDF5 for checkpoint/restart" OFF)
@@ -135,10 +136,19 @@ if(BIGWHAM_HDF5)
 endif()
 
 ################################################################
+# Julia
+################################################################
+if(BIGWHAM_JULIA_INTERFACE)
+    message(STATUS "Building Julia interface: ${BIGWHAM_JULIA_INTERFACE}")
+    add_subdirectory(interfaces/julia)
+endif()
+
+
+################################################################
 # Pybind --->use with PYTHON version >=3.7
 ################################################################
-message(STATUS "Building python interface: ${BIGWHAM_PYTHON_INTERFACE}")
 if(BIGWHAM_PYTHON_INTERFACE)
+    message(STATUS "Building python interface: ${BIGWHAM_PYTHON_INTERFACE}")
     find_package (Python3 COMPONENTS Interpreter Development)
     message(STATUS "Python Executable: ${Python3_EXECUTABLE}")
     message(STATUS "Python Version: ${Python3_VERSION}")
@@ -151,8 +161,8 @@ endif()
 ################################################################################
 # Mathematica interface
 ################################################################################
-message(STATUS "Building the mathematica interface: ${BIGWHAM_MATHEMATICA_INTERFACE}")
 if(BIGWHAM_MATHEMATICA_INTERFACE)
+    message(STATUS "Building the mathematica interface: ${BIGWHAM_MATHEMATICA_INTERFACE}")
     add_external_package(ltemplate VERSION 0.5.4)
     add_subdirectory(interfaces/mathematica)
 endif()
