@@ -72,11 +72,11 @@ template <> void Triangle<2>::SetNodes() {
   // nodes for the T2
   //                             0
   //                           /   \
-//                          /     \
-//                         5       4
+  //                          /     \
+  //                         5       4
   //                        /         \
-//                       /           \
-//                      1------3------2
+  //                       /           \
+  //                      1------3------2
   IL_EXPECT_FAST(this->spatial_dimension_ == 3 &&
                  (this->vertices_).size(0) == 3);
   il::Array2D<double> nodes{2 * (this->spatial_dimension_),

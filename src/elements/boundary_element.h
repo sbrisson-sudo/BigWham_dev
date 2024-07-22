@@ -20,27 +20,31 @@ namespace bigwham {
 class BoundaryElement {
 
 protected:
-  int spatial_dimension_;   // spatial dimension
-  int interpolation_order_; // order of interpolation for field on the element
-  il::Array<double>
-      centroid_; // centroid of the element in global system of coordinates
-  il::Array<double>
-      normal_; // unit vector normal to element in global system of coordinates
-  il::Array<double>
-      tangent1_; // unit vector tangent to element in global system of coordinates,
-  // in the direction from vertex 0 to vertex 1
-  il::Array<double>
-      tangent2_; // unit vector tangent to element in global system of coordinates,
-  // orthogonal to tangent1_ and normal_ (un-used for 2D element)
-  il::Array2D<double> collocation_points_; // collocation points' coordinates in
-                                           // global reference system
-  il::Array2D<double> nodes_; // nodes' coordinates in global reference system -
-                              // size: number of nodes x dim
-  il::Array2D<double>
-      vertices_; // vertices' coordinates in global reference system -
-  // rotation matrix for transformaion v_local = dot(rotation_matrix, v_global)
+    // spatial dimension
+  int spatial_dimension_;
+    // order of interpolation for field on the element
+  int interpolation_order_;
+    // centroid of the element in global system of coordinates
+  il::Array<double> centroid_;
+    // unit vector normal to element in global system of coordinates
+  il::Array<double>   normal_;
+    // unit vector tangent to element in global system of coordinates,
+    // in the direction from vertex 0 to vertex 1
+  il::Array<double>   tangent1_;
+    // unit vector tangent to element in global system of coordinates,
+    // orthogonal to tangent1_ and normal_ (un-used for 2D element)
+  il::Array<double>   tangent2_;
+    // collocation points' coordinates in
+    // global reference system
+  il::Array2D<double> collocation_points_;
+    // nodes' coordinates in global reference system -
+    // size: number of nodes x dim
+  il::Array2D<double> nodes_;
+    // vertices' coordinates in global reference system -
+  il::Array2D<double>   vertices_;
+    // rotation matrix for transformaion v_local = dot(rotation_matrix, v_global)
   il::Array2D<double> rotation_matrix_;
-  // rotation matrix transformed v_global = dot(rotation_matrix_T, v_local)
+    // rotation matrix transformed v_global = dot(rotation_matrix_T, v_local)
   il::Array2D<double> rotation_matrix_t_;
 
   int num_vertices_;
@@ -92,6 +96,7 @@ public:
   virtual il::Array<double> ConvertToLocal(const il::Array<double>& global_vec) const {
     return il::dot(this->rotation_matrix_, global_vec);
   }
+
   virtual il::Array<double> ConvertToGlobal(const il::Array<double>& local_vec) const {
     return il::dot(this->rotation_matrix_t_, local_vec);
   }

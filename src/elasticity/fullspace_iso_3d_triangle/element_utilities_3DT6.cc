@@ -17,9 +17,9 @@
 #include <il/linearAlgebra/dense/norm.h>
 
 #include "elasticity/fullspace_iso_3d_triangle/constants.h"
-#include "T6_element_utilities.h"
+#include "element_utilities_3DT6.h"
 
-namespace bie {
+namespace bigwham {
 
 // auxiliary functions (norm, cross product)
 

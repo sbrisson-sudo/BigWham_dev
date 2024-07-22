@@ -6,7 +6,12 @@
 // Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
+
+#ifndef BIGWHAM_BIE_ELASTOSTATIC_TRIANGLE_0_INFLUENCE_H
+#define BIGWHAM_BIE_ELASTOSTATIC_TRIANGLE_0_INFLUENCE_H
+
 #pragma once
+
 #include <il/blas.h>
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
@@ -277,3 +282,5 @@ BieElastostatic<Triangle<0>, Point<3>, ElasticKernelType::T>::influence(
     }
 
 } // namespace bigwham
+
+#endif

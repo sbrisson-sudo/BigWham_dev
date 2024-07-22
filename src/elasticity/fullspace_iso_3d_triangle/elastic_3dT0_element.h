@@ -9,8 +9,8 @@
 
 #pragma once
 
-#ifndef BIGWHAM_EXE_ELASTIC3DT0_ELEMENT_H
-#define BIGWHAM_EXE_ELASTIC3DT0_ELEMENT_H
+#ifndef BIGWHAM_ELASTIC_3DT0_ELEMENT_H
+#define BIGWHAM_ELASTIC_3DT0_ELEMENT_H
 
 #include <il/StaticArray2D.h>
 #include <il/StaticArray.h>

@@ -33,8 +33,8 @@ FaceData::FaceData(il::Array2D<double> xv, il::int_t p) {
   //     ...
   //
   //     the vertices are counterclockwise ordered:
-  //                 0
-  //               /   \
+  //                       0
+  //                     /   \
         //              /     \
         //             /       \
         //            1- - - - -2

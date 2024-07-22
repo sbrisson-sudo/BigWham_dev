@@ -7,8 +7,8 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-#ifndef BIE_CONSTANTS_H
-#define BIE_CONSTANTS_H
+#ifndef BIGWHAM_CONSTANTS_H
+#define BIGWHAM_CONSTANTS_H
 
 #include <complex>
 
