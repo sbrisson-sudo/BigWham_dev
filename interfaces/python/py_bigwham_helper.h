@@ -34,3 +34,54 @@ inline il::ArrayView<T> as_array_view(const pbarray<T> &c) {
 }
 /* -------------------------------------------------------------------------- */
 
+pbarray<double> PyGetCollocationPoints(const std::vector<double> &coor,
+                                       const std::vector<int> &conn,
+                                       const std::string &mesh_type) {
+
+  std::shared_ptr<bigwham::Mesh> mesh;
+
+  switch (hash_djb2a(mesh_type)) {
+  case "3DT0"_sh: {
+    int spatial_dimension = 3;
+    int nvertices_per_elt = 3;
+    using EltType = bigwham::Triangle<0>;
+    mesh = CreateMeshFromVect<EltType>(spatial_dimension, nvertices_per_elt,
+                                       coor, conn);
+    break;
+  }
+  default: {
+    std::cout << "Wrong Mesh Type, Not Implemented yet!!\n";
+    il::abort();
+  }
+  }
+  auto v = mesh->collocation_points();
+
+  il::Array<double> pts{v.size(0) * v.size(1), 0.};
+
+  int index = 0;
+  for (il::int_t i = 0; i < v.size(0); i++) {
+    for (il::int_t j = 0; j < v.size(1); j++) {
+      pts[index] = v(i, j);
+      index++;
+    }
+  }
+
+  return as_pyarray<double>(std::move(pts));
+}
+/* -------------------------------------------------------------------------- */
+
+pbarray<il::int_t> PyGetPermutation(const int dim, const pbarray<double> &pts,
+                                    const il::int_t leafsize) {
+
+  il::Array2D<double> v{pts.size() / dim, dim, 0.};
+  int index = 0;
+  for (il::int_t i = 0; i < v.size(0); i++) {
+    for (il::int_t j = 0; j < v.size(1); j++) {
+      v(i, j) = pts.data()[index];
+      index++;
+    }
+  }
+  auto cluster = bigwham::cluster(leafsize, il::io, v);
+  auto d = cluster.permutation;
+  return as_pyarray<il::int_t>(std::move(d));
+}

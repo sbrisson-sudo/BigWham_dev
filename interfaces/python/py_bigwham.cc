@@ -251,4 +251,11 @@ PYBIND11_MODULE(py_bigwham, m)
           },
           " dot product between hmat and a vector x in original ordering");
 
+
+/* --------------------------------------------------------------------------*/
+/* Misc functions can be used without constructing BigWhamIO object*/
+
+  m.def("py_get_collocation_points", &PyGetCollocationPoints);
+  m.def("py_get_permutation", &PyGetPermutation);
+
 }

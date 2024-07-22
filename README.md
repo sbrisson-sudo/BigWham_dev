@@ -1,1 +1,2 @@
-docs/index.md
+
+https://geoenergylab-epfl.github.io/BigWham/
