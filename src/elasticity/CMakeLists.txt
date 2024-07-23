@@ -5,7 +5,7 @@ set(SOURCE_FILES ${SOURCE_FILES}
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_triangle/elastic_3dT0_element.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_triangle/elastic_3dT0_element_af.cc
         ## 3D Tri 0 Element
-  ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_triangle/elastic_3dt6_element.cc
+  ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_triangle/elastic_3dT6_element.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_triangle/element_utilities_3DT6.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_triangle/h_potential_3DT6.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_triangle/tensor_utilities_3DT6.cc
