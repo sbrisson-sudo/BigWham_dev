@@ -7,8 +7,8 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-#ifndef INC_HFPX3D_ELAST_KER_INT_H
-#define INC_HFPX3D_ELAST_KER_INT_H
+#ifndef BIGWHAM_ELASTIC_ELEMENT_3DT6_H
+#define BIGWHAM_ELASTIC_ELEMENT_3DT6_H
 
 #include <complex>
 
@@ -19,7 +19,7 @@
 #include <il/StaticArray2D.h>
 
 #include "core/oldies/FaceData.h"
-#include "core/ElasticProperties.h"
+#include "core/elastic_properties.h"
 
 namespace bigwham {
 
@@ -66,10 +66,10 @@ namespace bigwham {
 
 /// Function to assemble by Nodes - required for hmat
 // todo move to StaticArray
-il::Array2D<double> traction_influence_3DT6(bie::FaceData &elem_data_s, bie::FaceData &elem_data_r,
-                                            il::int_t n_s,il::int_t  n_t, bie::ElasticProperties const &elas_,
+il::Array2D<double> traction_influence_3DT6(bigwham::FaceData &elem_data_s, bigwham::FaceData &elem_data_r,
+                                            il::int_t n_s,il::int_t  n_t, bigwham::ElasticProperties const &elas_,
                                             il::int_t I_want_global_DD,il::int_t I_want_global_traction);
 
 }
 
-#endif //INC_HFPX3D_ELAST_KER_INT_H
+#endif //BIGWHAM_ELASTIC_3DT6_ELEMENT_H

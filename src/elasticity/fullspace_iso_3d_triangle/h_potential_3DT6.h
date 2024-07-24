@@ -7,8 +7,8 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-#ifndef HFP_H_POTENTIAL_H
-#define HFP_H_POTENTIAL_H
+#ifndef BIGWHAM_H_POTENTIAL_3DT6_H
+#define BIGWHAM_H_POTENTIAL_3DT6_H
 
 #include <complex>
 
@@ -24,4 +24,4 @@ namespace bigwham {
     il::StaticArray3D<std::complex<double>, 6, 4, 3> s_ij_lim_h(double nu, std::complex<double> eix,std::complex<double> d);
 
 }
-#endif //INC_HFPX3D_H_POTENTIAL_H
+#endif //BIGWHAM_H_POTENTIAL_3DT6_H

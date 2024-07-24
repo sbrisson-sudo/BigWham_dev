@@ -8,15 +8,15 @@
 //
 
 
-#ifndef BIGWHAM_ELEM_UTILITIES_H
-#define BIGWHAM_ELEM_UTILITIES_H
+#ifndef BIGWHAM_ELEMENT_UTILITIES_3DT6_H
+#define BIGWHAM_ELEMENT_UTILITIES_3DT6_H
 
 #include <complex>
 
 #include <il/StaticArray.h>
 #include <il/StaticArray2D.h>
 
-namespace bie {
+namespace bigwham {
 
 // position of a point with respect to an element
 // (complex local coordinate representation)
@@ -120,4 +120,4 @@ namespace bie {
 
 }
 
-#endif //BIE_ELEM_UTILITIES_H
+#endif

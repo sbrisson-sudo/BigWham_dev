@@ -111,7 +111,8 @@ Mesh::ConvertToLocal(il::ArrayView<double> global_vec) const {
 
   IL_ASSERT(global_vec.size() == num_collocation_points_ * spatial_dimension_);
   v.Resize(global_vec.size());
-
+// the following only WORKS when the size of the global vector is equal to n_elts * spatial_dimension_
+// it does not work for quadratic triangle for example ....
 #pragma omp parallel for
   for (auto i = 0; i < num_elements_; i++) {
     auto rot_mat = element_list_[i]->rotation_matrix();

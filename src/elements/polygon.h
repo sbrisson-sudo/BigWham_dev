@@ -129,7 +129,7 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
     this->normal_[k] = this->normal_[k] / size_n;
   }
 
-  // make tangent2 perperdicular to tangent1
+  // make tangent2 perpendicular to tangent1
   this->tangent2_[0] = this->normal_[1] * this->tangent1_[2] -
                        this->normal_[2] * this->tangent1_[1];
   this->tangent2_[1] = this->normal_[2] * this->tangent1_[0] -

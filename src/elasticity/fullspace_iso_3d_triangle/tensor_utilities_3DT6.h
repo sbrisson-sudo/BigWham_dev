@@ -7,8 +7,8 @@
 // See the LICENSE.TXT file for more details. 
 //
 
-#ifndef BIE_TENSOR_UTILITIES_H
-#define BIE_TENSOR_UTILITIES_H
+#ifndef BIGWHAM_TENSOR_UTILITIES_3DT6_H
+#define BIGWHAM_TENSOR_UTILITIES_3DT6_H
 
 #include <il/Array2D.h>
 #include <il/StaticArray2D.h>
