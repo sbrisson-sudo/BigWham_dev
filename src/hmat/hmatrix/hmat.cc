@@ -340,6 +340,29 @@ template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
   return y;
 }
 /* -------------------------------------------------------------------------- */
+// H-Matrix vector multiplication with permutation for rectangular matrix
+template <typename T> void Hmat<T>::matvecOriginal(il::ArrayView<T> x, il::Array<T>& yout) {
+
+  il::Array<T> z{static_cast<il::int_t>(x.size())};
+  // permutation of the dofs according to the re-ordering sue to clustering
+  il::int_t ncolpoints = this->size(1) / dof_dimension_;
+  il::int_t nrowpoints = this->size(0) / dof_dimension_;
+  for (il::int_t i = 0; i < ncolpoints; i++) {
+    for (int j = 0; j < dof_dimension_; j++) {
+      z[dof_dimension_ * i + j] =
+          x[dof_dimension_ * hr_->permutation_1_[i] + j];
+    }
+  }
+  il::Array<T> y = this->matvec(z.view());
+  // permut back
+  for (il::int_t i = 0; i < nrowpoints; i++) {
+    for (int j = 0; j < dof_dimension_; j++) {
+      yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
+          y[dof_dimension_ * i + j];
+    }
+  }
+}
+/* -------------------------------------------------------------------------- */
 
 // H-Matrix vector multiplication with permutation for rectangular matrix
 template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {

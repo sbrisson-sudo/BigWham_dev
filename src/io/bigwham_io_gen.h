@@ -76,6 +76,7 @@ public:
     this->hmat_->writeToFile(filename);
   }
 
+  il::Array<double> m_yout_; // output vector of matvec
   void HmatDestructor();
   [[nodiscard]] std::vector<double> GetCollocationPoints() const;
   [[nodiscard]] std::vector<long> GetPermutation() const;
@@ -99,6 +100,8 @@ public:
   {return ComputePotentials(coor_obs, sol_local);};
   [[nodiscard]] il::Array<double> ComputeStresses(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
   {return ComputeFluxes(coor_obs,sol_local); };
+
+  void MatVec(il::ArrayView<double> x);
 
   int MatrixSize(const int k) { return hmat_->size(k); };
   [[nodiscard]] double GetCompressionRatio() const {

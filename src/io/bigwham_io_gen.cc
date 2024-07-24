@@ -175,6 +175,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
     }
     mesh_src_ = mesh_;
     mesh_rec_ = mesh_;
+    m_yout_.Resize(mesh_->num_collocation_points() * mesh_->spatial_dimension());
 
 };
 
@@ -228,6 +229,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
         }
     }
     mesh_ = mesh_src_;
+    m_yout_.Resize(mesh_rec_->num_collocation_points() * mesh_rec_->spatial_dimension());
 }
 
 // Method for pattern Construction
@@ -403,6 +405,12 @@ std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const {
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
   std::vector<double> y = hmat_->matvecOriginal(x);
   return y;
+}
+/* -------------------------------------------------------------------------- */
+
+void BigWhamIOGen::MatVec(il::ArrayView<double> x) {
+  // in the original / natural ordering
+  hmat_->matvecOriginal(x, this->m_yout_);
 }
 /* -------------------------------------------------------------------------- */
 
