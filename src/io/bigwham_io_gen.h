@@ -67,6 +67,14 @@ public:
 
   void BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca); // construct Hierarchical matrix
 
+  std::shared_ptr<bigwham::Mesh> GetSourceMeshPtr() const {
+    return mesh_src_;
+  }
+
+  std::shared_ptr<bigwham::Mesh> GetRecieverMeshPtr() const {
+    return mesh_rec_;
+  }
+
   // load from file
   void LoadFromFile(const std::string &filename) {
     this->hmat_ = std::make_shared<bigwham::Hmat<double>>(filename);
