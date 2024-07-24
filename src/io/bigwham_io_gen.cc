@@ -30,6 +30,8 @@
 #include "elasticity/fullspace_iso_3d_rectangle/bie_elastostatic_rectangle_0_influence.h"
 #include "elasticity/fullspace_iso_3d_rectangle/bie_elastostatic_rectangle_0_mode1_influence.h"
 
+#include "elasticity/fullspace_iso_3d_triangle/bie_elastostatic_triangle_2_influence.h"
+
 /* -------------------------------------------------------------------------- */
 using namespace bigwham;
 
@@ -129,6 +131,27 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                     elas, spatial_dimension_);
             ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
                     elas, spatial_dimension_);
+            break;
+        }
+        case "3DT6-H"_sh: {
+            IL_ASSERT(properties.size() == 2);
+            ElasticProperties elas(properties[0], properties[1]);
+            spatial_dimension_ = 3;
+            dof_dimension_ = 3;
+            flux_dimension_ = 6; // 6 stress components
+            int nvertices_per_elt_ = 3;
+            using EltType = bigwham::Triangle<2>;
+            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                         coor, conn);
+            ker_obj_ = std::make_shared<
+                    bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
+                    elas, spatial_dimension_);
+            using ObsType = Point<3>;
+            // still missing displacement & stresses representation for that kernel + element
+            // ker_obs_u_=std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
+            //        elas, spatial_dimension_);
+            //ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
+             //       elas, spatial_dimension_);
             break;
         }
         case "3DR0-H"_sh: {

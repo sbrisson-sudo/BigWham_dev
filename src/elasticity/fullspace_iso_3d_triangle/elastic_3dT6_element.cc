@@ -11,7 +11,7 @@
 // over a part of a polygonal element (a sector associated with one edge)
 // with 2nd order polynomial approximating (shape) functions.
 
-#include <iostream>
+
 #include <complex>
 
 #include <il/Array2D.h>
@@ -21,14 +21,13 @@
 #include <il/StaticArray4D.h>
 #include <il/linearAlgebra.h>
 
-//#include "core/oldies/element_utilities.h"
 #include "elasticity/fullspace_iso_3d_triangle/constants.h"
 #include "elasticity/fullspace_iso_3d_triangle/tensor_utilities_3DT6.h"
-#include "elasticity/fullspace_iso_3d_rectangle/Elastic3DT6_element.h"
-#include "elasticity/fullspace_iso_3d_rectangle/h_potential_3DT6.h"
+#include "elasticity/fullspace_iso_3d_triangle/elastic_3dT6_element.h"
+#include "elasticity/fullspace_iso_3d_triangle/h_potential_3DT6.h"
+#include "elasticity/fullspace_iso_3d_triangle/element_utilities_3DT6.h"
 
 namespace bigwham {
-
 
 // Element-to-point influence matrix (submatrix of the global one)
 // (Integration of a kernel of the elasticity equation over a triangular element
@@ -194,7 +193,6 @@ namespace bigwham {
         // second index is [DD1_1 DD1_2 DD1_3 DD2_1 DD2_2 ... DD6_3] where DDj_k
         // means that it's DD at node j in direction k.
     }
-
 
 // Coefficient matrices (rank 3) to be contracted with the vector of
 // constituing functions defined below (via right multiplication)

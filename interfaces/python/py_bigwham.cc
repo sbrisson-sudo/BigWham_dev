@@ -6,7 +6,7 @@
 // Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
-// last modifications ::July 4, 2024
+// last modifications ::July 4, 2024 - Ankit Gupta
 
 #include <memory>
 #include <pybind11/chrono.h>
@@ -172,6 +172,29 @@ PYBIND11_MODULE(py_bigwham, m)
           },
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
+      .def("get_element_normals",
+           /*
+           returns normals of all the elements
+           */
+           [](const BigWhamIOGen &self)
+           {
+             auto mesh = self.GetSourceMeshPtr();
+             auto dim = mesh->spatial_dimension();
+             il::Array<double> normals;
+             normals.Resize(dim * mesh->num_elements(), 0.0);
+#pragma omp parallel for
+             for (il::int_t i = 0; i < mesh->num_elements(); ++i)
+             {
+               auto elem = mesh->GetElement(i);
+               auto n = elem->normal();
+                 // n0
+                 normals[i * dim + 0] = n[0];
+                 // n1
+                 normals[i * dim + 1] = n[1];
+             }
+
+             return as_pyarray<double>(std::move(normals));
+           })
       .def(
           "compute_displacements",
           [](BigWhamIOGen &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)

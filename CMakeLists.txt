@@ -194,10 +194,12 @@ if(BIGWHAM_TESTING)
             src/elasticity/fullspace_iso_3d_rectangle/_test/rectangle0_kernels_test.cc
             src/elasticity/fullspace_iso_3d_rectangle/_test/rectangle0_mode1_kernels_test.cc
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_kernels_test.cc
+            src/elasticity/fullspace_iso_3d_triangle/_test/triangle2_kernels_test.cc
             src/io/_test/bigwham_io_helper_test.cc
             src/io/_test/bigwham_io_gen_test_2d.cc
             src/io/_test/bigwham_io_gen_test_3d.cc
-            src/_test/bigwhamio_test_2d.cc src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_tests.cpp)
+            src/_test/bigwhamio_test_2d.cc
+            src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_tests.cc)
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)

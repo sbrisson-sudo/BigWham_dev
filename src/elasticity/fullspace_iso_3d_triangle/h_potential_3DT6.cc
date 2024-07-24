@@ -26,7 +26,7 @@
 #include <il/StaticArray4D.h>
 #include <il/math.h>
 
-//#include "elasticity/fullspace_iso_3d_triangle/constants.h"
+#include "elasticity/fullspace_iso_3d_triangle/constants.h"
 #include "elasticity/fullspace_iso_3d_triangle/h_potential_3DT6.h"
 
 namespace bigwham {
