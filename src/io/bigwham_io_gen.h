@@ -109,7 +109,7 @@ public:
   [[nodiscard]] il::Array<double> ComputeStresses(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
   {return ComputeFluxes(coor_obs,sol_local); };
 
-  void MatVec(il::ArrayView<double> x);
+  void MatVecVoid(il::ArrayView<double> x);
 
   int MatrixSize(const int k) { return hmat_->size(k); };
   [[nodiscard]] double GetCompressionRatio() const {

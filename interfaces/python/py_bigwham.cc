@@ -167,7 +167,7 @@ PYBIND11_MODULE(py_bigwham, m)
           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
           {
             auto tx = as_array_view<double>(x);
-            auto v = self.MatVec(tx);
+            il::Array<double> v = self.MatVec(tx);
             return as_pyarray<double>(std::move(v));
           },
           " dot product between hmat and a vector x in original ordering",

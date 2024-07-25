@@ -431,8 +431,11 @@ std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const {
 }
 /* -------------------------------------------------------------------------- */
 
-void BigWhamIOGen::MatVec(il::ArrayView<double> x) {
+void BigWhamIOGen::MatVecVoid(il::ArrayView<double> x) {
   // in the original / natural ordering
+  // this function is used in julia to avoid copying the output
+  // but use internal variable m_yout_ to store the result
+  // it will save creating new memory at each call
   hmat_->matvecOriginal(x, this->m_yout_);
 }
 /* -------------------------------------------------------------------------- */
