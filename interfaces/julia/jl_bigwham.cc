@@ -97,17 +97,17 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
       return as_jlarray<double>(w.a); })
         .method("get_a", [](World &w)
                 { return as_jlarray<double>(w.a); });
-    mod.add_type<BigWhamIOGen>("BEMatrix")
+    mod.add_type<BigWhamIOGen>("BigWhamIO")
         .constructor([](const jlarray<double> x, const jlarray<int> y, const std::string &z, const jlarray<double> w)
                      {
                          auto x_ = std::vector<double>(x.data(), x.data() + x.size());
                          auto y_ = std::vector<int>(y.data(), y.data() + y.size());
                          auto w_ = std::vector<double>(w.data(), w.data() + w.size());
-                         return new BigWhamIOGen(x_, y_, z, w_);
-                     })
+                         return new BigWhamIOGen(x_, y_, z, w_); })
         .method("build_hierarchical_matrix", &BigWhamIOGen::BuildHierarchicalMatrix)
         .method("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
-        .method("matvec", [](BigWhamIOGen &w, const jlarray<double> x){
+        .method("matvec", [](BigWhamIOGen &w, const jlarray<double> x)
+                {
       auto c = as_array_view<double>(x);
       w.MatVec(c);
       return as_jlarray<double>(w.m_yout_); });
