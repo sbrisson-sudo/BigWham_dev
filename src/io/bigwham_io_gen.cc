@@ -587,7 +587,7 @@ Get the rotation matrix of the elements
   std::vector<double> flattend_rotation_matrix;
   int num_elements = mesh->num_elements();
   int num_total_collocation_points = mesh->num_collocation_points();
-  flattend_rotation_matrix.assign(dim * dim * num_total_collocation_points * num_elements, 0.0);
+  flattend_rotation_matrix.assign(dim * dim * num_total_collocation_points, 0.0);
   //  flattend_rotation_matrix.Resize(dim * dim * num_total_collocation_points, 0.0);
 #pragma omp parallel for
   for (il::int_t i = 0; i < mesh->num_elements(); ++i)

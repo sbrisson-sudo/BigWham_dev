@@ -259,7 +259,7 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         2d case:
         [n0x,n0y,n1x,n1y,...]
         """
-        return self.H_.get_element_normals()
+        return np.asarray(self.H_.get_element_normals())
 
     def get_rotation_matrix(self):
         """
@@ -270,7 +270,7 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         2d case:
         [r00,r01,r10,r11,...]
         """
-        return self.H_.get_rotation_matrix()
+        return np.asarray(self.H_.get_rotation_matrix())
 
 
 ########################################################################################################
