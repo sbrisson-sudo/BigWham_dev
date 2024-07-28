@@ -15,7 +15,6 @@ using namespace bigwham;
 template <typename T>
 using jlarray = jlcxx::ArrayRef<T>;
 
-
 /* -------------------------------------------------------------------------- */
 
 template <typename T>
@@ -44,10 +43,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
                          return new BigWhamIOGen(x_, y_, z, w_); })
         .method("build_hierarchical_matrix", &BigWhamIOGen::BuildHierarchicalMatrix)
         .method("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
+        .method("get_element_normals", &BigWhamIOGen::GetElementNormals)
+        .method("get_rotation_matrix", &BigWhamIOGen::GetRotationMatrix)
         .method("matvec", [](BigWhamIOGen &w, const jlarray<double> x)
                 {
-      auto c = as_array_view<double>(x);
-      w.MatVecVoid(c);
-      return as_jlarray<double>(w.m_yout_); });
+                    auto c = as_array_view<double>(x);
+                    w.MatVecVoid(c);
+                    return as_jlarray<double>(w.m_yout_); 
+                });
     ;
 }

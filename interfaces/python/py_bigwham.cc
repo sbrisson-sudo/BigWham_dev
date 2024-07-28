@@ -119,6 +119,8 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
       .def("get_hmat_time", &BigWhamIOGen::hmat_time)
       .def("get_omp_threads", &BigWhamIOGen::GetOmpThreads)
+      .def("get_element_normals",&BigWhamIOGen::GetElementNormals)
+      .def("get_rotation_matrix",&BigWhamIOGen::GetRotationMatrix)
       .def(py::pickle(
           [](const BigWhamIOGen &self) { // __getstate__
             /* Return a tuple that fully encodes the state of the object */
@@ -172,29 +174,6 @@ PYBIND11_MODULE(py_bigwham, m)
           },
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
-      .def("get_element_normals",
-           /*
-           returns normals of all the elements
-           */
-           [](const BigWhamIOGen &self)
-           {
-             auto mesh = self.GetSourceMeshPtr();
-             auto dim = mesh->spatial_dimension();
-             il::Array<double> normals;
-             normals.Resize(dim * mesh->num_elements(), 0.0);
-#pragma omp parallel for
-             for (il::int_t i = 0; i < mesh->num_elements(); ++i)
-             {
-               auto elem = mesh->GetElement(i);
-               auto n = elem->normal();
-                 // n0
-                 normals[i * dim + 0] = n[0];
-                 // n1
-                 normals[i * dim + 1] = n[1];
-             }
-
-             return as_pyarray<double>(std::move(normals));
-           })
       .def(
           "compute_displacements",
           [](BigWhamIOGen &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)

@@ -24,16 +24,21 @@ function __init__()
 end
 
 using LinearMaps, LinearAlgebra
+
 struct BEMatrix <: LinearMaps.LinearMap{Float64}
     bigwham_obj::BigWhamIO
     col_pts::Vector{Float64}
+    normals::Vector{Float64}
+    rotation_matrix::Vector{Float64}
     size::Dims{2}
 
     function BEMatrix(coor::Vector{Float64}, conn::Vector{Int32}, kernel::String, prop::Vector{Float64})
         h = BigWhamIO(coor, conn, kernel, prop)
         colpts = get_collocation_points(h)
+        normals = get_element_normals(h)
+        rotation_matrix = get_rotation_matrix(h)
         dim = size(colpts)[1]
-        return new(h, colpts, (dim, dim))
+        return new(h, colpts, normals, rotation_matrix, (dim, dim))
     end
 
     function BEMatrix(coor::Matrix{Float64}, conn::Matrix{Int64}, kernel::String, prop::Vector{Float64})
@@ -62,12 +67,6 @@ end
 function build_hierarchical_matrix(hmat::BEMatrix, max_leaf_size::Int64, eta::Float64, eps_aca::Float64)
     build_hierarchical_matrix(hmat.bigwham_obj, max_leaf_size, eta, eps_aca)
 end
-
-function get_collocation_points(hmat::BEMatrix)::Vector{Float64}
-    return hmat.col_pts
-end
-
-
 
 
 end # module BigWham

@@ -8,7 +8,6 @@
 //
 // last modifications :: Dec. 2023 - new interface improvements
 
-
 #include "bigwham_io_gen.h"
 #include "bigwham_io_helper.h"
 
@@ -36,247 +35,265 @@
 using namespace bigwham;
 
 // square matrix case
-BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<int> &conn, const std::string &kernel, const std::vector<double> &properties) {
+BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<int> &conn, const std::string &kernel, const std::vector<double> &properties)
+{
 
-    this->kernel_name_ = kernel;
+  this->kernel_name_ = kernel;
 
-    std::cout << " Now setting things for kernel ... " << kernel_name_
-              << " with properties size " << properties.size() << "\n";
+  std::cout << " Now setting things for kernel ... " << kernel_name_
+            << " with properties size " << properties.size() << "\n";
 
-    switch (hash_djb2a(kernel_name_)) {
-        case "2DP0-H"_sh: {
-            IL_ASSERT(properties.size() == 2);
-            ElasticProperties elas(properties[0], properties[1]);
-            spatial_dimension_ = 2;
-            dof_dimension_ = 2;
-            flux_dimension_ = 3;
-            int nvertices_per_elt_ = 2;
-            using EltType = Segment<0>;
-            mesh_ = bigwham::CreateMeshFromVect<Segment < 0>>(spatial_dimension_, nvertices_per_elt_,
-                                                coor, conn);
-            ker_obj_ = std::make_shared < bigwham::BieElastostatic<Segment < 0>, Segment < 0 >, bigwham::ElasticKernelType::H >> (
-                    elas, spatial_dimension_);
-            using ObsType = Point<2>;
-            ker_obs_u_= std::make_shared < bigwham::BieElastostatic<Segment < 0>, ObsType, bigwham::ElasticKernelType::T >> (
-                    elas, spatial_dimension_);
-            ker_obs_q_= std::make_shared < bigwham::BieElastostatic<Segment < 0>, ObsType, bigwham::ElasticKernelType::W >> (
-                    elas, spatial_dimension_);
-            break;
-        }
-       case "2DP1-H"_sh: {
-            IL_ASSERT(properties.size() == 2);
-            ElasticProperties elas(properties[0], properties[1]);
+  switch (hash_djb2a(kernel_name_))
+  {
+  case "2DP0-H"_sh:
+  {
+    IL_ASSERT(properties.size() == 2);
+    ElasticProperties elas(properties[0], properties[1]);
+    spatial_dimension_ = 2;
+    dof_dimension_ = 2;
+    flux_dimension_ = 3;
+    int nvertices_per_elt_ = 2;
+    using EltType = Segment<0>;
+    mesh_ = bigwham::CreateMeshFromVect<Segment<0>>(spatial_dimension_, nvertices_per_elt_,
+                                                    coor, conn);
+    ker_obj_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, Segment<0>, bigwham::ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    using ObsType = Point<2>;
+    ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, ObsType, bigwham::ElasticKernelType::T>>(
+        elas, spatial_dimension_);
+    ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, ObsType, bigwham::ElasticKernelType::W>>(
+        elas, spatial_dimension_);
+    break;
+  }
+  case "2DP1-H"_sh:
+  {
+    IL_ASSERT(properties.size() == 2);
+    ElasticProperties elas(properties[0], properties[1]);
 
-            spatial_dimension_ = 2;
-            dof_dimension_ = 2;
-            flux_dimension_ = 3;
-            int nvertices_per_elt_ = 2;
-            using EltType = bigwham::Segment<1>;
-            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                         coor, conn);
-            ker_obj_ = std::make_shared<bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
-                    elas, spatial_dimension_);
-            using ObsType = Point<2>;
-            ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
-                   elas, spatial_dimension_);
-            // still missing displacement for that kernel + element
-            break;
-        }
-        case "S3DP0-H"_sh: {
-            IL_ASSERT(properties.size() == 3);
-            ElasticProperties elas(properties[0], properties[1]);
-            spatial_dimension_ = 2;
-            dof_dimension_ = 2;
-            flux_dimension_ = 3;
-            int nvertices_per_elt_ = 2;
-            using EltType = bigwham::Segment<0>;
-            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                         coor, conn);
-            ker_obj_ = std::make_shared<
-                    bigwham::BieElastostaticSp3d<EltType, EltType, bigwham::ElasticKernelType::H>>(
-                    elas, spatial_dimension_);
-            il::Array<double> prop{1, properties[2]};
-            ker_obj_->set_kernel_properties(prop);
-            // still missing displacement & stresses representation for that kernel + element
-            break;
-        }
-        case "Axi3DP0-H"_sh: {
-            IL_ASSERT(properties.size() == 2);
-            ElasticProperties elas(properties[0], properties[1]);
-            spatial_dimension_ = 2;
-            dof_dimension_ = 2;
-            int nvertices_per_elt_ = 2;
-            using EltType = bigwham::Segment<0>;
-            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                         coor, conn);
-            ker_obj_ = std::make_shared<bigwham::BieElastostaticAxi3D<EltType,EltType,bigwham::ElasticKernelType::H>>(
-                    elas, spatial_dimension_);
-            break;
-        }
-        case "3DT0-H"_sh: {
-            IL_ASSERT(properties.size() == 2);
-            ElasticProperties elas(properties[0], properties[1]);
-            spatial_dimension_ = 3;
-            dof_dimension_ = 3;
-            flux_dimension_ = 6; // 6 stress components
-            int nvertices_per_elt_ = 3;
-            using EltType = bigwham::Triangle<0>;
-            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                         coor, conn);
-            ker_obj_ = std::make_shared<
-                    bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
-                    elas, spatial_dimension_);
-            using ObsType = Point<3>;
-            ker_obs_u_=std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
-                    elas, spatial_dimension_);
-            ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
-                    elas, spatial_dimension_);
-            break;
-        }
-        case "3DT6-H"_sh: {
-            IL_ASSERT(properties.size() == 2);
-            ElasticProperties elas(properties[0], properties[1]);
-            spatial_dimension_ = 3;
-            dof_dimension_ = 3;
-            flux_dimension_ = 6; // 6 stress components
-            int nvertices_per_elt_ = 3;
-            using EltType = bigwham::Triangle<2>;
-            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                         coor, conn);
-            ker_obj_ = std::make_shared<
-                    bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
-                    elas, spatial_dimension_);
-            using ObsType = Point<3>;
-            // still missing displacement & stresses representation for that kernel + element
-            // ker_obs_u_=std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
-            //        elas, spatial_dimension_);
-            //ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
-             //       elas, spatial_dimension_);
-            break;
-        }
-        case "3DR0-H"_sh: {
-            IL_ASSERT(properties.size() == 2);
-            ElasticProperties elas(properties[0], properties[1]);
-            spatial_dimension_ = 3;
-            dof_dimension_ = 3;
-            flux_dimension_ = 6; // 6 stress components
-            int nvertices_per_elt_ = 4;
-            using EltType = bigwham::Rectangle<0>;
-            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                         coor, conn);
-            ker_obj_ = std::make_shared<
-                    bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
-                    elas, spatial_dimension_);
-            using ObsType = Point<3>;
-            ker_obs_u_=std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
-                    elas, spatial_dimension_);
-            ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
-                    elas, spatial_dimension_);
-            break;
-        }
-        case "3DR0-H-mode1"_sh: {
-            IL_ASSERT(properties.size() == 2);
-            ElasticProperties elas(properties[0], properties[1]);
-            spatial_dimension_ = 3;
-            dof_dimension_ = 1;
-            flux_dimension_ = 6; // 6 stress components
-            int nvertices_per_elt_ = 4;
-            using EltType = bigwham::Rectangle<0>;
-            mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                         coor, conn);
-            ker_obj_ = std::make_shared<
-                    bigwham::BieElastostaticModeI<EltType, EltType, bigwham::ElasticKernelType::H>>(
-                    elas, spatial_dimension_);
-            // observation kernels to implement....
-            // still missing displacement & stresses representation for that kernel + element
-            break;
-        }
-        default: {
-            std::cout << "wrong inputs -abort \n";
-            il::abort();
-        }
-    }
-    mesh_src_ = mesh_;
-    mesh_rec_ = mesh_;
-    m_yout_.Resize(mesh_->num_collocation_points() * mesh_->spatial_dimension());
-
+    spatial_dimension_ = 2;
+    dof_dimension_ = 2;
+    flux_dimension_ = 3;
+    int nvertices_per_elt_ = 2;
+    using EltType = bigwham::Segment<1>;
+    mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                 coor, conn);
+    ker_obj_ = std::make_shared<bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    using ObsType = Point<2>;
+    ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::W>>(
+        elas, spatial_dimension_);
+    // still missing displacement for that kernel + element
+    break;
+  }
+  case "S3DP0-H"_sh:
+  {
+    IL_ASSERT(properties.size() == 3);
+    ElasticProperties elas(properties[0], properties[1]);
+    spatial_dimension_ = 2;
+    dof_dimension_ = 2;
+    flux_dimension_ = 3;
+    int nvertices_per_elt_ = 2;
+    using EltType = bigwham::Segment<0>;
+    mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                 coor, conn);
+    ker_obj_ = std::make_shared<
+        bigwham::BieElastostaticSp3d<EltType, EltType, bigwham::ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    il::Array<double> prop{1, properties[2]};
+    ker_obj_->set_kernel_properties(prop);
+    // still missing displacement & stresses representation for that kernel + element
+    break;
+  }
+  case "Axi3DP0-H"_sh:
+  {
+    IL_ASSERT(properties.size() == 2);
+    ElasticProperties elas(properties[0], properties[1]);
+    spatial_dimension_ = 2;
+    dof_dimension_ = 2;
+    int nvertices_per_elt_ = 2;
+    using EltType = bigwham::Segment<0>;
+    mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                 coor, conn);
+    ker_obj_ = std::make_shared<bigwham::BieElastostaticAxi3D<EltType, EltType, bigwham::ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    break;
+  }
+  case "3DT0-H"_sh:
+  {
+    IL_ASSERT(properties.size() == 2);
+    ElasticProperties elas(properties[0], properties[1]);
+    spatial_dimension_ = 3;
+    dof_dimension_ = 3;
+    flux_dimension_ = 6; // 6 stress components
+    int nvertices_per_elt_ = 3;
+    using EltType = bigwham::Triangle<0>;
+    mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                 coor, conn);
+    ker_obj_ = std::make_shared<
+        bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    using ObsType = Point<3>;
+    ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
+        elas, spatial_dimension_);
+    ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::W>>(
+        elas, spatial_dimension_);
+    break;
+  }
+  case "3DT6-H"_sh:
+  {
+    IL_ASSERT(properties.size() == 2);
+    ElasticProperties elas(properties[0], properties[1]);
+    spatial_dimension_ = 3;
+    dof_dimension_ = 3;
+    flux_dimension_ = 6; // 6 stress components
+    int nvertices_per_elt_ = 3;
+    using EltType = bigwham::Triangle<2>;
+    mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                 coor, conn);
+    ker_obj_ = std::make_shared<
+        bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    using ObsType = Point<3>;
+    // still missing displacement & stresses representation for that kernel + element
+    // ker_obs_u_=std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
+    //        elas, spatial_dimension_);
+    // ker_obs_q_=std::make_shared<bigwham::BieElastostatic<EltType,ObsType, bigwham::ElasticKernelType::W>>(
+    //       elas, spatial_dimension_);
+    break;
+  }
+  case "3DR0-H"_sh:
+  {
+    IL_ASSERT(properties.size() == 2);
+    ElasticProperties elas(properties[0], properties[1]);
+    spatial_dimension_ = 3;
+    dof_dimension_ = 3;
+    flux_dimension_ = 6; // 6 stress components
+    int nvertices_per_elt_ = 4;
+    using EltType = bigwham::Rectangle<0>;
+    mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                 coor, conn);
+    ker_obj_ = std::make_shared<
+        bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    using ObsType = Point<3>;
+    ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
+        elas, spatial_dimension_);
+    ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::W>>(
+        elas, spatial_dimension_);
+    break;
+  }
+  case "3DR0-H-mode1"_sh:
+  {
+    IL_ASSERT(properties.size() == 2);
+    ElasticProperties elas(properties[0], properties[1]);
+    spatial_dimension_ = 3;
+    dof_dimension_ = 1;
+    flux_dimension_ = 6; // 6 stress components
+    int nvertices_per_elt_ = 4;
+    using EltType = bigwham::Rectangle<0>;
+    mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
+                                                 coor, conn);
+    ker_obj_ = std::make_shared<
+        bigwham::BieElastostaticModeI<EltType, EltType, bigwham::ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    // observation kernels to implement....
+    // still missing displacement & stresses representation for that kernel + element
+    break;
+  }
+  default:
+  {
+    std::cout << "wrong inputs -abort \n";
+    il::abort();
+  }
+  }
+  mesh_src_ = mesh_;
+  mesh_rec_ = mesh_;
+  m_yout_.Resize(mesh_->num_collocation_points() * mesh_->spatial_dimension());
 };
 
 // rectangular Hmatrix
 BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
-             const std::vector<int> &conn_src,
-             const std::vector<double> &coor_rec,
-             const std::vector<int> &conn_rec, const std::string &kernel,
-             const std::vector<double> &properties){
-    this->kernel_name_ = kernel;
-    std::cout << " Now setting things for kernel ... " << kernel_name_
-              << " with properties size " << properties.size() << "\n";
+                           const std::vector<int> &conn_src,
+                           const std::vector<double> &coor_rec,
+                           const std::vector<int> &conn_rec, const std::string &kernel,
+                           const std::vector<double> &properties)
+{
+  this->kernel_name_ = kernel;
+  std::cout << " Now setting things for kernel ... " << kernel_name_
+            << " with properties size " << properties.size() << "\n";
 
-    switch (hash_djb2a(kernel_name_)) {
-        case "3DT0-3DT0-H"_sh: {
-            ElasticProperties elas(properties[0], properties[1]);
-            dof_dimension_ = 3;
-            spatial_dimension_ = 3;
-            flux_dimension_ = 6 ;
-            using src_elem = Triangle<0>;
-            using rec_elem = Triangle<0>;
-            mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
-                    spatial_dimension_, /* num vertices */ 3, coor_src, conn_src);
-            mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
-                    spatial_dimension_, /* num vertices */ 3, coor_rec, conn_rec);
-            ker_obj_ = std::make_shared<
-                    BieElastostatic<src_elem, rec_elem, ElasticKernelType::H>>(
-                    elas, spatial_dimension_);
-            break;
-        }
-        case "2DS0-2DP-T"_sh: {
-            // 2D Segment0 and 2D Point
-            ElasticProperties elas(properties[0], properties[1]);
-            dof_dimension_ = 2;
-            spatial_dimension_ = 2;
-            flux_dimension_ = 3;
-            using src_elem = Segment<0>;
-            using rec_elem = Point<2>;
-            mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
-                    spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
-            mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
-                    spatial_dimension_, /* num vertices */ 1, coor_rec, conn_rec);
-            ker_obj_ = std::make_shared<
-                    BieElastostatic<src_elem, rec_elem, ElasticKernelType::T>>(
-                    elas, spatial_dimension_);
-            break;
-        }
-        default: {
-            std::cout << "wrong inputs -abort \n";
-            il::abort();
-        }
-    }
-    mesh_ = mesh_src_;
-    m_yout_.Resize(mesh_rec_->num_collocation_points() * mesh_rec_->spatial_dimension());
+  switch (hash_djb2a(kernel_name_))
+  {
+  case "3DT0-3DT0-H"_sh:
+  {
+    ElasticProperties elas(properties[0], properties[1]);
+    dof_dimension_ = 3;
+    spatial_dimension_ = 3;
+    flux_dimension_ = 6;
+    using src_elem = Triangle<0>;
+    using rec_elem = Triangle<0>;
+    mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+        spatial_dimension_, /* num vertices */ 3, coor_src, conn_src);
+    mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+        spatial_dimension_, /* num vertices */ 3, coor_rec, conn_rec);
+    ker_obj_ = std::make_shared<
+        BieElastostatic<src_elem, rec_elem, ElasticKernelType::H>>(
+        elas, spatial_dimension_);
+    break;
+  }
+  case "2DS0-2DP-T"_sh:
+  {
+    // 2D Segment0 and 2D Point
+    ElasticProperties elas(properties[0], properties[1]);
+    dof_dimension_ = 2;
+    spatial_dimension_ = 2;
+    flux_dimension_ = 3;
+    using src_elem = Segment<0>;
+    using rec_elem = Point<2>;
+    mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+        spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
+    mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+        spatial_dimension_, /* num vertices */ 1, coor_rec, conn_rec);
+    ker_obj_ = std::make_shared<
+        BieElastostatic<src_elem, rec_elem, ElasticKernelType::T>>(
+        elas, spatial_dimension_);
+    break;
+  }
+  default:
+  {
+    std::cout << "wrong inputs -abort \n";
+    il::abort();
+  }
+  }
+  mesh_ = mesh_src_;
+  m_yout_.Resize(mesh_rec_->num_collocation_points() * mesh_rec_->spatial_dimension());
 }
 
 // Method for pattern Construction
 // API to the Hierarchical representation function
-void BigWhamIOGen::BuildPattern(const int max_leaf_size, const double eta) {
+void BigWhamIOGen::BuildPattern(const int max_leaf_size, const double eta)
+{
 
-    max_leaf_size_ = max_leaf_size;
-    eta_ = eta;
-    il::Timer tt;
-    std::cout << "--------------------\n";
-    std::cout << "Hierarchical representation creation ...\n";
-    tt.Start();
-    this->hr_ = HRepresentationRectangularMatrix(mesh_src_, mesh_rec_,max_leaf_size_, eta_);
-    is_pattern_built_= true;
-    tt.Stop();
-    std::cout << "Hierarchical representation complete.\n";
+  max_leaf_size_ = max_leaf_size;
+  eta_ = eta;
+  il::Timer tt;
+  std::cout << "--------------------\n";
+  std::cout << "Hierarchical representation creation ...\n";
+  tt.Start();
+  this->hr_ = HRepresentationRectangularMatrix(mesh_src_, mesh_rec_, max_leaf_size_, eta_);
+  is_pattern_built_ = true;
+  tt.Stop();
+  std::cout << "Hierarchical representation complete.\n";
 }
 
 // construct Hierarchical matrix
-void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca) {
+void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca)
+{
 
   epsilon_aca_ = eps_aca;
-  if (! is_pattern_built_){
-      BigWhamIOGen::BuildPattern(max_leaf_size, eta);
+  if (!is_pattern_built_)
+  {
+    BigWhamIOGen::BuildPattern(max_leaf_size, eta);
   }
 
   il::Timer tt;
@@ -287,23 +304,26 @@ void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double
   hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_);
   tt.Stop();
   hmat_time_ = tt.time();
-  if (hmat_->isBuilt()) {
+  if (hmat_->isBuilt())
+  {
     is_built_ = true;
     IL_EXPECT_FAST(dof_dimension_ == hmat_->dofDimension());
     std::cout << "Hierarchical matrix construction complete.\n";
     double test_cr = hmat_->compressionRatio();
-    std::cout <<  "Compression Ratio = " << test_cr << ", eps_aca = " << epsilon_aca_
+    std::cout << "Compression Ratio = " << test_cr << ", eps_aca = " << epsilon_aca_
               << ", eta = " << eta_ << "\n";
     std::cout << "Hierarchical matrix  construction time = :  " << hmat_time_ << "\n";
-  } else {
+  }
+  else
+  {
     is_built_ = false;
   }
   std::cout << "--------------------\n";
-
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<long> BigWhamIOGen::GetHPattern() const {
+std::vector<long> BigWhamIOGen::GetHPattern() const
+{
   // API function to output the hmatrix pattern
   //  as flattened list via a pointer
   //  the numberofblocks is also returned (by reference)
@@ -316,9 +336,10 @@ std::vector<long> BigWhamIOGen::GetHPattern() const {
 
   IL_EXPECT_FAST(is_pattern_built_ || is_built_);
 
-  bigwham::HPattern pattern =hr_->pattern_;
-  if (is_built_) {
-      pattern =hmat_->pattern();
+  bigwham::HPattern pattern = hr_->pattern_;
+  if (is_built_)
+  {
+    pattern = hmat_->pattern();
   }
 
   long numberofblocks = pattern.n_B;
@@ -329,7 +350,8 @@ std::vector<long> BigWhamIOGen::GetHPattern() const {
 
   int index = 0;
   //  starts with full rank
-  for (il::int_t j = 0; j < pattern.n_FRB; j++) {
+  for (il::int_t j = 0; j < pattern.n_FRB; j++)
+  {
     // check is low rank or not
     //  il::Array2DView<double> A = hmat_.asFullRank(s);
     patternlist[index++] = pattern.FRB_pattern(1, j);
@@ -343,7 +365,8 @@ std::vector<long> BigWhamIOGen::GetHPattern() const {
          pattern.FRB_pattern(1, j)); // size of that sub blocks
   }
   // then low ranks (only valid values if the Hmat has been built !)
-  for (il::int_t j = 0; j < pattern.n_LRB; j++) {
+  for (il::int_t j = 0; j < pattern.n_LRB; j++)
+  {
 
     patternlist[index++] = pattern.LRB_pattern(1, j);
     patternlist[index++] = pattern.LRB_pattern(2, j);
@@ -358,7 +381,8 @@ std::vector<long> BigWhamIOGen::GetHPattern() const {
 /* --------------------------------------------------------------------------*/
 
 void BigWhamIOGen::GetFullBlocks(il::Array<double> &val_list,
-                                 il::Array<int> &pos_list) const {
+                                 il::Array<int> &pos_list) const
+{
   // return the full dense block entries of the hmat as
   // flattened lists
   // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
@@ -371,21 +395,24 @@ void BigWhamIOGen::GetFullBlocks(il::Array<double> &val_list,
   hmat_->fullBlocksOriginal(il::io, values, positions);
   //    std::cout << " checking values size" << values.size() <<  "\n";
   val_list.Resize(values.size());
-  for (il::int_t i = 0; i < values.size(); i++) {
+  for (il::int_t i = 0; i < values.size(); i++)
+  {
     val_list[i] = values[i];
   }
   pos_list.Resize(positions.size());
-  for (il::int_t i = 0; i < positions.size(); i++) {
+  for (il::int_t i = 0; i < positions.size(); i++)
+  {
     pos_list[i] = positions[i];
   }
- // std::cout << "number of entries " << val_list.size() << " - "
- //           << pos_list.size() << "\n";
- // std::cout << " End of Bigwhamio getFullBlocks \n";
+  // std::cout << "number of entries " << val_list.size() << " - "
+  //           << pos_list.size() << "\n";
+  // std::cout << " End of Bigwhamio getFullBlocks \n";
 }
 /* --------------------------------------------------------------------------*/
 
 void BigWhamIOGen::GetFullBlocks(std::vector<double> &val_list,
-                                 std::vector<int> &pos_list) const {
+                                 std::vector<int> &pos_list) const
+{
   // return the full dense block entries of the hmat as
   // flattened lists
   // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
@@ -398,20 +425,23 @@ void BigWhamIOGen::GetFullBlocks(std::vector<double> &val_list,
   hmat_->fullBlocksOriginal(il::io, values, positions);
   //    std::cout << " checking values size" << values.size() <<  "\n";
   val_list.reserve(values.size());
-  for (il::int_t i = 0; i < values.size(); i++) {
+  for (il::int_t i = 0; i < values.size(); i++)
+  {
     val_list.push_back(values[i]);
   }
   pos_list.reserve(positions.size());
-  for (il::int_t i = 0; i < positions.size(); i++) {
+  for (il::int_t i = 0; i < positions.size(); i++)
+  {
     pos_list.push_back(positions[i]);
   }
-  //std::cout << "number of entries " << val_list.size() << " - "
-  //          << pos_list.size() << "\n";
-  //std::cout << " End of Bigwhamio getFullBlocks \n";
+  // std::cout << "number of entries " << val_list.size() << " - "
+  //           << pos_list.size() << "\n";
+  // std::cout << " End of Bigwhamio getFullBlocks \n";
 }
 /* --------------------------------------------------------------------------*/
 
-void BigWhamIOGen::GetDiagonal(std::vector<double> &val_list) const {
+void BigWhamIOGen::GetDiagonal(std::vector<double> &val_list) const
+{
   // return the diagonal of the h-matrix
   // output in the original dof state (accounting for the permutation)
 
@@ -422,7 +452,8 @@ void BigWhamIOGen::GetDiagonal(std::vector<double> &val_list) const {
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const {
+std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const
+{
   // in the original / natural ordering
   IL_EXPECT_FAST(this->is_built_);
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
@@ -431,7 +462,8 @@ std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const {
 }
 /* -------------------------------------------------------------------------- */
 
-void BigWhamIOGen::MatVecVoid(il::ArrayView<double> x) {
+void BigWhamIOGen::MatVecVoid(il::ArrayView<double> x)
+{
   // in the original / natural ordering
   // this function is used in julia to avoid copying the output
   // but use internal variable m_yout_ to store the result
@@ -440,7 +472,8 @@ void BigWhamIOGen::MatVecVoid(il::ArrayView<double> x) {
 }
 /* -------------------------------------------------------------------------- */
 
-il::Array<double> BigWhamIOGen::MatVec(il::ArrayView<double> x) const {
+il::Array<double> BigWhamIOGen::MatVec(il::ArrayView<double> x) const
+{
   // in the original / natural ordering
   IL_EXPECT_FAST(this->is_built_);
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
@@ -448,7 +481,8 @@ il::Array<double> BigWhamIOGen::MatVec(il::ArrayView<double> x) const {
   return y;
 }
 /* -------------------------------------------------------------------------- */
-il::Array<double> BigWhamIOGen::MatVecPerm(il::ArrayView<double> x) const {
+il::Array<double> BigWhamIOGen::MatVecPerm(il::ArrayView<double> x) const
+{
   // in the permutted state.
   IL_EXPECT_FAST(this->is_built_);
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
@@ -458,7 +492,8 @@ il::Array<double> BigWhamIOGen::MatVecPerm(il::ArrayView<double> x) const {
 /* -------------------------------------------------------------------------- */
 
 std::vector<double>
-BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const {
+BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const
+{
   // in the permutted state.
   IL_EXPECT_FAST(this->is_built_);
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
@@ -468,14 +503,16 @@ BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const {
 /* -------------------------------------------------------------------------- */
 
 il::Array<double>
-BigWhamIOGen::ConvertToGlobal(il::ArrayView<double> x_local) const {
+BigWhamIOGen::ConvertToGlobal(il::ArrayView<double> x_local) const
+{
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_rec_->ConvertToGlobal(x_local);
 }
 /* -------------------------------------------------------------------------- */
 il::Array<double>
-BigWhamIOGen::ConvertToLocal(il::ArrayView<double> x_global) const {
+BigWhamIOGen::ConvertToLocal(il::ArrayView<double> x_global) const
+{
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_src_->ConvertToLocal(x_global);
@@ -483,7 +520,8 @@ BigWhamIOGen::ConvertToLocal(il::ArrayView<double> x_global) const {
 /* -------------------------------------------------------------------------- */
 
 std::vector<double>
-BigWhamIOGen::ConvertToGlobal(const std::vector<double> &x_local) const {
+BigWhamIOGen::ConvertToGlobal(const std::vector<double> &x_local) const
+{
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_rec_->ConvertToGlobal(x_local);
@@ -491,24 +529,104 @@ BigWhamIOGen::ConvertToGlobal(const std::vector<double> &x_local) const {
 /* -------------------------------------------------------------------------- */
 
 std::vector<double>
-BigWhamIOGen::ConvertToLocal(const std::vector<double> &x_global) const {
+BigWhamIOGen::ConvertToLocal(const std::vector<double> &x_global) const
+{
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_src_->ConvertToLocal(x_global);
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<double> BigWhamIOGen::GetCollocationPoints() const {
+std::vector<double> BigWhamIOGen::GetElementNormals() const
+{
+  /*
+# normals
+Get the normal vectors of the elements
+:return: 1D array of the normal vectors of the elements
+3d case:
+[n0x,n0y,n0z,n1x,n1y,n1z,...]
+2d case:
+[n0x,n0y,n1x,n1y,...]
+  */
+
+  auto mesh = this->mesh_src_;
+  auto dim = mesh->spatial_dimension();
+  std::vector<double> normals;
+  normals.assign(mesh->num_elements() * dim, 0.0);
+  // normals.Resize(dim * mesh->num_elements(), 0.0);
+
+#pragma omp parallel for
+  for (il::int_t i = 0; i < mesh->num_elements(); ++i)
+  {
+    auto elem = mesh->GetElement(i);
+    auto n = elem->normal();
+    for (il::int_t j = 0; j < dim; ++j)
+    {
+      normals[i * dim + j] = n[j];
+      // normals.push_back(n[j]);
+    }
+  }
+
+  return normals;
+}
+/* -------------------------------------------------------------------------- */
+std::vector<double> BigWhamIOGen::GetRotationMatrix() const
+{
+  /*
+# rotation_matrix
+Get the rotation matrix of the elements
+:return: 1D array of the rotation matrix of the elements
+3d case:
+[r00,r01,r02,r10,r11,r12,r20,r21,r22,...]
+2d case:
+[r00,r01,r10,r11,...]
+   */
+
+  auto mesh = this->mesh_src_;
+  auto dim = mesh->spatial_dimension();
+  std::vector<double> flattend_rotation_matrix;
+  int num_elements = mesh->num_elements();
+  int num_total_collocation_points = mesh->num_collocation_points();
+  flattend_rotation_matrix.assign(dim * dim * num_total_collocation_points * num_elements, 0.0);
+  //  flattend_rotation_matrix.Resize(dim * dim * num_total_collocation_points, 0.0);
+#pragma omp parallel for
+  for (il::int_t i = 0; i < mesh->num_elements(); ++i)
+  {
+    auto elem = mesh->GetElement(i);
+    auto mat = elem->rotation_matrix();
+    int num_local_collocation_points = elem->num_collocation_points();
+    for (il::int_t col_id = 0; col_id < num_local_collocation_points; ++col_id)
+    {
+      for (il::int_t j = 0; j < dim; ++j)
+      {
+        for (il::int_t k = 0; k < dim; ++k)
+        {
+          flattend_rotation_matrix[i * dim * dim * num_local_collocation_points + col_id * dim * dim + j * dim + k] = mat(j, k);
+          // flattend_rotation_matrix.push_back(mat(j, k));
+        }
+      }
+    }
+  }
+
+  return flattend_rotation_matrix;
+}
+
+/* -------------------------------------------------------------------------- */
+
+std::vector<double> BigWhamIOGen::GetCollocationPoints() const
+{
   IL_EXPECT_FAST(is_built_);
 
-  auto col_pts = mesh_rec_->collocation_points();  // this should be the receiver mesh for  generality
+  auto col_pts = mesh_rec_->collocation_points(); // this should be the receiver mesh for  generality
   IL_EXPECT_FAST(col_pts.size(1) == spatial_dimension_);
   il::int_t npoints = col_pts.size(0);
   std::vector<double> flat_col;
   flat_col.assign(npoints * spatial_dimension_, 0.);
   int index = 0;
-  for (il::int_t i = 0; i < col_pts.size(0); i++) {
-    for (il::int_t j = 0; j < col_pts.size(1); j++) {
+  for (il::int_t i = 0; i < col_pts.size(0); i++)
+  {
+    for (il::int_t j = 0; j < col_pts.size(1); j++)
+    {
       flat_col[index] = col_pts(i, j);
       index++;
     }
@@ -517,155 +635,176 @@ std::vector<double> BigWhamIOGen::GetCollocationPoints() const {
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<long> BigWhamIOGen::GetPermutation() const {
+std::vector<long> BigWhamIOGen::GetPermutation() const
+{
   IL_EXPECT_FAST(is_built_);
   std::vector<long> permut;
   permut.assign(hr_->permutation_1_.size(), 0);
-  for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
+  for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++)
+  {
     permut[i] = hr_->permutation_1_[i];
   }
   return permut;
 }
 /* -------------------------------------------------------------------------- */
 
-il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
+il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coor_obs, const il::ArrayView<double> sol_local) const
 { // return the potential in the global system of coordinates, the solution on the source mesh being defined in the local eletment system of the source mesh
-    IL_EXPECT_FAST(sol_local.size() == mesh_src_->num_collocation_points() * dof_dimension_);
-    IL_EXPECT_FAST(coor_obs.size() % spatial_dimension_ == 0);
-    if (this->ker_obs_u_ == nullptr) {
-        std::cout << "Kernel Not Implemented !\n";
-    }
-    IL_EXPECT_FAST(this->ker_obs_u_!= nullptr);
+  IL_EXPECT_FAST(sol_local.size() == mesh_src_->num_collocation_points() * dof_dimension_);
+  IL_EXPECT_FAST(coor_obs.size() % spatial_dimension_ == 0);
+  if (this->ker_obs_u_ == nullptr)
+  {
+    std::cout << "Kernel Not Implemented !\n";
+  }
+  IL_EXPECT_FAST(this->ker_obs_u_ != nullptr);
 
-    il::int_t npts = coor_obs.size() / spatial_dimension_;
-    std::shared_ptr<bigwham::Mesh> mesh_obs;
-    std::vector<int> conn_obs(npts,0);
-    for (int i =0 ; i<npts;i++){
-        // dummy connectivity for a mesh of points.
-        conn_obs[i]=i;
-    }
-    IL_EXPECT_FAST(spatial_dimension_==2 || spatial_dimension_==3);
+  il::int_t npts = coor_obs.size() / spatial_dimension_;
+  std::shared_ptr<bigwham::Mesh> mesh_obs;
+  std::vector<int> conn_obs(npts, 0);
+  for (int i = 0; i < npts; i++)
+  {
+    // dummy connectivity for a mesh of points.
+    conn_obs[i] = i;
+  }
+  IL_EXPECT_FAST(spatial_dimension_ == 2 || spatial_dimension_ == 3);
 
-    switch (spatial_dimension_) {
-        case 2 : {
-            mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
-            break;
-        }
-        case 3: {
-            mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
-            break;
-        }
-        default:
-        {
-            std::cout << "Invalid spatial_dimension ! \n";
-            break;
-        }
-    }
+  switch (spatial_dimension_)
+  {
+  case 2:
+  {
+    mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
+    break;
+  }
+  case 3:
+  {
+    mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
+    break;
+  }
+  default:
+  {
+    std::cout << "Invalid spatial_dimension ! \n";
+    break;
+  }
+  }
 
-    il::Array<double> obs_potential{npts*dof_dimension_,0.};
+  il::Array<double> obs_potential{npts * dof_dimension_, 0.};
 
 // loop on source collocation points
-#pragma omp parallel if ( std::sqrt((mesh_src_->num_collocation_points())* (mesh_obs->num_collocation_points()))  > 400)
-    {
+#pragma omp parallel if (std::sqrt((mesh_src_->num_collocation_points()) * (mesh_obs->num_collocation_points())) > 400)
+  {
 #pragma omp for
-        for (il::int_t i = 0; i < mesh_src_->num_collocation_points(); i++) {
+    for (il::int_t i = 0; i < mesh_src_->num_collocation_points(); i++)
+    {
 
-            il::int_t e_i = this->mesh_src_->GetElementId(i);
-            il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
-            auto source_element = this->mesh_src_->GetElement(e_i);
+      il::int_t e_i = this->mesh_src_->GetElementId(i);
+      il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
+      auto source_element = this->mesh_src_->GetElement(e_i);
 
-            // local solution (assumed in original ordering....)
-            il::Array<double> elt_solu{dof_dimension_};
-            for (il::int_t k = 0; k < dof_dimension_; k++) {
-                elt_solu[k] = sol_local[i * dof_dimension_ + k];
-            }
+      // local solution (assumed in original ordering....)
+      il::Array<double> elt_solu{dof_dimension_};
+      for (il::int_t k = 0; k < dof_dimension_; k++)
+      {
+        elt_solu[k] = sol_local[i * dof_dimension_ + k];
+      }
 
-            // loop on obs points mesh
-            for (il::int_t j_obs = 0; j_obs < mesh_obs->num_collocation_points(); j_obs++) {
-                il::int_t e_j_r = mesh_obs->GetElementId(j_obs);
-                auto receiver_element = mesh_obs->GetElement(e_j_r);
-                il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
-                std::vector<double> st = this->ker_obs_u_->influence(*source_element, is_l, *receiver_element, ir_l);
-                for (il::int_t j = 0; j < dof_dimension_; j++) {
-                    for (il::int_t k = 0; k < dof_dimension_; k++) {
-                        obs_potential[j_obs * dof_dimension_ + j] += st[k * dof_dimension_ + j] * elt_solu[k];
-                    }
-                }
-            }
+      // loop on obs points mesh
+      for (il::int_t j_obs = 0; j_obs < mesh_obs->num_collocation_points(); j_obs++)
+      {
+        il::int_t e_j_r = mesh_obs->GetElementId(j_obs);
+        auto receiver_element = mesh_obs->GetElement(e_j_r);
+        il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
+        std::vector<double> st = this->ker_obs_u_->influence(*source_element, is_l, *receiver_element, ir_l);
+        for (il::int_t j = 0; j < dof_dimension_; j++)
+        {
+          for (il::int_t k = 0; k < dof_dimension_; k++)
+          {
+            obs_potential[j_obs * dof_dimension_ + j] += st[k * dof_dimension_ + j] * elt_solu[k];
+          }
         }
+      }
     }
+  }
 
-return obs_potential;
+  return obs_potential;
 }
 
-
-il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
+il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_obs, const il::ArrayView<double> sol_local) const
 {
-// return the potential in the global system of coordinates, the solution on the source mesh being defined in the local eletment system of the source mesh
-    IL_EXPECT_FAST(sol_local.size() == mesh_src_->num_collocation_points() * dof_dimension_);
-    IL_EXPECT_FAST(coor_obs.size() % spatial_dimension_ == 0);
-    if (this->ker_obs_q_ == nullptr) {
-        std::cout << "Kernel Not Implemented !\n";
-    }
-    IL_EXPECT_FAST(this->ker_obs_q_!= nullptr);
+  // return the potential in the global system of coordinates, the solution on the source mesh being defined in the local eletment system of the source mesh
+  IL_EXPECT_FAST(sol_local.size() == mesh_src_->num_collocation_points() * dof_dimension_);
+  IL_EXPECT_FAST(coor_obs.size() % spatial_dimension_ == 0);
+  if (this->ker_obs_q_ == nullptr)
+  {
+    std::cout << "Kernel Not Implemented !\n";
+  }
+  IL_EXPECT_FAST(this->ker_obs_q_ != nullptr);
 
-    il::int_t npts = coor_obs.size() / spatial_dimension_;
+  il::int_t npts = coor_obs.size() / spatial_dimension_;
 
-    std::shared_ptr<bigwham::Mesh> mesh_obs;
-    std::vector<int> conn_obs(npts,0);
-    for (int i =0 ; i<npts;i++){
-        // dummy connectivity for a mesh of points.
-        conn_obs[i]=i;
-    }
-    IL_EXPECT_FAST(spatial_dimension_==2 || spatial_dimension_==3);
+  std::shared_ptr<bigwham::Mesh> mesh_obs;
+  std::vector<int> conn_obs(npts, 0);
+  for (int i = 0; i < npts; i++)
+  {
+    // dummy connectivity for a mesh of points.
+    conn_obs[i] = i;
+  }
+  IL_EXPECT_FAST(spatial_dimension_ == 2 || spatial_dimension_ == 3);
 
-    switch (spatial_dimension_) {
-        case 2 : {
-            mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
-            break;
-        }
-        case 3: {
-            mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
-            break;
-        }
-        default:
-        {
-            std::cout << "Invalid spatial_dimension ! \n";
-            break;
-        }
-    }
+  switch (spatial_dimension_)
+  {
+  case 2:
+  {
+    mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<2>>(spatial_dimension_, 1, coor_obs, conn_obs);
+    break;
+  }
+  case 3:
+  {
+    mesh_obs = bigwham::CreateMeshFromVect<bigwham::Point<3>>(spatial_dimension_, 1, coor_obs, conn_obs);
+    break;
+  }
+  default:
+  {
+    std::cout << "Invalid spatial_dimension ! \n";
+    break;
+  }
+  }
 
-    il::Array<double> obs_flux{npts*flux_dimension_,0.};
+  il::Array<double> obs_flux{npts * flux_dimension_, 0.};
 
 // loop on source collocation points
-#pragma omp parallel if ( std::sqrt((mesh_src_->num_collocation_points())* (mesh_obs->num_collocation_points()))  > 400)
-    {
+#pragma omp parallel if (std::sqrt((mesh_src_->num_collocation_points()) * (mesh_obs->num_collocation_points())) > 400)
+  {
 #pragma omp for
-        for (il::int_t i = 0; i < mesh_src_->num_collocation_points(); i++) {
+    for (il::int_t i = 0; i < mesh_src_->num_collocation_points(); i++)
+    {
 
-            il::int_t e_i = this->mesh_src_->GetElementId(i);
-            il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
+      il::int_t e_i = this->mesh_src_->GetElementId(i);
+      il::int_t is_l = this->mesh_src_->GetElementCollocationId(i);
 
-            auto source_element = this->mesh_src_->GetElement(e_i);
-            // local solution (assumed in original ordering....)
-            il::Array<double> elt_solu{dof_dimension_}, e_potential{dof_dimension_, 0.};
-            for (il::int_t k = 0; k < dof_dimension_; k++) {
-                elt_solu[k] = sol_local[i * dof_dimension_ + k];
-            }
+      auto source_element = this->mesh_src_->GetElement(e_i);
+      // local solution (assumed in original ordering....)
+      il::Array<double> elt_solu{dof_dimension_}, e_potential{dof_dimension_, 0.};
+      for (il::int_t k = 0; k < dof_dimension_; k++)
+      {
+        elt_solu[k] = sol_local[i * dof_dimension_ + k];
+      }
 
-            // loop on obs points mesh
-            for (il::int_t j_obs = 0; j_obs < mesh_obs->num_collocation_points(); j_obs++) {
-                il::int_t e_i_r = mesh_obs->GetElementId(j_obs);
-                auto receiver_element = mesh_obs->GetElement(e_i_r);
-                il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
-                std::vector<double> st = this->ker_obs_q_->influence(*source_element, is_l, *receiver_element, ir_l);
-                for (il::int_t j = 0; j < flux_dimension_; j++) {
-                    for (il::int_t k = 0; k < dof_dimension_; k++) {
-                        obs_flux[j_obs * flux_dimension_ + j] += st[flux_dimension_ * k + j] * elt_solu[k];
-                    }
-                }
-            }
+      // loop on obs points mesh
+      for (il::int_t j_obs = 0; j_obs < mesh_obs->num_collocation_points(); j_obs++)
+      {
+        il::int_t e_i_r = mesh_obs->GetElementId(j_obs);
+        auto receiver_element = mesh_obs->GetElement(e_i_r);
+        il::int_t ir_l = mesh_obs->GetElementCollocationId(j_obs);
+        std::vector<double> st = this->ker_obs_q_->influence(*source_element, is_l, *receiver_element, ir_l);
+        for (il::int_t j = 0; j < flux_dimension_; j++)
+        {
+          for (il::int_t k = 0; k < dof_dimension_; k++)
+          {
+            obs_flux[j_obs * flux_dimension_ + j] += st[flux_dimension_ * k + j] * elt_solu[k];
+          }
         }
+      }
     }
-    return obs_flux;
+  }
+  return obs_flux;
 }

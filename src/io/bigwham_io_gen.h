@@ -87,6 +87,8 @@ public:
   il::Array<double> m_yout_; // output vector of matvec
   void HmatDestructor();
   [[nodiscard]] std::vector<double> GetCollocationPoints() const;
+  std::vector<double> GetElementNormals() const;
+  std::vector<double> GetRotationMatrix() const;
   [[nodiscard]] std::vector<long> GetPermutation() const;
   [[nodiscard]] std::vector<long> GetHPattern() const;
   void GetFullBlocks(std::vector<double> &val_list,

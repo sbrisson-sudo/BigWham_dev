@@ -51,9 +51,9 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         kernel,            (string)             name of the kernel
         coor,              (numpy 2D arrray)    coordinates of the vertices of the elements (N of vert x 2)
         conn,              (numpy 2D arrray)    connectivity of the elements (N of elemts x N of vert per elem)
-        properties,        (numpy 2D arrray)    list of kernel properties (Should be changed to a dict to better implement checks?)
+        properties,        (numpy 1D arrray)    list of kernel properties (Should be changed to a dict to better implement checks?)
         max_leaf_size,     (integer)            size of the largest sub block (usually 100 - 1000)
-        eta,               (integer)            approximation factor (usually ~3, 0 is non compressed HMAT)
+        eta,               (float)            approximation factor (usually ~3, 0 is non compressed HMAT)
         eps_aca            (float)              approximation factor (usually 0.001 - 0.0001)
         """
 
@@ -249,6 +249,28 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
             nstress = 6
         sig = self.H_.compute_stresses(list_coor.flatten(),local_solu.flatten())
         return np.reshape(sig,(-1,nstress))
+
+    def get_element_normals(self):
+        """
+        Get the normal vectors of the elements
+        :return: 1D np.array of the normal vectors of the elements
+        3d case:
+        [n0x,n0y,n0z,n1x,n1y,n1z,...]
+        2d case:
+        [n0x,n0y,n1x,n1y,...]
+        """
+        return self.H_.get_element_normals()
+
+    def get_rotation_matrix(self):
+        """
+        Get the rotation matrix of the elements
+        :return: 1D np.array of the rotation matrix of the elements
+        3d case:
+        [r00,r01,r02,r10,r11,r12,r20,r21,r22,...]
+        2d case:
+        [r00,r01,r10,r11,...]
+        """
+        return self.H_.get_rotation_matrix()
 
 
 ########################################################################################################
