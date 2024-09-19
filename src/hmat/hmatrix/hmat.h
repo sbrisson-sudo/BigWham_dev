@@ -81,7 +81,8 @@ public:
   std::vector<T> matvecOriginal(const std::vector<T> & x);
   il::Array<T> matvecOriginal(il::ArrayView<T> x);
 
-  void matvecOriginal(il::ArrayView<T> x, il::Array<T>& yout);
+  void matvecOriginal(const il::ArrayView<T> x, il::Array<T>& yout);
+  void matvecOriginal(const il::ArrayView<T> x, il::ArrayEdit<T> yout);
 
   void writeToFile(const std::string & filename);
   void readFromFile(const std::string & filename);

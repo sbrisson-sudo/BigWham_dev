@@ -25,8 +25,10 @@ end
 
 using LinearMaps, LinearAlgebra
 
-struct BEMatrix{B<:BigWhamIO} <: LinearMaps.LinearMap{Float64}
-    bigwham_obj::B
+abstract type AbstractBEMatrix <: LinearMaps.LinearMap{Float64} end
+
+struct BEMatrix <: AbstractBEMatrix
+    bigwham_obj::BigWhamIOAllocated
     col_pts::Vector{Float64}
     normals::Vector{Float64}
     rotation_matrix::Vector{Float64}
@@ -39,7 +41,7 @@ struct BEMatrix{B<:BigWhamIO} <: LinearMaps.LinearMap{Float64}
         normals = get_element_normals(h)
         rotation_matrix = get_rotation_matrix(h)
         dim = size(colpts)[1]
-        return new{typeof(h)}(h, colpts, normals, rotation_matrix, (dim, dim))
+        return new(h, colpts, normals, rotation_matrix, (dim, dim))
     end
 
 end
@@ -57,12 +59,22 @@ Base.size(hmat::BEMatrix) = hmat.size
 function LinearMaps._unsafe_mul!(y::AbstractVector, A::BEMatrix, x::AbstractVector)
     tmp = matvec(A.bigwham_obj, x[:])
     copyto!(y, tmp)
+    return tmp
 end
 
-function LinearMaps._unsafe_mul!(y::AbstractVector, A::BEMatrix, x::Vector{Float64})
-    tmp = matvec(A.bigwham_obj, x)
-    copyto!(y, tmp)
+function LinearMaps._unsafe_mul!(y::Vector{Float64}, A::BEMatrix, x::Vector{Float64})
+    # tmp = matvec(A.bigwham_obj, x)
+    # copyto!(y, tmp)
+    matvec!(A.bigwham_obj, x, y)
+    return y
 end
+
+# import Base: *
+# function *(H::BEMatrix, dd::Vector{Float64})::Vector{Float64}
+#     tmp = similar(dd)
+#     mul!(H.bigwham_obj, dd, tmp)
+#     return tmp
+# end
 
 # import Base: *
 # function *(hmat::BEMatrix, dd::Vector{Float64})::Vector{Float64}

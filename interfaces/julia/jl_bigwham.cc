@@ -32,6 +32,14 @@ inline il::ArrayView<T> as_array_view(const jlarray<T> &c)
 }
 /* -------------------------------------------------------------------------- */
 
+template <typename T>
+inline il::ArrayEdit<T> as_array_edit(jlarray<T> &c)
+{
+    il::ArrayEdit<T> d{&c[0], static_cast<int>(c.size())};
+    return d;
+}
+/* -------------------------------------------------------------------------- */
+
 JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
 {
     mod.add_type<BigWhamIOGen>("BigWhamIO")
@@ -45,6 +53,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
         .method("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
         .method("get_element_normals", &BigWhamIOGen::GetElementNormals)
         .method("get_rotation_matrix", &BigWhamIOGen::GetRotationMatrix)
+        .method("matvec!", [](BigWhamIOGen &w, const jlarray<double> xin, jlarray<double> xout)
+                {
+                    auto cin = as_array_view<double>(xin);
+                    auto cout  = as_array_edit<double>(xout);
+                    w.MatVecVoid(cin, cout);
+                })
         .method("matvec", [](BigWhamIOGen &w, const jlarray<double> x)
                 {
                     auto c = as_array_view<double>(x);
