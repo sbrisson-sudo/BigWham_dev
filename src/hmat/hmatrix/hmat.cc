@@ -290,10 +290,10 @@ template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
   IL_EXPECT_FAST(x.size() == size_[1]);
   il::Array<T> y{size_[0], 0.};
 
-#if defined(_OPENMP)
-  auto nthreads = omp_get_max_threads();
-  il::Array2D<T> yprivate_storage{size_[0], nthreads};
-#endif
+// #if defined(_OPENMP)
+//   auto nthreads = omp_get_max_threads();
+//   il::Array2D<T> yprivate_storage{size_[0], nthreads};
+// #endif
 
 #pragma omp parallel shared(y)
   {
