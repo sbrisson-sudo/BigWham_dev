@@ -119,6 +119,8 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
       .def("get_hmat_time", &BigWhamIOGen::hmat_time)
       .def("get_omp_threads", &BigWhamIOGen::GetOmpThreads)
+      .def("get_element_normals",&BigWhamIOGen::GetElementNormals)
+      .def("get_rotation_matrix",&BigWhamIOGen::GetRotationMatrix)
       .def(py::pickle(
           [](const BigWhamIOGen &self) { // __getstate__
             /* Return a tuple that fully encodes the state of the object */
@@ -167,7 +169,7 @@ PYBIND11_MODULE(py_bigwham, m)
           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
           {
             auto tx = as_array_view<double>(x);
-            auto v = self.MatVec(tx);
+            il::Array<double> v = self.MatVec(tx);
             return as_pyarray<double>(std::move(v));
           },
           " dot product between hmat and a vector x in original ordering",

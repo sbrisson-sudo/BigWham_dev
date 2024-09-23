@@ -85,7 +85,7 @@ struct AbortException {
 #ifdef IL_UNIT_TEST
 #define IL_EXPECT_FAST(condition) \
   (condition) ? ((void)0) : throw il::AbortException {}
-#elif NDEBUG
+#elif defined(NDEBUG)
 #define IL_EXPECT_FAST(condition) ((void)0)
 #else
 #define IL_EXPECT_FAST(condition) (condition) ? ((void)0) : il::abort();
@@ -101,7 +101,7 @@ struct AbortException {
 #ifdef IL_UNIT_TEST
 #define IL_EXPECT_MEDIUM(condition) \
   (condition) ? ((void)0) : throw il::AbortException {}
-#elif NDEBUG
+#elif defined(NDEBUG)
 #define IL_EXPECT_MEDIUM(condition) ((void)0)
 #else
 #define IL_EXPECT_MEDIUM(condition) (condition) ? ((void)0) : il::abort();
@@ -112,7 +112,7 @@ struct AbortException {
 #ifdef IL_UNIT_TEST
 #define IL_EXPECT_SLOW(condition) \
   (condition) ? ((void)0) : throw il::AbortException {}
-#elif NDEBUG
+#elif defined(NDEBUG)
 #define IL_EXPECT_SLOW(condition) ((void)0)
 #else
 #define IL_EXPECT_SLOW(condition) (condition) ? ((void)0) : il::abort();
@@ -124,7 +124,7 @@ struct AbortException {
 #ifdef IL_UNIT_TEST
 #define IL_ENSURE(condition) \
   (condition) ? ((void)0) : throw il::AbortException {}
-#elif NDEBUG
+#elif defined(NDEBUG)
 #define IL_ENSURE(condition) ((void)0)
 #else
 #define IL_ENSURE(condition) (condition) ? ((void)0) : il::abort();

@@ -71,6 +71,14 @@ public:
 
   void BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca); // construct Hierarchical matrix
 
+  std::shared_ptr<bigwham::Mesh> GetSourceMeshPtr() const {
+    return mesh_src_;
+  }
+
+  std::shared_ptr<bigwham::Mesh> GetRecieverMeshPtr() const {
+    return mesh_rec_;
+  }
+
   // load from file
   void LoadFromFile(const std::string &filename) {
     this->hmat_ = std::make_shared<bigwham::Hmat<double>>(filename);
@@ -80,8 +88,11 @@ public:
     this->hmat_->writeToFile(filename);
   }
 
+  il::Array<double> m_yout_; // output vector of matvec
   void HmatDestructor();
   [[nodiscard]] std::vector<double> GetCollocationPoints() const;
+  std::vector<double> GetElementNormals() const;
+  std::vector<double> GetRotationMatrix() const;
   [[nodiscard]] std::vector<long> GetPermutation() const;
   [[nodiscard]] std::vector<long> GetHPattern() const;
   void GetFullBlocks(std::vector<double> &val_list,
@@ -103,6 +114,9 @@ public:
   {return ComputePotentials(coor_obs, sol_local);};
   [[nodiscard]] il::Array<double> ComputeStresses(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
   {return ComputeFluxes(coor_obs,sol_local); };
+
+  void MatVecVoid(const il::ArrayView<double> x);
+  void MatVecVoid(const il::ArrayView<double> xin, il::ArrayEdit<double> xout);
 
   int MatrixSize(const int k) { return hmat_->size(k); };
   [[nodiscard]] double GetCompressionRatio() const {
