@@ -59,8 +59,8 @@ pbarray<double> PyGetCollocationPoints(const std::vector<double> &coor,
   il::Array<double> pts{v.size(0) * v.size(1), 0.};
 
   int index = 0;
-  for (il::int_t i = 0; i < v.size(0); i++) {
     for (il::int_t j = 0; j < v.size(1); j++) {
+        for (il::int_t i = 0; i < v.size(0); i++) {
       pts[index] = v(i, j);
       index++;
     }
@@ -70,14 +70,14 @@ pbarray<double> PyGetCollocationPoints(const std::vector<double> &coor,
 }
 /* -------------------------------------------------------------------------- */
 
-pbarray<il::int_t> PyGetPermutation(const int dim, const pbarray<double> &pts,
+pbarray<il::int_t> PyGetPermutation(const int dim, const pbarray<double> &Collocation_pts,
                                     const il::int_t leafsize) {
 
-  il::Array2D<double> v{pts.size() / dim, dim, 0.};
+  il::Array2D<double> v{Collocation_pts.size() / dim, dim, 0.};
   int index = 0;
-  for (il::int_t i = 0; i < v.size(0); i++) {
     for (il::int_t j = 0; j < v.size(1); j++) {
-      v(i, j) = pts.data()[index];
+        for (il::int_t i = 0; i < v.size(0); i++) {
+      v(i, j) = Collocation_pts.data()[index];
       index++;
     }
   }

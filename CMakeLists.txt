@@ -77,6 +77,9 @@ if(BIGWHAM_MATHEMATICA_INTERFACE)
   endif()
 endif()
 
+set(IL_MATH_VENDOR "MKL_sequential" CACHE INTERNAL "" FORCE)
+#set(IL_OPENMP OFF CACHE INTERNAL "" FORCE)
+
 add_subdirectory(il)
 
 set(CMAKE_MACOSX_RPATH ON)

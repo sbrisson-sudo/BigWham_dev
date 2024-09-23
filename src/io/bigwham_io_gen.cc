@@ -36,9 +36,19 @@
 using namespace bigwham;
 
 // square matrix case
-BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<int> &conn, const std::string &kernel, const std::vector<double> &properties) {
+BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<int> &conn, const std::string &kernel, const std::vector<double> &properties,const int n_openMP_threads) {
 
     this->kernel_name_ = kernel;
+    this->n_openMP_threads_=n_openMP_threads;
+    auto n_available = this->GetOmpThreads();
+    if (n_openMP_threads>n_available) {
+                this->n_openMP_threads_=n_available;
+    };
+
+#ifdef IL_OPENMP
+    omp_set_dynamic(0);     // Explicitly disable dynamic teams
+    omp_set_num_threads(this->n_openMP_threads_); // Use 4 threads for all consecutive parallel regions
+#endif
 
     std::cout << " Now setting things for kernel ... " << kernel_name_
               << " with properties size " << properties.size() << "\n";
@@ -206,7 +216,14 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
              const std::vector<int> &conn_src,
              const std::vector<double> &coor_rec,
              const std::vector<int> &conn_rec, const std::string &kernel,
-             const std::vector<double> &properties){
+             const std::vector<double> &properties,const int n_openMP_threads){
+
+    this->n_openMP_threads_=n_openMP_threads;
+    auto n_available = this->GetAvailableOmpThreads();
+    if (n_openMP_threads>n_available) {
+        this->n_openMP_threads_=n_available;
+    };
+
     this->kernel_name_ = kernel;
     std::cout << " Now setting things for kernel ... " << kernel_name_
               << " with properties size " << properties.size() << "\n";
@@ -282,7 +299,7 @@ void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double
   std::cout << "Populating Hierarchical matrix ...\n";
   tt.Start();
   bigwham::BieMatrixGenerator<double> M(mesh_src_, mesh_rec_, ker_obj_, hr_);
-  hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_);
+  hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_,n_openMP_threads_);
   tt.Stop();
   hmat_time_ = tt.time();
   if (hmat_->isBuilt()) {

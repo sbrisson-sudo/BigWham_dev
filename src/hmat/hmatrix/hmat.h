@@ -34,13 +34,9 @@ template <typename T> class Hmat {
 private:
     void build(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon);
     void buildFR(const bigwham::MatrixGenerator<T> & matrix_gen);
-    template <il::int_t dim>
-    void buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
-                 const double epsilon);
+    template <il::int_t dim> void buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,const double epsilon);
 
     std::shared_ptr<HRepresentation> hr_;
-
-    // shall we store the permutation(s) in that object ?
 
     il::int_t dof_dimension_;            //  dof per collocation points
     il::StaticArray<il::int_t, 2> size_; // size of tot mat (row, cols)
@@ -52,6 +48,8 @@ private:
     bool isBuilt_LR_ = false;
     bool isBuilt_FR_ = false;
 
+    int n_openMP_threads_=8;
+
 #if defined(IL_OPENMP)
     int frb_chunk_size_{1};
     int lrb_chunk_size_{1};
@@ -60,7 +58,7 @@ private:
 public:
   void hmatMemFree();
   Hmat() = default;
-  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca);
+  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca,const int n_openMP_threads=8);
   Hmat(const std::string &filename);
 
   ~Hmat() = default;

@@ -26,6 +26,8 @@
 
 class BigWhamIOGen {
 private:
+
+  int n_openMP_threads_;
   std::string kernel_name_;
   il::int_t spatial_dimension_;
   il::int_t dof_dimension_;
@@ -53,14 +55,16 @@ public:
     BigWhamIOGen() {};
     // square matrices
     BigWhamIOGen(const std::vector<double> &coor, const std::vector<int> &conn,
-               const std::string &kernel, const std::vector<double> &properties) ;
+               const std::string &kernel, const std::vector<double> &properties,const int n_openMP_threads=8) ;
+
 
     // rectangular Hmat
     BigWhamIOGen(const std::vector<double> &coor_src,
                  const std::vector<int> &conn_src,
                  const std::vector<double> &coor_rec,
                  const std::vector<int> &conn_rec, const std::string &kernel,
-                 const std::vector<double> &properties);
+                 const std::vector<double> &properties,const int n_openMP_threads=8);
+
   ~BigWhamIOGen() {};
 
   void BuildPattern(const int max_leaf_size, const double eta);
@@ -118,13 +122,17 @@ public:
     this->hmat_->hmatMemFree();
   }
 
-  int GetOmpThreads() {
+    int GetOmpThreads() {
+        std::cout << "NUM OF OMP THREADS in BigWham: " << this->n_openMP_threads_ << std::endl;
+        return this->n_openMP_threads_;};
+
+    int GetAvailableOmpThreads() {
     int threads = 1;
 #ifdef IL_OPENMP
 #pragma omp parallel
     {
 #pragma omp single
-       std::cout << "NUM OF OMP THREADS: " << omp_get_num_threads() <<
+       std::cout << "NUM OF AVAILABLE OMP THREADS: " << omp_get_num_threads() <<
        std::endl;
       threads = omp_get_num_threads();
     }

@@ -23,8 +23,9 @@ namespace bigwham {
 
 // direct constructor
 template <typename T>
-Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca) {
+Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca,const int n_openMP_threads) {
         // construction directly
+        this->n_openMP_threads_=n_openMP_threads;
         this->toHmat(matrix_gen, epsilon_aca);
 }
 /* -------------------------------------------------------------------------- */
@@ -193,7 +194,7 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
   std::cout << " N full blocks " << hr_->pattern_.n_FRB << " \n";
 
   full_rank_blocks_.resize(hr_->pattern_.n_FRB);
-#pragma omp parallel for schedule(static, frb_chunk_size_)
+#pragma omp parallel for schedule(static, frb_chunk_size_) num_threads(this->n_openMP_threads_)
   for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
     il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
     il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
@@ -227,7 +228,7 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
   auto nthreads = omp_get_max_threads();
 #endif
   low_rank_blocks_.resize(hr_->pattern_.n_LRB);
-#pragma omp parallel for schedule(static, lrb_chunk_size_)
+#pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
   for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
     il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
     il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
@@ -290,13 +291,12 @@ template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
   IL_EXPECT_FAST(x.size() == size_[1]);
   il::Array<T> y{size_[0], 0.};
 
-#if defined(_OPENMP)
-  auto nthreads = omp_get_max_threads();
-  il::Array2D<T> yprivate_storage{size_[0], nthreads};
-#endif
-
-#pragma omp parallel shared(y)
+#pragma omp parallel shared(y) num_threads(this->n_openMP_threads_)
   {
+      {
+    #pragma omp single
+          std::cout << "NUM OF OMP THREADS: " << omp_get_num_threads() << std::endl;
+      }
     il::Array<T> yprivate{size_[0], 0.};
 
 #pragma omp for nowait schedule(static, frb_chunk_size_)

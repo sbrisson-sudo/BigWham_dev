@@ -49,7 +49,7 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
   std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
-  hr->permutation_0_ = cluster.permutation;
+  hr->permutation_0_ = cluster.permutation; // todo: make a separate routine for cluster creation ... to be interfaced to python (for domain decomposition for MPI rect Hmat)
   hr->permutation_1_ = cluster.permutation;
 
   tt.Start();

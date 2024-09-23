@@ -43,7 +43,7 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         properties: np.ndarray,
         max_leaf_size: int = 100,
         eta: float = 3.0,
-        eps_aca: float = 1.0e-3,
+        eps_aca: float = 1.0e-3, n_openMP_threads: int =8
     ):
         """ "
         Name:              Type:                Description:
@@ -62,12 +62,12 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         self.max_leaf_size_ : int = int(max_leaf_size)
         self.eta_ : float = float(eta)
         self.eps_aca_ : float = float(eps_aca)
-
+        self.n_openMP_threads_ : int = n_openMP_threads
         self.H_ : BigWhamIOSelf = BigWhamIOSelf(
             coor.flatten(),
             conn.flatten(),
             kernel,
-            properties.flatten(),
+            properties.flatten(),n_openMP_threads
         )
         self.H_.build_hierarchical_matrix(
             max_leaf_size,
@@ -266,7 +266,7 @@ class BEMatrixRectangular(LinearOperator):
         properties : np.ndarray,
         max_leaf_size : int =100,
         eta : float=3.0,
-        eps_aca : float=1.0e-3,
+        eps_aca : float=1.0e-3,n_openMP_threads:int =8
     ):
 
         self.kernel_ = kernel
@@ -274,6 +274,7 @@ class BEMatrixRectangular(LinearOperator):
         self.max_leaf_size_ = max_leaf_size
         self.eta_ = eta
         self.eps_aca_ = eps_aca
+        self.n_openMP_threads_=n_openMP_threads
 
         self.H_ : BigWhamIORect= BigWhamIORect(
             coor_src.flatten(),
@@ -281,7 +282,7 @@ class BEMatrixRectangular(LinearOperator):
             coor_rec.flatten(),
             conn_rec.flatten(),
             kernel,
-            properties.flatten(),
+            properties.flatten(),n_openMP_threads
         )
         self.H_.build_hierarchical_matrix(
             max_leaf_size,

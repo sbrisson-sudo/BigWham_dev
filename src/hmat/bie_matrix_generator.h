@@ -100,7 +100,7 @@ inline void BieMatrixGenerator<T>::set(il::int_t b0, il::int_t b1, il::io_t,
   IL_EXPECT_MEDIUM(b1 + M.size(1) / blockSize() <= num_col_points_);
 
   il::int_t jj = M.size(1) / blockSize();
-#pragma omp parallel if (M.size(1) / blockSize() > 200)
+#pragma omp parallel if (M.size(1) / blockSize() >= 32)
   {
 #pragma omp for
     for (il::int_t j1 = 0; j1 < M.size(1) / blockSize(); ++j1) {

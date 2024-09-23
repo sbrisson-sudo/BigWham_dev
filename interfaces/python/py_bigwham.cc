@@ -37,12 +37,12 @@ public:
                 const std::vector<int> &conn_src,
                 const std::vector<double> &coor_rec,
                 const std::vector<int> &conn_rec, const std::string &kernel,
-                const std::vector<double> &properties)
+                const std::vector<double> &properties,const int n_openMP_threads)
       : BigWhamIOGen(coor_src,
                      conn_src,
                      coor_rec,
                      conn_rec, kernel,
-                     properties) {}
+                     properties,n_openMP_threads) {}
 
   ~BigWhamIORect() {}
 };
@@ -105,7 +105,7 @@ PYBIND11_MODULE(py_bigwham, m)
                            py::module_local())
       .def(py::init<const std::vector<double> &,
                     const std::vector<int> &, const std::string &,
-                    const std::vector<double> &>()) // constructor
+                    const std::vector<double> &,const int >()) // constructor
       .def("hmat_destructor", &BigWhamIOGen::HmatrixDestructor)
       .def("load_from_file", &BigWhamIOGen::LoadFromFile)
       .def("build_hierarchical_matrix", &BigWhamIOGen::BuildHierarchicalMatrix)
@@ -213,7 +213,7 @@ PYBIND11_MODULE(py_bigwham, m)
   py::class_<BigWhamIORect>(m, "BigWhamIORect", py::dynamic_attr())
       .def(py::init<const std::vector<double> &, const std::vector<int> &,
                     const std::vector<double> &, const std::vector<int> &,
-                    const std::string &, const std::vector<double> &>())
+                    const std::string &, const std::vector<double> &, const int>())
       .def("hmat_destructor", &BigWhamIORect::HmatrixDestructor)
       .def("build_hierarchical_matrix", &BigWhamIORect::BuildHierarchicalMatrix)
       .def("load_from_file", &BigWhamIORect::LoadFromFile)
