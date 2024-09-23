@@ -224,9 +224,6 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
   std::cout << "N low rank blocks " << hr_->pattern_.n_LRB << "\n";
   std::cout << "dof_dimension: " << dof_dimension_ << "\n";
 
-#if defined(_OPENMP)
-  auto nthreads = omp_get_max_threads();
-#endif
   low_rank_blocks_.resize(hr_->pattern_.n_LRB);
 #pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
   for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
@@ -340,10 +337,25 @@ template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
   return y;
 }
 /* -------------------------------------------------------------------------- */
-
+// matvect in and outs as std::vector - not great
+    template <typename T>
+    std::vector<T> Hmat<T>::matvec(const std::vector<T> & x) {
+        il::Array<T> xil{static_cast<il::int_t>(x.size())};
+        // - find a better way to convert il::Array to std::vect and vice versa !
+        for (long i = 0; i < xil.size(); i++) {
+            xil[i] = x[i];
+        }
+        il::Array<T> yil = this->matvec(xil.view());
+        std::vector<T> y;
+        y.reserve(static_cast<long>(yil.size()));
+        for (long i = 0; i < yil.size(); i++) {
+            y.push_back(yil[i]);
+        }
+        return y;
+    }
+/* -------------------------------------------------------------------------- */
 // H-Matrix vector multiplication with permutation for rectangular matrix
 template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
-
   il::Array<T> z{static_cast<il::int_t>(x.size())};
   // permutation of the dofs according to the re-ordering sue to clustering
   il::int_t ncolpoints = this->size(1) / dof_dimension_;
@@ -367,7 +379,6 @@ template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
   return yout;
 }
 /* -------------------------------------------------------------------------- */
-
 // H-Matrix vector multiplication with permutation for rectangular matrix
 template <typename T>
 std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> & x) {
@@ -395,23 +406,54 @@ std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> & x) {
   return yout;
 }
 /* -------------------------------------------------------------------------- */
+// H-Matrix vector multiplication with permutation for rectangular matrix
+template <typename T>
+void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::Array<T>& yout) {
 
-// matvect in and outs as std::vector - not great
-template <typename T> std::vector<T> Hmat<T>::matvec(const std::vector<T> & x) {
-  il::Array<T> xil{static_cast<il::int_t>(x.size())};
-  // todo find a better way to convert il::Array to std::vect and vice versa !
-  for (long i = 0; i < xil.size(); i++) {
-    xil[i] = x[i];
-  }
-  il::Array<T> yil = this->matvec(xil.view());
-  std::vector<T> y;
-  y.reserve(static_cast<long>(yil.size()));
-  for (long i = 0; i < yil.size(); i++) {
-    y.push_back(yil[i]);
-  }
-  return y;
+        il::Array<T> z{static_cast<il::int_t>(x.size())};
+        // permutation of the dofs according to the re-ordering sue to clustering
+        il::int_t ncolpoints = this->size(1) / dof_dimension_;
+        il::int_t nrowpoints = this->size(0) / dof_dimension_;
+        for (il::int_t i = 0; i < ncolpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                z[dof_dimension_ * i + j] =
+                        x[dof_dimension_ * hr_->permutation_1_[i] + j];
+            }
+        }
+        il::Array<T> y = this->matvec(z.view());
+        // permut back
+        for (il::int_t i = 0; i < nrowpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
+                        y[dof_dimension_ * i + j];
+            }
+        }
 }
 /* -------------------------------------------------------------------------- */
+// H-Matrix vector multiplication with permutation for rectangular matrix
+template <typename T>
+void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::ArrayEdit<T> yout) {
+
+        il::Array<T> z{static_cast<il::int_t>(x.size())};
+        // permutation of the dofs according to the re-ordering sue to clustering
+        il::int_t ncolpoints = this->size(1) / dof_dimension_;
+        il::int_t nrowpoints = this->size(0) / dof_dimension_;
+        for (il::int_t i = 0; i < ncolpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                z[dof_dimension_ * i + j] =
+                        x[dof_dimension_ * hr_->permutation_1_[i] + j];
+            }
+        }
+        il::Array<T> y = this->matvec(z.view());
+        // permut back
+        for (il::int_t i = 0; i < nrowpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
+                        y[dof_dimension_ * i + j];
+            }
+        }
+    }
+
 
 #if defined(BIGWHAM_HDF5)
 namespace {
