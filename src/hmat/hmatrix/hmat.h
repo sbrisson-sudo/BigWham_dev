@@ -50,10 +50,10 @@ private:
 
     int n_openMP_threads_=8;
 
-#if defined(IL_OPENMP)
+//#if defined(BIGWHAM_OPENMP)
     int frb_chunk_size_{1};
     int lrb_chunk_size_{1};
-#endif
+//#endif
 
 public:
   void hmatMemFree();

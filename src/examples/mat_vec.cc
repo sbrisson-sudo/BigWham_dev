@@ -19,9 +19,9 @@
 #include <memory>
 #include <string>
 #include <vector>
-#ifdef IL_OPENMP
+//#ifdef BIWGHAM_OPENMP
 #include <omp.h>
-#endif
+//#endif
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */

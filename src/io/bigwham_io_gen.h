@@ -13,7 +13,7 @@
 #ifndef BIGWHAM_IO_GEN_H
 #define BIGWHAM_IO_GEN_H
 
-#ifdef IL_OPENMP
+#ifdef BIGWHAM_OPENMP
 #include <omp.h>
 #endif
 
@@ -142,7 +142,7 @@ public:
 
     int GetAvailableOmpThreads() {
     int threads = 1;
-#ifdef IL_OPENMP
+#ifdef BIGWHAM_OPENMP
 #pragma omp parallel
     {
 #pragma omp single

@@ -34,7 +34,7 @@ set_property(CACHE IL_MATH_VENDOR PROPERTY STRINGS
     MKL_parallel
     OpenBLAS
     )
-option(IL_OPENMP "OPENMP" ON) # --> to activate openMP for bigwham (recommended but should have openmp lib installed)
+option(IL_OPENMP "OPENMP" ON)
 option(IL_BENCHMARK "Activate InsideLoop Benchmarks" OFF)
 option(IL_TESTING "Activate InsideLoop tests" OFF)
 if(IL_BENCHMARK)

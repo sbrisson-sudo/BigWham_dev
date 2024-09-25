@@ -45,10 +45,10 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
                 this->n_openMP_threads_=n_available;
     };
 
-#ifdef IL_OPENMP
-    omp_set_dynamic(0);     // Explicitly disable dynamic teams
-    omp_set_num_threads(this->n_openMP_threads_); // Use 4 threads for all consecutive parallel regions
-#endif
+//#ifdef BIGWHAM_OPENMP
+//    omp_set_dynamic(0);     // Explicitly disable dynamic teams
+//    omp_set_num_threads(this->n_openMP_threads_); // Use n_openMP_threads_ threads for all consecutive parallel regions
+//#endif
 
     std::cout << " Now setting things for kernel ... " << kernel_name_
               << " with properties size " << properties.size() << "\n";

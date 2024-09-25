@@ -9,7 +9,7 @@
 
 #include "hmat.h"
 
-#if defined(IL_OPENMP)
+#if defined(BIGWHAM_OPENMP)
 #include <omp.h>
 #endif
 

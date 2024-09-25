@@ -1,5 +1,7 @@
 find_package(ZLIB REQUIRED)
 
+option(BIGWHAM_OPENMP "OPENMP" ON) # MUST BE ON for openMP
+
 add_library(cnpy SHARED cnpy.cpp)
 target_include_directories(cnpy PRIVATE ${ZLIB_INCLUDE_DIRS})
 target_link_libraries(cnpy PRIVATE ${ZLIB_LIBRARIES})
