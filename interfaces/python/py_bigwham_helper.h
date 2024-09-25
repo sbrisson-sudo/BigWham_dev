@@ -26,6 +26,12 @@ template <typename T> inline py::array_t<T> as_pyarray(il::Array<T> &&seq) {
   return pbarray<T>(size, data, capsule);
 }
 /* -------------------------------------------------------------------------- */
+template <typename T>
+inline il::ArrayEdit<T> as_array_edit(pbarray<T> &c) {
+    il::ArrayEdit<T> d{c.data(), c.shape(0)};
+    return d;
+}
+/* -------------------------------------------------------------------------- */
 
 template <typename T>
 inline il::ArrayView<T> as_array_view(const pbarray<T> &c) {

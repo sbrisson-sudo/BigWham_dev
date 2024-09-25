@@ -81,8 +81,6 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
         super().__init__(self.dtype_, self.shape_)
 
-
-
     def _matvec(self, v: np.ndarray) -> np.ndarray:
         """
         This function implements the dot product.
@@ -172,13 +170,11 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         # with FLAG=0 for full rank and FLAG=1 for low rank
         #
         # we output a flatten row-major order std::vector
-
         nr = 6
         return np.reshape(aux, (int(aux.size / nr), nr))
 
     def plotPattern(self):
         data_pattern = self._getPattern()
-
         patches = []
         p_colors = []
         max_y = data_pattern[:, 3].max()
@@ -192,7 +188,6 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
             p_colors.append(data_pattern[i, 4])
         fig = plt.figure()
         ax = fig.add_subplot(111)
-
         p = PatchCollection(
             patches, cmap=matplotlib.cm.PiYG, edgecolors="black", alpha=0.4
         )
@@ -211,7 +206,6 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         fb = self._getFullBlocks()
         fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
         return LinearOperator(self.shape_, fbILU.solve)
-
 
     def H_diag(self) -> np.ndarray:
         fb = self._getFullBlocks()
@@ -389,7 +383,6 @@ class BEMatrixRectangular(LinearOperator):
 
     def plotPattern(self):
         data_pattern = self._getPattern()
-
         patches = []
         p_colors = []
         max_y = data_pattern[:, 3].max()

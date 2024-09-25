@@ -148,9 +148,7 @@ PYBIND11_MODULE(py_bigwham, m)
              auto v = self.ConvertToLocal(tx);
              return as_pyarray<double>(std::move(v));
            })
-      //.def("hdotProductInPermutted", &BigWhamIOGen::hdotProductInPermutted)
-      // I change the previous binding of hdotProductInPermutted to return a
-      // numpy array!!
+      //return a numpy array!!
       .def(
           "matvec_permute",
           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
@@ -160,10 +158,7 @@ PYBIND11_MODULE(py_bigwham, m)
             return as_pyarray<double>(std::move(v));
           },
           " dot product between hmat and a vector x", py::arg("x"))
-      // I change the previous binding of matvect to return a numpy array!!
-      // todo: is it possible to move the result of the dot product to an
-      // std::array? the array is contiguous in memory but not the vector!!!!!!
-      // CP
+      // return a numpy array!!
       .def(
           "matvec",
           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
@@ -174,6 +169,17 @@ PYBIND11_MODULE(py_bigwham, m)
           },
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
+//      .def(
+//           "matvecVoid",
+//           [](BigWhamIOGen &self, const pbarray<double> &x, pbarray<double> &y) -> decltype(auto)
+//           {
+//               auto tx = as_array_view<double>(x);
+//               auto ty = as_array_edit<double>(y);
+//               self.MatVecVoid(tx,ty);
+//               return;
+//               },
+//               " dot product between hmat and a vector x in original ordering - void function",
+//               py::arg("x"),py::arg("y"))
       .def(
           "compute_displacements",
           [](BigWhamIOGen &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)

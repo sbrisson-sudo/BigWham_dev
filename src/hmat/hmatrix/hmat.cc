@@ -20,17 +20,15 @@
 namespace bigwham {
 /* -------------------------------------------------------------------------- */
 
-
 // direct constructor
-template <typename T>
-Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca,const int n_openMP_threads) {
+    template <typename T>
+    Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca,const int n_openMP_threads) {
         // construction directly
         this->n_openMP_threads_=n_openMP_threads;
         this->toHmat(matrix_gen, epsilon_aca);
-}
+    }
 /* -------------------------------------------------------------------------- */
-
-template <typename T> Hmat<T>::Hmat(const std::string & filename) {
+    template <typename T> Hmat<T>::Hmat(const std::string & filename) {
         // construction directly
         il::Timer tt;
         tt.Start();
@@ -40,306 +38,297 @@ template <typename T> Hmat<T>::Hmat(const std::string & filename) {
         std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
         std::cout << "Hmat object - built "
                   << "\n";
-}
-/* -------------------------------------------------------------------------- */
-
-template <typename T>
-void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,
-                                 il::Array<int> & pos_list) {
-  // return the full blocks in the permutted Original dof state
-  // in the val_list and pos_list 1D arrays.
-  IL_EXPECT_FAST(isBuilt_FR_);
-  IL_EXPECT_FAST(hr_->permutation_1_.size() * dof_dimension_ == size_[1]);
-  //  compute the number of  entries in the whole full rank blocks
-  int nbfentry = 0;
-  for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
-    il::Array2DView<double> aux = ((*full_rank_blocks_[i]).view());
-    nbfentry = nbfentry + static_cast<int>(aux.size(0) * aux.size(1));
-  }
-
-  // prepare outputs
-  pos_list.Resize(nbfentry * 2);
-  val_list.Resize(nbfentry);
-
-  il::Array<int> permutDOF{dof_dimension_ * hr_->permutation_1_.size(), 0};
-  IL_EXPECT_FAST(permutDOF.size() == size_[0]);
-  for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
-    for (il::int_t j = 0; j < dof_dimension_; j++) {
-      permutDOF[i * dof_dimension_ + j] =
-          hr_->permutation_1_[i] * dof_dimension_ + j;
     }
-  }
-  // loop on full rank and get i,j and val
-  int nr = 0;
-  int npos = 0;
-  for (il::int_t k = 0; k < hr_->pattern_.n_FRB; k++) {
-    il::Array2D<double> aux = *full_rank_blocks_[k];
-    il::int_t i0 = hr_->pattern_.FRB_pattern(1, k);
-    il::int_t j0 = hr_->pattern_.FRB_pattern(2, k);
-    il::int_t index = 0;
-    for (il::int_t j = 0; j < aux.size(1); j++) {
-      for (il::int_t i = 0; i < aux.size(0); i++) {
-        pos_list[npos + 2 * index] = permutDOF[(i + dof_dimension_ * i0)];
-        pos_list[npos + 2 * index + 1] = permutDOF[(j + dof_dimension_ * j0)];
-        val_list[nr + index] = aux(i, j);
-        index++;
-      }
-    }
-    nr = nr + static_cast<int>(aux.size(0) * aux.size(1));
-    npos = npos + static_cast<int>(2 * aux.size(0) * aux.size(1));
-  }
-  // std::cout << "Done Full Block: nval " << val_list.size() << " / "
-  //           << pos_list.size() / 2 << " n^2 "
-  //           << (this->size_[0]) * (this->size_[1]) << "\n";
-}
 /* -------------------------------------------------------------------------- */
-
-template <typename T> std::vector<T> Hmat<T>::diagonalOriginal() {
-  // return diagonal in original state....
-  il::int_t diag_size = il::max(size_[0], size_[1]);
-  il::int_t ncolpoints = diag_size / dof_dimension_;
-  std::vector<T> diag_raw = this->diagonal();
-  std::vector<T> diag(diag_raw.size(), 0.);
-  // permut back
-  for (il::int_t i = 0; i < ncolpoints; i++) {
-    for (int j = 0; j < dof_dimension_; j++) {
-      diag[dof_dimension_ * hr_->permutation_1_[i] + j] =
-          diag_raw[dof_dimension_ * i + j];
-    }
-  }
-  return diag;
-}
-/* -------------------------------------------------------------------------- */
-
-template <typename T> std::vector<T> Hmat<T>::diagonal() {
-  // return diagonal in permutted state....
-  IL_EXPECT_FAST(isBuilt_FR_);
-  il::int_t diag_size = il::max(size_[0], size_[1]);
-  std::vector<T> diag(static_cast<long>(diag_size), 0.);
-
-  for (il::int_t k = 0; k < hr_->pattern_.n_FRB; k++) {
-    il::Array2D<double> aux = *full_rank_blocks_[k];
-    il::int_t i0 = hr_->pattern_.FRB_pattern(1, k);
-    il::int_t j0 = hr_->pattern_.FRB_pattern(2, k);
-    il::int_t iend = hr_->pattern_.FRB_pattern(3, k);
-    il::int_t jend = hr_->pattern_.FRB_pattern(4, k);
-    // check if it intersects the diagonal
-    //
-    bool in_lower = (i0 > j0) && (i0 > jend) && (iend > j0) && (iend > jend);
-    bool in_upper = (i0 < j0) && (i0 < jend) && (iend < j0) && (iend < jend);
-    if ((!in_lower) && (!in_upper)) // this fb intersect the diagonal....
-    {
-      for (il::int_t j = 0; j < aux.size(1); j++) {
-        for (il::int_t i = 0; i < aux.size(0); i++) {
-          if ((i + dof_dimension_ * i0) ==
-              (j + dof_dimension_ * j0)) { // on diagonal !
-            diag[(i + dof_dimension_ * i0)] = aux(i, j);
-          }
+    template <typename T>
+    void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,
+                                     il::Array<int> & pos_list) {
+        // return the full blocks in the permutted Original dof state
+        // in the val_list and pos_list 1D arrays.
+        IL_EXPECT_FAST(isBuilt_FR_);
+        IL_EXPECT_FAST(hr_->permutation_1_.size() * dof_dimension_ == size_[1]);
+        //  compute the number of  entries in the whole full rank blocks
+        int nbfentry = 0;
+        for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+            il::Array2DView<double> aux = ((*full_rank_blocks_[i]).view());
+            nbfentry = nbfentry + static_cast<int>(aux.size(0) * aux.size(1));
         }
-      }
+
+        // prepare outputs
+        pos_list.Resize(nbfentry * 2);
+        val_list.Resize(nbfentry);
+
+        il::Array<int> permutDOF{dof_dimension_ * hr_->permutation_1_.size(), 0};
+        IL_EXPECT_FAST(permutDOF.size() == size_[0]);
+        for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
+            for (il::int_t j = 0; j < dof_dimension_; j++) {
+                permutDOF[i * dof_dimension_ + j] =
+                        hr_->permutation_1_[i] * dof_dimension_ + j;
+            }
+        }
+        // loop on full rank and get i,j and val
+        int nr = 0;
+        int npos = 0;
+        for (il::int_t k = 0; k < hr_->pattern_.n_FRB; k++) {
+            il::Array2D<double> aux = *full_rank_blocks_[k];
+            il::int_t i0 = hr_->pattern_.FRB_pattern(1, k);
+            il::int_t j0 = hr_->pattern_.FRB_pattern(2, k);
+            il::int_t index = 0;
+            for (il::int_t j = 0; j < aux.size(1); j++) {
+                for (il::int_t i = 0; i < aux.size(0); i++) {
+                    pos_list[npos + 2 * index] = permutDOF[(i + dof_dimension_ * i0)];
+                    pos_list[npos + 2 * index + 1] = permutDOF[(j + dof_dimension_ * j0)];
+                    val_list[nr + index] = aux(i, j);
+                    index++;
+                }
+            }
+            nr = nr + static_cast<int>(aux.size(0) * aux.size(1));
+            npos = npos + static_cast<int>(2 * aux.size(0) * aux.size(1));
+        }
+        // std::cout << "Done Full Block: nval " << val_list.size() << " / "
+        //           << pos_list.size() / 2 << " n^2 "
+        //           << (this->size_[0]) * (this->size_[1]) << "\n";
     }
-  }
-  return diag;
-}
 /* -------------------------------------------------------------------------- */
-
-//
-template <typename T>
-void Hmat<T>::toHmat(const MatrixGenerator<T> & matrix_gen,
-                     const double epsilon_aca) {
-  this->hr_ = matrix_gen.hr();
-  // construction directly
-  il::Timer tt;
-  tt.Start();
-  this->build(matrix_gen, epsilon_aca);
-  tt.Stop();
-  std::cout << "Creation of hmat done in " << tt.time() << "\n";
-  std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
-  std::cout << "Hmat object - built "<< "\n";
-}
+    template <typename T> std::vector<T> Hmat<T>::diagonalOriginal() {
+        // return diagonal in original state....
+        il::int_t diag_size = il::max(size_[0], size_[1]);
+        il::int_t ncolpoints = diag_size / dof_dimension_;
+        std::vector<T> diag_raw = this->diagonal();
+        std::vector<T> diag(diag_raw.size(), 0.);
+        // permut back
+        for (il::int_t i = 0; i < ncolpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                diag[dof_dimension_ * hr_->permutation_1_[i] + j] =
+                        diag_raw[dof_dimension_ * i + j];
+            }
+        }
+        return diag;
+    }
 /* -------------------------------------------------------------------------- */
+    template <typename T> std::vector<T> Hmat<T>::diagonal() {
+        // return diagonal in permutted state....
+        IL_EXPECT_FAST(isBuilt_FR_);
+        il::int_t diag_size = il::max(size_[0], size_[1]);
+        std::vector<T> diag(static_cast<long>(diag_size), 0.);
 
+        for (il::int_t k = 0; k < hr_->pattern_.n_FRB; k++) {
+            il::Array2D<double> aux = *full_rank_blocks_[k];
+            il::int_t i0 = hr_->pattern_.FRB_pattern(1, k);
+            il::int_t j0 = hr_->pattern_.FRB_pattern(2, k);
+            il::int_t iend = hr_->pattern_.FRB_pattern(3, k);
+            il::int_t jend = hr_->pattern_.FRB_pattern(4, k);
+            // check if it intersects the diagonal
+            //
+            bool in_lower = (i0 > j0) && (i0 > jend) && (iend > j0) && (iend > jend);
+            bool in_upper = (i0 < j0) && (i0 < jend) && (iend < j0) && (iend < jend);
+            if ((!in_lower) && (!in_upper)) // this fb intersect the diagonal....
+            {
+                for (il::int_t j = 0; j < aux.size(1); j++) {
+                    for (il::int_t i = 0; i < aux.size(0); i++) {
+                        if ((i + dof_dimension_ * i0) ==
+                            (j + dof_dimension_ * j0)) { // on diagonal !
+                            diag[(i + dof_dimension_ * i0)] = aux(i, j);
+                        }
+                    }
+                }
+            }
+        }
+        return diag;
+    }
+/* -------------------------------------------------------------------------- */
+    template <typename T>
+    void Hmat<T>::toHmat(const MatrixGenerator<T> & matrix_gen,
+                         const double epsilon_aca) {
+        this->hr_ = matrix_gen.hr();
+        // construction directly
+        il::Timer tt;
+        tt.Start();
+        this->build(matrix_gen, epsilon_aca);
+        tt.Stop();
+        std::cout << "Creation of hmat done in " << tt.time() << "\n";
+        std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
+        std::cout << "Hmat object - built "<< "\n";
+    }
+/* -------------------------------------------------------------------------- */
 // delete the memory pointed by low_rank_blocks_ and  full_rank_blocks_
 template <typename T> void Hmat<T>::hmatMemFree() {
-  for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
-    this->full_rank_blocks_[i].reset();
-  }
-  for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
-    this->low_rank_blocks_[i].reset();
-  }
+        for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+            this->full_rank_blocks_[i].reset();
+        }
+        for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+            this->low_rank_blocks_[i].reset();
+        }
 }
 /* -------------------------------------------------------------------------- */
-
 // getting the nb of entries of the hmatrix
 template <typename T> il::int_t Hmat<T>::nbOfEntries() {
-  IL_EXPECT_FAST(isBuilt_);
-  il::int_t n = 0;
-  for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
-    il::Array2DView<double> a = (*full_rank_blocks_[i]).view();
-    n += a.size(0) * a.size(1);
-  }
-  for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
-    il::Array2DView<double> a = (*low_rank_blocks_[i]).A.view();
-    il::Array2DView<double> b = (*low_rank_blocks_[i]).B.view();
-    n += a.size(0) * a.size(1) + b.size(0) * b.size(1);
-  }
-  return n;
-}
+        IL_EXPECT_FAST(isBuilt_);
+        il::int_t n = 0;
+        for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+            il::Array2DView<double> a = (*full_rank_blocks_[i]).view();
+            n += a.size(0) * a.size(1);
+        }
+        for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+            il::Array2DView<double> a = (*low_rank_blocks_[i]).A.view();
+            il::Array2DView<double> b = (*low_rank_blocks_[i]).B.view();
+            n += a.size(0) * a.size(1) + b.size(0) * b.size(1);
+        }
+        return n;
+    }
 /* -------------------------------------------------------------------------- */
-
 template <typename T>
 void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
-  // construction of the full rank blocks
-  std::cout << " Loop on full blocks construction  \n";
-  std::cout << " N full blocks " << hr_->pattern_.n_FRB << " \n";
+        // construction of the full rank blocks
+        std::cout << " Loop on full blocks construction  \n";
+        std::cout << " N full blocks " << hr_->pattern_.n_FRB << " \n";
 
-  full_rank_blocks_.resize(hr_->pattern_.n_FRB);
+        full_rank_blocks_.resize(hr_->pattern_.n_FRB);
 #pragma omp parallel for schedule(static, frb_chunk_size_) num_threads(this->n_openMP_threads_)
-  for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
-    il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
-    il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
-    il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
-    il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
+        for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+            il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
+            il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
+            il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
+            il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
 
-    const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
-    const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
+            const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
+            const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
 
-    std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
-    matrix_gen.set(i0, j0, il::io, a->Edit());
-    full_rank_blocks_[i] = std::move(a);
-  }
-  isBuilt_FR_ = true;
-}
+            std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
+            matrix_gen.set(i0, j0, il::io, a->Edit());
+            full_rank_blocks_[i] = std::move(a);
+        }
+        isBuilt_FR_ = true;
+    }
 /* -------------------------------------------------------------------------- */
-
 /// \param matrix_gen
 /// \param epsilon
-template <typename T>
-template <il::int_t dim>
-void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
-                      const double epsilon) {
-  // constructing the low rank blocks
-  dof_dimension_ = matrix_gen.blockSize();
-  std::cout << "Loop on low rank blocks construction\n";
-  std::cout << "N low rank blocks " << hr_->pattern_.n_LRB << "\n";
-  std::cout << "dof_dimension: " << dof_dimension_ << "\n";
+    template <typename T>
+    template <il::int_t dim>
+    void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
+                          const double epsilon) {
+        // constructing the low rank blocks
+        dof_dimension_ = matrix_gen.blockSize();
+        std::cout << "Loop on low rank blocks construction\n";
+        std::cout << "N low rank blocks " << hr_->pattern_.n_LRB << "\n";
+        std::cout << "dof_dimension: " << dof_dimension_ << "\n";
 
-  low_rank_blocks_.resize(hr_->pattern_.n_LRB);
+        low_rank_blocks_.resize(hr_->pattern_.n_LRB);
 #pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
-  for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
-    il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
-    il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
-    il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
-    il::int_t jend = hr_->pattern_.LRB_pattern(4, i);
-    il::Range range0{i0, iend};
-    il::Range range1{j0, jend};
+        for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+            il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
+            il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
+            il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
+            il::int_t jend = hr_->pattern_.LRB_pattern(4, i);
+            il::Range range0{i0, iend};
+            il::Range range1{j0, jend};
 
-    // we need 7a LRA generator virtual template similar to the Matrix
-    // generator... here we have an if condition for the LRA call dependent on
-    // dof_dimension_
-    auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1,
-                                                        epsilon);
+            // we need 7a LRA generator virtual template similar to the Matrix
+            // generator... here we have an if condition for the LRA call dependent on
+            // dof_dimension_
+            auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1,
+                                                                epsilon);
 
-    // store the rank in the low_rank pattern
-    hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
-    low_rank_blocks_[i] =
-        std::move(lra); // lra_p does not exist after such call
-  }
-  isBuilt_LR_ = true;
-}
+            // store the rank in the low_rank pattern
+            hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
+            low_rank_blocks_[i] =
+                    std::move(lra); // lra_p does not exist after such call
+        }
+        isBuilt_LR_ = true;
+    }
 /* -------------------------------------------------------------------------- */
-
 // filling up the h-matrix sub-blocks
-template <typename T>
-void Hmat<T>::build(const bigwham::MatrixGenerator<T> & matrix_gen,
-                    const double epsilon) {
-  dof_dimension_ = matrix_gen.blockSize();
-  size_[0] = matrix_gen.size(0);
-  size_[1] = matrix_gen.size(1);
-  buildFR(matrix_gen);
+    template <typename T>
+    void Hmat<T>::build(const bigwham::MatrixGenerator<T> & matrix_gen,
+                        const double epsilon) {
+        dof_dimension_ = matrix_gen.blockSize();
+        size_[0] = matrix_gen.size(0);
+        size_[1] = matrix_gen.size(1);
+        buildFR(matrix_gen);
 
-  switch (matrix_gen.blockSize()) {
-  case 1:
-    buildLR<1>(matrix_gen, epsilon);
-    break;
-  case 2:
-    buildLR<2>(matrix_gen, epsilon);
-    break;
-  case 3:
-    buildLR<3>(matrix_gen, epsilon);
-    break;
-  }
+        switch (matrix_gen.blockSize()) {
+            case 1:
+                buildLR<1>(matrix_gen, epsilon);
+                break;
+            case 2:
+                buildLR<2>(matrix_gen, epsilon);
+                break;
+            case 3:
+                buildLR<3>(matrix_gen, epsilon);
+                break;
+        }
 
-  isBuilt_ = isBuilt_FR_ && isBuilt_LR_;
-}
+        isBuilt_ = isBuilt_FR_ && isBuilt_LR_;
+    }
 /* -------------------------------------------------------------------------- */
-
 // getting the compression ratio of the hmatrix (double which is <=1)
-template <typename T> double Hmat<T>::compressionRatio() {
-  auto nb_elts = static_cast<double>(nbOfEntries());
-  return nb_elts / static_cast<double>(size_[0] * size_[1]);
-}
+    template <typename T> double Hmat<T>::compressionRatio() {
+        auto nb_elts = static_cast<double>(nbOfEntries());
+        return nb_elts / static_cast<double>(size_[0] * size_[1]);
+    }
 /* -------------------------------------------------------------------------- */
-
 // H-Matrix vector multiplication without permutation
 // in - il:Array<T>
 // out - il:Array<T>
-template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
-  IL_EXPECT_FAST(x.size() == size_[1]);
-  il::Array<T> y{size_[0], 0.};
+    template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
+        IL_EXPECT_FAST(this->isBuilt_);
+        IL_EXPECT_FAST(x.size() == size_[1]);
+        il::Array<T> y{size_[0], 0.};
 
 #pragma omp parallel shared(y) num_threads(this->n_openMP_threads_)
-  {
-      {
-    #pragma omp single
-          std::cout << "NUM OF OMP THREADS: " << omp_get_num_threads() << std::endl;
-      }
-    il::Array<T> yprivate{size_[0], 0.};
+        {
+//            {
+//#pragma omp single
+////                std::cout << "NUM OF OMP THREADS: " << omp_get_num_threads() << std::endl;
+//            }
+            il::Array<T> yprivate{size_[0], 0.};
 
 #pragma omp for nowait schedule(static, frb_chunk_size_)
-    for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
-      auto i0 = hr_->pattern_.FRB_pattern(1, i);
-      auto j0 = hr_->pattern_.FRB_pattern(2, i);
-      auto iend = hr_->pattern_.FRB_pattern(3, i);
-      auto jend = hr_->pattern_.FRB_pattern(4, i);
+            for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+                auto i0 = hr_->pattern_.FRB_pattern(1, i);
+                auto j0 = hr_->pattern_.FRB_pattern(2, i);
+                auto iend = hr_->pattern_.FRB_pattern(3, i);
+                auto jend = hr_->pattern_.FRB_pattern(4, i);
 
-      auto a = (*full_rank_blocks_[i]).view();
-      auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
-      auto ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+                auto a = (*full_rank_blocks_[i]).view();
+                auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
+                auto ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
 
-      il::blas(1.0, a, xs, 1.0, il::io, ys);
-    }
+                il::blas(1.0, a, xs, 1.0, il::io, ys);
+            }
 
 #pragma omp for nowait schedule(static, lrb_chunk_size_)
-    for (il::int_t ii = 0; ii < hr_->pattern_.n_LRB; ii++) {
-      auto i0 = hr_->pattern_.LRB_pattern(1, ii);
-      auto j0 = hr_->pattern_.LRB_pattern(2, ii);
-      auto iend = hr_->pattern_.LRB_pattern(3, ii);
-      auto jend = hr_->pattern_.LRB_pattern(4, ii);
+            for (il::int_t ii = 0; ii < hr_->pattern_.n_LRB; ii++) {
+                auto i0 = hr_->pattern_.LRB_pattern(1, ii);
+                auto j0 = hr_->pattern_.LRB_pattern(2, ii);
+                auto iend = hr_->pattern_.LRB_pattern(3, ii);
+                auto jend = hr_->pattern_.LRB_pattern(4, ii);
 
-      auto a = low_rank_blocks_[ii]->A.view();
-      auto b = low_rank_blocks_[ii]->B.view();
+                auto a = low_rank_blocks_[ii]->A.view();
+                auto b = low_rank_blocks_[ii]->B.view();
 
-      auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
-      auto ys =yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
-      auto r = a.size(1);
-      il::Array<double> tmp{r, 0.0};
+                auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
+                auto ys =yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+                auto r = a.size(1);
+                il::Array<double> tmp{r, 0.0};
 
-      il::blas(1.0, b, il::Dot::None, xs, 0.0, il::io,
-               tmp.Edit()); // Note here we have stored b (not b^T)
-      il::blas(1.0, a, tmp.view(), 1.0, il::io, ys);
-    }
+                il::blas(1.0, b, il::Dot::None, xs, 0.0, il::io,
+                         tmp.Edit()); // Note here we have stored b (not b^T)
+                il::blas(1.0, a, tmp.view(), 1.0, il::io, ys);
+            }
 
 #pragma omp critical
-    il::blas(1., yprivate.view(), il::io_t{}, y.Edit());
-  }
+            il::blas(1., yprivate.view(), il::io_t{}, y.Edit());
+        }
 
-  return y;
-}
+        return y;
+    }
 /* -------------------------------------------------------------------------- */
 // matvect in and outs as std::vector - not great
     template <typename T>
     std::vector<T> Hmat<T>::matvec(const std::vector<T> & x) {
+        IL_EXPECT_FAST(this->isBuilt_);
+        IL_EXPECT_FAST(x.size()==this->size_[1]);
         il::Array<T> xil{static_cast<il::int_t>(x.size())};
         // - find a better way to convert il::Array to std::vect and vice versa !
         for (long i = 0; i < xil.size(); i++) {
@@ -355,61 +344,9 @@ template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
     }
 /* -------------------------------------------------------------------------- */
 // H-Matrix vector multiplication with permutation for rectangular matrix
-template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
-  il::Array<T> z{static_cast<il::int_t>(x.size())};
-  // permutation of the dofs according to the re-ordering sue to clustering
-  il::int_t ncolpoints = this->size(1) / dof_dimension_;
-  il::int_t nrowpoints = this->size(0) / dof_dimension_;
-  for (il::int_t i = 0; i < ncolpoints; i++) {
-    for (int j = 0; j < dof_dimension_; j++) {
-      z[dof_dimension_ * i + j] =
-          x[dof_dimension_ * hr_->permutation_1_[i] + j];
-    }
-  }
-  il::Array<T> y = this->matvec(z.view());
-  il::Array<T> yout;
-  yout.Resize(y.size(), 0.);
-  // permut back
-  for (il::int_t i = 0; i < nrowpoints; i++) {
-    for (int j = 0; j < dof_dimension_; j++) {
-      yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
-          y[dof_dimension_ * i + j];
-    }
-  }
-  return yout;
-}
-/* -------------------------------------------------------------------------- */
-// H-Matrix vector multiplication with permutation for rectangular matrix
-template <typename T>
-std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> & x) {
-
-  il::Array<T> z{static_cast<il::int_t>(x.size())};
-  // permutation of the dofs according to the re-ordering sue to clustering
-  il::int_t ncolpoints = this->size(1) / dof_dimension_;
-  il::int_t nrowpoints = this->size(0) / dof_dimension_;
-  for (il::int_t i = 0; i < ncolpoints; i++) {
-    for (int j = 0; j < dof_dimension_; j++) {
-      z[dof_dimension_ * i + j] =
-          x[dof_dimension_ * hr_->permutation_1_[i] + j];
-    }
-  }
-  il::Array<T> y = this->matvec(z.view());
-  std::vector<T> yout;
-  yout.assign(y.size(), 0.);
-  // permut back
-  for (il::int_t i = 0; i < nrowpoints; i++) {
-    for (int j = 0; j < dof_dimension_; j++) {
-      yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
-          y[dof_dimension_ * i + j];
-    }
-  }
-  return yout;
-}
-/* -------------------------------------------------------------------------- */
-// H-Matrix vector multiplication with permutation for rectangular matrix
-template <typename T>
-void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::Array<T>& yout) {
-
+    template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
+        IL_EXPECT_FAST(this->isBuilt_);
+        IL_EXPECT_FAST(x.size()==size_[1]);
         il::Array<T> z{static_cast<il::int_t>(x.size())};
         // permutation of the dofs according to the re-ordering sue to clustering
         il::int_t ncolpoints = this->size(1) / dof_dimension_;
@@ -421,6 +358,8 @@ void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::Array<T>& yout) {
             }
         }
         il::Array<T> y = this->matvec(z.view());
+        il::Array<T> yout;
+        yout.Resize(y.size(), 0.);
         // permut back
         for (il::int_t i = 0; i < nrowpoints; i++) {
             for (int j = 0; j < dof_dimension_; j++) {
@@ -428,11 +367,42 @@ void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::Array<T>& yout) {
                         y[dof_dimension_ * i + j];
             }
         }
-}
+        return yout;
+    }
 /* -------------------------------------------------------------------------- */
 // H-Matrix vector multiplication with permutation for rectangular matrix
-template <typename T>
-void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::ArrayEdit<T> yout) {
+    template <typename T>
+    std::vector<T> Hmat<T>::matvecOriginal(const std::vector<T> & x) {
+        IL_EXPECT_FAST(this->isBuilt_);
+        IL_EXPECT_FAST(x.size()==size_[1]);
+        il::Array<T> z{static_cast<il::int_t>(x.size())};
+        // permutation of the dofs according to the re-ordering sue to clustering
+        il::int_t ncolpoints = this->size(1) / dof_dimension_;
+        il::int_t nrowpoints = this->size(0) / dof_dimension_;
+        for (il::int_t i = 0; i < ncolpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                z[dof_dimension_ * i + j] =
+                        x[dof_dimension_ * hr_->permutation_1_[i] + j];
+            }
+        }
+        il::Array<T> y = this->matvec(z.view());
+        std::vector<T> yout;
+        yout.assign(y.size(), 0.);
+        // permut back
+        for (il::int_t i = 0; i < nrowpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
+                        y[dof_dimension_ * i + j];
+            }
+        }
+        return yout;
+    }
+/* -------------------------------------------------------------------------- */
+// H-Matrix vector multiplication with permutation for rectangular matrix
+    template <typename T>
+    void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::Array<T>& yout) {
+        IL_EXPECT_FAST(this->isBuilt_);
+        IL_EXPECT_FAST(x.size()==size_[1]);
 
         il::Array<T> z{static_cast<il::int_t>(x.size())};
         // permutation of the dofs according to the re-ordering sue to clustering
@@ -453,10 +423,35 @@ void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::ArrayEdit<T> yout) {
             }
         }
     }
+/* -------------------------------------------------------------------------- */
+// H-Matrix vector multiplication with permutation for rectangular matrix
+    template <typename T>
+    void Hmat<T>::matvecOriginal(const il::ArrayView<T> x, il::ArrayEdit<T> yout) {
+        IL_EXPECT_FAST(this->isBuilt_);
+        IL_EXPECT_FAST(x.size()==size_[1]);
 
+        il::Array<T> z{static_cast<il::int_t>(x.size())};
+        // permutation of the dofs according to the re-ordering sue to clustering
+        il::int_t ncolpoints = this->size(1) / dof_dimension_;
+        il::int_t nrowpoints = this->size(0) / dof_dimension_;
+        for (il::int_t i = 0; i < ncolpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                z[dof_dimension_ * i + j] =
+                        x[dof_dimension_ * hr_->permutation_1_[i] + j];
+            }
+        }
+        il::Array<T> y = this->matvec(z.view());
+        // permut back
+        for (il::int_t i = 0; i < nrowpoints; i++) {
+            for (int j = 0; j < dof_dimension_; j++) {
+                yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
+                        y[dof_dimension_ * i + j];
+            }
+        }
+    }
 
 #if defined(BIGWHAM_HDF5)
-namespace {
+    namespace {
   template <typename T> struct HDF5TypeHelper {
     static hid_t type() { throw std::runtime_error("Not implemented"); }
   };
@@ -487,9 +482,9 @@ namespace {
 } // namespace
 #endif
 
-template <typename T> void Hmat<T>::writeToFile(const std::string & filename) {
+    template <typename T> void Hmat<T>::writeToFile(const std::string & filename) {
 #if defined(BIGWHAM_HDF5)
-  auto file_id =
+        auto file_id =
       H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   auto hmat_gid =
       H5Gcreate(file_id, "/hmat", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -571,13 +566,13 @@ template <typename T> void Hmat<T>::writeToFile(const std::string & filename) {
   H5Gclose(hmat_gid);
   H5Fclose(file_id);
 #else
-  throw std::runtime_error("Recompile with HDF5 support");
+        throw std::runtime_error("Recompile with HDF5 support");
 #endif
-}
+    }
 
-template <typename T> void Hmat<T>::readFromFile(const std::string & filename) {
+    template <typename T> void Hmat<T>::readFromFile(const std::string & filename) {
 #if defined(BIGWHAM_HDF5)
-  auto file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+        auto file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
   auto hmat_gid = H5Gopen(file_id, "/hmat", H5P_DEFAULT);
 
   auto readAttribute = [](auto && name, auto && gid, auto && value) {
@@ -671,11 +666,11 @@ template <typename T> void Hmat<T>::readFromFile(const std::string & filename) {
 
   isBuilt_FR_ = isBuilt_LR_ = isBuilt_ = true;
 #else
-  throw std::runtime_error("Recompile with HDF5 support");
+        throw std::runtime_error("Recompile with HDF5 support");
 #endif
-}
+    }
 /* -------------------------------------------------------------------------- */
 
-template class Hmat<double>;
+    template class Hmat<double>;
 
 } // namespace bigwham

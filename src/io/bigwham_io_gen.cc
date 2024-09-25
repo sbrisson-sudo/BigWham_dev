@@ -286,6 +286,7 @@ void BigWhamIOGen::BuildPattern(const int max_leaf_size, const double eta) {
     std::cout << "Hierarchical representation complete.\n";
 }
 
+
 // construct Hierarchical matrix
 void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca) {
 
@@ -359,7 +360,6 @@ std::vector<long> BigWhamIOGen::GetHPattern() const {
   }
   // then low ranks (only valid values if the Hmat has been built !)
   for (il::int_t j = 0; j < pattern.n_LRB; j++) {
-
     patternlist[index++] = pattern.LRB_pattern(1, j);
     patternlist[index++] = pattern.LRB_pattern(2, j);
     patternlist[index++] = pattern.LRB_pattern(3, j);
@@ -440,70 +440,152 @@ void BigWhamIOGen::GetDiagonal(std::vector<double> &val_list) const {
 std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const {
   // in the original / natural ordering
   IL_EXPECT_FAST(this->is_built_);
-  IL_EXPECT_FAST(hmat_->size(1) == x.size());
   std::vector<double> y = hmat_->matvecOriginal(x);
   return y;
 }
 /* -------------------------------------------------------------------------- */
-
 il::Array<double> BigWhamIOGen::MatVec(il::ArrayView<double> x) const {
   // in the original / natural ordering
   IL_EXPECT_FAST(this->is_built_);
-  IL_EXPECT_FAST(hmat_->size(1) == x.size());
   auto y = hmat_->matvecOriginal(x);
   return y;
+}
+/* -------------------------------------------------------------------------- */
+void BigWhamIOGen::MatVecVoid(const il::ArrayView<double> xin)
+{
+    // in the original / natural ordering
+    // this function is used in pythn/julia to avoid copying the output
+    // but use internal variable m_yout_ to store the result
+    // it will save creating new memory at each call
+    // this->m_yout_ = hmat_* xin
+    IL_EXPECT_FAST(this->is_built_);
+    hmat_->matvecOriginal(xin, this->m_yout_);
+}
+/* -------------------------------------------------------------------------- */
+void BigWhamIOGen::MatVecVoid(const il::ArrayView<double> xin, il::ArrayEdit<double> yout)
+{
+    // in the original / natural ordering
+    // this function is used in python/julia to avoid copying the output
+    // but use internal variable m_yout_ to store the result
+    // it will save creating new memory at each call
+    // yout = hmat_* xin
+    IL_EXPECT_FAST(this->is_built_);
+    hmat_->matvecOriginal(xin, yout);
 }
 /* -------------------------------------------------------------------------- */
 il::Array<double> BigWhamIOGen::MatVecPerm(il::ArrayView<double> x) const {
   // in the permutted state.
   IL_EXPECT_FAST(this->is_built_);
-  IL_EXPECT_FAST(hmat_->size(1) == x.size());
   auto y = hmat_->matvec(x);
   return y;
 }
 /* -------------------------------------------------------------------------- */
-
-std::vector<double>
-BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const {
+std::vector<double> BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const {
   // in the permutted state.
   IL_EXPECT_FAST(this->is_built_);
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
   std::vector<double> y = hmat_->matvec(x);
   return y;
 }
-/* -------------------------------------------------------------------------- */
 
-il::Array<double>
-BigWhamIOGen::ConvertToGlobal(il::ArrayView<double> x_local) const {
+/* -------------------------------------------------------------------------- */
+il::Array<double> BigWhamIOGen::ConvertToGlobal(il::ArrayView<double> x_local) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_rec_->ConvertToGlobal(x_local);
 }
 /* -------------------------------------------------------------------------- */
-il::Array<double>
-BigWhamIOGen::ConvertToLocal(il::ArrayView<double> x_global) const {
+il::Array<double> BigWhamIOGen::ConvertToLocal(il::ArrayView<double> x_global) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_src_->ConvertToLocal(x_global);
 }
 /* -------------------------------------------------------------------------- */
-
-std::vector<double>
-BigWhamIOGen::ConvertToGlobal(const std::vector<double> &x_local) const {
+std::vector<double> BigWhamIOGen::ConvertToGlobal(const std::vector<double> &x_local) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_rec_->ConvertToGlobal(x_local);
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<double>
-BigWhamIOGen::ConvertToLocal(const std::vector<double> &x_global) const {
+std::vector<double> BigWhamIOGen::ConvertToLocal(const std::vector<double> &x_global) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_src_->ConvertToLocal(x_global);
 }
 /* -------------------------------------------------------------------------- */
+std::vector<double> BigWhamIOGen::GetElementNormals() const
+{
+    /*
+  # normals
+  Get the normal vectors of the elements
+  :return: 1D array of the normal vectors of the elements
+  3d case:
+  [n0x,n0y,n0z,n1x,n1y,n1z,...]
+  2d case:
+  [n0x,n0y,n1x,n1y,...]
+    */
 
+    auto mesh = this->mesh_src_;
+    auto dim = mesh->spatial_dimension();
+    std::vector<double> normals;
+    normals.assign(mesh->num_elements() * dim, 0.0);
+    // normals.Resize(dim * mesh->num_elements(), 0.0);
+#pragma omp parallel num_threads(this->n_openMP_threads_)
+{
+#pragma omp parallel for
+    for (il::int_t i = 0; i < mesh->num_elements(); ++i) {
+        auto elem = mesh->GetElement(i);
+        auto n = elem->normal();
+        for (il::int_t j = 0; j < dim; ++j) {
+            normals[i * dim + j] = n[j];
+            // normals.push_back(n[j]);
+        }
+    }
+}
+    return normals;
+}
+/* -------------------------------------------------------------------------- */
+std::vector<double> BigWhamIOGen::GetRotationMatrix() const
+{
+    /*
+  # rotation_matrix
+  Get the rotation matrix of the elements
+  :return: 1D array of the rotation matrix of the elements
+  3d case:
+  [r00,r01,r02,r10,r11,r12,r20,r21,r22,...]
+  2d case:
+  [r00,r01,r10,r11,...]
+     */
+
+    auto mesh = this->mesh_src_;
+    auto dim = mesh->spatial_dimension();
+    std::vector<double> flattend_rotation_matrix;
+    int num_elements = mesh->num_elements();
+    int num_total_collocation_points = mesh->num_collocation_points();
+    flattend_rotation_matrix.assign(dim * dim * num_total_collocation_points, 0.0);
+    //  flattend_rotation_matrix.Resize(dim * dim * num_total_collocation_points, 0.0);
+#pragma omp parallel num_threads(this->n_openMP_threads_)
+    {
+#pragma omp parallel for
+        for (il::int_t i = 0; i < mesh->num_elements(); ++i) {
+            auto elem = mesh->GetElement(i);
+            auto mat = elem->rotation_matrix();
+            int num_local_collocation_points = elem->num_collocation_points();
+            for (il::int_t col_id = 0; col_id < num_local_collocation_points; ++col_id) {
+                for (il::int_t j = 0; j < dim; ++j) {
+                    for (il::int_t k = 0; k < dim; ++k) {
+                        flattend_rotation_matrix[i * dim * dim * num_local_collocation_points + col_id * dim * dim + j * dim + k] = mat(j, k);
+                        // flattend_rotation_matrix.push_back(mat(j, k));
+                    }
+                }
+            }
+        }
+    }
+    return flattend_rotation_matrix;
+}
+
+/* -------------------------------------------------------------------------- */
 std::vector<double> BigWhamIOGen::GetCollocationPoints() const {
   IL_EXPECT_FAST(is_built_);
 
