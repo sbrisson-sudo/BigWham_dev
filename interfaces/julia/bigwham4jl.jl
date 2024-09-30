@@ -35,8 +35,8 @@ struct BEMatrix <: AbstractBEMatrix
     size::Dims{2}
 
     function BEMatrix(coor::Vector{Float64}, conn::Vector{Int32},
-        kernel::String, prop::Vector{Float64})
-        h = BigWhamIO(coor, conn, kernel, prop)
+        kernel::String, prop::Vector{Float64}, num_threads::Int64)
+        h = BigWhamIO(coor, conn, kernel, prop, num_threads)
         colpts = get_collocation_points(h)
         normals = get_element_normals(h)
         rotation_matrix = get_rotation_matrix(h)
@@ -48,10 +48,10 @@ end
 
 
 function BEMatrix(coor::Matrix{Float64}, conn::Matrix{Int64},
-    kernel::String, prop::Vector{Float64})
+    kernel::String, prop::Vector{Float64}, num_threads::Int64=8)
     coor = flatten_c_order(coor)
     conn = convert(Vector{Int32}, flatten_c_order(conn))
-    return BEMatrix(coor, conn, kernel, prop)
+    return BEMatrix(coor, conn, kernel, prop, num_threads)
 end
 
 Base.size(hmat::BEMatrix) = hmat.size

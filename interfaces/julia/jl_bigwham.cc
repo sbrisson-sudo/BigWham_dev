@@ -43,12 +43,12 @@ inline il::ArrayEdit<T> as_array_edit(jlarray<T> &c)
 JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
 {
     mod.add_type<BigWhamIOGen>("BigWhamIO")
-        .constructor([](const jlarray<double> x, const jlarray<int> y, const std::string &z, const jlarray<double> w)
+        .constructor([](const jlarray<double> x, const jlarray<int> y, const std::string &z, const jlarray<double> w, const int num_threads)
                      {
                          auto x_ = std::vector<double>(x.data(), x.data() + x.size());
                          auto y_ = std::vector<int>(y.data(), y.data() + y.size());
                          auto w_ = std::vector<double>(w.data(), w.data() + w.size());
-                         return new BigWhamIOGen(x_, y_, z, w_); })
+                         return new BigWhamIOGen(x_, y_, z, w_, num_threads); })
         .method("build_hierarchical_matrix", &BigWhamIOGen::BuildHierarchicalMatrix)
         .method("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
         .method("get_element_normals", &BigWhamIOGen::GetElementNormals)
