@@ -101,6 +101,7 @@ add_subdirectory(src)
 
 add_library(BigWham OBJECT ${SOURCE_FILES})
 target_compile_features(BigWham PUBLIC cxx_std_17)
+target_compile_definitions(BigWham PUBLIC BIGWHAM_OPENMP)
 target_link_libraries(BigWham PUBLIC InsideLoop)
 set_target_properties(BigWham PROPERTIES
     POSITION_INDEPENDENT_CODE ON)

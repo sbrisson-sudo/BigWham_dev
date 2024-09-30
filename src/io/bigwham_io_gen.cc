@@ -40,7 +40,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
 
     this->kernel_name_ = kernel;
     this->n_openMP_threads_=n_openMP_threads;
-    auto n_available = this->GetOmpThreads();
+    auto n_available = this->GetAvailableOmpThreads();
     if (n_openMP_threads>n_available) {
                 this->n_openMP_threads_=n_available;
     };
@@ -50,6 +50,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor, const std::vector<in
 //    omp_set_num_threads(this->n_openMP_threads_); // Use n_openMP_threads_ threads for all consecutive parallel regions
 //#endif
 
+    std::cout << "BigWham using " << this->n_openMP_threads_ << " OpenMP threads\n";
     std::cout << " Now setting things for kernel ... " << kernel_name_
               << " with properties size " << properties.size() << "\n";
 
@@ -225,7 +226,9 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
     };
 
     this->kernel_name_ = kernel;
-    std::cout << " Now setting things for kernel ... " << kernel_name_
+
+    std::cout << "BigWham using " << this->n_openMP_threads_ << " OpenMP threads\n";
+    std::cout << "Now setting things for kernel ... " << kernel_name_
               << " with properties size " << properties.size() << "\n";
 
     switch (hash_djb2a(kernel_name_)) {
@@ -314,6 +317,11 @@ void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double
   } else {
     is_built_ = false;
   }
+    std::cout << "BigWham constructed Hmat of size " 
+              << "(" << mesh_rec_->num_collocation_points() 
+              << " x " << mesh_rec_->spatial_dimension() << ")"  
+              << " X " << "(" << mesh_src_->num_collocation_points()
+              << " x " << mesh_rec_->spatial_dimension() << ")" << "\n";
   std::cout << "--------------------\n";
 
 }
