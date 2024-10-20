@@ -174,7 +174,6 @@ endif()
 # For Unit Tests
 ################################################################################
 if(BIGWHAM_TESTING)
-    # set(IL_FOLDER "${CMAKE_SOURCE_DIR}")
     set(TESTED_SOURCE_FILES ${SOURCE_FILES})
     set(UNIT_TEST_FILES
         il/gtest/src/gtest-all.cc
@@ -204,7 +203,7 @@ if(BIGWHAM_TESTING)
             src/_test/bigwhamio_test_2d.cc
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_tests.cc)
 
-    add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} test.cpp)
+    add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} src/Gtests-main.cc)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)
 
     target_include_directories(BigWhamElastUnitTest

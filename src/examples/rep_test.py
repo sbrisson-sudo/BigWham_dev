@@ -3,7 +3,8 @@
 
 ## Assuming build/interfaces/python is aleady in python path
 
-from hmatrix import Hmatrix  # linear operator file
+
+from bigwham4py import BEMatrix  # linear operator file
 import numpy as np
 
 # import subprocess
@@ -25,8 +26,8 @@ coord = np.load("mesh_coords.npy")
 conn = np.load("mesh_conn.npy")
 
 # Create H-matrix
-kernel = "3DT0"
-hmat = Hmatrix(kernel, coord, conn, np.array([E, nu]), max_leaf_size, eta, eps_aca)
+kernel = "3DT0-H"
+hmat = BEMatrix(kernel, coord, conn, np.array([E, nu]), max_leaf_size, eta, eps_aca)
 
 col_pts = hmat.getMeshCollocationPoints()
 
