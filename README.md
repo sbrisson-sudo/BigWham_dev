@@ -26,12 +26,13 @@ How-tos compile BigWham for different architecture can be found in the wiki page
 
 ### Contributors
 
-- Brice Lecampion (2016-): general architecture, elastic kernels implementation, API, H-matrix algorithms implementation, tests
+- Brice Lecampion (2016-): general architecture, elastic kernels implementation, API, H-matrix algorithms implementation, tests...
 - Francois Fayard (2016-18): H-matrix algorithms implementation, IL library
 - Ankit Gupta (2023-): general architecture, API (Julia, python)
 - Carlo Peruzzo (2018-2023): Rectangular element kernels, API (Python), tests
 - Alexis Sáez (2019-2023): Triangular 0 element kernels, tests  
-- Federico Ciardo (2026-2020): 2D tests
-- Stéphanie Chaillat-Loiseuille (2016-18): H-matrix algorithms 
+- Nicolas Richart (2023): cmake, openmp tests
 - Dmitry Nikolskiy (2016-18): Triangular element kernels, tests
-- Lisa Gordeliy (2018): 2D & 3D tests
+- Federico Ciardo (2026-2020): 2D tests
+- Stéphanie Chaillat-Loseille (2017-18): H-matrix algorithms
+- Lisa Gordeliy (2018-19): 2D & 3D tests
