@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 15.12.19.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2023.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2024.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 // last modifications :: Dec. 2023 - new interface improvements
@@ -137,7 +137,7 @@ public:
   }
 
     int GetOmpThreads() {
-        std::cout << "NUM OF OMP THREADS in BigWham: " << this->n_openMP_threads_ << std::endl;
+        std::cout << "NUM OF OMP THREADS used by BigWham: " << this->n_openMP_threads_ << std::endl;
         return this->n_openMP_threads_;};
 
     int GetAvailableOmpThreads() {

@@ -118,7 +118,7 @@ set(BIGWHAM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/src;${PROJECT_SOURCE_DIR}/il"
     CACHE PATH "BigWham include dirs")
 mark_as_advanced(BIGWHAM_INCLUDE_DIRS)
 
-add_executable(BigWham_exe main.cc)
+add_executable(BigWham_exe src/main.cc)
 target_link_libraries(BigWham_exe BigWhamShared)
 include(BigWhamTools)
 
@@ -203,7 +203,7 @@ if(BIGWHAM_TESTING)
             src/_test/bigwhamio_test_2d.cc
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_tests.cc)
 
-    add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} src/Gtests-main.cc)
+    add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} src/_test/Gtests-main.cc)
     target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)
 
     target_include_directories(BigWhamElastUnitTest
