@@ -247,8 +247,30 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
                     elas, spatial_dimension_);
             break;
         }
+        case "2DS1-2DS1-H"_sh: { // 2D segment piece-wise linear element, H-kernel
+            IL_ASSERT(properties.size() == 2);
+            ElasticProperties elas(properties[0], properties[1]);
+            spatial_dimension_ = 2;
+            dof_dimension_ = 2;
+            flux_dimension_ = 3;
+            using src_elem = Segment<1>;
+            using rec_elem = Segment<1>;
+            mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+                    spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
+            mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+                    spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
+            ker_obj_ = std::make_shared < bigwham::BieElastostatic<Segment < 0>, Segment < 0 >, bigwham::ElasticKernelType::H >> (
+                    elas, spatial_dimension_);
+            using ObsType = Point<2>;
+            ker_obs_u_= std::make_shared < bigwham::BieElastostatic<Segment < 0>, ObsType, bigwham::ElasticKernelType::T >> (
+                    elas, spatial_dimension_);
+            ker_obs_q_= std::make_shared < bigwham::BieElastostatic<Segment < 0>, ObsType, bigwham::ElasticKernelType::W >> (
+                    elas, spatial_dimension_);
+            break;
+        }
         case "2DS0-2DP-T"_sh: {
             // 2D Segment0 and 2D Point, computation of T kernel (displacement due to dislocation)
+            IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
             dof_dimension_ = 2;
             spatial_dimension_ = 2;
@@ -265,6 +287,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
             break;
         }
         case "3DT0-3DT0-H"_sh: { // 3D triangle P0 elements
+            IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
             dof_dimension_ = 3;
             spatial_dimension_ = 3;
@@ -286,6 +309,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
             break;
         }
         case "3DR0-3DR0-H"_sh: { // 3D Rectangular P0 elements
+            IL_ASSERT(properties.size() == 2);
             ElasticProperties elas(properties[0], properties[1]);
             dof_dimension_ = 3;
             spatial_dimension_ = 3;
@@ -632,11 +656,58 @@ std::vector<double> BigWhamIOGen::GetElementNormals() const
         auto n = elem->normal();
         for (il::int_t j = 0; j < dim; ++j) {
             normals[i * dim + j] = n[j];
-            // normals.push_back(n[j]);
         }
     }
 }
     return normals;
+}
+
+/* -------------------------------------------------------------------------- */
+std::vector<double> BigWhamIOGen::ComputeTractionsFromUniformStress(const std::vector<double> &stress  ) const
+{
+// stress = s_11,s22,s_12 in 2D , s_11,s_22,s_33,s_12,s_13,s_23 in 3D
+// return traction on a element facet in the global system
+
+    auto mesh = this->mesh_src_;
+    auto dim = mesh->spatial_dimension();
+    if (dim ==2 ){
+        IL_EXPECT_FAST(stress.size()==3);
+    }
+    if (dim ==3 ){
+        IL_EXPECT_FAST(stress.size()==6);
+    }
+
+    std::vector<double> global_tractions;
+    il::Array2D<double> sij{dim,dim,0.};
+    int k=0;
+    for(int i=0;i<dim;i++){ // diag
+        sij(i,i)=stress[k];
+        k++;
+    }
+    for(int i=1;i<dim;i++){ // off diag
+        sij(0,i)=stress[k];
+        sij(i,0)=stress[k];
+        k++;
+    }
+    if (dim ==3){ // s_23
+        sij(1,2)=stress[k];
+        sij(2,1)=stress[k];
+    }
+
+    global_tractions.assign(mesh->num_elements() * dim, 0.0);
+#pragma omp parallel num_threads(this->n_openMP_threads_)
+    {
+#pragma omp parallel for
+        for (il::int_t i = 0; i < mesh->num_elements(); ++i) {
+            auto elem = mesh->GetElement(i);
+            auto n = elem->normal();
+            auto g_t = il::dot(sij,n);
+            for (il::int_t j = 0; j < dim; ++j) {
+                global_tractions[i * dim + j] = g_t[j];
+            }
+        }
+    }
+    return global_tractions;
 }
 /* -------------------------------------------------------------------------- */
 std::vector<double> BigWhamIOGen::GetRotationMatrix() const

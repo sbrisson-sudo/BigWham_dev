@@ -92,6 +92,7 @@ public:
   void HmatDestructor();
   [[nodiscard]] std::vector<double> GetCollocationPoints() const;
   std::vector<double> GetElementNormals() const;
+  std::vector<double> ComputeTractionsFromUniformStress(const std::vector<double> &stress  ) const;
   std::vector<double> GetRotationMatrix() const;
   [[nodiscard]] std::vector<long> GetPermutation() const;
   [[nodiscard]] std::vector<long> GetHPattern() const;
