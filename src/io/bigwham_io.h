@@ -10,8 +10,8 @@
 
 #pragma once
 
-#ifndef BIGWHAM_IO_GEN_H
-#define BIGWHAM_IO_GEN_H
+#ifndef BIGWHAM_IO_H
+#define BIGWHAM_IO_H
 
 #ifdef BIGWHAM_OPENMP
 #include <omp.h>
@@ -24,7 +24,7 @@
 #include "hmat/bie_matrix_generator.h"
 #include "hmat/hmatrix/hmat.h"
 
-class BigWhamIOGen {
+class BigWhamIO {
 private:
 
   int n_openMP_threads_;
@@ -52,20 +52,20 @@ private:
   std::shared_ptr<bigwham::BieKernel<double>> ker_obs_q_; // BieKernel description for computing observation of 'flux'/'stress' (q) at points
 
 public:
-    BigWhamIOGen() {};
+    BigWhamIO() {};
     // square matrices
-    BigWhamIOGen(const std::vector<double> &coor, const std::vector<int> &conn,
-               const std::string &kernel, const std::vector<double> &properties,const int n_openMP_threads=8) ;
+    BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
+              const std::string &kernel, const std::vector<double> &properties, const int n_openMP_threads=8) ;
 
 
     // rectangular Hmat
-    BigWhamIOGen(const std::vector<double> &coor_src,
-                 const std::vector<int> &conn_src,
-                 const std::vector<double> &coor_rec,
-                 const std::vector<int> &conn_rec, const std::string &kernel,
-                 const std::vector<double> &properties,const int n_openMP_threads=8);
+    BigWhamIO(const std::vector<double> &coor_src,
+              const std::vector<int> &conn_src,
+              const std::vector<double> &coor_rec,
+              const std::vector<int> &conn_rec, const std::string &kernel,
+              const std::vector<double> &properties, const int n_openMP_threads=8);
 
-  ~BigWhamIOGen() {};
+  ~BigWhamIO() {};
 
   void BuildPattern(const int max_leaf_size, const double eta);
 
@@ -156,4 +156,4 @@ public:
   }
 };
 
-#endif // BIGWHAM_IO_GEN_H
+#endif // BIGWHAM_IO_H

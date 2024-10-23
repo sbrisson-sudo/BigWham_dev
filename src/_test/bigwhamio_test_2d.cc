@@ -13,8 +13,8 @@
 #include <il/math.h>
 
 #include "hmat/hmatrix/hmat.h"
-#include "bigwham_io.h"
-#include "io/bigwham_io_gen.h"
+#include "bigwham_io_old.h"
+#include "io/bigwham_io.h"
 
 #include "core/be_mesh.h"
 #include "elements/boundary_element.h"
@@ -42,7 +42,7 @@
 //    k = k + 2;
 //  }
 //
-//  Bigwhamio my_io;
+//  Bigwhamio_old my_io;
 //  std::vector<double> properties{1., 0., 100};
 //  my_io.set(coor, conn, "S3DP0", properties, 32, 2, 1.e-3);
 //
@@ -71,7 +71,7 @@
 //    k = k + 2;
 //  }
 //
-//  Bigwhamio my_io;
+//  Bigwhamio_old my_io;
 //  std::vector<double> properties{1., 0., 100};
 //  my_io.set(coor, conn, "S3DP0", properties, 32, 2, 1.e-3);
 //  ASSERT_TRUE(my_io.getProblemDimension() == 2 &&
@@ -101,7 +101,7 @@
 //    k = k + 2;
 //  }
 //
-//  Bigwhamio my_io;
+//  Bigwhamio_old my_io;
 //  std::vector<double> properties{1., 0., 100};
 //  my_io.set(coor, conn, "S3DP0", properties, 32, 2, 1.e-3);
 //
@@ -146,7 +146,7 @@
 //    k = k + 2;
 //  }
 //
-//  Bigwhamio my_io;
+//  Bigwhamio_old my_io;
 //  std::vector<double> properties{1., 0.};
 //  my_io.set(coor, conn, "2DP0", properties, 32, 2, 1.e-3);
 //

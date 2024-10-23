@@ -16,7 +16,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "io/bigwham_io_gen.h"
+#include "io/bigwham_io.h"
 #include "io/bigwham_io_helper.h"
 
 #include "elements/boundary_element.h"
@@ -30,7 +30,7 @@ namespace py = pybind11;
 using namespace bigwham;
 /* -------------------------------------------------------------------------- */
 
-class BigWhamIORect : public BigWhamIOGen
+class BigWhamIORect : public BigWhamIO
 {
 public:
   BigWhamIORect(const std::vector<double> &coor_src,
@@ -38,11 +38,11 @@ public:
                 const std::vector<double> &coor_rec,
                 const std::vector<int> &conn_rec, const std::string &kernel,
                 const std::vector<double> &properties,const int n_openMP_threads)
-      : BigWhamIOGen(coor_src,
-                     conn_src,
-                     coor_rec,
-                     conn_rec, kernel,
-                     properties,n_openMP_threads) {}
+      : BigWhamIO(coor_src,
+                  conn_src,
+                  coor_rec,
+                  conn_rec, kernel,
+                  properties, n_openMP_threads) {}
 
   ~BigWhamIORect() {}
 };
@@ -59,7 +59,7 @@ public:
   PyGetFullBlocks() = default;
   ~PyGetFullBlocks() = default;
 
-  void set(const BigWhamIOGen &BigwhamioObj)
+  void set(const BigWhamIO &BigwhamioObj)
   {
     il::Array<int> pos_list;
     int nbfentry;
@@ -97,32 +97,32 @@ public:
 
 PYBIND11_MODULE(py_bigwham, m)
 {
-  //    // Binding the mother class Bigwhamio
+  //    // Binding the mother class Bigwhamio_old
   //    // option py::dynamic_attr() added to allow new members to be created
   //    dynamically);
   // Square Self Interaction matrices
-  py::class_<BigWhamIOGen>(m, "BigWhamIOSelf", py::dynamic_attr(),
-                           py::module_local())
+  py::class_<BigWhamIO>(m, "BigWhamIOSelf", py::dynamic_attr(),
+                        py::module_local())
       .def(py::init<const std::vector<double> &,
                     const std::vector<int> &, const std::string &,
                     const std::vector<double> &,const int >()) // constructor
-      .def("hmat_destructor", &BigWhamIOGen::HmatrixDestructor)
-      .def("load_from_file", &BigWhamIOGen::LoadFromFile)
-      .def("build_hierarchical_matrix", &BigWhamIOGen::BuildHierarchicalMatrix)
-      .def("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
-      .def("get_permutation", &BigWhamIOGen::GetPermutation)
-      .def("get_compression_ratio", &BigWhamIOGen::GetCompressionRatio)
-      .def("get_kernel_name", &BigWhamIOGen::kernel_name)
-      .def("get_spatial_dimension", &BigWhamIOGen::spatial_dimension)
-      .def("matrix_size", &BigWhamIOGen::MatrixSize)
-      .def("get_hpattern", &BigWhamIOGen::GetHPattern)
-      .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix)
-      .def("get_hmat_time", &BigWhamIOGen::hmat_time)
-      .def("get_omp_threads", &BigWhamIOGen::GetOmpThreads)
-      .def("get_element_normals",&BigWhamIOGen::GetElementNormals)
-      .def("get_rotation_matrix",&BigWhamIOGen::GetRotationMatrix)
+      .def("hmat_destructor", &BigWhamIO::HmatrixDestructor)
+      .def("load_from_file", &BigWhamIO::LoadFromFile)
+      .def("build_hierarchical_matrix", &BigWhamIO::BuildHierarchicalMatrix)
+      .def("get_collocation_points", &BigWhamIO::GetCollocationPoints)
+      .def("get_permutation", &BigWhamIO::GetPermutation)
+      .def("get_compression_ratio", &BigWhamIO::GetCompressionRatio)
+      .def("get_kernel_name", &BigWhamIO::kernel_name)
+      .def("get_spatial_dimension", &BigWhamIO::spatial_dimension)
+      .def("matrix_size", &BigWhamIO::MatrixSize)
+      .def("get_hpattern", &BigWhamIO::GetHPattern)
+      .def("write_hmatrix", &BigWhamIO::WriteHmatrix)
+      .def("get_hmat_time", &BigWhamIO::hmat_time)
+      .def("get_omp_threads", &BigWhamIO::GetOmpThreads)
+      .def("get_element_normals",&BigWhamIO::GetElementNormals)
+      .def("get_rotation_matrix",&BigWhamIO::GetRotationMatrix)
       .def(py::pickle(
-          [](const BigWhamIOGen &self) { // __getstate__
+          [](const BigWhamIO &self) { // __getstate__
             /* Return a tuple that fully encodes the state of the object */
             return py::make_tuple(self.kernel_name());
           },
@@ -131,18 +131,18 @@ PYBIND11_MODULE(py_bigwham, m)
               throw std::runtime_error("Invalid state!");
 
             /* Create a new C++ instance */
-            BigWhamIOGen p;
+            BigWhamIO p;
             return p;
           }))
       .def("convert_to_global",
-           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
+           [](BigWhamIO &self, const pbarray<double> &x) -> decltype(auto)
            {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToGlobal(tx);
              return as_pyarray<double>(std::move(v));
            })
       .def("convert_to_local",
-           [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
+           [](BigWhamIO &self, const pbarray<double> &x) -> decltype(auto)
            {
              auto tx = as_array_view<double>(x);
              auto v = self.ConvertToLocal(tx);
@@ -151,7 +151,7 @@ PYBIND11_MODULE(py_bigwham, m)
       //return a numpy array!!
       .def(
           "matvec_permute",
-          [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
+          [](BigWhamIO &self, const pbarray<double> &x) -> decltype(auto)
           {
             auto tx = as_array_view<double>(x);
             auto v = self.MatVecPerm(tx);
@@ -161,7 +161,7 @@ PYBIND11_MODULE(py_bigwham, m)
       // return a numpy array!!
       .def(
           "matvec",
-          [](BigWhamIOGen &self, const pbarray<double> &x) -> decltype(auto)
+          [](BigWhamIO &self, const pbarray<double> &x) -> decltype(auto)
           {
             auto tx = as_array_view<double>(x);
             il::Array<double> v = self.MatVec(tx);
@@ -169,20 +169,20 @@ PYBIND11_MODULE(py_bigwham, m)
           },
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
-//      .def(
-//           "matvecVoid",
-//           [](BigWhamIOGen &self, const pbarray<double> &x, pbarray<double> &y) -> decltype(auto)
-//           {
-//               auto tx = as_array_view<double>(x);
-//               auto ty = as_array_edit<double>(y);
-//               self.MatVecVoid(tx,ty);
-//               return;
-//               },
-//               " dot product between hmat and a vector x in original ordering - void function",
-//               py::arg("x"),py::arg("y"))
+      .def(
+           "matvecVoid",
+           [](BigWhamIO &self, const pbarray<double> &x, pbarray<double> &y) -> decltype(auto)
+           {
+               auto tx = as_array_view<double>(x);
+               auto ty = as_array_edit<double>(y);
+               self.MatVecVoid(tx,ty);
+               return;
+               },
+               " dot product between hmat and a vector x in original ordering - void function",
+               py::arg("x"),py::arg("y"))
       .def(
           "compute_displacements",
-          [](BigWhamIOGen &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)
+          [](BigWhamIO &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)
           {
             auto tx = as_array_view<double>(x);
             auto v = self.ComputeDisplacements(coor, tx);
@@ -192,7 +192,7 @@ PYBIND11_MODULE(py_bigwham, m)
           py::arg("x"), py::arg("coor"))
       .def(
           "compute_stresses",
-          [](BigWhamIOGen &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)
+          [](BigWhamIO &self, const std::vector<double> &coor, const pbarray<double> &x) -> decltype(auto)
           {
             auto tx = as_array_view<double>(x);
             auto v = self.ComputeStresses(coor, tx);
@@ -232,7 +232,7 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("get_spatial_dimension", &BigWhamIORect::spatial_dimension)
       .def("matrix_size", &BigWhamIORect::MatrixSize)
       .def("get_hpattern", &BigWhamIORect::GetHPattern)
-      .def("write_hmatrix", &BigWhamIOGen::WriteHmatrix) // check here why BigWhamIOGen and not BigWhamIORect ?
+      .def("write_hmatrix", &BigWhamIO::WriteHmatrix) // check here why BigWhamIO and not BigWhamIORect ?
       .def("get_hmat_time", &BigWhamIORect::hmat_time)
       .def("get_omp_threads", &BigWhamIORect::GetOmpThreads)
       .def("convert_to_global",

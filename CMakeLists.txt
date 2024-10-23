@@ -44,6 +44,7 @@ option(BIGWHAM_JULIA_INTERFACE "Build Julia binding" OFF)
 option(BIGWHAM_MATHEMATICA_INTERFACE "make mathematica interface" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 option(BIGWHAM_TESTING "Build google tests" OFF)
 option(BIGWHAM_HDF5 "Use HDF5 for checkpoint/restart" OFF)
+option(BIGWHAM_DEV_EXAMPLE OFF)
 
 #option(USE_STATIC "use static" OFF)  # --> to add static option to CMAKE_CXX_FLAGS
 
@@ -223,7 +224,8 @@ if(BIGWHAM_TESTING)
 endif()
 
 ################################################################################
-# For running examples
+# For compiling _dev_example, folder with examples for developers
 ################################################################################
-# add_library(bigwham_shared SHARED  ${SOURCE_FILES})
-add_subdirectory(src/examples)
+if(BIGWHAM_DEV_EXAMPLES)
+    add_subdirectory(src/_dev_example)
+endif()

@@ -8,7 +8,7 @@
 #include <climits>
 
 #include "il/Array.h"
-#include "io/bigwham_io_gen.h"
+#include "io/bigwham_io.h"
 #include "io/bigwham_io_helper.h"
 
 using namespace bigwham;

@@ -1,3 +1,3 @@
 set(SOURCE_FILES ${SOURCE_FILES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/bigwham_io_gen.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/bigwham_io.cc
   PARENT_SCOPE)

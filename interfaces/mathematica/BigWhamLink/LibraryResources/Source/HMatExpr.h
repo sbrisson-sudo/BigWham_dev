@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <sstream>
 
-#include <bigwham_io.h>
+#include <bigwham_io_old.h>
 
 // A class for hierarchical matrices interface to mma
 class HMatExpr {

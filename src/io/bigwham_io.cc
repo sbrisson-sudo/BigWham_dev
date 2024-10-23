@@ -9,7 +9,7 @@
 // last modifications :: Dec. 2023 - new interface improvements
 
 
-#include "bigwham_io_gen.h"
+#include "bigwham_io.h"
 #include "bigwham_io_helper.h"
 
 #include "core/be_mesh.h"
@@ -36,11 +36,11 @@
 using namespace bigwham;
 
 // SQUARE matrix case
-BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor,
-                           const std::vector<int> &conn,
-                           const std::string &kernel,
-                           const std::vector<double> &properties,
-                           const int n_openMP_threads) {
+BigWhamIO::BigWhamIO(const std::vector<double> &coor,
+                     const std::vector<int> &conn,
+                     const std::string &kernel,
+                     const std::vector<double> &properties,
+                     const int n_openMP_threads) {
 
     this->kernel_name_ = kernel;
     this->n_openMP_threads_=n_openMP_threads;
@@ -207,11 +207,11 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor,
 };
 
 // RECTANGULAR Hmatrix case
-BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
-             const std::vector<int> &conn_src,
-             const std::vector<double> &coor_rec,
-             const std::vector<int> &conn_rec, const std::string &kernel,
-             const std::vector<double> &properties,const int n_openMP_threads){
+BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
+                     const std::vector<int> &conn_src,
+                     const std::vector<double> &coor_rec,
+                     const std::vector<int> &conn_rec, const std::string &kernel,
+                     const std::vector<double> &properties, const int n_openMP_threads){
 
     this->n_openMP_threads_=n_openMP_threads;
     auto n_available = this->GetAvailableOmpThreads();
@@ -360,7 +360,7 @@ BigWhamIOGen::BigWhamIOGen(const std::vector<double> &coor_src,
 
 // Method for pattern Construction
 // API to the Hierarchical representation function
-void BigWhamIOGen::BuildPattern(const int max_leaf_size, const double eta) {
+void BigWhamIO::BuildPattern(const int max_leaf_size, const double eta) {
 
     max_leaf_size_ = max_leaf_size;
     eta_ = eta;
@@ -377,7 +377,7 @@ void BigWhamIOGen::BuildPattern(const int max_leaf_size, const double eta) {
 
 // method to only get the permutation of the source mesh...
 
-std::vector<long> BigWhamIOGen::GetPermutation() const {
+std::vector<long> BigWhamIO::GetPermutation() const {
 // this function can be call either before or after the Hmat is built.
     std::vector<long> permut;
     if (is_built_||is_pattern_built_) {
@@ -385,7 +385,7 @@ std::vector<long> BigWhamIOGen::GetPermutation() const {
         for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
             permut[i] = hr_->permutation_1_[i];
         }
-    } else{
+    } else{ // the H-mat is not built, here the use case is to just get permutation
         il::Array2D<double> Xcol_source = mesh_src_->collocation_points();
         Cluster cluster_s = cluster(max_leaf_size_, il::io, Xcol_source);
         il::Array<il::int_t> per_i =  cluster_s.permutation ;
@@ -400,11 +400,11 @@ std::vector<long> BigWhamIOGen::GetPermutation() const {
 /* -------------------------------------------------------------------------- */
 
 // construct Hierarchical matrix
-void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca) {
+void BigWhamIO::BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca) {
 
   epsilon_aca_ = eps_aca;
   if (! is_pattern_built_){
-      BigWhamIOGen::BuildPattern(max_leaf_size, eta);
+      BigWhamIO::BuildPattern(max_leaf_size, eta);
   }
 
   il::Timer tt;
@@ -436,7 +436,7 @@ void BigWhamIOGen::BuildHierarchicalMatrix(const int max_leaf_size, const double
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<long> BigWhamIOGen::GetHPattern() const {
+std::vector<long> BigWhamIO::GetHPattern() const {
   // API function to output the hmatrix pattern
   //  as flattened list via a pointer
   //  the numberofblocks is also returned (by reference)
@@ -489,8 +489,8 @@ std::vector<long> BigWhamIOGen::GetHPattern() const {
 }
 /* --------------------------------------------------------------------------*/
 
-void BigWhamIOGen::GetFullBlocks(il::Array<double> &val_list,
-                                 il::Array<int> &pos_list) const {
+void BigWhamIO::GetFullBlocks(il::Array<double> &val_list,
+                              il::Array<int> &pos_list) const {
   // return the full dense block entries of the hmat as
   // flattened lists
   // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
@@ -512,12 +512,12 @@ void BigWhamIOGen::GetFullBlocks(il::Array<double> &val_list,
   }
  // std::cout << "number of entries " << val_list.size() << " - "
  //           << pos_list.size() << "\n";
- // std::cout << " End of Bigwhamio getFullBlocks \n";
+ // std::cout << " End of Bigwhamio_old getFullBlocks \n";
 }
 /* --------------------------------------------------------------------------*/
 
-void BigWhamIOGen::GetFullBlocks(std::vector<double> &val_list,
-                                 std::vector<int> &pos_list) const {
+void BigWhamIO::GetFullBlocks(std::vector<double> &val_list,
+                              std::vector<int> &pos_list) const {
   // return the full dense block entries of the hmat as
   // flattened lists
   // val_list(i) = H(pos_list(2*i),pos_list(2*i+1));
@@ -539,36 +539,36 @@ void BigWhamIOGen::GetFullBlocks(std::vector<double> &val_list,
   }
   //std::cout << "number of entries " << val_list.size() << " - "
   //          << pos_list.size() << "\n";
-  //std::cout << " End of Bigwhamio getFullBlocks \n";
+  //std::cout << " End of Bigwhamio_old getFullBlocks \n";
 }
 /* --------------------------------------------------------------------------*/
 
-void BigWhamIOGen::GetDiagonal(std::vector<double> &val_list) const {
+void BigWhamIO::GetDiagonal(std::vector<double> &val_list) const {
   // return the diagonal of the h-matrix
   // output in the original dof state (accounting for the permutation)
 
   IL_EXPECT_FAST(is_built_);
   val_list = hmat_->diagonalOriginal();
 
-  std::cout << " End of Bigwhamio getDiagonal() \n";
+  std::cout << " End of Bigwhamio_old getDiagonal() \n";
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<double> BigWhamIOGen::MatVec(const std::vector<double> &x) const {
+std::vector<double> BigWhamIO::MatVec(const std::vector<double> &x) const {
   // in the original / natural ordering
   IL_EXPECT_FAST(this->is_built_);
   std::vector<double> y = hmat_->matvecOriginal(x);
   return y;
 }
 /* -------------------------------------------------------------------------- */
-il::Array<double> BigWhamIOGen::MatVec(il::ArrayView<double> x) const {
+il::Array<double> BigWhamIO::MatVec(il::ArrayView<double> x) const {
   // in the original / natural ordering
   IL_EXPECT_FAST(this->is_built_);
   auto y = hmat_->matvecOriginal(x);
   return y;
 }
 /* -------------------------------------------------------------------------- */
-void BigWhamIOGen::MatVecVoid(const il::ArrayView<double> xin)
+void BigWhamIO::MatVecVoid(const il::ArrayView<double> xin)
 {
     // in the original / natural ordering
     // this function is used in python/julia to avoid copying the output
@@ -579,7 +579,7 @@ void BigWhamIOGen::MatVecVoid(const il::ArrayView<double> xin)
     hmat_->matvecOriginal(xin, this->m_yout_);
 }
 /* -------------------------------------------------------------------------- */
-void BigWhamIOGen::MatVecVoid(const il::ArrayView<double> xin, il::ArrayEdit<double> yout)
+void BigWhamIO::MatVecVoid(const il::ArrayView<double> xin, il::ArrayEdit<double> yout)
 {
     // in the original / natural ordering
     // this function is used in python/julia to avoid copying the output
@@ -590,14 +590,14 @@ void BigWhamIOGen::MatVecVoid(const il::ArrayView<double> xin, il::ArrayEdit<dou
     hmat_->matvecOriginal(xin, yout);
 }
 /* -------------------------------------------------------------------------- */
-il::Array<double> BigWhamIOGen::MatVecPerm(il::ArrayView<double> x) const {
+il::Array<double> BigWhamIO::MatVecPerm(il::ArrayView<double> x) const {
   // in the permutted state.
   IL_EXPECT_FAST(this->is_built_);
   auto y = hmat_->matvec(x);
   return y;
 }
 /* -------------------------------------------------------------------------- */
-std::vector<double> BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const {
+std::vector<double> BigWhamIO::MatVecPerm(const std::vector<double> &x) const {
   // in the permutted state.
   IL_EXPECT_FAST(this->is_built_);
   IL_EXPECT_FAST(hmat_->size(1) == x.size());
@@ -606,32 +606,32 @@ std::vector<double> BigWhamIOGen::MatVecPerm(const std::vector<double> &x) const
 }
 
 /* -------------------------------------------------------------------------- */
-il::Array<double> BigWhamIOGen::ConvertToGlobal(il::ArrayView<double> x_local) const {
+il::Array<double> BigWhamIO::ConvertToGlobal(il::ArrayView<double> x_local) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_rec_->ConvertToGlobal(x_local);
 }
 /* -------------------------------------------------------------------------- */
-il::Array<double> BigWhamIOGen::ConvertToLocal(il::ArrayView<double> x_global) const {
+il::Array<double> BigWhamIO::ConvertToLocal(il::ArrayView<double> x_global) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_src_->ConvertToLocal(x_global);
 }
 /* -------------------------------------------------------------------------- */
-std::vector<double> BigWhamIOGen::ConvertToGlobal(const std::vector<double> &x_local) const {
+std::vector<double> BigWhamIO::ConvertToGlobal(const std::vector<double> &x_local) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_rec_->ConvertToGlobal(x_local);
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<double> BigWhamIOGen::ConvertToLocal(const std::vector<double> &x_global) const {
+std::vector<double> BigWhamIO::ConvertToLocal(const std::vector<double> &x_global) const {
   // Input: x in original state (not permutted)
   // Output: in original state (not permutted)
   return mesh_src_->ConvertToLocal(x_global);
 }
 /* -------------------------------------------------------------------------- */
-std::vector<double> BigWhamIOGen::GetElementNormals() const
+std::vector<double> BigWhamIO::GetElementNormals() const
 {
     /*
   # normals
@@ -663,7 +663,7 @@ std::vector<double> BigWhamIOGen::GetElementNormals() const
 }
 
 /* -------------------------------------------------------------------------- */
-std::vector<double> BigWhamIOGen::ComputeTractionsFromUniformStress(const std::vector<double> &stress  ) const
+std::vector<double> BigWhamIO::ComputeTractionsFromUniformStress(const std::vector<double> &stress  ) const
 {
 // stress = s_11,s22,s_12 in 2D , s_11,s_22,s_33,s_12,s_13,s_23 in 3D
 // return traction on a element facet in the global system
@@ -710,7 +710,7 @@ std::vector<double> BigWhamIOGen::ComputeTractionsFromUniformStress(const std::v
     return global_tractions;
 }
 /* -------------------------------------------------------------------------- */
-std::vector<double> BigWhamIOGen::GetRotationMatrix() const
+std::vector<double> BigWhamIO::GetRotationMatrix() const
 {
     /*
   # rotation_matrix
@@ -750,7 +750,7 @@ std::vector<double> BigWhamIOGen::GetRotationMatrix() const
 }
 
 /* -------------------------------------------------------------------------- */
-std::vector<double> BigWhamIOGen::GetCollocationPoints() const {
+std::vector<double> BigWhamIO::GetCollocationPoints() const {
 //  IL_EXPECT_FAST(is_built_);
 
   auto col_pts = mesh_rec_->collocation_points();  // this should be the receiver mesh for  generality
@@ -769,7 +769,7 @@ std::vector<double> BigWhamIOGen::GetCollocationPoints() const {
 }
 /* -------------------------------------------------------------------------- */
 
-il::Array<double> BigWhamIOGen::ComputePotentials(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
+il::Array<double> BigWhamIO::ComputePotentials(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
 { // return the potential in the global system of coordinates, the solution on the source mesh being defined in the local eletment system of the source mesh
     IL_EXPECT_FAST(sol_local.size() == mesh_src_->num_collocation_points() * dof_dimension_);
     IL_EXPECT_FAST(coor_obs.size() % spatial_dimension_ == 0);
@@ -840,7 +840,7 @@ return obs_potential;
 }
 
 
-il::Array<double> BigWhamIOGen::ComputeFluxes(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
+il::Array<double> BigWhamIO::ComputeFluxes(const std::vector<double> &coor_obs , const il::ArrayView<double> sol_local) const
 {
 // return the potential in the global system of coordinates, the solution on the source mesh being defined in the local eletment system of the source mesh
     IL_EXPECT_FAST(sol_local.size() == mesh_src_->num_collocation_points() * dof_dimension_);

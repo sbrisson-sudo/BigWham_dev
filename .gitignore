@@ -1,13 +1,13 @@
 cmake-build-release/
 cmake-build-debug/
-local_computation/
+cmake-build-debug-coverage/
+compilation_brice.md
 .dir-locals.el
 build*
 build/
+build_mma/
 .clangd/
 .vscode/
 compile_commands.json
 /build_debug/
 /site/*
-compilation_brice.md
-Manifest.toml

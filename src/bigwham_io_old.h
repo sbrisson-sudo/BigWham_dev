@@ -83,8 +83,8 @@ std::shared_ptr<bigwham::Mesh> createMeshFromVect(int spatial_dimension,
 }
 /* -------------------------------------------------------------------------- */
 
-//////////////////////////// the 'infamous' Bigwhamio class
-class Bigwhamio {
+//////////////////////////// the 'infamous' Bigwhamio_old class
+class Bigwhamio_old {
 private:
   bigwham::Hmat<double> hmat_; // the  Hmat object
   std::shared_ptr<bigwham::Mesh> mesh_;
@@ -112,7 +112,7 @@ private:
 
 public:
   // default constructor
-  Bigwhamio() {
+  Bigwhamio_old() {
     dimension_ = 0;
     dof_dimension_ = 0;
     is_built_ = false;
@@ -124,7 +124,7 @@ public:
     hmat_time_ = 0.;
   }
 
-  ~Bigwhamio() = default;
+  ~Bigwhamio_old() = default;
 
   /* --------------------------------------------------------------------------
    */
@@ -445,7 +445,7 @@ public:
     }
     std::cout << "number of entries " << val_list.size() << " - "
               << pos_list.size() << "\n";
-    std::cout << " End of Bigwhamio getFullBlocks \n";
+    std::cout << " End of Bigwhamio_old getFullBlocks \n";
   }
   /* --------------------------------------------------------------------------
    */
@@ -457,7 +457,7 @@ public:
     IL_EXPECT_FAST(is_built_);
     val_list = hmat_.diagonalOriginal();
 
-    std::cout << " End of Bigwhamio getDiagonal() \n";
+    std::cout << " End of Bigwhamio_old getDiagonal() \n";
   }
   /* --------------------------------------------------------------------------
    */

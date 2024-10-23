@@ -12,7 +12,7 @@
 #include <il/math.h>
 
 #include "hmat/hmatrix/hmat.h"
-#include "io/bigwham_io_gen.h"
+#include "io/bigwham_io.h"
 
 #include "core/be_mesh.h"
 #include "elements/boundary_element.h"
@@ -36,7 +36,7 @@ TEST(bigwham_io_gen_3d, 3DT0_1) {
     }
   std::vector<double> properties{1., 0.};
 
-  BigWhamIOGen my_io{coor, conn, "3DT0-H", properties};
+  BigWhamIO my_io{coor, conn, "3DT0-H", properties};
   my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
   std::cout << my_io.GetCompressionRatio()<<"\n";
   auto colpts = my_io.GetCollocationPoints();
@@ -62,7 +62,7 @@ TEST(bigwham_io_gen_3d, 3DT0_2) {
     }
     std::vector<double> properties{1., 0.};
 
-    BigWhamIOGen my_io{coor, conn, "3DT0-H", properties};
+    BigWhamIO my_io{coor, conn, "3DT0-H", properties};
     my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
     std::cout << my_io.GetCompressionRatio()<<"\n";
     auto colpts = my_io.GetCollocationPoints();
@@ -97,7 +97,7 @@ TEST(bigwham_io_gen_3d, 3DT0_3) {
     }
     std::vector<double> properties{1., 0.};
 
-    BigWhamIOGen my_io{coor, conn, "3DT0-H", properties};
+    BigWhamIO my_io{coor, conn, "3DT0-H", properties};
     my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
     std::cout << "Compression ratio:" << my_io.GetCompressionRatio()<<"\n";
     auto colpts = my_io.GetCollocationPoints();
@@ -140,7 +140,7 @@ TEST(bigwham_io_gen_3d, 3DR0_1) {
     }
     std::vector<double> properties{1., 0.};
 
-    BigWhamIOGen my_io{coor, conn, "3DR0-H", properties};
+    BigWhamIO my_io{coor, conn, "3DR0-H", properties};
     std::cout << my_io.kernel_name() <<"\n";
     my_io.BuildHierarchicalMatrix(32, 0.0, 1.e-3);
     std::cout << my_io.GetCompressionRatio()<<"\n";

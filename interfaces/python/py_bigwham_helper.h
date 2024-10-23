@@ -4,7 +4,7 @@
 
 #include "il/Array.h"
 
-#include "io/bigwham_io_gen.h"
+#include "io/bigwham_io.h"
 #include "io/bigwham_io_helper.h"
 
 using namespace bigwham;
@@ -28,7 +28,11 @@ template <typename T> inline py::array_t<T> as_pyarray(il::Array<T> &&seq) {
 /* -------------------------------------------------------------------------- */
 template <typename T>
 inline il::ArrayEdit<T> as_array_edit(pbarray<T> &c) {
-    il::ArrayEdit<T> d{c.data(), c.shape(0)};
+    py::buffer_info buf_info = c.request();
+    double *ptr = static_cast<T *>(buf_info.ptr);
+
+    int X = buf_info.shape[0];
+    il::ArrayEdit<T>  d{ptr, X};//d{&c[0], static_cast<int>(c.size())};
     return d;
 }
 /* -------------------------------------------------------------------------- */
