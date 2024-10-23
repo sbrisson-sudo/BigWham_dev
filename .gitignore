@@ -6,8 +6,10 @@ compilation_brice.md
 build*
 build/
 build_mma/
+debug/
 .clangd/
 .vscode/
 compile_commands.json
 /build_debug/
 /site/*
+cmake/
