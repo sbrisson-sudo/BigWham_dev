@@ -34,16 +34,17 @@ from matplotlib.patches import Rectangle
 ##############################
 #  Hmatrix class in python   #
 ##############################
-class BEMatrix(LinearOperator): #, metaclass=multimeta
+class BEMatrix(LinearOperator):
     def __init__(
         self,
         kernel: str,
         coor: np.ndarray,
         conn: np.ndarray,
         properties: np.ndarray,
-        max_leaf_size: int = 100,
+        max_leaf_size: int = 32,
         eta: float = 3.0,
-        eps_aca: float = 1.0e-3, n_openMP_threads: int =8
+        eps_aca: float = 1.0e-3, n_openMP_threads: int =8,
+        directly_build:bool = True
     ):
         """ "
         Name:              Type:                Description:
@@ -52,9 +53,10 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         coor,              (numpy 2D arrray)    coordinates of the vertices of the elements (N of vert x 2)
         conn,              (numpy 2D arrray)    connectivity of the elements (N of elemts x N of vert per elem)
         properties,        (numpy 1D arrray)    list of kernel properties (Should be changed to a dict to better implement checks?)
-        max_leaf_size,     (integer)            size of the largest sub block (usually 100 - 1000)
+        max_leaf_size,     (integer)            size of the largest sub block (usually 16 - 124)
         eta,               (float)            approximation factor (usually ~3, 0 is non compressed HMAT)
         eps_aca            (float)              approximation factor (usually 0.001 - 0.0001)
+        n_openMP_threads    (integer)           number of OMP threads to be used by BigWham
         """
 
         self.kernel_ : str = kernel
@@ -69,17 +71,43 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
             kernel,
             properties.flatten(),n_openMP_threads
         )
-        self.H_.build_hierarchical_matrix(
-            max_leaf_size,
-            eta,
-            eps_aca,
-        )
-        self.matvec_size_ = self.H_.matrix_size(0)
-        self.dtype_ = float
+        self.built_ = False
+        if directly_build :
+            self.H_.build_hierarchical_matrix(
+                max_leaf_size,
+                eta,
+                eps_aca,
+            )
+            self.built_=True
+            self.matvec_size_ = self.H_.matrix_size(0)
+            # it is mandatory to define shape and dtype of the dot product
+            self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
 
-        # it is mandatory to define shape and dtype of the dot product
-        self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
+        else:
+            self.H_.build_pattern(
+                max_leaf_size,
+                eta,
+            )
+            # we set dummmy values.
+            self.shape_ =(0,0)
+        self.dtype_ = float
         super().__init__(self.dtype_, self.shape_)
+
+    def _build(self):
+        if not(self.built_):
+            self.H_.build_hierarchical_matrix(
+                self.max_leaf_size_,
+                self.eta_,
+                self.eps_aca_,
+            )
+            self.matvec_size_ = self.H_.matrix_size(0)
+            # it is mandatory to define shape and dtype of the dot product
+            self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
+            super().__init__(self.dtype_, self.shape_)
+#            self.shape = self.shape_
+            self.built_=True
+        else:
+            pass
 
     def _matvec(self, v: np.ndarray) -> np.ndarray:
         """
@@ -87,11 +115,12 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         :param v: vector expected to be of size self.HMAT_size_
         :return: HMAT.v
         """
+        # shall we put a call to self._build() ?
         return self.H_.matvec(v)
 
     def write_hmatrix(self, filename: str) -> int:
         """
-        write Hmatirx in hdf5
+        write Hmatrix in hdf5
         """
         self.H_.write_hmatrix(filename)
 
@@ -104,6 +133,7 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
 
     # some useful methods
     def getCompression(self) -> float:
+        self._build()
         return self.H_.get_compression_ratio()
 
     def getPermutation(self) -> np.ndarray:
@@ -115,7 +145,7 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
     def getMeshCollocationPoints(self) -> np.ndarray:
         """
         Get collocation points from mesh (no permutations ....)
-        return: (no_collo_pts, dim) array from mesh
+        return: (no_collocation_pts, dim) array from mesh
         """
         dim = self.H_.get_spatial_dimension()
         return np.asarray(self.H_.get_collocation_points()).reshape(
@@ -174,6 +204,10 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         return np.reshape(aux, (int(aux.size / nr), nr))
 
     def plotPattern(self):
+        """
+        Plot the hierarchical pattern of the matrix
+        :return:
+        """
         data_pattern = self._getPattern()
         patches = []
         p_colors = []
@@ -202,16 +236,31 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         return fig
 
     # a method constructing an ILU Preconditionner of the H matrix
-    def H_ILU_prec(self, fill_factor=5, drop_tol=1e-5) -> LinearOperator:
+    def H_ILU_prec(self, fill_factor=1, drop_tol=1e-3) -> LinearOperator:
+        """
+        Return an ILU operator (using scipy spilu) built from the full-rank blocks of the matrix.
+        :param fill_factor: integer (default 1) for the maximum number of fill-in (see scipy spilu)
+        :param drop_tol: float (default 1e-3) for the tolerance to drop the entries (see scipy spilu)
+        :return: a linear operator with the corresponding ILU
+        """
+        self._build()
         fb = self._getFullBlocks()
         fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
         return LinearOperator(self.shape_, fbILU.solve)
 
     def H_diag(self) -> np.ndarray:
+        """
+        :return: the diagonal of the matrix as n array
+        """
+        self._build()
         fb = self._getFullBlocks()
         return fb.diagonal()
 
     def H_jacobi_prec(self):
+        """
+        Create a jacobi preconditioner of the matrix (just the inverse of the diagonal entries)
+        :return: a scipy sparse matrix of diagonal format
+        """
         diag = self.H_diag()  # return a nd.array
         overdiag = 1.0 / diag
         return diags(overdiag, dtype=np.float_)
@@ -223,6 +272,7 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         :param local_solu: vector of solution (in the local system)
         :return: np.array of the values of the displacement components at the given points
         """
+        self._build()
         n = self.H_.get_spatial_dimension()
         assert n == list_coor.shape[1], "Coordinates dimension of the given points is not matching the problem spatial dimension !"
         u = self.H_.compute_displacements(list_coor.flatten(),local_solu.flatten())
@@ -235,6 +285,7 @@ class BEMatrix(LinearOperator): #, metaclass=multimeta
         :param local_solu: vector of solution (in the local system)
         :return: np.array of the values of the stress components at the given points
         """
+        self._build()
         n = self.H_.get_spatial_dimension()
         assert (n==2 or n ==3 ), " Problem spatial dimension must be 2 or 3"
         assert n == list_coor.shape[1], "Coordinates dimension of the given points is not matching the problem spatial dimension !"
@@ -282,7 +333,8 @@ class BEMatrixRectangular(LinearOperator):
         properties : np.ndarray,
         max_leaf_size : int =100,
         eta : float=3.0,
-        eps_aca : float=1.0e-3,n_openMP_threads:int =8
+        eps_aca : float=1.0e-3, n_openMP_threads:int =8,
+        directly_build:bool = True
     ):
 
         self.kernel_ = kernel
@@ -291,6 +343,7 @@ class BEMatrixRectangular(LinearOperator):
         self.eta_ = eta
         self.eps_aca_ = eps_aca
         self.n_openMP_threads_=n_openMP_threads
+        self.built_=False
 
         self.H_ : BigWhamIORect= BigWhamIORect(
             coor_src.flatten(),
@@ -300,18 +353,38 @@ class BEMatrixRectangular(LinearOperator):
             kernel,
             properties.flatten(),n_openMP_threads
         )
-        self.H_.build_hierarchical_matrix(
+        self.dtype_ = float
+
+        if directly_build:
+            self.H_.build_hierarchical_matrix(
             max_leaf_size,
             eta,
             eps_aca,
-        )
+            )
+            # it is mandatory to define shape and dtype of the dot product
+            self.matvec_size_ = self.H_.matrix_size(0)
+            self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
+            self.built_=True
+        else:
+            self.H_.build_pattern(max_leaf_size,eta)
 
-        self.matvec_size_ = self.H_.matrix_size(0)
         self.dtype_ = float
-
-        # it is mandatory to define shape and dtype of the dot product
-        self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
         super().__init__(self.dtype_, self.shape_)
+
+
+    def _build(self):
+        if not(self.built_):
+            self.H_.build_hierarchical_matrix(
+                self.max_leaf_size_,
+                self.eta_,
+                self.eps_aca_,
+            )
+            self.built_=True
+            self.matvec_size_ = self.H_.matrix_size(0)
+            self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
+            super().__init__(self.dtype_, self.shape_)
+        else:
+            pass
 
     def _matvec(self, v: np.ndarray) -> np.ndarray:
         """
@@ -330,6 +403,7 @@ class BEMatrixRectangular(LinearOperator):
 
     # some useful methods
     def getCompression(self) -> float:
+        self._build()
         return self.H_.get_compression_ratio()
 
     def getPermutation(self) -> np.ndarray:
