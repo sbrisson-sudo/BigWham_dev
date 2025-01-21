@@ -3,7 +3,7 @@
 //
 // Created by Alexis Sáez Uribe on 30/05/2022.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne),
-// Switzerland, Geo-Energy Laboratory, 2016-2024.  All rights reserved.
+// Switzerland, Geo-Energy Laboratory, 2016-2025.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
 //

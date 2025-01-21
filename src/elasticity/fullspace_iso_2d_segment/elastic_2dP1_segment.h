@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 29.08.17.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
-// Geo-Energy Laboratory, 2016-2024.  All rights reserved.
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved.
 // See the LICENSE.TXT file for more details.
 //
 

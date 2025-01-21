@@ -2,7 +2,8 @@
 // This file part of BigWham
 //
 // Created by Brice Lecampion on 04.02.19.
-// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2024.  All rights reserved.
+// Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved.
 // See the LICENSE.TXT file for more details. 
 //
 
