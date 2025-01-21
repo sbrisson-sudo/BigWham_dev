@@ -18,13 +18,9 @@ authors:
     given-names: Dmitry
   - family-names: Ciardo
     given-names: Federico
-  - family-names: Chaillat-Loseille
-    given-names: Stéphanie
-  - family-names: Gordelyi
-    given-names: Lisa
 title: "BigWham: a vectorial boundary integral equations library with hierarchical matrices"
 version: 1.0.0
 identifiers:
   - type: doi
     value:
-date-released: 2024-10-31
+date-released: 2025-01-31

@@ -1,25 +1,33 @@
 
-# BigWham:a vectorial Boundary InteGral equations With HierArchical Matrices library
+# BigWham: a vectorial Boundary InteGral equations With HierArchical Matrices library
 
-BigWham stands for Boundary InteGral equations With HierArchical Matrix. BigWham  is a C++ library geared toward the solution of vectorial Boundary Integral Equations arising in the theory of elasticity. A collocation Boundary Element Method specific to fracture problem is currently implemented (so-called displacement discontinuity method).
-It leverages hierarchical matrix algorithms: it thus scales as n O(log n) for both storage requirements, creation time, and matrix-vector product computational time.
+BigWham stands for Boundary InteGral equations With HierArchical Matrix. BigWham is a C++ library geared toward the solution of vectorial Boundary Integral Equations arising in the theory of elasticity. A collocation Boundary Element Method specific to fracture problem is currently implemented (so-called displacement discontinuity method).
+It leverages hierarchical matrix algorithms: it thus scales as $n O(log n)$ for both storage requirements, creation time, and matrix-vector product computational time.
 The library uses OpenMP for multithreading. 
 
-BigWham primary focus is on fracture / dislocation problems in unbounded domains using the hyper-singular traction BIEs of quasi-static elasticity.
+BigWham primary focus is on fracture / dislocation problems in unbounded domains using the hyper-singular traction BIEs of quasi-static elasticity, with the displacement discontinuity as the primary unknowns.
 
 The elements currently available are strictly discontinuous, mostly with constant interpolation of the displacement field over the elements.
 
-The following kernels are available and fully tested (as of version 1.0):
-- Full-space isotropic elasticity hyper-singular kernels (for traction BIEs in unbounded domains)
-  - 2D plane-strain/plane-stress P0 segment / piece-wise constant displacement, 2 dofs per element
-  - 2D plane-strain/plane-stress P1 segment / piece-wise linear displacement, 4 dofs per element 
-  - 3D rectangular R0 element / piece-wise constant displacement, 3 dofs per element (a version for pure tensile mode exist with 1 dof per element )
-  - 3D triangular T0 element / piece-wise constant displacement, 3 dofs per element
-  - Axi-symmetry flat fracture under unidirectional shear & tensile P0 ring segment / piece-wise constant displacement, 2 dofs per element, uncoupled BIE case
-  - A simplified 3D kernel P0 element for constant height blade-like fracture (Wu & Olson approximation) / piece-wise constant displacement, 2 dofs per element 
+#### Kernels 
+
+
+The following table describe the quasi-static elasticity hyper-singular kernels currently available and fully tested (as of version 1.0). 
+They are all for isotropic materials and for a full-space. 
+
+| Kernel string | Dimension | Element type |  Interpolation order |  #DoFs/element | Kernel type |
+| --- | --- | --- | --- | --- | ---|
+| "2DS0-H"      |  2D plane-strain  | Segment       | 0 | 2 | Traction hypersingular |  
+| "2DS1-H"    |  2D plane-strain | Segment | 1 | 4| Traction hypersingular |  
+| "3DR0-H"    |  3D |  Rectangle | 0 | 3 | Traction hypersingular |  
+| "3DT0-H"    |  3D |  Triangle | 0 | 3 | Traction hypersingular |  
+| "Axi3DS0-H"    |  Axi-symmetry |  segment (Ring) | 0 | 2 |Traction hypersingular, unidirectional shear & tensile displacement discontinuity for a flat crack (uncoupled) |  
+| "S3DS0-H"   |  3D | Segment | 0 | 2 |  A simplified 3D Traction hypersingular kernel for constant height blade-like fracture (Wu & Olson, IJF (2015) approximation)
+| "3DR0-H-mode1"    |  3D |  Rectangle | 0 | 1 | Traction hypersingular, opening component only (mode 1) |  
 
 Some additional kernels are under development/testing, some have been temporarily shelved (waiting for additional testing).
-  
+
+#### Interfaces
 BigWham has bindings for:
 - Python (via PyBind11)
 - Julia
@@ -34,11 +42,13 @@ For most kernels, BigWham has the capabilities to compute the resulting fields (
 at remote observation points (point 'observation' mesh): displacements and stresses (strain can be obtained from stresses).
 The library has also the capability (for some kernels) to create rectangular hierarchical matrix for  source and receiver elements meshes (of different sizes) of similar type (e.g. segment/segment).
 
-The number of threads used by the library can be controlled independently of global environment variable. This is notably useful when used in combination with other libraries (such as numpy, scipy).
+The number of threads used by the library can be controlled independently of the OMP_NUM_THREADS global environment variable. This is potentially useful when used in combination with other libraries (such as numpy, scipy).
 
 ### Documentation
 
 'The code is the documentation' (sic). Some useful tips can be found in the wiki pages. 
+
+A pdf outlining the underlying collocation boundary element formulation can be found at  
 
 Tutorials (using the Python API) consisting of a number of illustrating examples can be found at https://github.com/GeoEnergyLab-EPFL/Bigwham-Tutorials 
 
@@ -49,18 +59,20 @@ How-to's compile BigWham for different architecture can be found in the wiki pag
 - C++11 or higher compiler 
 - intel MKL or openBLAS
 - IL library (directly shipped with the code, no installation required)
-- openMP (optional but recommended) 
-- pybind11 (will be automatically dwlded if the python API is built)
+- openMP (optional but highly recommended) 
+- pybind11 (will be automatically donwloaded if the python API is built)
 
-### Contributors
+### Project Contributors
+
+We list below not only people who have developed/authored the code, but also helped in different ways.
 
 - Brice Lecampion (2016-): general architecture, elastic kernels implementation, API, H-matrix algorithms implementation, tests...
 - Francois Fayard (2016-18): H-matrix algorithms implementation, IL library, tests
 - Ankit Gupta (2023-): general architecture, API (Julia, python)
-- Carlo Peruzzo (2018-2023): Rectangular element kernels, API (Python), 3D tests
-- Alexis Sáez (2019-2023): Triangular 0 element kernels, 3D tests  
+- Carlo Peruzzo (2018-2023): Rectangular element kernels implementation, API (Python), 3D tests
+- Alexis Sáez (2019-2023): Triangular 0 element kernels implementation, 3D tests  
 - Nicolas Richart (2023): cmake, openmp tests
-- Dmitry Nikolskiy (2016-18): Triangular element kernels, tests
+- Dmitry Nikolskiy (2016-18): Triangular element kernels implementation, tests
 - Federico Ciardo (2026-2020): 2D tests
-- Stéphanie Chaillat-Loseille (2017-18): H-matrix algorithms
+- Stéphanie Chaillat-Loseille (2017-18): H-matrix algorithms 
 - Lisa Gordeliy (2018-19): 2D & 3D tests
