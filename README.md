@@ -1,7 +1,8 @@
 
-# BigWham: a vectorial Boundary InteGral equations With HierArchical Matrices library
+# BigWham: a C++ library for vectorial Boundary InteGral equations With HierArchical Matrices 
 
-BigWham stands for Boundary InteGral equations With HierArchical Matrix. BigWham is a C++ library geared toward the solution of vectorial Boundary Integral Equations arising in the theory of elasticity. A collocation Boundary Element Method specific to fracture problem is currently implemented (so-called displacement discontinuity method).
+BigWham stands for Boundary InteGral equations With HierArchical Matrix. BigWham is a C++ library geared toward the solution of vectorial Boundary Integral Equations arising in the **theory of elasticity**. 
+A collocation Boundary Element Method specific to **fracture problem** is currently implemented (so-called displacement discontinuity method).
 It leverages hierarchical matrix algorithms: it thus scales as $n O(log n)$ for both storage requirements, creation time, and matrix-vector product computational time.
 The library uses OpenMP for multithreading. 
 
@@ -53,19 +54,20 @@ A pdf outlining the underlying collocation boundary element formulation can be f
 Tutorials (using the Python API) consisting of a number of illustrating examples can be found at https://github.com/GeoEnergyLab-EPFL/Bigwham-Tutorials 
 
 ### Compilation
-How-to's compile BigWham for different architecture can be found in the wiki pages of this GitHub repo. 
+How-to's compile BigWham for different architecture (MaxOSX, Linux) can be found in the [wiki pages](https://github.com/GeoEnergyLab-EPFL/BigWham/wiki) of this GitHub repo. 
 
-### Dependencies
+#### Dependencies
 - C++11 or higher compiler 
 - intel MKL or openBLAS
-- IL library (directly shipped with the code, no installation required)
 - openMP (optional but highly recommended) 
 - pybind11 (will be automatically donwloaded if the python API is built)
+- IL library (directly shipped with the code, no installation required)
 
 ### Project Contributors
 
 We list below not only people who have developed/authored the code, but also helped in different ways.
 
+##### Developers / Authors
 - Brice Lecampion (2016-): general architecture, elastic kernels implementation, API, H-matrix algorithms implementation, tests...
 - Francois Fayard (2016-18): H-matrix algorithms implementation, IL library, tests
 - Ankit Gupta (2023-): general architecture, API (Julia, python)
@@ -74,5 +76,8 @@ We list below not only people who have developed/authored the code, but also hel
 - Nicolas Richart (2023): cmake, openmp tests
 - Dmitry Nikolskiy (2016-18): Triangular element kernels implementation, tests
 - Federico Ciardo (2026-2020): 2D tests
-- Stéphanie Chaillat-Loseille (2017-18): H-matrix algorithms 
+
+#### Others
+- Stéphanie Chaillat-Loseille (2017-18): introduced us to H-matrix algorithms !
 - Lisa Gordeliy (2018-19): 2D & 3D tests
+- Harsha Bhat (2016-now): proud supporter & user of the project 

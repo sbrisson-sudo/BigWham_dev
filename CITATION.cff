@@ -18,7 +18,7 @@ authors:
     given-names: Dmitry
   - family-names: Ciardo
     given-names: Federico
-title: "BigWham: a vectorial boundary integral equations library with hierarchical matrices"
+title: "BigWham: a C++ library for vectorial Boundary InteGral equations With HierArchical Matrices "
 version: 1.0.0
 identifiers:
   - type: doi
