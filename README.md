@@ -3,7 +3,7 @@
 
 BigWham stands for Boundary InteGral equations With HierArchical Matrix. BigWham is a C++ library geared toward the solution of vectorial Boundary Integral Equations arising in the **theory of elasticity**. 
 A collocation Boundary Element Method specific to **fracture problem** is currently implemented (so-called displacement discontinuity method).
-It leverages hierarchical matrix algorithms: it thus scales as $n O(log n)$ for both storage requirements, creation time, and matrix-vector product computational time.
+It leverages hierarchical matrix algorithms: it thus scales as $n O(\log n)$ for both storage requirements, creation time, and matrix-vector product computational time.
 The library uses OpenMP for multithreading. 
 
 BigWham primary focus is on fracture / dislocation problems in unbounded domains using the hyper-singular traction BIEs of quasi-static elasticity, with the displacement discontinuity as the primary unknowns.
@@ -49,9 +49,9 @@ The number of threads used by the library can be controlled independently of the
 
 'The code is the documentation' (sic). Some useful tips can be found in the wiki pages. 
 
-A pdf outlining the underlying collocation boundary element formulation can be found at  
+A pdf outlining the underlying collocation boundary element formulation can be found here.  
 
-Tutorials (using the Python API) consisting of a number of illustrating examples can be found at https://github.com/GeoEnergyLab-EPFL/Bigwham-Tutorials 
+Tutorials (using the Python API) consisting of a number of illustrating examples can be found at https://github.com/GeoEnergyLab-EPFL/Bigwham-Tutorials.
 
 ### Compilation
 How-to's compile BigWham for different architecture (MaxOSX, Linux) can be found in the [wiki pages](https://github.com/GeoEnergyLab-EPFL/BigWham/wiki) of this GitHub repo. 
