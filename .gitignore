@@ -2,7 +2,6 @@ cmake-build-release/
 cmake-build-debug/
 cmake-build-debug-coverage/
 compilation_brice.md
-.dir-locals.el
 build*
 build/
 build_mma/
@@ -13,3 +12,4 @@ compile_commands.json
 /build_debug/
 /site/*
 cmake/
+.dir-locals.el
