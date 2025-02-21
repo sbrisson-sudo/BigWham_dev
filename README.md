@@ -1,6 +1,8 @@
 
-# BigWham:
-## A C++ library for vectorial Boundary InteGral equations With HierArchical Matrices 
+# BigWham 
+### A C++ library for vectorial Boundary InteGral equations With HierArchical Matrices 
+
+[![DOI](https://zenodo.org/badge/422891902.svg)](https://doi.org/10.5281/zenodo.14906635)
 
 BigWham stands for Boundary InteGral equations With HierArchical Matrix. BigWham is a C++ library geared toward the solution of vectorial Boundary Integral Equations arising in the **theory of elasticity**. 
 A collocation Boundary Element Method specific to **fracture problem** is currently implemented (the so-called displacement discontinuity method). Extensions to other boundary integral equations (e.g. potential theory) or/and boundary element formulation (e.g. symmetric galerkin etc.) is possible. 
@@ -91,12 +93,16 @@ We list below not only people who have developed/authored the code, but also who
 
 If you find BigWham useful for your research, please consider citing it using the following Zenodo DOI:
 
-[![DOI]()]( )
+[![DOI](https://zenodo.org/badge/422891902.svg)](https://doi.org/10.5281/zenodo.14906635)
+
 
 ```
 @software{Lecampion_BigWham_a_C_2025,
-author = {Lecampion, Brice and Fayard, François and Gupta, Ankit and Peruzzo, Carlo and Sáez, Alexis and Richart, Nicolas and Nikolskiy, Dmitry and Ciardo, Federico},month = mar,
-title = {{BigWham: a C++ library for vectorial Boundary InteGral equations With HierArchical Matrices }},version = {0.2.0},year = {2025}}
+author = {Lecampion, Brice and Fayard, François and Gupta, Ankit and Peruzzo, Carlo and Sáez, Alexis and Richart, Nicolas and Nikolskiy, Dmitry and Ciardo, Federico},
+title = {{BigWham: a C++ library for vectorial Boundary InteGral equations With HierArchical Matrices}},
+month = mar,
+version = {0.2.0},
+year = {2025}}
 ```
 
 
