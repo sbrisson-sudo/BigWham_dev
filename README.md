@@ -3,16 +3,17 @@
 ## A C++ library for vectorial Boundary InteGral equations With HierArchical Matrices 
 
 BigWham stands for Boundary InteGral equations With HierArchical Matrix. BigWham is a C++ library geared toward the solution of vectorial Boundary Integral Equations arising in the **theory of elasticity**. 
-A collocation Boundary Element Method specific to **fracture problem** is currently implemented (the so-called displacement discontinuity method).
+A collocation Boundary Element Method specific to **fracture problem** is currently implemented (the so-called displacement discontinuity method). Extensions to other boundary integral equations (e.g. potential theory) or/and boundary element formulation (e.g. symmetric galerkin etc.) is possible. 
 
 The library leverages hierarchical matrix algorithms: the resulting boundary element discretization thus scales as $n O(\log n)$ for both storage requirements, creation time, and matrix-vector product computational time.
 The library uses OpenMP for multithreading. It is possible to implement new boundary element kernels if desired.
 
-BigWham primary focus is on fracture / dislocation problems in unbounded domains using the hyper-singular traction BIEs of quasi-static elasticity, with the displacement discontinuity as the primary unknowns.
+BigWham primary focus is on fracture / dislocation problems in unbounded domains using the hyper-singular traction BIEs of quasi-static elasticity, with the displacement discontinuity as the primary unknowns. 
+As a result, for users, the library interface is focused -at this point- solely on this type of program. 
 
 The elements currently available are strictly discontinuous, mostly with constant interpolation of the displacement field over the elements.
 
-#### Kernels / Elements type
+#### Kernels / Elements type for elasto-static
 
 
 The following table describe the quasi-static elasticity hyper-singular kernels currently available and fully tested (as of version 1.0). 
@@ -38,22 +39,23 @@ BigWham has bindings for:
 ### Philosophy
 
 BigWham handles the creation of the hierarchical matrix representation (otherwise dense) of the BIE, and allows to perform matrix-vector product on the resulting matrix. 
-For this, it needs a mesh, a kernel description string, some properties of the kernel (e.g. Elastic constants), and some numerical parameters controlling the construction & accuracy of the Hierarchical matrix representation.
-It must be combined with external iterative solvers (gmres, bicgstab) for the solution of the linear system resulting from the BIE discretization. 
+For this, it needs a mesh, a kernel description string, some properties of the kernel (e.g. elastic constants), and some numerical parameters controlling the construction & accuracy of the Hierarchical matrix representation.
+It must be combined with external iterative solvers (e.g. gmres, bicgstab) for the solution of the linear system resulting from the BIE discretization. 
 Interface to the diagonal of the matrix, or the full-blocks part of the matrix (as a sparse matrix) allow the user to built efficient pre-conditioners (simple Jacobi by inverting the diagonal, or ILUT using the sparse matrix containing the full-blocks). 
 For most kernels, BigWham has the capabilities to compute the resulting fields (knowing the solution on the 'source' mesh)
 at remote observation points (point 'observation' mesh): displacements and stresses (strain can be obtained from stresses).
 The library has also the capability (for some kernels) to create rectangular hierarchical matrix for  source and receiver elements meshes (of different sizes) of similar type (e.g. segment/segment).
 
-The number of threads used by the library can be controlled independently of the OMP_NUM_THREADS global environment variable. This is potentially useful when used in combination with other libraries (such as numpy, scipy).
+The number of threads used by the library can be controlled independently of the OMP_NUM_THREADS global environment variable. This is possibly useful when used in combination with other libraries (such as numpy, scipy).
 
 ### Documentation
 
-'The code is the documentation' (sic). Some useful tips can be found in the wiki pages. 
+Some basic examples of useage can be found in the [wiki pages](https://github.com/GeoEnergyLab-EPFL/BigWham/wiki). 
 
-A pdf outlining the underlying collocation boundary element formulation can be found here.  
+Tutorials and examples (using the Python API) comprising a number of illustrating examples can be found at https://github.com/GeoEnergyLab-EPFL/Bigwham-Tutorials.
+This is primary resource to understand the useage of the high-level interface of the library - dedicated to fracture problems.
 
-Tutorials (using the Python API) consisting of a number of illustrating examples can be found at https://github.com/GeoEnergyLab-EPFL/Bigwham-Tutorials.
+For low-level parts of the library, 'the code is the documentation'.
 
 ### Compilation
 How-to's compile BigWham for different architecture (MaxOSX, Linux) can be found in the [wiki pages](https://github.com/GeoEnergyLab-EPFL/BigWham/wiki) of this GitHub repo. 
@@ -83,3 +85,18 @@ We list below not only people who have developed/authored the code, but also who
 - Stéphanie Chaillat-Loseille (2017-18): introduced us to H-matrix algorithms.
 - Lisa Gordeliy (2018-19): 2D & 3D tests.
 - Harsha Bhat (2016-now): proud supporter & first user of the project 
+
+
+## Citing
+
+If you find BigWham useful for your research, please consider citing it using the following Zenodo DOI:
+
+[![DOI]()]( )
+
+```
+@software{Lecampion_BigWham_a_C_2025,
+author = {Lecampion, Brice and Fayard, François and Gupta, Ankit and Peruzzo, Carlo and Sáez, Alexis and Richart, Nicolas and Nikolskiy, Dmitry and Ciardo, Federico},month = mar,
+title = {{BigWham: a C++ library for vectorial Boundary InteGral equations With HierArchical Matrices }},version = {0.2.0},year = {2025}}
+```
+
+
