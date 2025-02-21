@@ -1,7 +1,7 @@
 //
 // Created by Brice Lecampion on 10.11.20.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2020.  All rights reserved. See the LICENSE.TXT
+// Geo-Energy Laboratory, 2016-2020.  All rights reserved. See the LICENSE
 // file for more details.
 //
 // last modifications :: Nov. 21 2020

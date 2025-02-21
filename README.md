@@ -1,20 +1,22 @@
 
-# BigWham: a C++ library for vectorial Boundary InteGral equations With HierArchical Matrices 
+# BigWham:
+## A C++ library for vectorial Boundary InteGral equations With HierArchical Matrices 
 
 BigWham stands for Boundary InteGral equations With HierArchical Matrix. BigWham is a C++ library geared toward the solution of vectorial Boundary Integral Equations arising in the **theory of elasticity**. 
-A collocation Boundary Element Method specific to **fracture problem** is currently implemented (so-called displacement discontinuity method).
-It leverages hierarchical matrix algorithms: it thus scales as $n O(\log n)$ for both storage requirements, creation time, and matrix-vector product computational time.
-The library uses OpenMP for multithreading. 
+A collocation Boundary Element Method specific to **fracture problem** is currently implemented (the so-called displacement discontinuity method).
+
+The library leverages hierarchical matrix algorithms: the resulting boundary element discretization thus scales as $n O(\log n)$ for both storage requirements, creation time, and matrix-vector product computational time.
+The library uses OpenMP for multithreading. It is possible to implement new boundary element kernels if desired.
 
 BigWham primary focus is on fracture / dislocation problems in unbounded domains using the hyper-singular traction BIEs of quasi-static elasticity, with the displacement discontinuity as the primary unknowns.
 
 The elements currently available are strictly discontinuous, mostly with constant interpolation of the displacement field over the elements.
 
-#### Kernels 
+#### Kernels / Elements type
 
 
 The following table describe the quasi-static elasticity hyper-singular kernels currently available and fully tested (as of version 1.0). 
-They are all for isotropic materials and for a full-space. 
+They are all for homogeneous isotropic materials and for a full-space. 
 
 | Kernel string | Dimension | Element type |  Interpolation order |  #DoFs/element | Kernel type |
 | --- | --- | --- | --- | --- | ---|
@@ -24,7 +26,7 @@ They are all for isotropic materials and for a full-space.
 | "3DT0-H"    |  3D |  Triangle | 0 | 3 | Traction hypersingular |  
 | "Axi3DS0-H"    |  Axi-symmetry |  segment (Ring) | 0 | 2 |Traction hypersingular, unidirectional shear & tensile displacement discontinuity for a flat crack (uncoupled) |  
 | "S3DS0-H"   |  3D | Segment | 0 | 2 |  A simplified 3D Traction hypersingular kernel for constant height blade-like fracture (Wu & Olson, IJF (2015) approximation)
-| "3DR0-H-mode1"    |  3D |  Rectangle | 0 | 1 | Traction hypersingular, opening component only (mode 1) |  
+| "3DR0-H-mode1"    |  3D |  Rectangle | 0 | 1 | Traction hypersingular, opening component only (mode I) |  
 
 Some additional kernels are under development/testing, some have been temporarily shelved (waiting for additional testing).
 
@@ -65,7 +67,7 @@ How-to's compile BigWham for different architecture (MaxOSX, Linux) can be found
 
 ### Project Contributors
 
-We list below not only people who have developed/authored the code, but also helped in different ways.
+We list below not only people who have developed/authored the code, but also who have helped in different ways.
 
 ##### Developers / Authors
 - Brice Lecampion (2016-): general architecture, elastic kernels implementation, API, H-matrix algorithms implementation, tests...
@@ -75,9 +77,9 @@ We list below not only people who have developed/authored the code, but also hel
 - Alexis Sáez (2019-2023): Triangular 0 element kernels implementation, 3D tests  
 - Nicolas Richart (2023): cmake, openmp tests
 - Dmitry Nikolskiy (2016-18): Triangular element kernels implementation, tests
-- Federico Ciardo (2026-2020): 2D tests
+- Federico Ciardo (2016-2020): earlier code architecture, 2D tests
 
 #### Others
-- Stéphanie Chaillat-Loseille (2017-18): introduced us to H-matrix algorithms !
-- Lisa Gordeliy (2018-19): 2D & 3D tests
-- Harsha Bhat (2016-now): proud supporter & user of the project 
+- Stéphanie Chaillat-Loseille (2017-18): introduced us to H-matrix algorithms.
+- Lisa Gordeliy (2018-19): 2D & 3D tests.
+- Harsha Bhat (2016-now): proud supporter & first user of the project 

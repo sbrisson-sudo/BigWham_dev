@@ -4,7 +4,7 @@
 // Created by Carlo Peruzzo on 01.03.21.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
 // Geo-Energy Laboratory, 2016-2025.  All rights reserved.
-// See the LICENSE.TXT file for more details. 
+// See the LICENSE file for more details.
 //
 
 #include <cmath>

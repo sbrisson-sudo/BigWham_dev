@@ -3,7 +3,7 @@
 
  Created by Carlo Peruzzo on 20.12.22.
  Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
- Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+ Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE
  file for more details.
 
  last modifications :: May 25, 2021
@@ -39,7 +39,7 @@ This file is part of PyFrac.
 
 Created by Haseeb Zia on Thu Dec 22 11:51:00 2016.
 Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, Geo-Energy Laboratory, 2016-2020. All rights reserved.
-See the LICENSE.TXT file for more details.
+See the LICENSE file for more details.
 """
 
 # external imports

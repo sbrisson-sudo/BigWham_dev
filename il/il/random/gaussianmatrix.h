@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 31.12.21.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland, Geo-Energy Laboratory, 2016-2021.  All rights reserved.
-// See the LICENSE.TXT file for more details.
+// See the LICENSE file for more details.
 //
 
 #ifndef IL_GAUSSIANMATRIX_H

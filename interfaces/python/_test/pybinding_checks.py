@@ -3,7 +3,7 @@
 
  Created by Carlo Peruzzo on 12.05.21.
  Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
- Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
+ Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE
  file for more details.
 
  last modifications :: May. 12 2021
