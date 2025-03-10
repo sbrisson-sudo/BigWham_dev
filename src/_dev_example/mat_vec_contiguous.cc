@@ -116,26 +116,29 @@ int main(int argc, char * argv[]) {
 
   std::cout << "Succesfully built the hmat" << std::endl; 
 
-  // MATVEC
+  
 
-  std::vector<double> x(num_dof, 1.0);
 
-  #ifdef USE_ITT
-  __itt_resume();
-#endif
+//   // MATVEC
 
-  int N_matvec = 100;
-  auto start = std::chrono::high_resolution_clock::now(); 
-  for (int i=0; i<N_matvec; i++){
-    hmat_io.MatVec(x);
-  }
-  auto end = std::chrono::high_resolution_clock::now(); 
-  std::chrono::duration<double> duration = end - start; // Compute duration
-  std::cout << "Matvec time = " << duration.count()/N_matvec << " seconds\n";
+//   std::vector<double> x(num_dof, 1.0);
+
+//   #ifdef USE_ITT
+//   __itt_resume();
+// #endif
+
+//   int N_matvec = 100;
+//   auto start = std::chrono::high_resolution_clock::now(); 
+//   for (int i=0; i<N_matvec; i++){
+//     hmat_io.MatVec(x);
+//   }
+//   auto end = std::chrono::high_resolution_clock::now(); 
+//   std::chrono::duration<double> duration = end - start; // Compute duration
+//   std::cout << "Matvec time = " << duration.count()/N_matvec << " seconds\n";
  
-#ifdef USE_ITT
-  __itt_pause();
-#endif
+// #ifdef USE_ITT
+//   __itt_pause();
+// #endif
 
   // SquareMatrixGenerator<double> M(my_mesh, ker, hr);
 

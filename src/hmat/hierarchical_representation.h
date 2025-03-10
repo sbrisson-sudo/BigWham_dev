@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 26.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
@@ -72,7 +72,8 @@ inline std::shared_ptr<HRepresentation>
 HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
                                  const std::shared_ptr<Mesh> &receiver_mesh,
                                  const il::int_t max_leaf_size,
-                                 const double eta) {
+                                 const double eta,
+                                  bool verbose) {
   auto hr = std::make_shared<HRepresentation>();
   hr->is_square_ = false;
   // creation of the cluster
@@ -83,14 +84,16 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
 
   tt.Start();
   Cluster cluster_s = cluster(max_leaf_size, il::io, Xcol_source);
-  std::cout << "Cluster tree creation time for the source mesh :  " << tt.time() << "\n";
+  if (verbose)
+    std::cout << "Cluster tree creation time for the source mesh :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
   hr->permutation_1_ = cluster_s.permutation; // sources permutation
 
   tt.Start();
   Cluster cluster_r = cluster(max_leaf_size, il::io, Xcol_receiver);
-  std::cout << "Cluster tree creation time for the source mesh :  " << tt.time() << "\n";
+  if (verbose)
+    std::cout << "Cluster tree creation time for the receiver mesh :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
   hr->permutation_0_ = cluster_r.permutation; // receivers permutation
@@ -100,16 +103,22 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
       hmatrixTreeIxJ(Xcol_receiver, cluster_r.partition, Xcol_source,
                      cluster_s.partition, eta);
   tt.Stop();
-  std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
-  std::cout << " binary cluster tree depth =" << block_tree.depth() << "\n";
+  if (verbose){
+    std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
+    std::cout << " binary cluster tree depth =" << block_tree.depth() << "\n";
+  }
+  
   hr->pattern_ = createPattern(block_tree);
   //        hr.pattern_.nr = receiver_mesh.numberCollocationPoints();
   //        hr.pattern_.nc = source_mesh.numberCollocationPoints();
 
-  std::cout << " Number of blocks =" << hr->pattern_.n_B << "\n";
-  std::cout << " Number of full blocks =" << hr->pattern_.n_FRB << "\n";
-  std::cout << " Number of low rank blocks =" << hr->pattern_.n_LRB << "\n";
-  std::cout << "Pattern Created \n";
+  if (verbose){
+    std::cout << " Number of blocks =" << hr->pattern_.n_B << "\n";
+    std::cout << " Number of full blocks =" << hr->pattern_.n_FRB << "\n";
+    std::cout << " Number of low rank blocks =" << hr->pattern_.n_LRB << "\n";
+    std::cout << "Pattern Created \n";
+  }
+  
 
     return hr;
 }

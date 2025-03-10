@@ -89,6 +89,25 @@ set(CMAKE_SKIP_BUILD_RPATH OFF)
 #set(CMAKE_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${CBLAS_LIBRARY_DIRS}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 
+################################################
+# TO PROFILE WITH VTUNE
+################################################
+option(VTUNE_PROFILING "Enable Intel VTune Profiling" OFF)
+
+if (VTUNE_PROFILING)
+    find_path(ITT_INCLUDE_DIR ittnotify.h PATHS 
+        $ENV{VTUNE_AMPLIFIER_DIR}/include
+        /opt/intel/oneapi/vtune/latest/sdk/include
+        /opt/intel/vtune_profiler/sdk/include
+    )
+    find_library(ITT_LIBRARY NAMES ittnotify PATHS 
+        $ENV{VTUNE_AMPLIFIER_DIR}/lib64
+        /opt/intel/oneapi/vtune/latest/sdk/lib64
+        /opt/intel/vtune_profiler/sdk/lib64
+    )
+    message(STATUS "Found Intel ITT: ${ITT_INCLUDE_DIR}, ${ITT_LIBRARY}")
+endif()
+
 
 ################################################################################
 # file definitions
@@ -153,10 +172,14 @@ endif()
 ################################################################
 if(BIGWHAM_PYTHON_INTERFACE)
     message(STATUS "Building python interface: ${BIGWHAM_PYTHON_INTERFACE}")
-    find_package (Python3 COMPONENTS Interpreter Development)
-    message(STATUS "Python Executable: ${Python3_EXECUTABLE}")
-    message(STATUS "Python Version: ${Python3_VERSION}")
-    message(STATUS "Python Include Dir: ${Python3_INCLUDE_DIRS}")
+    # find_package (Python3 COMPONENTS Interpreter Development)
+    # message(STATUS "Python Executable: ${Python3_EXECUTABLE}")
+    # message(STATUS "Python Version: ${Python3_VERSION}")
+    # message(STATUS "Python Include Dir: ${Python3_INCLUDE_DIRS}")
+    find_package (Python REQUIRED COMPONENTS Interpreter Development)
+    message(STATUS "Python Executable: ${Python_EXECUTABLE}")
+    message(STATUS "Python Version: ${Python_VERSION}")
+    message(STATUS "Python Include Dir: ${Python_INCLUDE_DIRS}")
     set(PYBIND11_PYTHON_VERSION 3)
     add_external_package(pybind11 VERSION 2.8.0 CONFIG)
     add_subdirectory(interfaces/python)
@@ -229,3 +252,5 @@ endif()
 if(BIGWHAM_DEV_EXAMPLES)
     add_subdirectory(src/_dev_example)
 endif()
+
+

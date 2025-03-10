@@ -3,7 +3,7 @@
 
  Created by Carlo Peruzzo on 12.05.21.
  Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
- Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE
+ Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
  file for more details.
 
  last modifications :: July 2024 by A. Gupta
@@ -44,7 +44,8 @@ class BEMatrix(LinearOperator):
         max_leaf_size: int = 32,
         eta: float = 3.0,
         eps_aca: float = 1.0e-3, n_openMP_threads: int =8,
-        directly_build:bool = True
+        directly_build:bool = True,
+        verbose:bool = True
     ):
         """ "
         Name:              Type:                Description:
@@ -69,7 +70,9 @@ class BEMatrix(LinearOperator):
             coor.flatten(),
             conn.flatten(),
             kernel,
-            properties.flatten(),n_openMP_threads
+            properties.flatten(),
+            n_openMP_threads,
+            verbose
         )
         self.built_ = False
         if directly_build :
@@ -181,10 +184,10 @@ class BEMatrix(LinearOperator):
     def getSpatialDimension(self) -> int:
         return self.H_.get_spatial_dimension()
 
-    def _getFullBlocks(self) -> csc_matrix:
+    def _getFullBlocks(self, original_order=True) -> csc_matrix:
         fb = PyGetFullBlocks()  # not fan of this way of creating empty object
         # and setting them after - a constructor should do something!
-        fb.set(self.H_)
+        fb.set(self.H_, original_order)
         val = np.asarray(fb.get_val_list(), dtype=float)
         col = np.asarray(fb.get_col())
         row = np.asarray(fb.get_row())
@@ -263,7 +266,7 @@ class BEMatrix(LinearOperator):
         """
         diag = self.H_diag()  # return a nd.array
         overdiag = 1.0 / diag
-        return diags(overdiag, dtype=np.float_)
+        return diags(overdiag, dtype=np.float64)
 
     def compute_displacements(self,list_coor,local_solu):
         """
@@ -316,6 +319,14 @@ class BEMatrix(LinearOperator):
         [r00,r01,r10,r11,...]
         """
         return np.asarray(self.H_.get_rotation_matrix())
+    
+    def get_diagonal(self):
+        """
+        Get the diagonal of the matrix, in the original ordering of dof
+        :return: 1D np.array of the diagonal
+        """
+        return self.H_.get_diagonal()
+        
 
 
 ########################################################################################################
@@ -334,7 +345,8 @@ class BEMatrixRectangular(LinearOperator):
         max_leaf_size : int =100,
         eta : float=3.0,
         eps_aca : float=1.0e-3, n_openMP_threads:int =8,
-        directly_build:bool = True
+        directly_build:bool = True,
+        verbose:bool = True
     ):
 
         self.kernel_ = kernel
@@ -351,7 +363,8 @@ class BEMatrixRectangular(LinearOperator):
             coor_rec.flatten(),
             conn_rec.flatten(),
             kernel,
-            properties.flatten(),n_openMP_threads
+            properties.flatten(),n_openMP_threads,
+            verbose
         )
         self.dtype_ = float
 
@@ -408,6 +421,9 @@ class BEMatrixRectangular(LinearOperator):
 
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
+    
+    def getPermutationReceivers(self) -> np.ndarray:
+        return np.asarray(self.H_.get_permutation_receivers())
 
     def get_omp_threads(self) -> int:
         return self.H_.get_omp_threads()
@@ -483,3 +499,23 @@ class BEMatrixRectangular(LinearOperator):
         # fig.show()
         # plt.show(block=True)
         return fig
+
+    def _getFullBlocks(self, original_order=True) -> csc_matrix:
+        fb = PyGetFullBlocks()  # not fan of this way of creating empty object
+        # and setting them after - a constructor should do something!
+        fb.setRect(self.H_, original_order)
+        val = np.asarray(fb.get_val_list(), dtype=float)
+        col = np.asarray(fb.get_col())
+        row = np.asarray(fb.get_row())
+        
+        # print(f"{col.min()=} {col.max()=}", flush=True)
+        # print(f"{row.min()=} {row.max()=}", flush=True)
+        
+        return csc_matrix((val, (row, col)), shape=self.shape_)
+    
+    # def get_diagonal(self):
+    #     """
+    #     Get the diagonal of the matrix, in the original ordering of dof
+    #     :return: 1D np.array of the diagonal
+    #     """
+    #     return self.H_.get_diagonal()

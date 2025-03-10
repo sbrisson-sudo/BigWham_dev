@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 08.09.21.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 // last modifications 5.2.21: Moving to std::unique_ptr (C. Peruzzo)
@@ -55,10 +55,12 @@ private:
     int lrb_chunk_size_{1};
 //#endif
 
+    bool verbose_ = true;
+
 public:
   void hmatMemFree();
   Hmat() = default;
-  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca,const int n_openMP_threads=8);
+  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca,const int n_openMP_threads=8, const bool verbose=true);
   Hmat(const std::string &filename);
 
   ~Hmat() = default;
@@ -72,6 +74,7 @@ public:
   [[nodiscard]] il::int_t dofDimension() const { return dof_dimension_; }
   il::int_t nbOfEntries();
   void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
+  void fullBlocksPerm(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
   // H-Matrix vector multiplication without permutation
   // il::Array<T> matvec(const il::Array<T> &x);
   std::vector<T> matvec(const std::vector<T> & x);

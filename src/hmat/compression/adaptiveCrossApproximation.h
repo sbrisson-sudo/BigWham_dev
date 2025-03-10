@@ -3,7 +3,7 @@
 //
 // Created by Francois Fayard - 2018
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 #pragma once
@@ -24,6 +24,7 @@ template <il::int_t p, typename T>
 std::unique_ptr<LowRank<T>>
 adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range0,
                            il::Range range1, double epsilon) {
+
   const il::int_t n0 = range0.end - range0.begin;
   const il::int_t n1 = range1.end - range1.begin;
 
