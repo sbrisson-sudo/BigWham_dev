@@ -433,13 +433,14 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
         IL_EXPECT_FAST(this->isBuilt_);
         IL_EXPECT_FAST(x.size() == size_[1]);
 
-        il::Array<T> y(size_[0], il::align_t(), 64);
+        il::Array<T> y(size_[0], 0.0, il::align_t(), 64);
+        // il::Array<T> y{size_[0], 0.};
 
 // #pragma omp parallel shared(y) num_threads(this->n_openMP_threads_)
 #pragma omp parallel
         {
-            il::Array<T> yprivate(size_[0], il::align_t(), 64);
-
+            il::Array<T> yprivate(size_[0], 0.0, il::align_t(), 64);
+            // il::Array<T> yprivate{size_[0], 0.};
 
             // int thread_id = omp_get_thread_num();
             // double start_time = omp_get_wtime();
