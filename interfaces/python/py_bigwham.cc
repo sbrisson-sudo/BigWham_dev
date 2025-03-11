@@ -3,7 +3,7 @@
 //
 // Created by Carlo Peruzzo on 10.01.21.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 // last modifications ::July 4, 2024 - Ankit Gupta
@@ -37,12 +37,14 @@ public:
                 const std::vector<int> &conn_src,
                 const std::vector<double> &coor_rec,
                 const std::vector<int> &conn_rec, const std::string &kernel,
-                const std::vector<double> &properties,const int n_openMP_threads)
+                const std::vector<double> &properties,const int n_openMP_threads,
+                const bool verbose)
       : BigWhamIO(coor_src,
                   conn_src,
                   coor_rec,
                   conn_rec, kernel,
-                  properties, n_openMP_threads) {}
+                  properties, n_openMP_threads,
+                  verbose) {}
 
   ~BigWhamIORect() {}
 };
@@ -59,15 +61,38 @@ public:
   PyGetFullBlocks() = default;
   ~PyGetFullBlocks() = default;
 
-  void set(const BigWhamIO &BigwhamioObj)
+  void set(const BigWhamIO &BigwhamioObj, bool original_order)
   {
     il::Array<int> pos_list;
     int nbfentry;
 
-    // std::cout << " calling getFullBlocks \n";
-    BigwhamioObj.GetFullBlocks(this->val_list, pos_list);
-    // std::cout << " n entries: " << (this->val_list.size()) << "\n";
-    // std::cout << " Preparing the vectors \n";
+    if (original_order){
+      BigwhamioObj.GetFullBlocks(this->val_list, pos_list);
+    } else {
+      BigwhamioObj.GetFullBlocksPerm(this->val_list, pos_list);
+    }
+    
+    nbfentry = this->val_list.size();
+    this->rowN.Resize(nbfentry);
+    this->columN.Resize(nbfentry);
+
+    for (int i = 0; i < nbfentry; i++)
+    {
+      this->rowN[i] = pos_list[2 * i];
+      this->columN[i] = pos_list[2 * i + 1];
+    }
+  };
+
+  void setRect(const BigWhamIORect &BigwhamioObj, bool original_order)
+  {
+    il::Array<int> pos_list;
+    int nbfentry;
+
+    if (original_order){
+      BigwhamioObj.GetFullBlocks(this->val_list, pos_list);
+    } else {
+      BigwhamioObj.GetFullBlocksPerm(this->val_list, pos_list);
+    }
 
     nbfentry = this->val_list.size();
     this->rowN.Resize(nbfentry);
@@ -78,8 +103,9 @@ public:
       this->rowN[i] = pos_list[2 * i];
       this->columN[i] = pos_list[2 * i + 1];
     }
-    // std::cout << " --- set pyGetFullBlocks completed ---- \n";
   };
+
+  
   /* --------------------------------------------------------------------------
    */
 
@@ -91,7 +117,9 @@ public:
   {
     return as_pyarray<int>(std::move(this->columN));
   };
-  pbarray<int> getRowN() { return as_pyarray<int>(std::move(this->rowN)); };
+  pbarray<int> getRowN() { 
+    return as_pyarray<int>(std::move(this->rowN)); 
+  };
 };
 /* -------------------------------------------------------------------------- */
 
@@ -105,7 +133,7 @@ PYBIND11_MODULE(py_bigwham, m)
                         py::module_local())
       .def(py::init<const std::vector<double> &,
                     const std::vector<int> &, const std::string &,
-                    const std::vector<double> &,const int >()) // constructor
+                    const std::vector<double> &,const int &,const bool>()) // constructor
       .def("hmat_destructor", &BigWhamIO::HmatrixDestructor)
       .def("load_from_file", &BigWhamIO::LoadFromFile)
       .def("build_hierarchical_matrix", &BigWhamIO::BuildHierarchicalMatrix)
@@ -200,13 +228,21 @@ PYBIND11_MODULE(py_bigwham, m)
             return as_pyarray<double>(std::move(v));
           },
           " compute stresses at set of points",
-          py::arg("x"), py::arg("coor"));
+          py::arg("x"), py::arg("coor"))
+      .def(
+          "get_diagonal", 
+          [](const BigWhamIO &self) {
+            std::vector<double> val_list;
+            self.GetDiagonal(val_list);
+            return py::array(val_list.size(), val_list.data());
+        });;
 
   /* --------------------------------------------------------------------------
    */
   py::class_<PyGetFullBlocks>(m, "PyGetFullBlocks")
       .def(py::init<>())
       .def("set", &PyGetFullBlocks::set)
+      .def("setRect", &PyGetFullBlocks::setRect)
       .def("get_val_list", &PyGetFullBlocks::getValList)
       .def("get_col", &PyGetFullBlocks::getColumnN)
       .def("get_row", &PyGetFullBlocks::getRowN);
@@ -222,13 +258,14 @@ PYBIND11_MODULE(py_bigwham, m)
   py::class_<BigWhamIORect>(m, "BigWhamIORect", py::dynamic_attr())
       .def(py::init<const std::vector<double> &, const std::vector<int> &,
                     const std::vector<double> &, const std::vector<int> &,
-                    const std::string &, const std::vector<double> &, const int>())
+                    const std::string &, const std::vector<double> &, const int &, const bool>())
       .def("hmat_destructor", &BigWhamIORect::HmatrixDestructor)
       .def("build_hierarchical_matrix", &BigWhamIORect::BuildHierarchicalMatrix)
       .def("build_pattern", &BigWhamIORect::BuildPattern)
       .def("load_from_file", &BigWhamIORect::LoadFromFile)
       .def("get_collocation_points", &BigWhamIORect::GetCollocationPoints)
       .def("get_permutation", &BigWhamIORect::GetPermutation)
+      .def("get_permutation_receivers", &BigWhamIORect::GetPermutationReceivers)
       .def("get_compression_ratio", &BigWhamIORect::GetCompressionRatio)
       .def("get_kernel_name", &BigWhamIORect::kernel_name)
       .def("get_spatial_dimension", &BigWhamIORect::spatial_dimension)
@@ -259,7 +296,14 @@ PYBIND11_MODULE(py_bigwham, m)
             auto v = self.MatVec(tx);
             return as_pyarray<double>(std::move(v));
           },
-          " dot product between hmat and a vector x in original ordering");
+          " dot product between hmat and a vector x in original ordering")
+      .def(
+        "get_diagonal", 
+        [](const BigWhamIORect &self) {
+          std::vector<double> val_list;
+          self.GetDiagonal(val_list);
+          return py::array(val_list.size(), val_list.data());
+      });
 
 
 /* --------------------------------------------------------------------------*/

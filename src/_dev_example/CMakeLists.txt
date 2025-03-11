@@ -18,6 +18,10 @@ target_link_libraries(rep_test PRIVATE BigWhamShared cnpy)
 add_executable(mat_vec mat_vec.cc)
 target_link_libraries(mat_vec PRIVATE BigWhamShared cnpy)
 
+add_executable(test_contiguous_array2d test_contiguous_array2d_vector.cpp)
+target_include_directories(test_contiguous_array2d PUBLIC ../../il ../../src)
+
+
 configure_file(generate_penny_mesh.py ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 configure_file(mesh_conn.npy ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 configure_file(mesh_coords.npy ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)

@@ -24,6 +24,8 @@
 #include "hmat/hmatrix/h_pattern.h"
 #include "hmat/hierarchical_representation.h"
 
+#include "contiguous_array2d_vector.hpp"
+
 namespace bigwham {
 
 template <typename T> class Hmat {
@@ -41,8 +43,11 @@ private:
     il::int_t dof_dimension_;            //  dof per collocation points
     il::StaticArray<il::int_t, 2> size_; // size of tot mat (row, cols)
 
+    ContiguousArray2DVector<T> full_rank_blocks_container_;
+    ContiguousArray2DVector<T> low_rank_blocks_container_;
+
     std::vector<std::unique_ptr<bigwham::LowRank<T>>> low_rank_blocks_; // vector of low rank blocks
-    std::vector<std::unique_ptr<il::Array2D<T>>> full_rank_blocks_; // vector of full rank blocks
+    std::vector<std::shared_ptr<il::Array2D<T>>> full_rank_blocks_; // vector of full rank blocks
 
     bool isBuilt_ = false;
     bool isBuilt_LR_ = false;

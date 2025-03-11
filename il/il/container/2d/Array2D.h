@@ -215,6 +215,14 @@ class Array2D {
 
   il::ArrayEdit<T> Edit(il::Range range0, il::int_t i1);
 
+
+  /* Sylvain : function to deallocate and reset the data pointer to 
+  a new address
+  */
+  void deallocateData();
+  void nullifyData();
+  void setData(T* new_data);
+
   /* \brief Get a pointer to const to the first element of the array
   // \details One should use this method only when using C-style API
   */
@@ -1323,6 +1331,34 @@ template <typename T>
 il::ArrayEdit<T> Array2D<T>::Edit(il::Range range0, il::int_t i1) {
   return il::ArrayEdit<T>{data() + i1 * stride(1) + range0.begin,
                           range0.end - range0.begin};
+}
+
+template <typename T>
+void Array2D<T>::deallocateData(){
+  il::deallocate(data_ - shift_);
+}
+
+template <typename T>
+void Array2D<T>::setData(T* new_data){
+  // Compute the offsets relative to the old data pointer
+  il::int_t size_offset_0 = size_[0] - data_;
+  il::int_t size_offset_1 = size_[1] - data_;
+  il::int_t capacity_offset_0 = capacity_[0] - data_;
+  il::int_t capacity_offset_1 = capacity_[1] - data_;
+
+  // Update data_ pointer
+  data_ = new_data;
+
+  // Update pointers relative to the new data_
+  size_[0] = data_ + size_offset_0;
+  size_[1] = data_ + size_offset_1;
+  capacity_[0] = data_ + capacity_offset_0;
+  capacity_[1] = data_ + capacity_offset_1;
+}
+
+template <typename T>
+void Array2D<T>::nullifyData(){
+  data_ = nullptr;
 }
 
 template <typename T>

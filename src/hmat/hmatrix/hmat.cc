@@ -298,34 +298,50 @@ template <typename T> il::int_t Hmat<T>::nbOfEntries() {
 
 template <typename T>
 void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
+
     if (this->verbose_){
         std::cout << " Loop on full blocks construction  \n";
         std::cout << " N full blocks " << hr_->pattern_.n_FRB << " \n";
     }
-    full_rank_blocks_.resize(hr_->pattern_.n_FRB);
+
+    // We create a tmp vector 
+    // It will go out of scope and be deleted when the function return
+    std::vector<std::unique_ptr<il::Array2D<T>>> full_rank_blocks_tmp;
+
+    // We populate it 
+    full_rank_blocks_tmp.resize(hr_->pattern_.n_FRB);
+
 #pragma omp parallel for schedule(static, frb_chunk_size_) num_threads(this->n_openMP_threads_)
-        for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
-            il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
-            il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
-            il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
-            il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
+    for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+        il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
+        il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
+        il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
+        il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
 
-            const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
-            const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
+        const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
+        const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
 
-            std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj, 64);
-            matrix_gen.set(i0, j0, il::io, a->Edit());
-            full_rank_blocks_[i] = std::move(a);
-        }
-        isBuilt_FR_ = true;
+        std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
+        matrix_gen.set(i0, j0, il::io, a->Edit());
+        full_rank_blocks_tmp[i] = std::move(a);
+    }
+
+    // Now we copy it into the container that guarantees data contiguity
+    full_rank_blocks_container_.copyArray2DVectorContent(full_rank_blocks_tmp);
+
+    // We set the vector
+    full_rank_blocks_ = full_rank_blocks_container_.blocks();
+
+    isBuilt_FR_ = true;
+    
 }
 /* -------------------------------------------------------------------------- */
 /// \param matrix_gen
 /// \param epsilon
     template <typename T>
     template <il::int_t dim>
-    void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
-                          const double epsilon) {
+    void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon) {
+
         // constructing the low rank blocks
         dof_dimension_ = matrix_gen.blockSize();
         if (this->verbose_){
@@ -333,8 +349,11 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
             std::cout << "N low rank blocks " << hr_->pattern_.n_LRB << "\n";
             std::cout << "dof_dimension: " << dof_dimension_ << "\n";
         }
-        
-        low_rank_blocks_.resize(hr_->pattern_.n_LRB);
+
+        // First we generate a tmp vector that will hold all the blocks
+        std::vector<std::unique_ptr<il::Array2D<T>>> low_rank_blocks_tmp;
+        low_rank_blocks_tmp.resize(2 * hr_->pattern_.n_LRB);
+
 #pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
         for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
             il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
@@ -351,9 +370,28 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
 
             // store the rank in the low_rank pattern
             hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
-            low_rank_blocks_[i] = 
-                    std::move(lra); // lra_p does not exist after such call
+
+            // Move the pointers to our vector 
+            low_rank_blocks_tmp[2*i] = std::make_unique<il::Array2D<T>>(std::move(lra->A));
+            low_rank_blocks_tmp[2*i+1] = std::make_unique<il::Array2D<T>>(std::move(lra->B));
+
+            // low_rank_blocks_[i] = std::move(lra); // lra_p does not exist after such call
         }
+
+        // Now we copy it to a contiguous container
+        low_rank_blocks_container_.copyArray2DVectorContent(low_rank_blocks_tmp);
+
+        // Now we construct back our vector of LowRank
+        std::vector<std::shared_ptr<il::Array2D<T>>> low_rank_blocks_tmp2 = low_rank_blocks_container_.blocks();
+
+        low_rank_blocks_.resize(hr_->pattern_.n_LRB);
+        for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+            auto lrb = std::make_unique<LowRank<T>>();
+            lrb->A = *low_rank_blocks_tmp2[2*i];
+            lrb->B = *low_rank_blocks_tmp2[2*i+1];
+            low_rank_blocks_[i] = std::move(lrb);
+        }        
+
         isBuilt_LR_ = true;
     }                      
 
@@ -394,12 +432,14 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
     template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
         IL_EXPECT_FAST(this->isBuilt_);
         IL_EXPECT_FAST(x.size() == size_[1]);
-        il::Array<T> y{size_[0], 0.};
+
+        il::Array<T> y(size_[0], il::align_t(), 64);
 
 // #pragma omp parallel shared(y) num_threads(this->n_openMP_threads_)
 #pragma omp parallel
         {
-            il::Array<T> yprivate{size_[0], 0.};
+            il::Array<T> yprivate(size_[0], il::align_t(), 64);
+
 
             // int thread_id = omp_get_thread_num();
             // double start_time = omp_get_wtime();

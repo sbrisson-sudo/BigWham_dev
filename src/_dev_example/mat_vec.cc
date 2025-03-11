@@ -117,8 +117,15 @@ int main(int argc, char * argv[]) {
   std::cout << "Succesfully built the hmat" << std::endl; 
 
   // MATVEC
+  // std::vector<double> dd(num_dof, 1.0);
 
-  std::vector<double> x(num_dof, 1.0);
+  il::Array<double> dd{num_dof, il::align_t(), 64};
+  auto dd_edit = dd.Edit();
+  for (int i(0); i<num_dof; i++){
+    dd_edit[i] = 1.0;
+  }
+
+  auto dd_view = dd.view();
 
   #ifdef USE_ITT
   __itt_resume();
@@ -127,7 +134,7 @@ int main(int argc, char * argv[]) {
   int N_matvec = 100;
   auto start = std::chrono::high_resolution_clock::now(); 
   for (int i=0; i<N_matvec; i++){
-    hmat_io.MatVec(x);
+    hmat_io.MatVec(dd_view);
   }
   auto end = std::chrono::high_resolution_clock::now(); 
   std::chrono::duration<double> duration = end - start; // Compute duration
