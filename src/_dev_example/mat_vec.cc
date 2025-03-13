@@ -120,6 +120,7 @@ int main(int argc, char * argv[]) {
   // std::vector<double> dd(num_dof, 1.0);
 
   il::Array<double> dd{num_dof, il::align_t(), 64};
+  il::Array<double> t{num_dof, il::align_t(), 64};
   auto dd_edit = dd.Edit();
   for (int i(0); i<num_dof; i++){
     dd_edit[i] = 1.0;
@@ -134,7 +135,7 @@ int main(int argc, char * argv[]) {
   int N_matvec = 100;
   auto start = std::chrono::high_resolution_clock::now(); 
   for (int i=0; i<N_matvec; i++){
-    hmat_io.MatVec(dd_view);
+    t = hmat_io.MatVec(dd_view);
   }
   auto end = std::chrono::high_resolution_clock::now(); 
   std::chrono::duration<double> duration = end - start; // Compute duration
@@ -143,6 +144,24 @@ int main(int argc, char * argv[]) {
 #ifdef USE_ITT
   __itt_pause();
 #endif
+
+  // And a test to ensure 
+  dd_edit = dd.Edit();
+  dd_edit[0] = 0;
+  for (int i(1); i<num_dof; i++) dd_edit[i] = dd_edit[i-1] + 1/static_cast<double>(num_dof);
+  dd_view = dd.view();
+
+  // for (int i(0); i<num_dof; i++) std::cout << dd_view[i] << ", ";
+
+  t = hmat_io.MatVec(dd_view);
+
+  // Compute l2 norm
+  double l2_norm = 0;
+  auto t_view = t.view();
+  for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
+  l2_norm = std::sqrt(l2_norm);
+  std::cout << "L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
+
 
   // SquareMatrixGenerator<double> M(my_mesh, ker, hr);
 
