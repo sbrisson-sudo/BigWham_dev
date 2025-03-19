@@ -28,11 +28,15 @@ struct Cluster {
   il::Array<il::int_t> permutation;
 };
 
-Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double>& node);
+Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double>& node, const bool homogeneous_size = true);
 
 void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
                  il::Tree<il::Range, 2>& tree, il::Array2D<double>& node,
                  il::Array<il::int_t>& permutation);
+
+void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
+                  il::Tree<il::Range, 2>& tree, il::Array2D<double>& node,
+                  il::Array<il::int_t>& permutation);
 
 // block-cluster Tree I*I
 il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,
@@ -49,7 +53,8 @@ il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxJ(const il::Array2D<double>& node0
                                                 const il::Tree<il::Range, 2>& tree0,
                                                 const il::Array2D<double>& node1,
                                                 const il::Tree<il::Range, 2>& tree1,
-                                                double eta);
+                                                double eta,
+                                                const bool homogeneous_size = true);
 
 void hmatrixTreeIxJ_rec(const il::Array2D<double>& node0,
                      const il::Tree<il::Range, 2>& range_tree0,
@@ -58,6 +63,13 @@ void hmatrixTreeIxJ_rec(const il::Array2D<double>& node0,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
                      il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
 
+void hmatrixTreeIxJ_rec_size_conservative(const il::Array2D<double>& node0,
+                      const il::Tree<il::Range, 2>& range_tree0,
+                      const il::Array2D<double>& node1,
+                      const il::Tree<il::Range, 2>& range_tree1, double eta,
+                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
+                      il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
+ 
 
 
 ////////////////////////////////////////////////////////////////////////////////

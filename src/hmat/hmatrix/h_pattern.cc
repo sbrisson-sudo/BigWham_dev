@@ -25,12 +25,19 @@ il::int_t nblocks_rec(const il::Tree<bigwham::SubHMatrix, 4> &tree, il::spot_t s
     return 1;
   } break;
   case bigwham::HMatrixType::Hierarchical: {
-    const il::spot_t st00 = tree.child(st, 0);
-    const il::spot_t st10 = tree.child(st, 1);
-    const il::spot_t st01 = tree.child(st, 2);
-    const il::spot_t st11 = tree.child(st, 3);
-    return nblocks_rec(tree, st00) + nblocks_rec(tree, st01) +
-           nblocks_rec(tree, st10) + nblocks_rec(tree, st11);
+    if (tree.hasChild(st, 3)){ // Block has four children
+      const il::spot_t st00 = tree.child(st, 0);
+      const il::spot_t st10 = tree.child(st, 1);
+      const il::spot_t st01 = tree.child(st, 2);
+      const il::spot_t st11 = tree.child(st, 3);
+      return nblocks_rec(tree, st00) + nblocks_rec(tree, st01) +
+            nblocks_rec(tree, st10) + nblocks_rec(tree, st11);
+    } else { // Block has only two children
+      const il::spot_t st0 = tree.child(st, 0);
+      const il::spot_t st1 = tree.child(st, 1);
+      return nblocks_rec(tree, st0) + nblocks_rec(tree, st1);
+    }
+    
   } break;
   default:
     IL_UNREACHABLE;
@@ -54,12 +61,18 @@ il::int_t nfullblocks_rec(const il::Tree<bigwham::SubHMatrix, 4> &tree,
     return 0;
   } break;
   case bigwham::HMatrixType::Hierarchical: {
-    const il::spot_t st00 = tree.child(st, 0);
-    const il::spot_t st10 = tree.child(st, 1);
-    const il::spot_t st01 = tree.child(st, 2);
-    const il::spot_t st11 = tree.child(st, 3);
-    return nfullblocks_rec(tree, st00) + nfullblocks_rec(tree, st01) +
-           nfullblocks_rec(tree, st10) + nfullblocks_rec(tree, st11);
+    if (tree.hasChild(st, 3)){ // Block has four children
+      const il::spot_t st00 = tree.child(st, 0);
+      const il::spot_t st10 = tree.child(st, 1);
+      const il::spot_t st01 = tree.child(st, 2);
+      const il::spot_t st11 = tree.child(st, 3);
+      return nfullblocks_rec(tree, st00) + nfullblocks_rec(tree, st01) +
+            nfullblocks_rec(tree, st10) + nfullblocks_rec(tree, st11);
+    } else { // Block has only two children
+      const il::spot_t st0 = tree.child(st, 0);
+      const il::spot_t st1 = tree.child(st, 1);
+      return nfullblocks_rec(tree, st0) + nfullblocks_rec(tree, st1);
+    }
   } break;
   default:
     IL_UNREACHABLE;
@@ -97,15 +110,24 @@ void pattern_rec(const il::Tree<bigwham::SubHMatrix, 4> &tree, il::spot_t st,
     return;
   }
   case bigwham::HMatrixType::Hierarchical: {
-    const il::spot_t st00 = tree.child(st, 0);
-    pattern_rec(tree, st00, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
-    const il::spot_t st10 = tree.child(st, 1);
-    pattern_rec(tree, st10, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
-    const il::spot_t st01 = tree.child(st, 2);
-    pattern_rec(tree, st01, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
-    const il::spot_t st11 = tree.child(st, 3);
-    pattern_rec(tree, st11, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
-    return;
+
+    if (tree.hasChild(st, 3)){ // Block has four children
+        const il::spot_t st00 = tree.child(st, 0);
+        pattern_rec(tree, st00, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
+        const il::spot_t st10 = tree.child(st, 1);
+        pattern_rec(tree, st10, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
+        const il::spot_t st01 = tree.child(st, 2);
+        pattern_rec(tree, st01, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
+        const il::spot_t st11 = tree.child(st, 3);
+        pattern_rec(tree, st11, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
+        return;
+    } else { // Block has only two children
+        const il::spot_t st00 = tree.child(st, 0);
+        pattern_rec(tree, st00, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
+        const il::spot_t st10 = tree.child(st, 1);
+        pattern_rec(tree, st10, il::io, fr_pattern, nc_fr, lr_pattern, nc_lr);
+        return;
+    }
   }
   default:
     IL_UNREACHABLE;
