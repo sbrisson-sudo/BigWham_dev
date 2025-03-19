@@ -20,11 +20,7 @@ struct LowRank {
   il::Array2D<T> A;
   il::Array2D<T> B;
 
-  // // Constructor to initialize A and B with specific alignment
-  // LowRank() 
-  //   : A(0, 0, il::align, 64),
-  //     B(0, 0, il::align, 64) 
-  // {}
+  T error_on_approximation = -1;
 };
 
 }  // namespace bigwham

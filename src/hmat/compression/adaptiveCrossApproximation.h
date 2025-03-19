@@ -22,11 +22,14 @@ namespace bigwham {
 
 template <il::int_t p, typename T>
 std::unique_ptr<LowRank<T>>
-adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range0,
-                           il::Range range1, double epsilon, const int fixed_rank = -1) {
+adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range0, il::Range range1, double epsilon, const int fixed_rank = -1) {
 
   const il::int_t n0 = range0.end - range0.begin;
   const il::int_t n1 = range1.end - range1.begin;
+
+  // Using fixed rank if fixed_rank passsed is >= 1
+  const bool use_fixed_rank = fixed_rank > 0;
+  // if (use_fixed_rank) std::cout << "Building a LR block with fixed rank = " << fixed_rank << std::endl;
 
   auto lrb = std::make_unique<LowRank<T>>();
 
@@ -183,10 +186,26 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
     //    frobenius_norm_difference =
     //        il::frobeniusNorm(difference_matrix);
 
-    if (i0_search == -1 ||
+    // Break if issue or if max rank
+    if (i0_search == -1){
+      break;
+    }
+    
+    if (rank == il::min(n0, n1)) {
+      break;
+    }
+
+    // Break if fixed rank 
+    if (use_fixed_rank && (rank >= fixed_rank)) {
+      // We retrieve the frobenius error
+      lrb->error_on_approximation = il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank);
+      break;
+    }
+
+    // Break if not using fixed rank and error is bellow threahold
+    if (!use_fixed_rank &&
         il::abs(frobenius_norm_ab) <=
-            il::ipow<2>(epsilon) * il::abs(frobenius_low_rank) ||
-        rank == il::min(n0, n1)) {
+            il::ipow<2>(epsilon) * il::abs(frobenius_low_rank)) {
       break;
     }
   }

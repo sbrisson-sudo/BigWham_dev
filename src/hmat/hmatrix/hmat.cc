@@ -22,9 +22,11 @@ namespace bigwham {
 
 // direct constructor
     template <typename T>
-    Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca,const int n_openMP_threads, const bool verbose) {
+    Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const bool verbose, const int fixed_rank) {
         // construction directly
         this->verbose_ = verbose;
+        this->fixed_rank_ = fixed_rank;
+        const int n_openMP_threads = 8;
         this->n_openMP_threads_=n_openMP_threads;
         this->toHmat(matrix_gen, epsilon_aca);
     }
@@ -354,6 +356,10 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
         std::vector<std::unique_ptr<il::Array2D<T>>> low_rank_blocks_tmp;
         low_rank_blocks_tmp.resize(2 * hr_->pattern_.n_LRB);
 
+        // And one just to hold the error on approximation 
+        std::vector<std::unique_ptr<LowRank<T>>> low_rank_blocks_tmp_2;
+        low_rank_blocks_tmp_2.resize(hr_->pattern_.n_LRB);
+
 #pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
         for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
             il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
@@ -366,7 +372,7 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
             // we need 7a LRA generator virtual template similar to the Matrix
             // generator... here we have an if condition for the LRA call dependent on
             // dof_dimension_
-            auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1, epsilon);
+            auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1, epsilon, this->fixed_rank_);
 
             // store the rank in the low_rank pattern
             hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
@@ -375,7 +381,7 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
             low_rank_blocks_tmp[2*i] = std::make_unique<il::Array2D<T>>(std::move(lra->A));
             low_rank_blocks_tmp[2*i+1] = std::make_unique<il::Array2D<T>>(std::move(lra->B));
 
-            // low_rank_blocks_[i] = std::move(lra); // lra_p does not exist after such call
+            low_rank_blocks_tmp_2[i] = std::move(lra); 
         }
 
         // Now we copy it to a contiguous container
@@ -389,6 +395,8 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
             auto lrb = std::make_unique<LowRank<T>>();
             lrb->A = *low_rank_blocks_tmp2[2*i];
             lrb->B = *low_rank_blocks_tmp2[2*i+1];
+            lrb->error_on_approximation = low_rank_blocks_tmp_2[i]->error_on_approximation;
+
             low_rank_blocks_[i] = std::move(lrb);
         }        
 

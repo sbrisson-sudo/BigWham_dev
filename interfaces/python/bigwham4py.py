@@ -43,10 +43,12 @@ class BEMatrix(LinearOperator):
         properties: np.ndarray,
         max_leaf_size: int = 32,
         eta: float = 3.0,
-        eps_aca: float = 1.0e-3, n_openMP_threads: int =8,
+        eps_aca: float = 1.0e-3, 
+        n_openMP_threads: int =8,
         directly_build:bool = True,
         verbose:bool = True,
-        homogeneous_size_pattern:bool = False
+        homogeneous_size_pattern:bool = False,
+        fixed_rank = -1
     ):
         """ "
         Name:              Type:                Description:
@@ -74,7 +76,7 @@ class BEMatrix(LinearOperator):
             properties.flatten(),
             verbose,
             homogeneous_size_pattern,
-            n_openMP_threads
+            fixed_rank
         )
         self.built_ = False
         if directly_build :

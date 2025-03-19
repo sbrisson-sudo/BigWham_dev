@@ -80,7 +80,7 @@ public :
         T* aligned_memory = static_cast<T*>(std::aligned_alloc(
             CACHE_LINE_SIZE, total_data_size * sizeof(T)));
 
-        std::cout << "Data buffer total size  = " << total_data_size * sizeof(T) << std::endl;
+        // std::cout << "Data buffer total size  = " << total_data_size * sizeof(T) << std::endl;
         
         // Use unique_ptr with custom deleter for proper cleanup
         all_data_.reset(aligned_memory);

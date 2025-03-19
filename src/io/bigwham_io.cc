@@ -41,12 +41,16 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
                      const std::vector<double> &properties,
                      const bool verbose,
                      const bool homogeneous_size_pattern,
-                     const int n_openMP_threads
+                     const int fixed_rank
                     )
 {
     this->verbose_ = verbose;
     this->homogeneous_size_pattern_ = homogeneous_size_pattern;
     this->kernel_name_ = kernel;
+    this->fixed_rank_ = fixed_rank;
+
+    // This should be cleaned properly
+    const int n_openMP_threads = 8;
     this->n_openMP_threads_ = n_openMP_threads;
     auto n_available = this->GetAvailableOmpThreads();
     if (n_openMP_threads > n_available)
@@ -233,10 +237,13 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
                      const std::vector<double> &properties,
                     const bool verbose,
                     const bool homogeneous_size_pattern,
-                    const int n_openMP_threads)
+                    const int fixed_rank)
 {
     this->verbose_ = verbose;
     this->homogeneous_size_pattern_ = homogeneous_size_pattern;
+    this->fixed_rank_ = fixed_rank;
+
+    const int n_openMP_threads = 8;
     this->n_openMP_threads_ = n_openMP_threads;
     auto n_available = this->GetAvailableOmpThreads();
     if (n_openMP_threads > n_available)
@@ -494,7 +501,7 @@ void BigWhamIO::BuildHierarchicalMatrix(const int max_leaf_size, const double et
     
     tt.Start();
     bigwham::BieMatrixGenerator<double> M(mesh_src_, mesh_rec_, ker_obj_, hr_);
-    hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_, n_openMP_threads_, this->verbose_);
+    hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_, this->verbose_, this->fixed_rank_);
     tt.Stop();
     hmat_time_ = tt.time();
     if (hmat_->isBuilt())
@@ -526,7 +533,7 @@ void BigWhamIO::BuildHierarchicalMatrix(const int max_leaf_size, const double et
 }
 /* -------------------------------------------------------------------------- */
 
-std::vector<long> BigWhamIO::GetHPattern() const
+std::vector<double> BigWhamIO::GetHPattern() const
 {
     // API function to output the hmatrix pattern
     //  as flattened list via a pointer
@@ -550,7 +557,8 @@ std::vector<long> BigWhamIO::GetHPattern() const
     long len = 6 * numberofblocks;
     std::cout << "number of blocks " << numberofblocks << "\n";
 
-    std::vector<long> patternlist(len, 0);
+    // std::vector<long> patternlist(len, 0);
+    std::vector<double> patternlist(len, 0); // to contain error
 
     int index = 0;
     //  starts with full rank
@@ -576,7 +584,15 @@ std::vector<long> BigWhamIO::GetHPattern() const
         patternlist[index++] = pattern.LRB_pattern(3, j);
         patternlist[index++] = pattern.LRB_pattern(4, j);
         patternlist[index++] = 1;
-        patternlist[index++] = pattern.LRB_pattern(5, j); // the rank
+
+        // If not using fixde rank we return the rank, otherwise we return the
+        // frobenius norm error
+        if (this->fixed_rank_ > 0){
+            patternlist[index++] = hmat_->getLowRankBlock(j)->error_on_approximation;
+        } else {
+            patternlist[index++] = pattern.LRB_pattern(5, j); // the rank
+        }
+        
     }
     // return a row major flatten vector
     return patternlist;

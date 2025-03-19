@@ -40,7 +40,7 @@ public:
                 const std::vector<double> &properties, 
                 const bool verbose,
                 const bool homogeneous_pattern_size,
-                const int n_openMP_threads)
+                const int fixed_rank)
       : BigWhamIO(coor_src,
                   conn_src,
                   coor_rec,
@@ -48,7 +48,7 @@ public:
                   properties,
                   verbose, 
                   homogeneous_pattern_size,
-                  n_openMP_threads) {}
+                  fixed_rank) {}
 
   ~BigWhamIORect() {}
 };

@@ -46,6 +46,7 @@ private:
 
   // Road to CUDA
   bool homogeneous_size_pattern_ = false;
+  int fixed_rank_ = -1;
 
   std::shared_ptr<bigwham::Hmat<double>> hmat_;
   std::shared_ptr<bigwham::HRepresentation> hr_;
@@ -60,7 +61,7 @@ public:
     BigWhamIO() {};
     // square matrices
     BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
-              const std::string &kernel, const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const int n_openMP_threads=8) ;
+              const std::string &kernel, const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const int fixed_ranks=-1) ;
 
     // rectangular Hmat
     BigWhamIO(const std::vector<double> &coor_src,
@@ -68,7 +69,7 @@ public:
               const std::vector<double> &coor_rec,
               const std::vector<int> &conn_rec, 
               const std::string &kernel,
-              const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const int n_openMP_threads=8);
+              const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const int fixed_ranks=-1);
 
   ~BigWhamIO() {};
 
@@ -101,7 +102,7 @@ public:
   std::vector<double> GetRotationMatrix() const;
   [[nodiscard]] std::vector<long> GetPermutation() const;
   [[nodiscard]] std::vector<long> GetPermutationReceivers() const;
-  [[nodiscard]] std::vector<long> GetHPattern() const;
+  [[nodiscard]] std::vector<double> GetHPattern() const;
   void GetFullBlocks(std::vector<double> &val_list,
                      std::vector<int> &pos_list) const;
   void GetFullBlocks(il::Array<double> &val_list,

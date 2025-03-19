@@ -62,10 +62,12 @@ private:
 
     bool verbose_ = true;
 
+    int fixed_rank_ = -1;
+
 public:
   void hmatMemFree();
   Hmat() = default;
-  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca,const int n_openMP_threads=8, const bool verbose=true);
+  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca, const bool verbose=true, const int fixed_rank=-1);
   Hmat(const std::string &filename);
 
   ~Hmat() = default;
@@ -94,6 +96,9 @@ public:
   void readFromFile(const std::string & filename);
 
   std::shared_ptr<HRepresentation> getRepresentation() { return hr_; }
+
+  bigwham::LowRank<T>* getLowRankBlock(const int i) { return low_rank_blocks_[i].get(); }
+  il::Array2D<T>* getFullRankBlock(const int i) { return full_rank_blocks_[i].get(); }
 
 };
 
