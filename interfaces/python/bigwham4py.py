@@ -45,7 +45,8 @@ class BEMatrix(LinearOperator):
         eta: float = 3.0,
         eps_aca: float = 1.0e-3, n_openMP_threads: int =8,
         directly_build:bool = True,
-        verbose:bool = True
+        verbose:bool = True,
+        homogeneous_size_pattern:bool = False
     ):
         """ "
         Name:              Type:                Description:
@@ -71,8 +72,9 @@ class BEMatrix(LinearOperator):
             conn.flatten(),
             kernel,
             properties.flatten(),
-            n_openMP_threads,
-            verbose
+            verbose,
+            homogeneous_size_pattern,
+            n_openMP_threads
         )
         self.built_ = False
         if directly_build :
@@ -346,7 +348,8 @@ class BEMatrixRectangular(LinearOperator):
         eta : float=3.0,
         eps_aca : float=1.0e-3, n_openMP_threads:int =8,
         directly_build:bool = True,
-        verbose:bool = True
+        verbose:bool = True,
+        homogemeous_size_pattern:bool = False
     ):
 
         self.kernel_ = kernel
@@ -363,8 +366,10 @@ class BEMatrixRectangular(LinearOperator):
             coor_rec.flatten(),
             conn_rec.flatten(),
             kernel,
-            properties.flatten(),n_openMP_threads,
-            verbose
+            properties.flatten(),
+            verbose,
+            homogemeous_size_pattern,
+            n_openMP_threads
         )
         self.dtype_ = float
 

@@ -39,10 +39,13 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
                      const std::vector<int> &conn,
                      const std::string &kernel,
                      const std::vector<double> &properties,
-                     const int n_openMP_threads,
-                     const bool verbose)
+                     const bool verbose,
+                     const bool homogeneous_size_pattern,
+                     const int n_openMP_threads
+                    )
 {
     this->verbose_ = verbose;
+    this->homogeneous_size_pattern_ = homogeneous_size_pattern;
     this->kernel_name_ = kernel;
     this->n_openMP_threads_ = n_openMP_threads;
     auto n_available = this->GetAvailableOmpThreads();
@@ -227,10 +230,13 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
                      const std::vector<int> &conn_src,
                      const std::vector<double> &coor_rec,
                      const std::vector<int> &conn_rec, const std::string &kernel,
-                     const std::vector<double> &properties, const int n_openMP_threads,
-                    const bool verbose)
+                     const std::vector<double> &properties,
+                    const bool verbose,
+                    const bool homogeneous_size_pattern,
+                    const int n_openMP_threads)
 {
     this->verbose_ = verbose;
+    this->homogeneous_size_pattern_ = homogeneous_size_pattern;
     this->n_openMP_threads_ = n_openMP_threads;
     auto n_available = this->GetAvailableOmpThreads();
     if (n_openMP_threads > n_available)
@@ -404,7 +410,7 @@ void BigWhamIO::BuildPattern(const int max_leaf_size, const double eta)
         std::cout << "Hierarchical representation creation ...\n";
     }
     tt.Start();
-    this->hr_ = HRepresentationRectangularMatrix(mesh_src_, mesh_rec_, max_leaf_size_, eta_, verbose_);
+    this->hr_ = HRepresentationRectangularMatrix(mesh_src_, mesh_rec_, max_leaf_size_, eta_, verbose_, homogeneous_size_pattern_);
     is_pattern_built_ = true;
     tt.Stop();
     if (this->verbose_)

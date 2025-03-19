@@ -44,6 +44,9 @@ private:
 
   bool verbose_ = true;
 
+  // Road to CUDA
+  bool homogeneous_size_pattern_ = false;
+
   std::shared_ptr<bigwham::Hmat<double>> hmat_;
   std::shared_ptr<bigwham::HRepresentation> hr_;
   std::shared_ptr<bigwham::Mesh> mesh_src_;
@@ -57,7 +60,7 @@ public:
     BigWhamIO() {};
     // square matrices
     BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
-              const std::string &kernel, const std::vector<double> &properties, const int n_openMP_threads=8, const bool verbose=true) ;
+              const std::string &kernel, const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const int n_openMP_threads=8) ;
 
     // rectangular Hmat
     BigWhamIO(const std::vector<double> &coor_src,
@@ -65,7 +68,7 @@ public:
               const std::vector<double> &coor_rec,
               const std::vector<int> &conn_rec, 
               const std::string &kernel,
-              const std::vector<double> &properties, const int n_openMP_threads=8, const bool verbose=true);
+              const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const int n_openMP_threads=8);
 
   ~BigWhamIO() {};
 

@@ -41,12 +41,18 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
 // block-cluster Tree I*I
 il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,
                                                 const il::Tree<il::Range, 2>& tree,
-                                                double eta);
+                                                double eta,
+                                                const bool homogeneous_size = true);
 
 void hmatrixTreeIxI_rec(const il::Array2D<double>& node,
                      const il::Tree<il::Range, 2>& range_tree, double eta,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
                      il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
+
+void hmatrixTreeIxI_rec_size_conservative(const il::Array2D<double>& node,
+                      const il::Tree<il::Range, 2>& range_tree, double eta,
+                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
+                      il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
 
 // block-cluster Tree I*J
 il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxJ(const il::Array2D<double>& node0,

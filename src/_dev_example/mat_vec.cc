@@ -106,7 +106,7 @@ int main(int argc, char * argv[]) {
 
   // BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
   // const std::string &kernel, const std::vector<double> &properties, const int n_openMP_threads=8, const bool verbose=true)
-  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties); //, max_leaf_size, eta, eps_aca);
+  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, true, false); //, max_leaf_size, eta, eps_aca);
 
   //   void BuildPattern(const int max_leaf_size, const double eta);
   hmat_io.BuildPattern(max_leaf_size, eta);

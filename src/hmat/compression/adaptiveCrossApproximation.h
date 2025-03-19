@@ -23,7 +23,7 @@ namespace bigwham {
 template <il::int_t p, typename T>
 std::unique_ptr<LowRank<T>>
 adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range0,
-                           il::Range range1, double epsilon) {
+                           il::Range range1, double epsilon, const int fixed_rank = -1) {
 
   const il::int_t n0 = range0.end - range0.begin;
   const il::int_t n1 = range1.end - range1.begin;
