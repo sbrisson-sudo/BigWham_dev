@@ -28,7 +28,18 @@ namespace bigwham {
         this->fixed_rank_ = fixed_rank;
         const int n_openMP_threads = 8;
         this->n_openMP_threads_=n_openMP_threads;
-        this->toHmat(matrix_gen, epsilon_aca);
+        
+        // construction directly
+        this->hr_ = matrix_gen.hr();
+        il::Timer tt;
+        tt.Start();
+        this->build(matrix_gen, epsilon_aca);
+        tt.Stop();
+        if (this->verbose_){
+            std::cout << "Creation of hmat done in " << tt.time() << "\n";
+            std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
+            std::cout << "Hmat object - built "<< "\n";
+        }
     }
 /* -------------------------------------------------------------------------- */
     template <typename T> Hmat<T>::Hmat(const std::string & filename) {
@@ -253,23 +264,7 @@ namespace bigwham {
         }
         return diag;
     }
-/* -------------------------------------------------------------------------- */
-    template <typename T>
-    void Hmat<T>::toHmat(const MatrixGenerator<T> & matrix_gen,
-                         const double epsilon_aca) {
-        this->hr_ = matrix_gen.hr();
-        // construction directly
-        il::Timer tt;
-        tt.Start();
-        this->build(matrix_gen, epsilon_aca);
-        tt.Stop();
-        if (this->verbose_){
-            std::cout << "Creation of hmat done in " << tt.time() << "\n";
-            std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
-            std::cout << "Hmat object - built "<< "\n";
-        }
-        
-    }
+
 /* -------------------------------------------------------------------------- */
 // delete the memory pointed by low_rank_blocks_ and  full_rank_blocks_
 template <typename T> void Hmat<T>::hmatMemFree() {
@@ -338,70 +333,69 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
     
 }
 /* -------------------------------------------------------------------------- */
-/// \param matrix_gen
-/// \param epsilon
-    template <typename T>
-    template <il::int_t dim>
-    void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon) {
 
-        // constructing the low rank blocks
-        dof_dimension_ = matrix_gen.blockSize();
-        if (this->verbose_){
-            std::cout << "Loop on low rank blocks construction\n";
-            std::cout << "N low rank blocks " << hr_->pattern_.n_LRB << "\n";
-            std::cout << "dof_dimension: " << dof_dimension_ << "\n";
-        }
+template <typename T>
+template <il::int_t dim>
+void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon) {
 
-        // First we generate a tmp vector that will hold all the blocks
-        std::vector<std::unique_ptr<il::Array2D<T>>> low_rank_blocks_tmp;
-        low_rank_blocks_tmp.resize(2 * hr_->pattern_.n_LRB);
+    // constructing the low rank blocks
+    dof_dimension_ = matrix_gen.blockSize();
+    if (this->verbose_){
+        std::cout << "Loop on low rank blocks construction\n";
+        std::cout << "N low rank blocks " << hr_->pattern_.n_LRB << "\n";
+        std::cout << "dof_dimension: " << dof_dimension_ << "\n";
+    }
 
-        // And one just to hold the error on approximation 
-        std::vector<std::unique_ptr<LowRank<T>>> low_rank_blocks_tmp_2;
-        low_rank_blocks_tmp_2.resize(hr_->pattern_.n_LRB);
+    // First we generate a tmp vector that will hold all the blocks
+    std::vector<std::unique_ptr<il::Array2D<T>>> low_rank_blocks_tmp;
+    low_rank_blocks_tmp.resize(2 * hr_->pattern_.n_LRB);
+
+    // And one just to hold the error on approximation 
+    std::vector<std::unique_ptr<LowRank<T>>> low_rank_blocks_tmp_2;
+    low_rank_blocks_tmp_2.resize(hr_->pattern_.n_LRB);
 
 #pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
-        for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
-            il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
-            il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
-            il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
-            il::int_t jend = hr_->pattern_.LRB_pattern(4, i);
-            il::Range range0{i0, iend};
-            il::Range range1{j0, jend};
+    for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+        il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
+        il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
+        il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
+        il::int_t jend = hr_->pattern_.LRB_pattern(4, i);
+        il::Range range0{i0, iend};
+        il::Range range1{j0, jend};
 
-            // we need 7a LRA generator virtual template similar to the Matrix
-            // generator... here we have an if condition for the LRA call dependent on
-            // dof_dimension_
-            auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1, epsilon, this->fixed_rank_);
+        // we need 7a LRA generator virtual template similar to the Matrix
+        // generator... here we have an if condition for the LRA call dependent on
+        // dof_dimension_
+        auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1, epsilon, this->fixed_rank_);
 
-            // store the rank in the low_rank pattern
-            hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
+        // store the rank in the low_rank pattern
+        hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
 
-            // Move the pointers to our vector 
-            low_rank_blocks_tmp[2*i] = std::make_unique<il::Array2D<T>>(std::move(lra->A));
-            low_rank_blocks_tmp[2*i+1] = std::make_unique<il::Array2D<T>>(std::move(lra->B));
+        // Move the pointers to our vector 
+        low_rank_blocks_tmp[2*i] = std::make_unique<il::Array2D<T>>(std::move(lra->A));
+        low_rank_blocks_tmp[2*i+1] = std::make_unique<il::Array2D<T>>(std::move(lra->B));
 
-            low_rank_blocks_tmp_2[i] = std::move(lra); 
-        }
+        low_rank_blocks_tmp_2[i] = std::move(lra); 
+    }
 
-        // Now we copy it to a contiguous container
-        low_rank_blocks_container_.copyArray2DVectorContent(low_rank_blocks_tmp);
+    // Now we copy it to a contiguous container
+    low_rank_blocks_container_.copyArray2DVectorContent(low_rank_blocks_tmp);
 
-        // Now we construct back our vector of LowRank
-        std::vector<std::shared_ptr<il::Array2D<T>>> low_rank_blocks_tmp2 = low_rank_blocks_container_.blocks();
+    // Now we construct back our vector of LowRank
+    std::vector<std::shared_ptr<il::Array2D<T>>> low_rank_blocks_tmp2 = low_rank_blocks_container_.blocks();
 
-        low_rank_blocks_.resize(hr_->pattern_.n_LRB);
-        for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
-            auto lrb = std::make_unique<LowRank<T>>();
-            lrb->A = *low_rank_blocks_tmp2[2*i];
-            lrb->B = *low_rank_blocks_tmp2[2*i+1];
-            lrb->error_on_approximation = low_rank_blocks_tmp_2[i]->error_on_approximation;
+    low_rank_blocks_.resize(hr_->pattern_.n_LRB);
+    for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+        auto lrb = std::make_unique<LowRank<T>>();
+        lrb->A = *low_rank_blocks_tmp2[2*i];
+        lrb->B = *low_rank_blocks_tmp2[2*i+1];
+        lrb->error_on_approximation = low_rank_blocks_tmp_2[i]->error_on_approximation;
 
-            low_rank_blocks_[i] = std::move(lrb);
-        }        
+        low_rank_blocks_[i] = std::move(lrb);
+    }        
 
-        isBuilt_LR_ = true;
-    }                      
+    isBuilt_LR_ = true;
+}                      
 
 /* -------------------------------------------------------------------------- */
 // filling up the h-matrix sub-blocks

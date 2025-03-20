@@ -106,7 +106,7 @@ int main(int argc, char * argv[]) {
 
   // BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
   // const std::string &kernel, const std::vector<double> &properties, const int n_openMP_threads=8, const bool verbose=true)
-  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, true, false); //, max_leaf_size, eta, eps_aca);
+  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, true, true, true, 15); //, max_leaf_size, eta, eps_aca);
 
   //   void BuildPattern(const int max_leaf_size, const double eta);
   hmat_io.BuildPattern(max_leaf_size, eta);
@@ -115,6 +115,25 @@ int main(int argc, char * argv[]) {
   hmat_io.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
 
   std::cout << "Succesfully built the hmat" << std::endl; 
+
+  
+  auto hmat = hmat_io.getHmat();
+  auto hmat_cuda = std::dynamic_pointer_cast<bigwham::HmatCuda<double>>(hmat);
+
+  // Test getting blocks
+  const int block_id = 0;
+  auto block_host = hmat_cuda->getFRBlockDataHost(block_id);
+  size_t block_size = static_cast<size_t>(block_host.size(0));
+  cnpy::npy_save("full_block_host.npy", block_host.data(), {block_size, block_size}, "w");
+
+  block_host = hmat_cuda->getFRBlockDataDevice(block_id);
+  cnpy::npy_save("full_block_device.npy", block_host.data(), {block_size, block_size}, "w");
+
+  // Test getting rowPtr and colInd
+  auto rowPtr = hmat_cuda->getFRBlockRowPtrHost();
+  cnpy::npy_save("row_ptr.npy", rowPtr.data(), {static_cast<size_t>(rowPtr.size())}, "w");
+  auto colInd = hmat_cuda->getFRBlockColIndHost();
+  cnpy::npy_save("col_ind.npy", colInd.data(), {static_cast<size_t>(colInd.size())}, "w");
 
   // MATVEC
   // std::vector<double> dd(num_dof, 1.0);
@@ -132,14 +151,14 @@ int main(int argc, char * argv[]) {
   __itt_resume();
 #endif
 
-  int N_matvec = 100;
-  auto start = std::chrono::high_resolution_clock::now(); 
-  for (int i=0; i<N_matvec; i++){
-    t = hmat_io.MatVec(dd_view);
-  }
-  auto end = std::chrono::high_resolution_clock::now(); 
-  std::chrono::duration<double> duration = end - start; // Compute duration
-  std::cout << "Matvec time = " << duration.count()/N_matvec << " seconds\n";
+  // int N_matvec = 1;
+  // auto start = std::chrono::high_resolution_clock::now(); 
+  // for (int i=0; i<N_matvec; i++){
+  //   t = hmat_io.MatVec(dd_view);
+  // }
+  // auto end = std::chrono::high_resolution_clock::now(); 
+  // std::chrono::duration<double> duration = end - start; // Compute duration
+  // std::cout << "Matvec time = " << duration.count()/N_matvec << " seconds\n";
  
 #ifdef USE_ITT
   __itt_pause();

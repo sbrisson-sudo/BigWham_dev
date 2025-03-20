@@ -48,7 +48,8 @@ class BEMatrix(LinearOperator):
         directly_build:bool = True,
         verbose:bool = True,
         homogeneous_size_pattern:bool = False,
-        fixed_rank = -1
+        fixed_rank = -1,
+        useCuda = False
     ):
         """ "
         Name:              Type:                Description:
@@ -76,6 +77,7 @@ class BEMatrix(LinearOperator):
             properties.flatten(),
             verbose,
             homogeneous_size_pattern,
+            useCuda,
             fixed_rank
         )
         self.built_ = False

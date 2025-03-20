@@ -23,6 +23,7 @@
 #include "hmat/hierarchical_representation.h"
 #include "hmat/bie_matrix_generator.h"
 #include "hmat/hmatrix/hmat.h"
+#include "hmat/hmatrix/hmat_cuda.h"
 
 class BigWhamIO {
 private:
@@ -47,6 +48,7 @@ private:
   // Road to CUDA
   bool homogeneous_size_pattern_ = false;
   int fixed_rank_ = -1;
+  bool use_cuda_hmat = true;
 
   std::shared_ptr<bigwham::Hmat<double>> hmat_;
   std::shared_ptr<bigwham::HRepresentation> hr_;
@@ -61,7 +63,7 @@ public:
     BigWhamIO() {};
     // square matrices
     BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
-              const std::string &kernel, const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const int fixed_ranks=-1) ;
+              const std::string &kernel, const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const bool useCuda, const int fixed_ranks=-1) ;
 
     // rectangular Hmat
     BigWhamIO(const std::vector<double> &coor_src,
@@ -69,7 +71,9 @@ public:
               const std::vector<double> &coor_rec,
               const std::vector<int> &conn_rec, 
               const std::string &kernel,
-              const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const int fixed_ranks=-1);
+              const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, 
+              const bool useCuda,
+              const int fixed_ranks=-1);
 
   ~BigWhamIO() {};
 
@@ -135,6 +139,9 @@ public:
     IL_EXPECT_FAST(is_built_);
     return hmat_->compressionRatio();
   };
+
+
+
   [[nodiscard]] double hmat_time() const { return hmat_time_; };
   [[nodiscard]] double pattern_time() const { return h_representation_time_; };
   [[nodiscard]] std::string kernel_name() const { return kernel_name_; };
@@ -169,6 +176,9 @@ public:
 #endif
     return threads;
   }
+
+  std::shared_ptr<bigwham::Hmat<double>> getHmat(){ return hmat_; };
+
 };
 
 #endif // BIGWHAM_IO_H

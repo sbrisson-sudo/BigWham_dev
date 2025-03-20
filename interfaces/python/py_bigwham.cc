@@ -40,6 +40,7 @@ public:
                 const std::vector<double> &properties, 
                 const bool verbose,
                 const bool homogeneous_pattern_size,
+                const bool useCuda,
                 const int fixed_rank)
       : BigWhamIO(coor_src,
                   conn_src,
@@ -48,6 +49,7 @@ public:
                   properties,
                   verbose, 
                   homogeneous_pattern_size,
+                  useCuda,
                   fixed_rank) {}
 
   ~BigWhamIORect() {}
@@ -137,7 +139,7 @@ PYBIND11_MODULE(py_bigwham, m)
                         py::module_local())
       .def(py::init<const std::vector<double> &,
                     const std::vector<int> &, const std::string &,
-                    const std::vector<double> &,const bool, const bool, const int &>()) // constructor
+                    const std::vector<double> &,const bool, const bool, const bool, const int &>()) // constructor
       .def("hmat_destructor", &BigWhamIO::HmatrixDestructor)
       .def("load_from_file", &BigWhamIO::LoadFromFile)
       .def("build_hierarchical_matrix", &BigWhamIO::BuildHierarchicalMatrix)
@@ -262,7 +264,7 @@ PYBIND11_MODULE(py_bigwham, m)
   py::class_<BigWhamIORect>(m, "BigWhamIORect", py::dynamic_attr())
       .def(py::init<const std::vector<double> &, const std::vector<int> &,
                     const std::vector<double> &, const std::vector<int> &,
-                    const std::string &, const std::vector<double> &, const bool, const bool, const int &>())
+                    const std::string &, const std::vector<double> &, const bool, const bool, const bool, const int &>())
       .def("hmat_destructor", &BigWhamIORect::HmatrixDestructor)
       .def("build_hierarchical_matrix", &BigWhamIORect::BuildHierarchicalMatrix)
       .def("build_pattern", &BigWhamIORect::BuildPattern)

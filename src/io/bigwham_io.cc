@@ -41,6 +41,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
                      const std::vector<double> &properties,
                      const bool verbose,
                      const bool homogeneous_size_pattern,
+                     const bool useCuda,
                      const int fixed_rank
                     )
 {
@@ -48,6 +49,16 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
     this->homogeneous_size_pattern_ = homogeneous_size_pattern;
     this->kernel_name_ = kernel;
     this->fixed_rank_ = fixed_rank;
+
+#ifdef USE_CUDA
+    this->use_cuda_hmat = useCuda;
+    if (fixed_rank <= 0) {
+        std::cerr << "CUDA matvec can't be used without using fixed rank" << std::endl;
+        std::abort();
+    }
+
+#endif
+
 
     // This should be cleaned properly
     const int n_openMP_threads = 8;
@@ -237,11 +248,16 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
                      const std::vector<double> &properties,
                     const bool verbose,
                     const bool homogeneous_size_pattern,
+                    const bool useCuda,
                     const int fixed_rank)
 {
     this->verbose_ = verbose;
     this->homogeneous_size_pattern_ = homogeneous_size_pattern;
     this->fixed_rank_ = fixed_rank;
+
+#ifdef USE_CUDA
+    this->use_cuda_hmat = useCuda;
+#endif
 
     const int n_openMP_threads = 8;
     this->n_openMP_threads_ = n_openMP_threads;
@@ -415,6 +431,9 @@ void BigWhamIO::BuildPattern(const int max_leaf_size, const double eta)
     if (this->verbose_){
         std::cout << "--------------------\n";
         std::cout << "Hierarchical representation creation ...\n";
+        if (this->homogeneous_size_pattern_){
+            std::cout << "Using homegeneous size clustering\n";
+        }
     }
     tt.Start();
     this->hr_ = HRepresentationRectangularMatrix(mesh_src_, mesh_rec_, max_leaf_size_, eta_, verbose_, homogeneous_size_pattern_);
@@ -501,7 +520,19 @@ void BigWhamIO::BuildHierarchicalMatrix(const int max_leaf_size, const double et
     
     tt.Start();
     bigwham::BieMatrixGenerator<double> M(mesh_src_, mesh_rec_, ker_obj_, hr_);
+
+#ifdef USE_CUDA
+    if (this->use_cuda_hmat){
+        hmat_ = std::make_shared<HmatCuda<double>>(M, epsilon_aca_, this->verbose_, this->fixed_rank_);
+    } else {
+#endif
+
     hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_, this->verbose_, this->fixed_rank_);
+
+#ifdef USE_CUDA
+    }
+#endif
+
     tt.Stop();
     hmat_time_ = tt.time();
     if (hmat_->isBuilt())

@@ -36,7 +36,11 @@ int main() {
     }
 
     std::vector<double> properties{1., 0.};
-    BigWhamIO my_io{coor, conn, "2DS0-H", properties, true, false};
+
+    bool verbose = true;
+    bool homegeneous_block_size = false;
+    bool useCuda = false;
+    BigWhamIO my_io{coor, conn, "2DS0-H", properties, verbose, homegeneous_block_size, useCuda};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
     auto nt = my_io.GetOmpThreads() ;
     std::cout <<"numb of threads " << nt <<"\n";

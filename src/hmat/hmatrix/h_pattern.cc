@@ -90,6 +90,9 @@ void pattern_rec(const il::Tree<bigwham::SubHMatrix, 4> &tree, il::spot_t st,
   const bigwham::SubHMatrix info = tree.value(st);
   switch (info.type) {
   case bigwham::HMatrixType::FullRank: {
+
+    // std::cout << "FR block of size " << info.range0.end-info.range0.begin << " x " << info.range1.end-info.range1.begin << std::endl;
+
     fr_pattern(0, nc_fr) = st.index;
     fr_pattern(1, nc_fr) = info.range0.begin;
     fr_pattern(2, nc_fr) = info.range1.begin;
@@ -100,6 +103,9 @@ void pattern_rec(const il::Tree<bigwham::SubHMatrix, 4> &tree, il::spot_t st,
     return;
   }
   case bigwham::HMatrixType::LowRank: {
+
+    // std::cout << "LR block of size " << info.range0.end-info.range0.begin << " x " << info.range1.end-info.range1.begin << std::endl;
+
     lr_pattern(0, nc_lr) = st.index;
     lr_pattern(1, nc_lr) = info.range0.begin;
     lr_pattern(2, nc_lr) = info.range1.begin;

@@ -108,6 +108,19 @@ if (VTUNE_PROFILING)
     message(STATUS "Found Intel ITT: ${ITT_INCLUDE_DIR}, ${ITT_LIBRARY}")
 endif()
 
+################################################
+# TO LINK CUDA LIBRARIES
+if (USE_CUDA)
+    find_package(CUDA REQUIRED)
+    set(CMAKE_CUDA_ARCHITECTURES 70 75 80 86)
+    include_directories(
+        ${CBLAS_INCLUDE_DIR}
+        ${CUDA_INCLUDE_DIRS}
+        )
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -std=c++14)
+endif()
+################################################
+
 
 ################################################################################
 # file definitions
@@ -123,9 +136,22 @@ add_library(BigWham OBJECT ${SOURCE_FILES})
 target_compile_features(BigWham PUBLIC cxx_std_17)
 target_compile_definitions(BigWham PUBLIC BIGWHAM_OPENMP)
 target_link_libraries(BigWham PUBLIC InsideLoop)
-set_target_properties(BigWham PROPERTIES
-    POSITION_INDEPENDENT_CODE ON)
+set_target_properties(BigWham PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(BigWham PUBLIC src il)
+
+if (USE_CUDA)
+target_link_libraries(BigWham PUBLIC
+    dl pthread rt # https://stackoverflow.com/questions/62962539/linking-error-for-cuda-separate-compilation-mode-and-static-linking-of-cudart
+    ${BLAS_LIBRARIES}
+    ${CUDA_LIBRARIES}
+    ${CUDA_CUBLAS_LIBRARIES}
+    ${CUDA_cusparse_LIBRARY}
+    ${CUDA_cudart_static_LIBRARY}
+    )
+    target_compile_definitions(BigWham PRIVATE USE_CUDA)
+endif()
+
+
 
 add_library(BigWhamShared SHARED $<TARGET_OBJECTS:BigWham>)
 add_library(BigWhamStatic STATIC $<TARGET_OBJECTS:BigWham>)

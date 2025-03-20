@@ -8,10 +8,10 @@
 //
 // last modifications 5.2.21: Moving to std::unique_ptr (C. Peruzzo)
 
-#if defined(__clang__) && !defined(FMT_ICC_VERSION)
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "openmp-use-default-none"
-#endif
+// #if defined(__clang__) && !defined(FMT_ICC_VERSION)
+// #pragma clang diagnostic push
+// #pragma ide diagnostic ignored "openmp-use-default-none"
+// #endif
 
 #ifndef BIGWHAM_HMAT_H
 #define BIGWHAM_HMAT_H
@@ -28,15 +28,17 @@
 
 namespace bigwham {
 
-template <typename T> class Hmat {
+template <typename T> 
+class Hmat {
   // this is a new Hmat class wich does not contains the matrix-generator
   // (neither the mesh etc.) construction from the pattern built from the block
   // cluster tree openmp parallel construction openmp parallel mat_vect dot
   // product (non-permutted way)
-private:
+protected:
     void build(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon);
     void buildFR(const bigwham::MatrixGenerator<T> & matrix_gen);
-    template <il::int_t dim> void buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,const double epsilon);
+    template <il::int_t dim> 
+    void buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,const double epsilon);
 
     std::shared_ptr<HRepresentation> hr_;
 
@@ -71,7 +73,6 @@ public:
   Hmat(const std::string &filename);
 
   ~Hmat() = default;
-  void toHmat(const MatrixGenerator<T> &matrix_gen, const double epsilon_aca);
   std::vector<T> diagonal();
   std::vector<T> diagonalOriginal();
   double compressionRatio();
@@ -85,7 +86,9 @@ public:
   // H-Matrix vector multiplication without permutation
   // il::Array<T> matvec(const il::Array<T> &x);
   std::vector<T> matvec(const std::vector<T> & x);
-  il::Array<T> matvec(il::ArrayView<T> x);
+
+  virtual il::Array<T> matvec(il::ArrayView<T> x); // To be overriden
+
   std::vector<T> matvecOriginal(const std::vector<T> & x);
   il::Array<T> matvecOriginal(il::ArrayView<T> x);
 
@@ -106,6 +109,6 @@ public:
 
 #endif // BIGWHAM_HMAT_H
 
-#if defined(__clang__) && !defined(FMT_ICC_VERSION)
-#pragma clang diagnostic pop
-#endif
+// #if defined(__clang__) && !defined(FMT_ICC_VERSION)
+// #pragma clang diagnostic pop
+// #endif

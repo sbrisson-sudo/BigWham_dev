@@ -28,6 +28,8 @@ struct HRepresentation {
   il::Array<il::int_t> permutation_0_; // for rows
   il::Array<il::int_t> permutation_1_; // for columns
   bool is_square_ =true; // if true - square matrix, and only permutation_0_ is stored -> not used ?
+
+  int leaf_size;
   
   HRepresentation() = default;
   ~HRepresentation() = default;
@@ -36,9 +38,11 @@ struct HRepresentation {
 inline std::shared_ptr<HRepresentation>
 HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
                             const il::int_t max_leaf_size, const double eta, const bool homegeneous_size = false) {
+                            
   // std::cout << "Pattern construction started .... \n";
   auto hr = std::make_shared<HRepresentation>();
   hr->is_square_ = true;
+  hr->leaf_size = max_leaf_size;
   // creation of the cluster
   // first get all collocation points in the mesh
   il::Array2D<double> Xcol = mesh->collocation_points();
@@ -77,6 +81,7 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
                                 const bool homegeneous_size = false) {
   auto hr = std::make_shared<HRepresentation>();
   hr->is_square_ = false;
+  hr->leaf_size = max_leaf_size;
   // creation of the cluster
   // first get all collocation points in the mesh
   il::Timer tt;
