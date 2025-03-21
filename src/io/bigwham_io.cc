@@ -52,7 +52,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
 
 #ifdef USE_CUDA
     this->use_cuda_hmat = useCuda;
-    if (fixed_rank <= 0) {
+    if (useCuda && (fixed_rank <= 0)) {
         std::cerr << "CUDA matvec can't be used without using fixed rank" << std::endl;
         std::abort();
     }
@@ -628,6 +628,17 @@ std::vector<double> BigWhamIO::GetHPattern() const
     // return a row major flatten vector
     return patternlist;
 }
+
+double BigWhamIO::GetMaxErrorACA() const {
+    bigwham::HPattern pattern = hmat_->pattern();
+    double max_error = 0;    
+    for (il::int_t j = 0; j < pattern.n_LRB; j++){
+        double error_aca = hmat_->getLowRankBlock(j)->error_on_approximation;
+        if (error_aca > max_error) max_error = error_aca;
+    }
+    return max_error;
+}
+
 /* --------------------------------------------------------------------------*/
 
 void BigWhamIO::GetFullBlocks(il::Array<double> &val_list,

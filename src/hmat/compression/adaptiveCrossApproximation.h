@@ -206,6 +206,7 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
     if (!use_fixed_rank &&
         il::abs(frobenius_norm_ab) <=
             il::ipow<2>(epsilon) * il::abs(frobenius_low_rank)) {
+      lrb->error_on_approximation = il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank);
       break;
     }
   }

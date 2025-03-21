@@ -211,8 +211,11 @@ class BEMatrix(LinearOperator):
         # we output a flatten row-major order std::vector
         nr = 6
         return np.reshape(aux, (int(aux.size / nr), nr))
+    
+    def get_max_error_ACA(self):
+        return self.H_.get_max_error_ACA()
 
-    def plotPattern(self):
+    def plotPattern(self, plot_index=False):
         """
         Plot the hierarchical pattern of the matrix
         :return:
@@ -221,7 +224,15 @@ class BEMatrix(LinearOperator):
         patches = []
         p_colors = []
         max_y = data_pattern[:, 3].max()
+        
+        fr_counter = 0
+        lr_counter = 0
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        
         for i in range(len(data_pattern)):
+            
             height = np.abs(data_pattern[i, 0] - data_pattern[i, 2])
             width = np.abs(data_pattern[i, 1] - data_pattern[i, 3])
             y1 = max_y - data_pattern[i, 0] - height
@@ -229,8 +240,18 @@ class BEMatrix(LinearOperator):
             rectangle = Rectangle((x1, y1), width, height)
             patches.append(rectangle)
             p_colors.append(data_pattern[i, 4])
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
+            
+            if plot_index:
+                idx = fr_counter if data_pattern[i, 4] == 0 else lr_counter
+                ax.text(
+                    x1 + width / 2, y1 + height / 2, str(idx),
+                    ha="center", va="center", fontsize=8, fontweight="bold", color="black"
+                )
+                
+            if data_pattern[i, 4] == 0 : fr_counter+=1
+            if data_pattern[i, 4] == 1 : lr_counter+=1
+            
+        
         p = PatchCollection(
             patches, cmap=matplotlib.cm.PiYG, edgecolors="black", alpha=0.4
         )

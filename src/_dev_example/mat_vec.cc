@@ -100,56 +100,77 @@ int main(int argc, char * argv[]) {
   std::vector<double> properties = {G, nu};
 
   // H-mat parameters
-  il::int_t max_leaf_size = 64;
+  il::int_t max_leaf_size = 10;
   double eta = 3.0;
   double eps_aca = 1.e-3;
 
-  // BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
-  // const std::string &kernel, const std::vector<double> &properties, const int n_openMP_threads=8, const bool verbose=true)
-  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, true, true, true, 15); //, max_leaf_size, eta, eps_aca);
-
-  //   void BuildPattern(const int max_leaf_size, const double eta);
-  hmat_io.BuildPattern(max_leaf_size, eta);
-
-  // void BuildHierarchicalMatrix(const int max_leaf_size, const double eta, const double eps_aca); // construct Hierarchical matrix
-  hmat_io.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
-
-  std::cout << "Succesfully built the hmat" << std::endl; 
-
-  
-  auto hmat = hmat_io.getHmat();
-  auto hmat_cuda = std::dynamic_pointer_cast<bigwham::HmatCuda<double>>(hmat);
-
-  // Test getting blocks
-  const int block_id = 0;
-  auto block_host = hmat_cuda->getFRBlockDataHost(block_id);
-  size_t block_size = static_cast<size_t>(block_host.size(0));
-  cnpy::npy_save("full_block_host.npy", block_host.data(), {block_size, block_size}, "w");
-
-  block_host = hmat_cuda->getFRBlockDataDevice(block_id);
-  cnpy::npy_save("full_block_device.npy", block_host.data(), {block_size, block_size}, "w");
-
-  // Test getting rowPtr and colInd
-  auto rowPtr = hmat_cuda->getFRBlockRowPtrHost();
-  cnpy::npy_save("row_ptr.npy", rowPtr.data(), {static_cast<size_t>(rowPtr.size())}, "w");
-  auto colInd = hmat_cuda->getFRBlockColIndHost();
-  cnpy::npy_save("col_ind.npy", colInd.data(), {static_cast<size_t>(colInd.size())}, "w");
-
-  // MATVEC
-  // std::vector<double> dd(num_dof, 1.0);
-
+  // matvec vectors
   il::Array<double> dd{num_dof, il::align_t(), 64};
   il::Array<double> t{num_dof, il::align_t(), 64};
   auto dd_edit = dd.Edit();
-  for (int i(0); i<num_dof; i++){
-    dd_edit[i] = 1.0;
-  }
-
+  dd_edit[0] = 0;
+  for (int i(1); i<num_dof; i++) dd_edit[i] = dd_edit[i-1] + 1/static_cast<double>(num_dof);
   auto dd_view = dd.view();
 
-  #ifdef USE_ITT
-  __itt_resume();
-#endif
+  // Normal hmat (CPU)
+  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, true, true, false);
+  hmat_io.BuildPattern(max_leaf_size, eta);
+  hmat_io.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
+
+  // Compute matvec
+  t = hmat_io.MatVec(dd_view);
+
+  cnpy::npy_save("result_cpu.npy", t.data(), {static_cast<size_t>(num_dof)}, "w");
+
+  // Compute l2 norm
+  double l2_norm = 0;
+  auto t_view = t.view();
+  for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
+  l2_norm = std::sqrt(l2_norm);
+  std::cout << "[CPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
+
+  // GPU matvec
+  const int rank = 3;
+  BigWhamIO hmat_io_2(coor_vec, conn_vec, kernel, properties, true, true, true, rank);
+  hmat_io_2.BuildPattern(max_leaf_size, eta);
+  hmat_io_2.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
+
+  // Compute matvec
+  t = hmat_io_2.MatVec(dd_view);
+
+  cnpy::npy_save("result_gpu.npy", t.data(), {static_cast<size_t>(num_dof)}, "w");
+
+  // Compute l2 norm
+  l2_norm = 0;
+  t_view = t.view();
+  for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
+  l2_norm = std::sqrt(l2_norm);
+  std::cout << "[GPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
+
+  // // Exporting stuff
+  // auto hmat = hmat_io.getHmat();
+  // auto hmat_cuda = std::dynamic_pointer_cast<bigwham::HmatCuda<double>>(hmat);
+
+  // // Test getting blocks
+  // const int block_id = 0;
+  // auto block_host = hmat_cuda->getFRBlockDataHost(block_id);
+  // size_t block_size = static_cast<size_t>(block_host.size(0));
+  // cnpy::npy_save("full_block_host.npy", block_host.data(), {block_size, block_size}, "w");
+
+  // block_host = hmat_cuda->getFRBlockDataDevice(block_id);
+  // cnpy::npy_save("full_block_device.npy", block_host.data(), {block_size, block_size}, "w");
+
+  // // Test getting rowPtr and colInd
+  // auto rowPtr = hmat_cuda->getFRBlockRowPtrHost();
+  // cnpy::npy_save("row_ptr.npy", rowPtr.data(), {static_cast<size_t>(rowPtr.size())}, "w");
+  // auto colInd = hmat_cuda->getFRBlockColIndHost();
+  // cnpy::npy_save("col_ind.npy", colInd.data(), {static_cast<size_t>(colInd.size())}, "w");
+
+
+
+//   #ifdef USE_ITT
+//   __itt_resume();
+// #endif
 
   // int N_matvec = 1;
   // auto start = std::chrono::high_resolution_clock::now(); 
@@ -160,26 +181,10 @@ int main(int argc, char * argv[]) {
   // std::chrono::duration<double> duration = end - start; // Compute duration
   // std::cout << "Matvec time = " << duration.count()/N_matvec << " seconds\n";
  
-#ifdef USE_ITT
-  __itt_pause();
-#endif
+// #ifdef USE_ITT
+//   __itt_pause();
+// #endif
 
-  // And a test to ensure 
-  dd_edit = dd.Edit();
-  dd_edit[0] = 0;
-  for (int i(1); i<num_dof; i++) dd_edit[i] = dd_edit[i-1] + 1/static_cast<double>(num_dof);
-  dd_view = dd.view();
-
-  // for (int i(0); i<num_dof; i++) std::cout << dd_view[i] << ", ";
-
-  t = hmat_io.MatVec(dd_view);
-
-  // Compute l2 norm
-  double l2_norm = 0;
-  auto t_view = t.view();
-  for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
-  l2_norm = std::sqrt(l2_norm);
-  std::cout << "L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
 
 
   // SquareMatrixGenerator<double> M(my_mesh, ker, hr);

@@ -128,11 +128,11 @@ public:
   // debugging functions
   il::Array2D<T> getFRBlockDataHost(int fr_block);
   il::Array2D<T> getFRBlockDataDevice(int fr_block);
+
   il::Array<int> getFRBlockRowPtrHost();
-  // il::Array<int> getFRBlockRowPtrDevice(int fr_block);
   il::Array<int>  getFRBlockColIndHost();
   // int* getFRBlockColIndDevice(int fr_block);
-
+  // il::Array<int> getFRBlockRowPtrDevice(int fr_block);
   // il::Array2D<T> getLRBlockDataHost(int fr_block);
   // il::Array2D<T> getLRBlockBDataDevice(int size, int group_id);
   // il::Array2D<T> getLRBlockADataDevice(int size, int group_id);

@@ -23,7 +23,10 @@
 #include "hmat/hierarchical_representation.h"
 #include "hmat/bie_matrix_generator.h"
 #include "hmat/hmatrix/hmat.h"
+
+#ifdef USE_CUDA
 #include "hmat/hmatrix/hmat_cuda.h"
+#endif
 
 class BigWhamIO {
 private:
@@ -107,6 +110,7 @@ public:
   [[nodiscard]] std::vector<long> GetPermutation() const;
   [[nodiscard]] std::vector<long> GetPermutationReceivers() const;
   [[nodiscard]] std::vector<double> GetHPattern() const;
+  double GetMaxErrorACA() const;
   void GetFullBlocks(std::vector<double> &val_list,
                      std::vector<int> &pos_list) const;
   void GetFullBlocks(il::Array<double> &val_list,

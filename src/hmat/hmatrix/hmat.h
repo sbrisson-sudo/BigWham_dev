@@ -72,7 +72,7 @@ public:
   Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca, const bool verbose=true, const int fixed_rank=-1);
   Hmat(const std::string &filename);
 
-  ~Hmat() = default;
+  virtual ~Hmat() = default;
   std::vector<T> diagonal();
   std::vector<T> diagonalOriginal();
   double compressionRatio();

@@ -2,6 +2,8 @@
 
 #include "hmat_cuda.h"
 
+#include "cnpy.h"
+
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
 void check_cuda(cudaError_t err, const char* const func, const char* const file,
@@ -116,11 +118,13 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     }
 
     // Print it 
+#ifdef DEBUG
     std::cout << " FR blocks std order : [";
     for (auto i : FR_std_orderedIndices){
         std::cout << i << ", ";
     }
     std::cout << "]\n";
+#endif
 
 
     // We allocate the memory for standardized FR blocks
@@ -164,6 +168,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     }
 
     // Just print it 
+#ifdef DEBUG
     for (const auto& size_count : num_LR_blocks_per_size) {
         int block_size = size_count.first;
         int block_count = size_count.second;
@@ -173,6 +178,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         }
         std::cout << "]\n";
     }
+#endif
 
     // SECOND : we constrcut group of same size with no common rows
     // We look ove each size and construct group that dont share common rows
@@ -203,7 +209,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
                         int j_row0 = pattern.LRB_pattern(1,j);
                         int j_rowend = pattern.LRB_pattern(3,j);
     
-                        if ((i_row0 <= j_rowend) && (j_row0 <= i_rowend)){
+                        if ((i_row0 < j_rowend) && (j_row0 < i_rowend)){
                             no_common_row = false;
                             break;
                         }
@@ -226,12 +232,14 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         }
     }
 
+#ifdef DEBUG
     // Just print it 
     for (const auto& size_count : num_LR_blocks_per_size) {
         int block_size = size_count.first;
         int block_count = size_count.second;
         int num_groups = LR_blocks_groups_indices[block_size].size();
         std::cout << num_groups << " LR groups of size " << block_size << " : [";
+
         for (auto group : LR_blocks_groups_indices[block_size]){
             std::cout << "[";
             for (size_t j = 0; j < group.size(); j++) {
@@ -242,6 +250,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         }
         std::cout << "]\n";
     }
+#endif
     
 
     // We allocate the memory for the low rank blocks
@@ -320,8 +329,8 @@ void HmatCuda<T>::copyToDevice(){
         std::cerr << "Hmat size = " << this->size_[0] << " x " << this->size_[1] << std::endl;
         std::abort();
     }
-    vector_size_ = this->size_[0] * this->dof_dimension_;
-    vector_size_bytes_ = this->size_[0] * this->dof_dimension_ * sizeof(T);
+    vector_size_ = this->size_[0];
+    vector_size_bytes_ = this->size_[0]* sizeof(T);
 
     CHECK_CUDA_ERROR(cudaMalloc(&d_x_, vector_size_bytes_));
     CHECK_CUDA_ERROR(cudaMalloc(&d_y_, vector_size_bytes_));
@@ -329,10 +338,9 @@ void HmatCuda<T>::copyToDevice(){
     CHECK_CUDA_ERROR(cudaMalloc(&d_y_partial_, vector_size_bytes_ * num_streams_));
     CHECK_CUDA_ERROR(cudaMalloc(&d_tmp_, vector_size_bytes_ * (num_streams_-1))); // That's more than what we actually need
 
-    // std::cout << "Allocating "<< vector_size_bytes_ << " for d_x_ and d_y_\n";
+#ifdef DEBUG
     std::cout << "Allocated "<< vector_size_bytes_ * num_streams_ << " bytes for d_partial_y_ @ " << d_y_partial_ << std::endl;
-    // std::cout << "Allocating "<< vector_size_bytes_ * (num_streams_-1) << " for d_tmp_\n";
-
+#endif
     // Fill d_ones with 1
     T h_ones[vector_size_];
     for (int i = 0; i < vector_size_; i++) h_ones[i] = 1.0;
@@ -344,9 +352,12 @@ void HmatCuda<T>::copyToDevice(){
 
     
     size_t FR_data_size_bytes = FR_standard_size_data_buffer_size * sizeof(T);
-    std::cout << "Copying FR standard block to device = " << FR_data_size_bytes << " bytes\n";
 
+#ifdef DEBUG
+    std::cout << "Copying FR standard block to device = " << FR_data_size_bytes << " bytes\n";
     std::cout << "FR_standard_size_data[0] = " << FR_standard_size_data[0] << "\n";
+#endif
+
 
     CHECK_CUDA_ERROR(cudaMalloc(&d_FR_data_, FR_data_size_bytes));
     CHECK_CUDA_ERROR(cudaMemcpy(d_FR_data_, FR_standard_size_data, FR_data_size_bytes, cudaMemcpyHostToDevice));
@@ -354,7 +365,10 @@ void HmatCuda<T>::copyToDevice(){
     // Copying back the first entry 
     T tmp_check;
     CHECK_CUDA_ERROR(cudaMemcpy(&tmp_check, d_FR_data_, sizeof(T), cudaMemcpyDeviceToHost));
+
+#ifdef DEBUG
     std::cout << "d_FR_data_[0] = " << tmp_check << "\n";
+#endif
 
     // Then we set up the BSR description of the FR 
     cusparseCreateMatDescr(&FR_bsr_descr_);
@@ -378,7 +392,9 @@ void HmatCuda<T>::copyToDevice(){
     }
     num_block_rows++; // +1 because indices are 0-based
 
+#ifdef DEBUG
     std::cout << "num_block_rows = " << num_block_rows << std::endl; 
+#endif
 
     // Store it 
     this->total_block_size_ = num_block_rows;
@@ -411,6 +427,7 @@ void HmatCuda<T>::copyToDevice(){
         col_pointer++;
     }
 
+#ifdef DEBUG
     // Print it to check 
     std::cout << "h_FR_bsrRowPtr_ = [";
     for (int i = 0; i < num_block_rows+1; i++) std::cout << h_FR_bsrRowPtr_[i] << ", ";
@@ -418,10 +435,11 @@ void HmatCuda<T>::copyToDevice(){
     std::cout << "h_FR_bsrColInd_ = [";
     for (int i = 0; i < FR_std_orderedIndices.size(); i++) std::cout << h_FR_bsrColInd_[i] << ", ";
     std::cout << "]\n";
+#endif
 
     // Then copy it to device
     CHECK_CUDA_ERROR(cudaMalloc(&d_FR_bsrRowPtr_, (num_block_rows+1)*sizeof(int)));
-    CHECK_CUDA_ERROR(cudaMemcpy(d_FR_bsrRowPtr_, h_FR_bsrColInd_, (num_block_rows+1)*sizeof(int), cudaMemcpyHostToDevice));
+    CHECK_CUDA_ERROR(cudaMemcpy(d_FR_bsrRowPtr_, h_FR_bsrRowPtr_, (num_block_rows+1)*sizeof(int), cudaMemcpyHostToDevice));
 
     CHECK_CUDA_ERROR(cudaMalloc(&d_FR_bsrColInd_, nnzb*sizeof(int)));
     CHECK_CUDA_ERROR(cudaMemcpy(d_FR_bsrColInd_, h_FR_bsrColInd_, nnzb*sizeof(int), cudaMemcpyHostToDevice));
@@ -514,7 +532,7 @@ void HmatCuda<T>::copyToDevice(){
 
                 // Vectos = depends on block position
                 int block_id = LR_blocks_groups_indices[block_size][group_i][i];
-                int i0 = hr->pattern_.LRB_pattern(2, block_id);
+                int i0 = hr->pattern_.LRB_pattern(1, block_id);
                 int j0 = hr->pattern_.LRB_pattern(2, block_id);
 
                 h_LR_x_pointers_[block_size][group_i][i] = d_x_ + j0*dim_dof;
@@ -592,16 +610,24 @@ void HmatCuda<T>::deallocateOnDevice(){
 template <typename T>
 HmatCuda<T>::~HmatCuda(){
 
-    // // First we nullify the pointers of the Array2d objects
-    // // to avoid double freeing
-    // for (int i(0); i<this->full_rank_blocks_.size();i++)
-    //     this->full_rank_blocks_[i]->nullifyData();
-    // for (int i(0); i<this->low_rank_blocks_.size();i++) {
-    //     this->low_rank_blocks_[i]->A.nullifyData();
-    //     this->low_rank_blocks_[i]->B.nullifyData();
-    // }
-    // this->full_rank_blocks_.clear();
-    // this->low_rank_blocks_.clear();
+    // Clear device memory
+    deallocateOnDevice();
+
+    // First we nullify the pointers of the Array2d objects
+    // to avoid double freeing
+    for (auto& array2d : this->full_rank_blocks_){
+        if (array2d) {
+            array2d->nullifyData(); 
+        }
+    }
+    for (auto& low_rank : this->low_rank_blocks_){
+        if (low_rank){
+            auto& A = low_rank->A;
+            auto& B = low_rank->B;
+            A.nullifyData(); 
+            B.nullifyData(); 
+        }
+    }
 
     // Deallocate FR buffers
     if (FR_standard_size_data) {
@@ -615,22 +641,45 @@ HmatCuda<T>::~HmatCuda(){
 
     // Deallocate all LR_A_data buffers
     for (auto& pair : LR_A_data) {
-        for (auto& buffer : pair.second){
-            delete[] buffer;
-        }
+        for (auto& buffer : pair.second) delete[] buffer;
     }
     LR_A_data.clear();  // Clear the map
 
     // Deallocate all LR_B_data buffers
     for (auto& pair : LR_B_data) {
-        for (auto& buffer : pair.second){
-            delete[] buffer;
-        }
+        for (auto& buffer : pair.second) delete[] buffer;
     }
     LR_B_data.clear();  // Clear the map
 
-    // Clear device memory
-    deallocateOnDevice();
+    for (auto& pair : h_LR_A_data_pointers_) {
+        for (auto& buffer : pair.second) delete[] buffer;
+    }
+    h_LR_A_data_pointers_.clear();
+
+    for (auto& pair : h_LR_B_data_pointers_) {
+        for (auto& buffer : pair.second) delete[] buffer;
+    }
+    h_LR_B_data_pointers_.clear();
+
+    
+    for (auto& pair : h_LR_x_pointers_) {
+        for (auto& buffer : pair.second) delete[] buffer;
+    }
+    h_LR_x_pointers_.clear();
+    
+    for (auto& pair : h_LR_y_pointers_) {
+        for (auto& buffer : pair.second) delete[] buffer;
+    }
+    h_LR_y_pointers_.clear();
+
+    for (auto& pair : h_LR_tmp_pointers_) {
+        for (auto& buffer : pair.second) delete[] buffer;
+    }
+    h_LR_tmp_pointers_.clear();
+
+    delete[] h_FR_bsrRowPtr_;
+    delete[] h_FR_bsrColInd_;    
+
 }
 
 
@@ -694,7 +743,7 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
         const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
 
         // We create the Array2D
-        std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
+        std::shared_ptr<il::Array2D<T>> a = std::make_shared<il::Array2D<T>>(ni, nj);
 
         // We deallocate the data it has just been allocated
         a->deallocateData();
@@ -710,12 +759,15 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
 
         // Finnaly we populate it 
         matrix_gen.set(i0, j0, il::io, a->Edit());
-        this->full_rank_blocks_[i] = std::move(a);
+        this->full_rank_blocks_[i] = a;
     }
 
     // Then the non standard size blocks
 // #pragma omp parallel for schedule(guided)
-    for (int i : FR_non_std_indices){
+    for (int idx(0); idx<FR_non_std_indices.size(); idx++){
+
+        int i = FR_non_std_indices[idx];
+
         il::int_t i0 = hr->pattern_.FRB_pattern(1, i);
         il::int_t j0 = hr->pattern_.FRB_pattern(2, i);
         il::int_t iend = hr->pattern_.FRB_pattern(3, i);
@@ -725,12 +777,12 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
         const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
 
         // We create the Array2D
-        std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
+        std::shared_ptr<il::Array2D<T>> a = std::make_shared<il::Array2D<T>>(ni, nj);
 
         // We deallocate the data it has just been allocated
         a->deallocateData();
 
-        // We set its data to be where we want 
+        // We get the correct offset
         int data_size = (iend-i0)*(jend-j0)* dim*dim;
         if (offset_non_standard_size + data_size > FR_non_standard_size_data_buffer_size)
             std::cerr << "FR non std : setting data outside the allocated buffer\n";
@@ -741,7 +793,7 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
 
         // Finnaly we populate it 
         matrix_gen.set(i0, j0, il::io, a->Edit());
-        this->full_rank_blocks_[i] = std::move(a);
+        this->full_rank_blocks_[i] = a;
     }
 
     this->isBuilt_FR_ = true;
@@ -764,7 +816,7 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
     Goal = keep track of the offsets for each group of LR blocks
     */
     auto hr = this->hr_;
-    this->low_rank_blocks_.resize(hr->pattern_.n_FRB);
+    this->low_rank_blocks_.resize(hr->pattern_.n_LRB);
 
     // We initialize the offsets
     std::unordered_map<int, std::vector<int>> offsets_per_size;
@@ -865,6 +917,9 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
             }
         }
 
+        // We also copy the error on approximation
+        lrb->error_on_approximation = lra->error_on_approximation;
+
         // Finally we move it
         this->low_rank_blocks_[i] = std::move(lrb);
 
@@ -879,14 +934,6 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
 
 template <> 
 il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
-
-    std::cout << "Entering matvec CUDA\n";
-    
-    // auto x_view = x.view();
-    // std::cout << "x = [";
-    // for (int i(0); i<x_view.size(); i++) std::cout << x_view[i] << ", ";
-    // std::cout << "]\n";
-
     
     // First we copy x to device
     CHECK_CUDA_ERROR(cudaMemcpy(d_x_, x.data(), vector_size_bytes_, cudaMemcpyHostToDevice));
@@ -900,8 +947,13 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
     // Then we launch a first stream and assign it the BSR (FR) matvec
     int fr_block_size = this->hr_->leaf_size * this->dof_dimension_;
 
+    // Here we copy back and save to npy the bsrRowPtr and bsrColInd arrays
+    int* bsrRowPtr = new int[total_block_size_+1];
+    int* bsrColInd = new int[num_FR_std_blocks_];
+    CHECK_CUDA_ERROR(cudaMemcpy(bsrRowPtr, d_FR_bsrRowPtr_, (total_block_size_+1)*sizeof(int), cudaMemcpyDeviceToHost)); 
+    CHECK_CUDA_ERROR(cudaMemcpy(bsrColInd, d_FR_bsrColInd_, num_FR_std_blocks_*sizeof(int), cudaMemcpyDeviceToHost)); 
+
     // CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[0]));
-    std::cout << "Calling cusparseDbsrmv\n";
     cusparseDbsrmv(
         cusparse_handle_,
         CUSPARSE_DIRECTION_COLUMN,
@@ -930,51 +982,9 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
             int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
 
-            // std::cout << "Partial LR matvec for group # " << group_i  << " of size " << block_size << std::endl;
-
             // Associate cuda stream
             // CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[lr_group_counter]));
 
-            // // memset tests
-            // CHECK_CUDA_ERROR(cudaMemset(h_LR_A_data_pointers_[block_size][group_i][0], 0, this->fixed_rank_*this->dof_dimension_ * block_size*this->dof_dimension_*num_blocks*sizeof(double)));
-            // cudaDeviceSynchronize();
-            // cudaError_t err = cudaGetLastError();
-            // if (err != cudaSuccess) {
-            //     printf("CUDA error after cublasSetStream: %s\n", cudaGetErrorString(err));
-            // }
-            // CHECK_CUDA_ERROR(cudaMemset(h_LR_B_data_pointers_[block_size][group_i][0], 0, this->fixed_rank_*this->dof_dimension_ * block_size*this->dof_dimension_*num_blocks*sizeof(double)));
-            // cudaDeviceSynchronize();
-            // err = cudaGetLastError();
-            // if (err != cudaSuccess) {
-            //     printf("CUDA error after cublasSetStream: %s\n", cudaGetErrorString(err));
-            // }
-
-            // for (int j(0); j<num_blocks; j++){
-            //     CHECK_CUDA_ERROR(cudaMemset(h_LR_x_pointers_[block_size][group_i][j], 0,  block_size*this->dof_dimension_*sizeof(double)));
-            //     cudaDeviceSynchronize();
-            //     err = cudaGetLastError();
-            //     if (err != cudaSuccess) {
-            //         printf("CUDA error after cublasSetStream: %s\n", cudaGetErrorString(err));
-            //     }
-
-            //     std::cout << "y_pointers : setting " << block_size*this->dof_dimension_*sizeof(double) << " bytes at " << 
-            //     h_LR_y_pointers_[block_size][group_i][j] << std::endl;
-
-            //     std::cout << "(h_LR_y_pointers_[block_size][group_i][j] - d_y_partial_)*sizeof(double) = " << h_LR_y_pointers_[block_size][group_i][j] - d_y_partial_  << std::endl;
-
-            //     CHECK_CUDA_ERROR(cudaMemset(h_LR_y_pointers_[block_size][group_i][j], 0, block_size*this->dof_dimension_*sizeof(double)));
-            //     cudaDeviceSynchronize();
-            //     err = cudaGetLastError();
-            //     if (err != cudaSuccess) {
-            //         printf("CUDA error after cublasSetStream: %s\n", cudaGetErrorString(err));
-            //     }
-            //     CHECK_CUDA_ERROR(cudaMemset(h_LR_tmp_pointers_[block_size][group_i][j], 0, block_size*this->dof_dimension_*sizeof(double)));
-            //     cudaDeviceSynchronize();
-            //     err = cudaGetLastError();
-            //     if (err != cudaSuccess) {
-            //         printf("CUDA error after cublasSetStream: %s\n", cudaGetErrorString(err));
-            //     }
-            // }
             
             // Compute tmp = B*x
             CHECK_CUBLAS_ERROR(cublasDgemvBatched(
@@ -984,7 +994,6 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                 &alpha,
                 (const double**)d_LR_B_data_pointers_[block_size][group_i],        
                 this->fixed_rank_*this->dof_dimension_, 
-                // block_size*this->dof_dimension_,  
                 (const double**)d_LR_x_pointers_[block_size][group_i], 
                 1,
                 &beta,
@@ -993,13 +1002,13 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                 num_blocks
             ));
 
-
             // Add explicit CUDA error check
             cudaDeviceSynchronize();
             cudaError_t err = cudaGetLastError();
             if (err != cudaSuccess) {
                 printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
             }
+            
             // Compute y = A*tmp
             CHECK_CUBLAS_ERROR(cublasDgemvBatched(
                 cublas_handle_, CUBLAS_OP_N,
@@ -1028,6 +1037,14 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
     cudaDeviceSynchronize();
 
+#ifdef DEBUG
+    // We copy y_partial to memory and save it via cnpy
+    il::Array2D<double> y_partial(vector_size_ , num_streams_);
+    double* y_partial_data = y_partial.Data();
+    CHECK_CUDA_ERROR(cudaMemcpy(y_partial_data, d_y_partial_, vector_size_bytes_*num_streams_, cudaMemcpyDeviceToHost)); 
+    cnpy::npy_save("y_partial.npy", y_partial_data, {static_cast<size_t>(num_streams_), vector_size_}, "w");
+#endif
+
     // Sum partial results
     if (this->verbose_) std::cout << "Summing back results\n";
     cublasDgemv(cublas_handle_, 
@@ -1043,15 +1060,29 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
         d_y_,         
         1);
         
-    
+    cudaDeviceSynchronize();
+
     // Finnally, copy it back to cpu
     il::Array<double> y(vector_size_);
     double* y_data = y.Data();
 
-    std::cout << "vector_size_ = " << vector_size_ << std::endl;
-    std::cout << "vector_size_bytes_ = " << vector_size_bytes_ << std::endl;
-
     CHECK_CUDA_ERROR(cudaMemcpy(y_data, d_y_, vector_size_bytes_, cudaMemcpyDeviceToHost)); 
+
+    // Last but not least, we add the contribution of the non standard full blocks
+// #pragma omp for schedule(guided) nowait
+    for (int i : FR_non_std_indices) {
+        auto i0 = hr_->pattern_.FRB_pattern(1, i);
+        auto j0 = hr_->pattern_.FRB_pattern(2, i);
+        auto iend = hr_->pattern_.FRB_pattern(3, i);
+        auto jend = hr_->pattern_.FRB_pattern(4, i);
+
+        auto a = (*full_rank_blocks_[i]).view();
+        auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
+        auto ys = y.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+        // auto ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+
+        il::blas(1.0, a, xs, 1.0, il::io, ys);
+    }
 
     // auto y_view = y.view();
     // std::cout << "y = [";
@@ -1093,7 +1124,6 @@ il::Array2D<T> HmatCuda<T>::getFRBlockDataHost(int block_id){
     int fr_block_data_size = fr_block_size*fr_block_size;
 
     int offset = idx * fr_block_data_size;
-    std::cout << "offset = " << offset << std::endl;
 
     if (offset + fr_block_data_size > FR_standard_size_data_buffer_size){
         std::cerr << "Reading outsite FR standard size data buffer\n";
@@ -1102,7 +1132,6 @@ il::Array2D<T> HmatCuda<T>::getFRBlockDataHost(int block_id){
     auto block = il::Array2D<T>(fr_block_size, fr_block_size);
     auto block_edit = block.Edit();
 
-    std::cout << "FR_standard_size_data[offset] = " << FR_standard_size_data[offset] << "\n";
 
     for (int i(0); i<fr_block_size; i++){
         for (int j(0); j<fr_block_size; j++){
@@ -1144,14 +1173,10 @@ il::Array2D<T> HmatCuda<T>::getFRBlockDataDevice(int block_id){
     int fr_block_data_size = fr_block_size*fr_block_size;
 
     int offset = idx * fr_block_data_size;
-    std::cout << "offset = " << offset << std::endl;
 
     // First we copy back the data
-    std::cout << "Copying " << fr_block_data_size*sizeof(T) << " bytes back to host\n";
     T* h_data = new T[fr_block_data_size];
     CHECK_CUDA_ERROR(cudaMemcpy(h_data, d_FR_data_ +offset, fr_block_data_size*sizeof(T), cudaMemcpyDeviceToHost)); 
-
-    std::cout << "h_data[0] = " << h_data[0] << "\n";
 
     il::Array2D<T> block(fr_block_size, fr_block_size);
     auto block_edit = block.Edit();

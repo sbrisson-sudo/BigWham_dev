@@ -1359,6 +1359,14 @@ void Array2D<T>::setData(T* new_data){
 template <typename T>
 void Array2D<T>::nullifyData(){
   data_ = nullptr;
+  size_[0] = nullptr;
+  size_[1] = nullptr;
+  capacity_[0] = nullptr;
+  capacity_[1] = nullptr;
+  alignment_ = 0;
+  align_r_ = 0;
+  align_mod_ = 0;
+  shift_ = 0;
 }
 
 template <typename T>
