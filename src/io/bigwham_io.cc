@@ -56,6 +56,10 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         std::cerr << "CUDA matvec can't be used without using fixed rank" << std::endl;
         std::abort();
     }
+    if (useCuda && !homogeneous_size_pattern) {
+        std::cerr << "CUDA matvec can't be used without using homogeneous sized pattern" << std::endl;
+        std::abort();
+    }
 
 #endif
 

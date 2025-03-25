@@ -947,150 +947,163 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
 template <> 
 il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
-    // First we copy x to device
-    CHECK_CUDA_ERROR(cudaMemcpy(d_x_, x.data(), vector_size_bytes_, cudaMemcpyHostToDevice));
-    
-    double alpha = 1.0;
-    double beta = 0.0;
+    il::Array<double> y(vector_size_, 0.0);
 
-    // We memset the y_partial to zero
-    CHECK_CUDA_ERROR(cudaMemset(d_y_partial_, 0, vector_size_bytes_*num_streams_));
+    #pragma omp parallel
+    {
 
-    // Then we launch a first stream and assign it the BSR (FR) matvec
-    int fr_block_size = this->hr_->leaf_size * this->dof_dimension_;
-
-    // Here we copy back and save to npy the bsrRowPtr and bsrColInd arrays
-    int* bsrRowPtr = new int[total_block_size_+1];
-    int* bsrColInd = new int[num_FR_std_blocks_];
-    CHECK_CUDA_ERROR(cudaMemcpy(bsrRowPtr, d_FR_bsrRowPtr_, (total_block_size_+1)*sizeof(int), cudaMemcpyDeviceToHost)); 
-    CHECK_CUDA_ERROR(cudaMemcpy(bsrColInd, d_FR_bsrColInd_, num_FR_std_blocks_*sizeof(int), cudaMemcpyDeviceToHost)); 
-
-    CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[0]));
-    cusparseDbsrmv(
-        cusparse_handle_,
-        CUSPARSE_DIRECTION_COLUMN,
-        CUSPARSE_OPERATION_NON_TRANSPOSE,
-        total_block_size_,      // # block rows
-        total_block_size_,      // # block columns
-        num_FR_std_blocks_,     // # non zero blocks
-        &alpha,                 
-        FR_bsr_descr_,              
-        d_FR_data_,            
-        d_FR_bsrRowPtr_,      
-        d_FR_bsrColInd_,
-        fr_block_size,          // Block sizes
-        d_x_,
-        &beta,
-        d_y_partial_            // we write to the first column of it 
-    );
-
-    // Then for each LR group : we call a batched gemv
-    int lr_group_counter = 1;
-    for (auto& pair : LR_data_buffer_sizes){
-        int block_size = pair.first;
-        int num_groups = pair.second.size();
-
-        for (int group_i(0); group_i<pair.second.size(); group_i++){
-
-            int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
-
-            // Associate cuda stream
-            CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[lr_group_counter]));
-
-            // Compute tmp = B*x
-            CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                cublas_handle_, CUBLAS_OP_N,
-                this->fixed_rank_*this->dof_dimension_,        // num rows
-                block_size*this->dof_dimension_, // num cols 
-                &alpha,
-                (const double**)d_LR_B_data_pointers_[block_size][group_i],        
-                this->fixed_rank_*this->dof_dimension_, 
-                (const double**)d_LR_x_pointers_[block_size][group_i], 
-                1,
-                &beta,
-                d_LR_tmp_pointers_[block_size][group_i], 
-                1,
-                num_blocks
-            ));
-
-            // // Add explicit CUDA error check
-            // cudaDeviceSynchronize();
-            // cudaError_t err = cudaGetLastError();
-            // if (err != cudaSuccess) {
-            //     printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
-            // }
-            
-            // Compute y = A*tmp
-            CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                cublas_handle_, CUBLAS_OP_N,
-                block_size*this->dof_dimension_,        // num rows
-                this->fixed_rank_*this->dof_dimension_, // num cols 
-                &alpha,
-                (const double**)d_LR_A_data_pointers_[block_size][group_i],        
-                // this->fixed_rank_*this->dof_dimension_,
-                block_size*this->dof_dimension_, 
-                (const double**)d_LR_tmp_pointers_[block_size][group_i], 
-                1,
-                &beta,
-                d_LR_y_pointers_[block_size][group_i], 
-                1,
-                num_blocks
-            ));
-
-            // cudaDeviceSynchronize();
-            // // Add explicit CUDA error check
-            // err = cudaGetLastError();
-            // if (err != cudaSuccess) {
-            //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
-            // }
-        }
-    }
-
-    cudaDeviceSynchronize();
-
-    // Sum partial results
-    if (this->verbose_) std::cout << "Summing back results\n";
-    cublasDgemv(cublas_handle_, 
-        CUBLAS_OP_N, 
-        vector_size_,           
-        num_streams_,            
-        &alpha,     
-        d_y_partial_, 
-        vector_size_,            
-        d_ones_,      
-        1,            
-        &beta,        
-        d_y_,         
-        1);
+        il::Array<double> y_private(vector_size_, 0.0);
         
-    cudaDeviceSynchronize();
+        // In a first thread we call and gather the GPU computation
+        #pragma omp single nowait
+        {
 
-    // Finnally, copy it back to cpu
-    il::Array<double> y(vector_size_);
-    double* y_data = y.Data();
+            // First we copy x to device
+            CHECK_CUDA_ERROR(cudaMemcpy(d_x_, x.data(), vector_size_bytes_, cudaMemcpyHostToDevice));
+            
+            double alpha = 1.0;
+            double beta = 0.0;
 
-    CHECK_CUDA_ERROR(cudaMemcpy(y_data, d_y_, vector_size_bytes_, cudaMemcpyDeviceToHost)); 
+            // We memset the y_partial to zero
+            CHECK_CUDA_ERROR(cudaMemset(d_y_partial_, 0, vector_size_bytes_*num_streams_));
 
-    // Last but not least, we add the contribution of the non standard full blocks
-// #pragma omp for schedule(guided) nowait
-    for (int i : FR_non_std_indices) {
-        auto i0 = hr_->pattern_.FRB_pattern(1, i);
-        auto j0 = hr_->pattern_.FRB_pattern(2, i);
-        auto iend = hr_->pattern_.FRB_pattern(3, i);
-        auto jend = hr_->pattern_.FRB_pattern(4, i);
+            // Then we launch a first stream and assign it the BSR (FR) matvec
+            int fr_block_size = this->hr_->leaf_size * this->dof_dimension_;
 
-        auto a = (*full_rank_blocks_[i]).view();
-        auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
-        auto ys = y.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
-        // auto ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+            // Here we copy back and save to npy the bsrRowPtr and bsrColInd arrays
+            int* bsrRowPtr = new int[total_block_size_+1];
+            int* bsrColInd = new int[num_FR_std_blocks_];
+            CHECK_CUDA_ERROR(cudaMemcpy(bsrRowPtr, d_FR_bsrRowPtr_, (total_block_size_+1)*sizeof(int), cudaMemcpyDeviceToHost)); 
+            CHECK_CUDA_ERROR(cudaMemcpy(bsrColInd, d_FR_bsrColInd_, num_FR_std_blocks_*sizeof(int), cudaMemcpyDeviceToHost)); 
 
-        il::blas(1.0, a, xs, 1.0, il::io, ys);
-    }
+            CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[0]));
+            cusparseDbsrmv(
+                cusparse_handle_,
+                CUSPARSE_DIRECTION_COLUMN,
+                CUSPARSE_OPERATION_NON_TRANSPOSE,
+                total_block_size_,      // # block rows
+                total_block_size_,      // # block columns
+                num_FR_std_blocks_,     // # non zero blocks
+                &alpha,                 
+                FR_bsr_descr_,              
+                d_FR_data_,            
+                d_FR_bsrRowPtr_,      
+                d_FR_bsrColInd_,
+                fr_block_size,          // Block sizes
+                d_x_,
+                &beta,
+                d_y_partial_            // we write to the first column of it 
+            );
 
-    // auto y_view = y.view();
-    // std::cout << "y = [";
-    // for (int i(0); i<y_view.size(); i++) std::cout << y_view[i] << ", ";
-    // std::cout << "]\n";
+            // Then for each LR group : we call a batched gemv
+            int lr_group_counter = 1;
+            for (auto& pair : LR_data_buffer_sizes){
+                int block_size = pair.first;
+                int num_groups = pair.second.size();
+
+                for (int group_i(0); group_i<pair.second.size(); group_i++){
+
+                    int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
+
+                    // Associate cuda stream
+                    CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[lr_group_counter]));
+
+                    // Compute tmp = B*x
+                    CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                        cublas_handle_, CUBLAS_OP_N,
+                        this->fixed_rank_*this->dof_dimension_,        // num rows
+                        block_size*this->dof_dimension_, // num cols 
+                        &alpha,
+                        (const double**)d_LR_B_data_pointers_[block_size][group_i],        
+                        this->fixed_rank_*this->dof_dimension_, 
+                        (const double**)d_LR_x_pointers_[block_size][group_i], 
+                        1,
+                        &beta,
+                        d_LR_tmp_pointers_[block_size][group_i], 
+                        1,
+                        num_blocks
+                    ));
+
+                    // // Add explicit CUDA error check
+                    // cudaDeviceSynchronize();
+                    // cudaError_t err = cudaGetLastError();
+                    // if (err != cudaSuccess) {
+                    //     printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
+                    // }
+                    
+                    // Compute y = A*tmp
+                    CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                        cublas_handle_, CUBLAS_OP_N,
+                        block_size*this->dof_dimension_,        // num rows
+                        this->fixed_rank_*this->dof_dimension_, // num cols 
+                        &alpha,
+                        (const double**)d_LR_A_data_pointers_[block_size][group_i],        
+                        // this->fixed_rank_*this->dof_dimension_,
+                        block_size*this->dof_dimension_, 
+                        (const double**)d_LR_tmp_pointers_[block_size][group_i], 
+                        1,
+                        &beta,
+                        d_LR_y_pointers_[block_size][group_i], 
+                        1,
+                        num_blocks
+                    ));
+
+                    // cudaDeviceSynchronize();
+                    // // Add explicit CUDA error check
+                    // err = cudaGetLastError();
+                    // if (err != cudaSuccess) {
+                    //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
+                    // }
+                }
+            }
+
+            cudaDeviceSynchronize();
+
+            // Sum partial results
+            cublasDgemv(cublas_handle_, 
+                CUBLAS_OP_N, 
+                vector_size_,           
+                num_streams_,            
+                &alpha,     
+                d_y_partial_, 
+                vector_size_,            
+                d_ones_,      
+                1,            
+                &beta,        
+                d_y_,         
+                1);
+                
+            cudaDeviceSynchronize();
+
+            // Finnally, copy it back to cpu
+            double* y_data = y_private.Data();
+
+            CHECK_CUDA_ERROR(cudaMemcpy(y_data, d_y_, vector_size_bytes_, cudaMemcpyDeviceToHost)); 
+
+        } //#pragma omp single nowait
+
+        // Last but not least, we add the contribution of the non standard full blocks
+
+        #pragma omp for schedule(guided) nowait
+        for (int i : FR_non_std_indices) {
+            auto i0 = hr_->pattern_.FRB_pattern(1, i);
+            auto j0 = hr_->pattern_.FRB_pattern(2, i);
+            auto iend = hr_->pattern_.FRB_pattern(3, i);
+            auto jend = hr_->pattern_.FRB_pattern(4, i);
+
+            auto a = (*full_rank_blocks_[i]).view();
+            auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
+            auto ys = y_private.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+
+            il::blas(1.0, a, xs, 1.0, il::io, ys);
+        }
+
+        #pragma omp critical
+        {
+            il::blas(1., y_private.view(), il::io_t{}, y.Edit());
+        }
+    
+    } // pragma omp parallel
 
     return y;
 }
