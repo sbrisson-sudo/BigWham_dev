@@ -114,6 +114,13 @@ endif()
 if (USE_CUDA)
     find_package(CUDA REQUIRED)
     set(CMAKE_CUDA_ARCHITECTURES 70 75 80 86)
+
+    message(STATUS "Building with CUDA support : ${CUDA_INCLUDE_DIRS}")
+    message(STATUS "CUDA_LIBRARIES: ${CUDA_LIBRARIES}")
+    message(STATUS "CUDA_CUBLAS_LIBRARIES: ${CUDA_CUBLAS_LIBRARIES}")
+    message(STATUS "CUDA_cusparse_LIBRARY: ${CUDA_cusparse_LIBRARY}")
+    message(STATUS "CUDA_cudart_static_LIBRARY: ${CUDA_cudart_static_LIBRARY}")
+
     include_directories(
         ${CBLAS_INCLUDE_DIR}
         ${CUDA_INCLUDE_DIRS}
@@ -208,7 +215,7 @@ if(BIGWHAM_PYTHON_INTERFACE)
     message(STATUS "Python Version: ${Python_VERSION}")
     message(STATUS "Python Include Dir: ${Python_INCLUDE_DIRS}")
     set(PYBIND11_PYTHON_VERSION 3)
-    add_external_package(pybind11 VERSION 2.8.0 CONFIG)
+    add_external_package(pybind11 VERSION 2.13.0 CONFIG)
     add_subdirectory(interfaces/python)
 endif()
 

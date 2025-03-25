@@ -19,6 +19,8 @@
 #include <cusparse.h>
 #include <cuda_runtime_api.h>
 
+#include <omp.h>
+
 #include "hmat/arrayFunctor/matrix_generator.h"
 #include "hmat/compression/adaptiveCrossApproximation.h"
 #include "hmat/hmatrix/LowRank.h"

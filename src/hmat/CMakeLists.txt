@@ -1,12 +1,12 @@
-set(SOURCE_FILES ${SOURCE_FILES}
+set(TMP_SOURCES_FILES ${SOURCE_FILES}
     ${CMAKE_CURRENT_SOURCE_DIR}/cluster/cluster.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/hmatrix/h_pattern.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/hmatrix/hmat.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/hmatrix/hmat_cuda.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/square_matrix_generator.h
-    PARENT_SCOPE
-)
+    )
 
-# if(USE_CUDA)
-#     set(SOURCE_FILES ${SOURCE_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/hmatrix/hmat_cuda.cc)
-# endif()
+if(USE_CUDA)
+    list(APPEND TMP_SOURCES_FILES ${CMAKE_CURRENT_SOURCE_DIR}/hmatrix/hmat_cuda.cc)
+endif()
+
+set(SOURCE_FILES ${TMP_SOURCES_FILES} PARENT_SCOPE)

@@ -143,6 +143,10 @@ public:
     IL_EXPECT_FAST(is_built_);
     return hmat_->compressionRatio();
   };
+  int GetStorageRequirement() const {
+    IL_EXPECT_FAST(is_built_);
+    return hmat_->nbOfEntries() * sizeof(double);
+  }
 
 
 
