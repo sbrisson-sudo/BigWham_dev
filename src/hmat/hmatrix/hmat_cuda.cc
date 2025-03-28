@@ -1,8 +1,11 @@
 #include <unordered_map>
+#include <ctime>
 
 #include "hmat_cuda.h"
 
 #include "cnpy.h"
+
+// #define TIMING
 
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
@@ -53,6 +56,13 @@ namespace bigwham {
 
 template <typename T>
 HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const bool verbose, const int fixed_rank) {
+
+#ifdef TIMING
+    struct timespec start, end;
+    double duration;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
+
     // construction directly
     this->verbose_ = verbose;
     this->fixed_rank_ = fixed_rank;
@@ -288,6 +298,26 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         this->LR_sizes.emplace_back(block_size);
     }
 
+    // Print total memory footprint
+    if (this->verbose_){
+        int total_size = FR_standard_size_data_buffer_size + FR_non_standard_size_data_buffer_size;
+        for (auto& pair : LR_data_buffer_sizes){
+            for (int buffer_size : pair.second){
+                total_size += buffer_size;
+            }
+        }
+        double total_size_Gb = static_cast<double>(total_size*sizeof(double)) / (1024*1024*1024);
+    
+        std::cout << "Total memory allocated = " << total_size_Gb << " GB\n";
+    }
+
+#ifdef TIMING
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+    std::cout << "[Timing] allocated memory on host = " << duration*1000 << "ms\n";
+    clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
+
     // Now we construct the hmat (on host)
     il::Timer tt;
     tt.Start();
@@ -299,8 +329,24 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         std::cout << "Hmat object - built "<< "\n";
     }
 
+#ifdef TIMING
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+    std::cout << "[Timing] populated the hmat = " << duration*1000 << "ms\n";
+    clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
+
+
     // And we copy it on device
     copyToDevice();
+
+#ifdef TIMING
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+    std::cout << "[Timing] copied the hmat to device = " << duration*1000 << "ms\n";
+    clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
+
 }
 
 template <typename T>
@@ -689,7 +735,21 @@ void HmatCuda<T>::buildCuda(const bigwham::MatrixGenerator<T> & matrix_gen,const
     this->dof_dimension_ = matrix_gen.blockSize();
     this->size_[0] = matrix_gen.size(0);
     this->size_[1] = matrix_gen.size(1);
+
+#ifdef TIMING
+    struct timespec start, end;
+    double duration;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
+
     buildFRCuda(matrix_gen);
+
+#ifdef TIMING
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+    std::cout << "[Timing] building the FR blocks = " << duration*1000 << "ms\n";
+    clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
 
     switch (matrix_gen.blockSize()) {
         case 1:
@@ -702,6 +762,12 @@ void HmatCuda<T>::buildCuda(const bigwham::MatrixGenerator<T> & matrix_gen,const
             buildLRCuda<3>(matrix_gen, epsilon);
             break;
     }
+
+#ifdef TIMING
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+    std::cout << "[Timing] building the LR blocks = " << duration*1000 << "ms\n";
+#endif // TIMING 
 
     this->isBuilt_ = this->isBuilt_FR_ && this->isBuilt_LR_;
 }

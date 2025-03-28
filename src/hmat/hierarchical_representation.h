@@ -50,7 +50,7 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
   il::Timer tt;
   tt.Start();
   Cluster cluster = bigwham::cluster(max_leaf_size, il::io, Xcol, homegeneous_size);
-  std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
+  // std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
   hr->permutation_0_ = cluster.permutation; // todo: make a separate routine for cluster creation ... to be interfaced to python (for domain decomposition for MPI rect Hmat)
@@ -60,7 +60,7 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
   const il::Tree<SubHMatrix, 4> block_tree =
       hmatrixTreeIxI(Xcol, cluster.partition, eta, homegeneous_size);
   tt.Stop();
-  std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
+  // std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
   std::cout << "Binary cluster tree depth = " << block_tree.depth() << "\n";
   hr->pattern_ = createPattern(block_tree);
 

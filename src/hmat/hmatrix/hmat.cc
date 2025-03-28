@@ -17,6 +17,10 @@
 #include "hdf5.h"
 #endif
 
+#define TIMING
+#include <ctime>
+
+
 namespace bigwham {
 /* -------------------------------------------------------------------------- */
 
@@ -28,6 +32,12 @@ namespace bigwham {
         this->fixed_rank_ = fixed_rank;
         const int n_openMP_threads = 8;
         this->n_openMP_threads_=n_openMP_threads;
+
+#ifdef TIMING
+        struct timespec start, end;
+        double duration;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
         
         // construction directly
         this->hr_ = matrix_gen.hr();
@@ -40,6 +50,13 @@ namespace bigwham {
             std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
             std::cout << "Hmat object - built "<< "\n";
         }
+
+#ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] allocating and populating the hmat = " << duration*1000 << "ms\n";
+#endif // TIMING 
+
     }
 /* -------------------------------------------------------------------------- */
     template <typename T> Hmat<T>::Hmat(const std::string & filename) {
@@ -308,7 +325,8 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
     // We populate it 
     full_rank_blocks_tmp.resize(hr_->pattern_.n_FRB);
 
-#pragma omp parallel for schedule(static, frb_chunk_size_) num_threads(this->n_openMP_threads_)
+    // #pragma omp parallel for schedule(static, frb_chunk_size_) num_threads(this->n_openMP_threads_)
+    #pragma omp parallel for schedule(static, frb_chunk_size_)
     for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
         il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
         il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
@@ -354,7 +372,8 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     std::vector<std::unique_ptr<LowRank<T>>> low_rank_blocks_tmp_2;
     low_rank_blocks_tmp_2.resize(hr_->pattern_.n_LRB);
 
-#pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
+    // #pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
+    #pragma omp parallel for schedule(static, lrb_chunk_size_)
     for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
         il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
         il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
@@ -405,7 +424,21 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         dof_dimension_ = matrix_gen.blockSize();
         size_[0] = matrix_gen.size(0);
         size_[1] = matrix_gen.size(1);
+
+#ifdef TIMING
+        struct timespec start, end;
+        double duration;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
+
         buildFR(matrix_gen);
+
+#ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] building the FR blocks = " << duration*1000 << "ms\n";
+        clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
 
         switch (matrix_gen.blockSize()) {
             case 1:
@@ -418,6 +451,12 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
                 buildLR<3>(matrix_gen, epsilon);
                 break;
         }
+
+#ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] building the LR blocks = " << duration*1000 << "ms\n";
+#endif // TIMING
 
         isBuilt_ = isBuilt_FR_ && isBuilt_LR_;
     }

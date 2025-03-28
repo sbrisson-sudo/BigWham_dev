@@ -19,7 +19,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <chrono>
+#include <ctime>
 //#ifdef BIWGHAM_OPENMP
 #include <omp.h>
 //#endif
@@ -76,8 +76,8 @@ int main(int argc, char * argv[]) {
 
   // std::cout << "Dimension = " << dim << std::endl; 
   // std::cout << "Number of nodes = " << num_points << std::endl; 
-  std::cout << "Number of elements = " << num_elemts << std::endl; 
-  std::cout << "Number of dof = " << num_dof << std::endl; 
+  std::cout << "num_elemts = " << num_elemts << std::endl; 
+  std::cout << "num_dof = " << num_dof << std::endl; 
 
   std::vector<double> coor_vec(coor_npy.data<double>(), coor_npy.data<double>() + coor_npy.num_vals);
   std::vector<int> conn_vec(conn_npy.data<int>(), conn_npy.data<int>() + conn_npy.num_vals);
@@ -117,8 +117,10 @@ int main(int argc, char * argv[]) {
 
   // Timing
   const int N_matvec = 10;
-  std::chrono::duration<double> cpu_hmat_construction_time, gpu_hmat_construction_time;
-  std::chrono::duration<double> cpu_matvec_time, gpu_matvec_time;
+  struct timespec start, end;
+  double cpu_hmat_construction_time, cpu_matvec_time;
+  // std::chrono::duration<double> cpu_hmat_construction_time;
+  // std::chrono::duration<double> cpu_matvec_time;
 
   // LR approximation error
   double max_error_aca;
@@ -129,27 +131,44 @@ int main(int argc, char * argv[]) {
   bool use_Cuda = false;
   std::cout << "[CPU] eps_aca = " << eps_aca << std::endl; 
 
-  {
-    auto start = std::chrono::high_resolution_clock::now();
-    BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, verbose, homogeneous_size, use_Cuda);
-    hmat_io.BuildPattern(max_leaf_size, eta);
-    hmat_io.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
-    auto end = std::chrono::high_resolution_clock::now();
-    cpu_hmat_construction_time = end - start;
+  // auto start = std::chrono::high_resolution_clock::now();
+  clock_gettime(CLOCK_MONOTONIC, &start);
 
-    max_error_aca = hmat_io.GetMaxErrorACA();
+  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, verbose, homogeneous_size, use_Cuda);
+  hmat_io.BuildPattern(max_leaf_size, eta);
+  hmat_io.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
 
-    t = hmat_io.MatVec(dd_view); 
-  
-    // Compute matvec
-    start = std::chrono::high_resolution_clock::now(); 
-    for (int i(0); i<N_matvec; i++) hmat_io.MatVec(dd_view);
-    end = std::chrono::high_resolution_clock::now();
-    cpu_matvec_time = end - start;
-  }
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  cpu_hmat_construction_time = (end.tv_sec - start.tv_sec) +
+                      (end.tv_nsec - start.tv_nsec) / 1e9;
+  std::cout << "[CPU] Hmat construction time = " << cpu_hmat_construction_time*1000 << " ms" << std::endl;
 
+  // auto end = std::chrono::high_resolution_clock::now();
+  // cpu_hmat_construction_time = end - start;
+  // std::cout << "[CPU] Hmat construction time = " << cpu_hmat_construction_time.count() << " ms" << std::endl;
+
+
+  max_error_aca = hmat_io.GetMaxErrorACA();
   std::cout << "[CPU] Max ACA error = " << max_error_aca << std::endl;
-  std::cout << "[CPU] Matvec time = " << cpu_matvec_time.count()/N_matvec << " ms" << std::endl;
+
+
+
+  // Compute matvec
+  t = hmat_io.MatVec(dd_view); 
+
+  // start = std::chrono::high_resolution_clock::now(); 
+  clock_gettime(CLOCK_MONOTONIC, &start);
+
+  for (int i(0); i<N_matvec; i++) t = hmat_io.MatVec(dd_view);
+
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  cpu_matvec_time = (end.tv_sec - start.tv_sec) +
+  (end.tv_nsec - start.tv_nsec) / 1e9;
+  std::cout << "[CPU] Hmat matvec time = " << cpu_matvec_time/N_matvec*1000 << " ms" << std::endl;
+
+  // end = std::chrono::high_resolution_clock::now();
+  // cpu_matvec_time = end - start;
+  // std::cout << "[CPU] Matvec time = " << cpu_matvec_time.count()/N_matvec << " ms" << std::endl;
 
   // cnpy::npy_save("result_cpu.npy", t.data(), {static_cast<size_t>(num_dof)}, "w");
   
@@ -159,42 +178,6 @@ int main(int argc, char * argv[]) {
   for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
   l2_norm = std::sqrt(l2_norm);
   std::cout << "[CPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
-  
-  // GPU matvec
-  homogeneous_size = true;
-  use_Cuda = true;
-  const int rank = 15;
-  std::cout << "[GPU] fixed rank = " << rank << std::endl; 
-
-  {
-    BigWhamIO hmat_io_2(coor_vec, conn_vec, kernel, properties, verbose, homogeneous_size, use_Cuda, rank);
-    hmat_io_2.BuildPattern(max_leaf_size, eta);
-    hmat_io_2.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
-
-    max_error_aca = hmat_io_2.GetMaxErrorACA();
-
-  
-    t = hmat_io_2.MatVec(dd_view); 
-  
-    // Compute matvec
-    auto start = std::chrono::high_resolution_clock::now(); 
-    for (int i(0); i<N_matvec; i++) hmat_io_2.MatVec(dd_view);
-    auto end = std::chrono::high_resolution_clock::now();
-
-  }
-
-  std::cout << "[GPU] Max ACA error = " << max_error_aca << std::endl;
-  std::cout << "[GPU] Matvec time = " << gpu_matvec_time.count()/N_matvec << " ms" << std::endl;
-
-
-  // cnpy::npy_save("result_gpu.npy", t.data(), {static_cast<size_t>(num_dof)}, "w");
-  
-  // Compute l2 norm
-  l2_norm = 0;
-  t_view = t.view();
-  for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
-  l2_norm = std::sqrt(l2_norm);
-  std::cout << "[GPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
 
   // // Exporting stuff
   // auto hmat = hmat_io.getHmat();
