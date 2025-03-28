@@ -23,7 +23,7 @@ from scipy.sparse import csc_matrix
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
 
-from py_bigwham import BigWhamIOSelf, BigWhamIORect, PyGetFullBlocks
+from .py_bigwham import BigWhamIOSelf, BigWhamIORect, PyGetFullBlocks
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -144,6 +144,9 @@ class BEMatrix(LinearOperator):
     def getCompression(self) -> float:
         self._build()
         return self.H_.get_compression_ratio()
+    
+    def getStorageRequirement(self):
+        return self.H_.get_storage_requirement()
 
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
@@ -374,7 +377,9 @@ class BEMatrixRectangular(LinearOperator):
         eps_aca : float=1.0e-3, n_openMP_threads:int =8,
         directly_build:bool = True,
         verbose:bool = True,
-        homogemeous_size_pattern:bool = False
+        homogeneous_size_pattern:bool = False,
+        useCuda = False,
+        fixed_rank = -1
     ):
 
         self.kernel_ = kernel
@@ -393,8 +398,9 @@ class BEMatrixRectangular(LinearOperator):
             kernel,
             properties.flatten(),
             verbose,
-            homogemeous_size_pattern,
-            n_openMP_threads
+            homogeneous_size_pattern,
+            useCuda,
+            fixed_rank
         )
         self.dtype_ = float
 
@@ -549,3 +555,9 @@ class BEMatrixRectangular(LinearOperator):
     #     :return: 1D np.array of the diagonal
     #     """
     #     return self.H_.get_diagonal()
+
+def main():
+    print("bigwham4py successfully imported")
+    
+if __name__ == "__main__":
+    main()
