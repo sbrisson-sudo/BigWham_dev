@@ -55,7 +55,7 @@ void check_cublas(cublasStatus_t err, const char* const func, const char* const 
 namespace bigwham {
 
 template <typename T>
-HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const bool verbose, const int fixed_rank) {
+HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const int n_openMP_threads, const bool verbose, const int fixed_rank) {
 
 #ifdef TIMING
     struct timespec start, end;
@@ -66,7 +66,6 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     // construction directly
     this->verbose_ = verbose;
     this->fixed_rank_ = fixed_rank;
-    const int n_openMP_threads = 8;
     this->n_openMP_threads_=n_openMP_threads;
 
     this->dof_dimension_ = matrix_gen.blockSize();
@@ -273,6 +272,8 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         int block_size = size_count.first;
         int block_count = size_count.second;
 
+        // std::cout << "fixe_rank = " << fixed_rank << std::endl;
+
         // Loop on groups
         for (int group_i(0); group_i < LR_blocks_groups_indices[block_size].size() ; group_i++){
 
@@ -407,14 +408,6 @@ void HmatCuda<T>::copyToDevice(){
 
     CHECK_CUDA_ERROR(cudaMalloc(&d_FR_data_, FR_data_size_bytes));
     CHECK_CUDA_ERROR(cudaMemcpy(d_FR_data_, FR_standard_size_data, FR_data_size_bytes, cudaMemcpyHostToDevice));
-
-    // Copying back the first entry 
-    T tmp_check;
-    CHECK_CUDA_ERROR(cudaMemcpy(&tmp_check, d_FR_data_, sizeof(T), cudaMemcpyDeviceToHost));
-
-#ifdef DEBUG
-    std::cout << "d_FR_data_[0] = " << tmp_check << "\n";
-#endif
 
     // Then we set up the BSR description of the FR 
     cusparseCreateMatDescr(&FR_bsr_descr_);
@@ -1015,7 +1008,7 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
     il::Array<double> y(vector_size_, 0.0);
 
-    #pragma omp parallel
+    #pragma omp parallel num_threads(this->n_openMP_threads_)
     {
 
         il::Array<double> y_private(vector_size_, 0.0);
@@ -1120,6 +1113,8 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                     // if (err != cudaSuccess) {
                     //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
                     // }
+
+                    lr_group_counter++;
                 }
             }
 

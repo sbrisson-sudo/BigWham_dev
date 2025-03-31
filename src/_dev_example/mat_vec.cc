@@ -126,6 +126,7 @@ int main(int argc, char * argv[]) {
   double max_error_aca;
 
   // Normal hmat (CPU)
+  int n_omp_threads = 999;
   bool verbose = false;
   bool homogeneous_size = false;
   bool use_Cuda = false;
@@ -134,7 +135,7 @@ int main(int argc, char * argv[]) {
   // auto start = std::chrono::high_resolution_clock::now();
   clock_gettime(CLOCK_MONOTONIC, &start);
 
-  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, verbose, homogeneous_size, use_Cuda);
+  BigWhamIO hmat_io(coor_vec, conn_vec, kernel, properties, n_omp_threads, verbose, homogeneous_size, use_Cuda);
   hmat_io.BuildPattern(max_leaf_size, eta);
   hmat_io.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
 

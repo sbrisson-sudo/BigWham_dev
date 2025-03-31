@@ -26,11 +26,10 @@ namespace bigwham {
 
 // direct constructor
     template <typename T>
-    Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const bool verbose, const int fixed_rank) {
+    Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const int n_openMP_threads, const bool verbose, const int fixed_rank) {
         // construction directly
         this->verbose_ = verbose;
         this->fixed_rank_ = fixed_rank;
-        const int n_openMP_threads = 8;
         this->n_openMP_threads_=n_openMP_threads;
 
 #ifdef TIMING
@@ -46,6 +45,7 @@ namespace bigwham {
         this->build(matrix_gen, epsilon_aca);
         tt.Stop();
         if (this->verbose_){
+            std::cout << "HMAT num openMP threads = " << this->n_openMP_threads_ << "\n";
             std::cout << "Creation of hmat done in " << tt.time() << "\n";
             std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
             std::cout << "Hmat object - built "<< "\n";
@@ -123,12 +123,12 @@ namespace bigwham {
             for (il::int_t j = 0; j < aux.size(1); j++) {
                 for (il::int_t i = 0; i < aux.size(0); i++) {
 
-                    // pos_list[npos + 2 * index] = permutDOF_src[(i + dof_dimension_ * i0)]; // rows
-                    // pos_list[npos + 2 * index + 1] = permutDOF_src[(j + dof_dimension_ * j0)]; // columns 
+                    pos_list[npos + 2 * index] = permutDOF_src[(i + dof_dimension_ * i0)]; // rows
+                    pos_list[npos + 2 * index + 1] = permutDOF_src[(j + dof_dimension_ * j0)]; // columns 
 
-                    // For rect matrices : only row permutations
-                    pos_list[npos + 2 * index] = permutDOF_rcv[(i + dof_dimension_ * i0)];
-                    pos_list[npos + 2 * index + 1] = (j + dof_dimension_ * j0);
+                    // For PETSc parallel solvers (bc the submatrices are defined in an already permuted dof ordering)
+                    // pos_list[npos + 2 * index] = permutDOF_rcv[(i + dof_dimension_ * i0)];
+                    // pos_list[npos + 2 * index + 1] = (j + dof_dimension_ * j0);
 
 
                     // columns
@@ -478,9 +478,10 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         // il::Array<T> y{size_[0], 0.};
 
 // #pragma omp parallel shared(y) num_threads(this->n_openMP_threads_)
-#pragma omp parallel
+#pragma omp parallel num_threads(this->n_openMP_threads_)
         {
             il::Array<T> yprivate(size_[0], 0.0, il::align_t(), 64);
+
             // il::Array<T> yprivate{size_[0], 0.};
 
             // int thread_id = omp_get_thread_num();

@@ -39,6 +39,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
                      const std::vector<int> &conn,
                      const std::string &kernel,
                      const std::vector<double> &properties,
+                     const int n_openMP_threads,
                      const bool verbose,
                      const bool homogeneous_size_pattern,
                      const bool useCuda,
@@ -50,30 +51,39 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
     this->kernel_name_ = kernel;
     this->fixed_rank_ = fixed_rank;
 
-#ifdef USE_CUDA
+    // Ensuring CUDA compatible arguments
     this->use_cuda_hmat = useCuda;
-    if (useCuda && (fixed_rank <= 0)) {
-        std::cerr << "CUDA matvec can't be used without using fixed rank" << std::endl;
-        std::abort();
+
+    if( this->use_cuda_hmat  && (!GetCudaAvailable())){
+        std::cerr << "WARNING: Bigwham hasn't been compiled with CUDA support, falling back to CPU matvec" << std::endl;
+        this->use_cuda_hmat = false;
     }
-    if (useCuda && !homogeneous_size_pattern) {
-        std::cerr << "CUDA matvec can't be used without using homogeneous sized pattern" << std::endl;
-        std::abort();
+    
+    if (this->use_cuda_hmat  && (fixed_rank <= 0)) {
+        std::cerr << "WARNING: CUDA matvec can't be used without using fixed rank, falling back to CPU matvec" << std::endl;
+        this->use_cuda_hmat = false;
     }
-
-#endif
-
-
+    if (this->use_cuda_hmat  && !homogeneous_size_pattern) {
+        std::cerr << "WARNING: CUDA matvec can't be used without using homogeneous sized pattern, falling back to CPU matvec" << std::endl;
+        this->use_cuda_hmat = false;
+    }
+    
     // This should be cleaned properly
-    const int n_openMP_threads = 8;
     this->n_openMP_threads_ = n_openMP_threads;
-    auto n_available = this->GetAvailableOmpThreads();
+    int n_available = this->GetAvailableOmpThreads();
     if (n_openMP_threads > n_available)
     {
         this->n_openMP_threads_ = n_available;
     };
 
-    
+#ifdef BIGWHAM_OPENMP
+    if (this->verbose_)
+            std::cout << "Forcing the number of OpenMP threads to " << this->n_openMP_threads_ << std::endl;
+    omp_set_max_active_levels(1);  // Limit parallel region depth
+    // omp_set_nested(0);  // Disable nested parallelism
+
+    omp_set_num_threads(this->n_openMP_threads_);
+#endif
 
     if (this->verbose_){
         std::cout << "BigWham using " << this->n_openMP_threads_ << " OpenMP threads\n";
@@ -250,6 +260,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
                      const std::vector<double> &coor_rec,
                      const std::vector<int> &conn_rec, const std::string &kernel,
                      const std::vector<double> &properties,
+                     const int n_openMP_threads,
                     const bool verbose,
                     const bool homogeneous_size_pattern,
                     const bool useCuda,
@@ -263,7 +274,6 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
     this->use_cuda_hmat = useCuda;
 #endif
 
-    const int n_openMP_threads = 8;
     this->n_openMP_threads_ = n_openMP_threads;
     auto n_available = this->GetAvailableOmpThreads();
     if (n_openMP_threads > n_available)
@@ -271,9 +281,15 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         this->n_openMP_threads_ = n_available;
     };
 
-    this->kernel_name_ = kernel;
+#ifdef BIGWHAM_OPENMP
+    if (this->verbose_)
+        std::cout << "Forcing the number of OpenMP threads to " << this->n_openMP_threads_ << std::endl;
+    omp_set_num_threads(this->n_openMP_threads_);
+    // omp_set_nested(0);  // Disable nested parallelism
+    omp_set_max_active_levels(1);  // Limit parallel region depth
+#endif
 
-    
+    this->kernel_name_ = kernel;
 
     if (this->verbose_){
         std::cout << "BigWham using " << this->n_openMP_threads_ << " OpenMP threads\n";
@@ -527,11 +543,11 @@ void BigWhamIO::BuildHierarchicalMatrix(const int max_leaf_size, const double et
 
 #ifdef USE_CUDA
     if (this->use_cuda_hmat){
-        hmat_ = std::make_shared<HmatCuda<double>>(M, epsilon_aca_, this->verbose_, this->fixed_rank_);
+        hmat_ = std::make_shared<HmatCuda<double>>(M, epsilon_aca_, this->n_openMP_threads_, this->verbose_, this->fixed_rank_);
     } else {
 #endif
 
-    hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_, this->verbose_, this->fixed_rank_);
+    hmat_ = std::make_shared<Hmat<double>>(M, epsilon_aca_, this->n_openMP_threads_, this->verbose_, this->fixed_rank_);
 
 #ifdef USE_CUDA
     }
@@ -1174,3 +1190,12 @@ il::Array<double> BigWhamIO::ComputeFluxes(const std::vector<double> &coor_obs, 
     }
     return obs_flux;
 }
+
+
+bool BigWhamIO::GetCudaAvailable(){
+#ifdef USE_CUDA
+    return true;
+#endif 
+    return false;
+}
+

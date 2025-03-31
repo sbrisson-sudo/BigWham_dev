@@ -65,8 +65,15 @@ private:
 public:
     BigWhamIO() {};
     // square matrices
-    BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
-              const std::string &kernel, const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, const bool useCuda, const int fixed_ranks=-1) ;
+    BigWhamIO(const std::vector<double> &coor, 
+              const std::vector<int> &conn,
+              const std::string &kernel, 
+              const std::vector<double> &properties, 
+              const int n_openMP_threads,
+              const bool verbose, 
+              const bool homogeneous_size_pattern, 
+              const bool useCuda, 
+              const int fixed_ranks=-1) ;
 
     // rectangular Hmat
     BigWhamIO(const std::vector<double> &coor_src,
@@ -74,7 +81,10 @@ public:
               const std::vector<double> &coor_rec,
               const std::vector<int> &conn_rec, 
               const std::string &kernel,
-              const std::vector<double> &properties, const bool verbose, const bool homogeneous_size_pattern, 
+              const std::vector<double> &properties, 
+              const int n_openMP_threads,
+              const bool verbose, 
+              const bool homogeneous_size_pattern, 
               const bool useCuda,
               const int fixed_ranks=-1);
 
@@ -162,6 +172,8 @@ public:
     // at binding time
     this->hmat_->hmatMemFree();
   }
+
+  bool GetCudaAvailable();
 
   int GetOmpThreads() {
     std::cout << "NUM OF OMP THREADS used by BigWham: " << this->n_openMP_threads_ << std::endl;

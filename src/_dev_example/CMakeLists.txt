@@ -18,8 +18,11 @@ target_link_libraries(rep_test PRIVATE BigWhamShared cnpy)
 add_executable(mat_vec mat_vec.cc)
 target_link_libraries(mat_vec PRIVATE BigWhamShared cnpy)
 
-add_executable(mat_vec_gpu mat_vec_gpu.cc)
-target_link_libraries(mat_vec_gpu PRIVATE BigWhamShared cnpy)
+if (USE_CUDA)
+    add_executable(mat_vec_gpu mat_vec_gpu.cc)
+    target_link_libraries(mat_vec_gpu PRIVATE BigWhamShared cnpy)
+    target_link_libraries(mat_vec_gpu PRIVATE ${CUDA_LIBRARIES})
+endif()
 
 add_executable(test_contiguous_array2d test_contiguous_array2d_vector.cpp)
 target_include_directories(test_contiguous_array2d PUBLIC ../../il ../../src)

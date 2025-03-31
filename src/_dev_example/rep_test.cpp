@@ -99,7 +99,8 @@ int main(int argc, char *argv[]) {
   auto hr = HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
 
   SquareMatrixGenerator<double> M(my_mesh, ker, hr);
-  bigwham::Hmat<double> h_(M, eps_aca);
+  const int n_openmp_threads = 4;
+  bigwham::Hmat<double> h_(M, eps_aca, n_openmp_threads);
 
   il::Array<double> dd{M.size(1), 0.0};
   il::Array<double> dd_perm{M.size(1), 0.0};

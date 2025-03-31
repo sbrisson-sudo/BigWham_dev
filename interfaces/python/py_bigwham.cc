@@ -38,6 +38,7 @@ public:
                 const std::vector<double> &coor_rec,
                 const std::vector<int> &conn_rec, const std::string &kernel,
                 const std::vector<double> &properties, 
+                const int num_omp_threads,
                 const bool verbose,
                 const bool homogeneous_pattern_size,
                 const bool useCuda,
@@ -47,6 +48,7 @@ public:
                   coor_rec,
                   conn_rec, kernel,
                   properties,
+                  num_omp_threads,
                   verbose, 
                   homogeneous_pattern_size,
                   useCuda,
@@ -137,9 +139,7 @@ PYBIND11_MODULE(py_bigwham, m)
   // Square Self Interaction matrices
   py::class_<BigWhamIO>(m, "BigWhamIOSelf", py::dynamic_attr(),
                         py::module_local())
-      .def(py::init<const std::vector<double> &,
-                    const std::vector<int> &, const std::string &,
-                    const std::vector<double> &,const bool, const bool, const bool, const int &>()) // constructor
+      .def(py::init<const std::vector<double> &, const std::vector<int> &, const std::string &, const std::vector<double> &, const int &, const bool, const bool, const bool, const int & >()) // constructor
       .def("hmat_destructor", &BigWhamIO::HmatrixDestructor)
       .def("load_from_file", &BigWhamIO::LoadFromFile)
       .def("build_hierarchical_matrix", &BigWhamIO::BuildHierarchicalMatrix)
@@ -156,6 +156,7 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("write_hmatrix", &BigWhamIO::WriteHmatrix)
       .def("get_hmat_time", &BigWhamIO::hmat_time)
       .def("get_omp_threads", &BigWhamIO::GetOmpThreads)
+      .def("get_cuda_available", &BigWhamIO::GetCudaAvailable)
       .def("get_element_normals",&BigWhamIO::GetElementNormals)
       .def("get_rotation_matrix",&BigWhamIO::GetRotationMatrix)
       .def(py::pickle(
@@ -264,9 +265,7 @@ PYBIND11_MODULE(py_bigwham, m)
    */
 
   py::class_<BigWhamIORect>(m, "BigWhamIORect", py::dynamic_attr())
-      .def(py::init<const std::vector<double> &, const std::vector<int> &,
-                    const std::vector<double> &, const std::vector<int> &,
-                    const std::string &, const std::vector<double> &, const bool, const bool, const bool, const int &>())
+      .def(py::init<const std::vector<double> &, const std::vector<int> &, const std::vector<double> &, const std::vector<int> &, const std::string &, const std::vector<double> &, const int &, const bool, const bool, const bool, const int & >())
       .def("hmat_destructor", &BigWhamIORect::HmatrixDestructor)
       .def("build_hierarchical_matrix", &BigWhamIORect::BuildHierarchicalMatrix)
       .def("build_pattern", &BigWhamIORect::BuildPattern)
@@ -283,6 +282,7 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("write_hmatrix", &BigWhamIO::WriteHmatrix) // check here why BigWhamIO and not BigWhamIORect ?
       .def("get_hmat_time", &BigWhamIORect::hmat_time)
       .def("get_omp_threads", &BigWhamIORect::GetOmpThreads)
+      .def("get_cuda_available", &BigWhamIO::GetCudaAvailable)
       .def("convert_to_global",
            [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto)
            {

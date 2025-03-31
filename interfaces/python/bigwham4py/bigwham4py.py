@@ -17,6 +17,7 @@
 
 # external
 import numpy as np
+import time
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse import csc_matrix
 
@@ -30,6 +31,17 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 
+# list kernels
+kernels_id = [
+    "2DS0-H",
+    "2DS1-H",
+    "S3DS0-H",
+    "Axi3DS0-H",
+    "3DT0-H",
+    "3DT6-H",
+    "3DR0-H",
+    "3DR0-H-mode1"
+]
 
 ##############################
 #  Hmatrix class in python   #
@@ -63,6 +75,11 @@ class BEMatrix(LinearOperator):
         eps_aca            (float)              approximation factor (usually 0.001 - 0.0001)
         n_openMP_threads    (integer)           number of OMP threads to be used by BigWham
         """
+                
+        # Ensure kernel exists
+        if not(kernel in kernels_id):
+            print(f"ERROR : Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]")
+            return
 
         self.kernel_ : str = kernel
         self.properties_ : np.ndarray = properties
@@ -75,6 +92,7 @@ class BEMatrix(LinearOperator):
             conn.flatten(),
             kernel,
             properties.flatten(),
+            n_openMP_threads,
             verbose,
             homogeneous_size_pattern,
             useCuda,
@@ -356,9 +374,28 @@ class BEMatrix(LinearOperator):
         :return: 1D np.array of the diagonal
         """
         return self.H_.get_diagonal()
+    
+    def isCudaAvailable(self):
+        """
+        Return if BigWham has been compiled with CUDA support
+        :return: boolean value
+        """
+        return self.H_.get_cuda_available()
+    
+    def getMatvecTime(self, N_matvec=100):
+        """
+        Time the matvec operation
+        :return: matvec time im seconds
+        """
+        x = np.ones(self.shape[0])
+        # One first matvec performed not taken into account
+        self._matvec(x)
+        # Then we time it 
+        start_time = time.time()
+        for _ in range(N_matvec):
+            self._matvec(x)
+        return (time.time() - start_time)/N_matvec
         
-
-
 ########################################################################################################
 #  BEMatrix Rectangular class in python   #
 ########################################################################################################
@@ -374,7 +411,8 @@ class BEMatrixRectangular(LinearOperator):
         properties : np.ndarray,
         max_leaf_size : int =100,
         eta : float=3.0,
-        eps_aca : float=1.0e-3, n_openMP_threads:int =8,
+        eps_aca : float=1.0e-3, 
+        n_openMP_threads:int =8,
         directly_build:bool = True,
         verbose:bool = True,
         homogeneous_size_pattern:bool = False,
@@ -397,6 +435,7 @@ class BEMatrixRectangular(LinearOperator):
             conn_rec.flatten(),
             kernel,
             properties.flatten(),
+            n_openMP_threads,
             verbose,
             homogeneous_size_pattern,
             useCuda,
@@ -549,12 +588,33 @@ class BEMatrixRectangular(LinearOperator):
         
         return csc_matrix((val, (row, col)), shape=self.shape_)
     
+    def isCudaAvailable(self):
+        """
+        Return if BigWham has been compiled with CUDA support
+        :return: boolean value
+        """
+        return self.H_.get_cuda_available()
+    
     # def get_diagonal(self):
     #     """
     #     Get the diagonal of the matrix, in the original ordering of dof
     #     :return: 1D np.array of the diagonal
     #     """
     #     return self.H_.get_diagonal()
+    
+    def getMatvecTime(self, N_matvec=100):
+        """
+        Time the matvec operation
+        :return: matvec time im seconds
+        """
+        x = np.ones(self.shape[0])
+        # One first matvec performed not taken into account
+        self._matvec(x)
+        # Then we time it 
+        start_time = time.time()
+        for _ in range(N_matvec):
+            self._matvec(x)
+        return (time.time() - start_time)/N_matvec
 
 def main():
     print("bigwham4py successfully imported")

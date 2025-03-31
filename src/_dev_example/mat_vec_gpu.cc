@@ -29,6 +29,9 @@
 #ifdef USE_ITT
 #include <ittnotify.h>
 #endif
+
+#include "cuda_profiler_api.h"
+
 /* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
@@ -128,6 +131,7 @@ int main(int argc, char * argv[]) {
   double max_error_aca;
   
   // GPU matvec
+  int n_omp_threads = 999;
   bool verbose = false;
   bool homogeneous_size = true;
   bool use_Cuda = true;
@@ -137,7 +141,7 @@ int main(int argc, char * argv[]) {
   // auto start = std::chrono::high_resolution_clock::now();
   clock_gettime(CLOCK_MONOTONIC, &start);
 
-  BigWhamIO hmat_io_2(coor_vec, conn_vec, kernel, properties, verbose, homogeneous_size, use_Cuda, rank);
+  BigWhamIO hmat_io_2(coor_vec, conn_vec, kernel, properties, n_omp_threads, verbose, homogeneous_size, use_Cuda, rank);
   hmat_io_2.BuildPattern(max_leaf_size, eta);
   hmat_io_2.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
 
@@ -154,8 +158,17 @@ int main(int argc, char * argv[]) {
   max_error_aca = hmat_io_2.GetMaxErrorACA();
   std::cout << "[GPU] Max ACA error = " << max_error_aca << std::endl;
 
-  // Compute matvec
   t = hmat_io_2.MatVec(dd_view); 
+
+
+  // Compute matvec
+
+  cudaProfilerStart();  
+
+  t = hmat_io_2.MatVec(dd_view); 
+
+  cudaProfilerStop();  
+
   
   // start = std::chrono::high_resolution_clock::now(); 
   clock_gettime(CLOCK_MONOTONIC, &start);

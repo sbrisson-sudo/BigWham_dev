@@ -69,7 +69,7 @@ protected:
 public:
   void hmatMemFree();
   Hmat() = default;
-  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca, const bool verbose=true, const int fixed_rank=-1);
+  Hmat(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca, const int n_openMP_threads, const bool verbose=true, const int fixed_rank=-1);
   Hmat(const std::string &filename);
 
   virtual ~Hmat() = default;
