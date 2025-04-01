@@ -1067,6 +1067,8 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                     // Associate cuda stream
                     CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[lr_group_counter]));
 
+#if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
+
                     // Compute tmp = B*x
                     CHECK_CUBLAS_ERROR(cublasDgemvBatched(
                         cublas_handle_, CUBLAS_OP_N,
@@ -1113,6 +1115,44 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                     // if (err != cudaSuccess) {
                     //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
                     // }
+
+#else // For CUDA versions before 11.6.2
+
+                    // Compute tmp = B*x
+                    CHECK_CUBLAS_ERROR(cublasDgemmBatched(
+                        cublas_handle_, CUBLAS_OP_N, CUBLAS_OP_N, 
+                        this->fixed_rank_*this->dof_dimension_,
+                        1, // 1 column matrix 
+                        block_size*this->dof_dimension_, 
+                        &alpha,
+                        (const double**)d_LR_B_data_pointers_[block_size][group_i],
+                        this->fixed_rank_*this->dof_dimension_, 
+                        (const double**)d_LR_x_pointers_[block_size][group_i],
+                        block_size*this->dof_dimension_, 
+                        &beta,
+                        d_LR_tmp_pointers_[block_size][group_i],
+                        this->fixed_rank_*this->dof_dimension_,
+                        num_blocks
+                    ));
+
+                    // Compute y = A*tmp 
+                    CHECK_CUBLAS_ERROR(cublasDgemmBatched(
+                        cublas_handle_, CUBLAS_OP_N, CUBLAS_OP_N,
+                        block_size*this->dof_dimension_, 
+                        1, // 1 column matrix
+                        this->fixed_rank_*this->dof_dimension_, 
+                        &alpha,
+                        (const double**)d_LR_A_data_pointers_[block_size][group_i],
+                        block_size*this->dof_dimension_,
+                        (const double**)d_LR_tmp_pointers_[block_size][group_i],
+                        this->fixed_rank_*this->dof_dimension_,
+                        &beta,
+                        d_LR_y_pointers_[block_size][group_i],
+                        block_size*this->dof_dimension_,
+                        num_blocks
+                    ));
+
+#endif
 
                     lr_group_counter++;
                 }
