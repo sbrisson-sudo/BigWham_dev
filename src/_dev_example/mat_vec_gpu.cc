@@ -132,7 +132,7 @@ int main(int argc, char * argv[]) {
   
   // GPU matvec
   int n_omp_threads = 999;
-  bool verbose = false;
+  bool verbose = true;
   bool homogeneous_size = true;
   bool use_Cuda = true;
   const int rank = 15;

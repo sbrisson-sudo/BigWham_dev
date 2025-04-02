@@ -1,11 +1,15 @@
 #include <unordered_map>
 #include <ctime>
+#include <iostream>
+#include <string>
+#include <iomanip>
 
 #include "hmat_cuda.h"
 
 #include "cnpy.h"
 
 // #define TIMING
+// #define DEBUG
 
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
@@ -50,6 +54,27 @@ void check_cublas(cublasStatus_t err, const char* const func, const char* const 
   std::cerr << cublasGetErrorString(err) << " " << func << std::endl;
   exit(1);
   }
+}
+
+std::string formatBytes(size_t bytes) {
+    const double KB = 1024.0;
+    const double MB = KB * 1024.0;
+    const double GB = MB * 1024.0;
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+
+    if (bytes >= GB) {
+        oss << (bytes / GB) << " GB";
+    } else if (bytes >= MB) {
+        oss << (bytes / MB) << " MB";
+    } else if (bytes >= KB) {
+        oss << (bytes / KB) << " KB";
+    } else {
+        oss << bytes << " B";
+    }
+
+    return oss.str();
 }
 
 namespace bigwham {
@@ -379,6 +404,10 @@ void HmatCuda<T>::copyToDevice(){
     vector_size_ = this->size_[0];
     vector_size_bytes_ = this->size_[0]* sizeof(T);
 
+    if (this->verbose_){
+        std::cout << "Allocating " << formatBytes(vector_size_bytes_*(2*num_streams_+2)) << " on the GPU for auxilliary vectors" << std::endl;
+    }
+
     CHECK_CUDA_ERROR(cudaMalloc(&d_x_, vector_size_bytes_));
     CHECK_CUDA_ERROR(cudaMalloc(&d_y_, vector_size_bytes_));
     CHECK_CUDA_ERROR(cudaMalloc(&d_ones_, vector_size_bytes_));
@@ -404,6 +433,16 @@ void HmatCuda<T>::copyToDevice(){
     std::cout << "Copying FR standard block to device = " << FR_data_size_bytes << " bytes\n";
     std::cout << "FR_standard_size_data[0] = " << FR_standard_size_data[0] << "\n";
 #endif
+
+    if (this->verbose_){
+        size_t total_to_allocate = FR_data_size_bytes;
+        for (auto& pair : LR_data_buffer_sizes){
+            for (int buffer_size : pair.second){
+                total_to_allocate += buffer_size * sizeof(T);
+            }
+        }
+        std::cout << "Allocating " << formatBytes(total_to_allocate) << " on the GPU for hierarchical matrix data" << std::endl;
+    }
 
 
     CHECK_CUDA_ERROR(cudaMalloc(&d_FR_data_, FR_data_size_bytes));
@@ -475,6 +514,33 @@ void HmatCuda<T>::copyToDevice(){
     for (int i = 0; i < FR_std_orderedIndices.size(); i++) std::cout << h_FR_bsrColInd_[i] << ", ";
     std::cout << "]\n";
 #endif
+
+    if (this->verbose_){
+        size_t total_to_allocate_metadata = 0;
+        total_to_allocate_metadata += (num_block_rows+1)*sizeof(int) + nnzb*sizeof(int);
+        for (auto& pair : LR_data_buffer_sizes){
+            int num_groups = pair.second.size();
+            int block_size = pair.first;
+
+            for (int group_i(0); group_i<num_groups; group_i++){
+                int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
+                total_to_allocate_metadata += num_blocks * sizeof(T*) * 5;
+            }
+        }
+        std::cout << "Allocating " << formatBytes(total_to_allocate_metadata) << " on the GPU for hierarchical matrix metadata" << std::endl;
+
+        size_t aux_vectors_min_data = 0;
+        for (auto& pair : LR_data_buffer_sizes){
+            int num_groups = pair.second.size();
+            int block_size = pair.first;
+            for (int group_i(0); group_i<num_groups; group_i++){
+                int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
+                aux_vectors_min_data += num_blocks*(block_size + this->fixed_rank_)* sizeof(T);
+            }
+        }
+        std::cout << "Minimum storage for all output vectors =" << formatBytes(aux_vectors_min_data) << std::endl;
+
+    }
 
     // Then copy it to device
     CHECK_CUDA_ERROR(cudaMalloc(&d_FR_bsrRowPtr_, (num_block_rows+1)*sizeof(int)));
@@ -897,15 +963,31 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
         offsets_per_size[size] = std::vector<int>(num_groups, 0);;
     }
 
-    // // Test to memset the buffers
-    // for (auto size : this->LR_sizes){
-    //     std::cout << "Memset of " << LR_data_buffer_sizes[size]*sizeof(T) << " bytes starting from " << LR_A_data[size] << std::endl;
-    //     std::cout << "Memset of " << LR_data_buffer_sizes[size]*sizeof(T) << " bytes starting from " << LR_B_data[size] << std::endl;
-    //     std::memset(LR_A_data[size], 0, LR_data_buffer_sizes[size]*sizeof(T));
-    //     std::memset(LR_B_data[size], 0, LR_data_buffer_sizes[size]*sizeof(T));
-    // }
+    // We compute and set the offsets
+    int* offsets_LR = new int[hr->pattern_.n_LRB];
+    for (auto& pair : this->LR_blocks_groups_indices){
+        int size = pair.first;
+        int group_id = 0;
+        for (auto& list_indices : pair.second){
+            for (int i : list_indices){
 
-    // #pragma omp parallel for schedule(guided)
+                il::int_t i0 = hr->pattern_.LRB_pattern(1, i);
+                il::int_t j0 = hr->pattern_.LRB_pattern(2, i);
+                il::int_t iend = hr->pattern_.LRB_pattern(3, i);
+                il::int_t jend = hr->pattern_.LRB_pattern(4, i);
+
+                int block_size = iend-i0;
+                int data_size = block_size * this->fixed_rank_ * dim_dof*dim_dof;
+
+                offsets_LR[i] = offsets_per_size[size][group_id];
+
+                offsets_per_size[size][group_id] += data_size;
+            }
+            group_id++;
+        }
+    }
+
+    #pragma omp parallel for schedule(guided)
     for (il::int_t i = 0; i < hr->pattern_.n_LRB; i++) {
 
         il::int_t i0 = hr->pattern_.LRB_pattern(1, i);
@@ -958,7 +1040,8 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
         }
         
         // We get the offset at which we should write
-        int offset = offsets_per_size[block_size][group_id];
+        // int offset = offsets_per_size[block_size][group_id];
+        int offset = offsets_LR[i];
 
         // Ensure memory is allocated
         if (offset + data_size > LR_data_buffer_sizes[block_size][group_id])
@@ -993,9 +1076,7 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
 
         // Finally we move it
         this->low_rank_blocks_[i] = std::move(lrb);
-
-        // And we increment the offsets
-        offsets_per_size[block_size][group_id] += data_size;
+        
 
     }
 
@@ -1159,6 +1240,14 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             }
 
             cudaDeviceSynchronize();
+
+#ifdef DEBUG
+            // Copy back and save  partial results
+            double* h_y_partial_ = new double[vector_size_ * num_streams_];
+            CHECK_CUDA_ERROR(cudaMemcpy(h_y_partial_, d_y_partial_, vector_size_bytes_*num_streams_, cudaMemcpyDeviceToHost));
+
+            cnpy::npy_save("y_partial.npy", h_y_partial_, {static_cast<size_t>(vector_size_),static_cast<size_t>(num_streams_)}, "w");
+#endif 
 
             // Sum partial results
             cublasDgemv(cublas_handle_, 

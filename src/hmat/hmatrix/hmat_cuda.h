@@ -74,6 +74,7 @@ private:
 
     // Number of CUDA streams = 1 for BSR + num of batched opeartions
     int num_streams_;
+    // const int num_streams_ = 2;
     std::vector<cudaStream_t> cuda_streams_;
 
     // GPU (device) memory buffers
