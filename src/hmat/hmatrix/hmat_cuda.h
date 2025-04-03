@@ -63,67 +63,81 @@ private:
     std::vector<int> FR_non_std_indices;
 
     std::vector<int> LR_sizes;
+
     std::unordered_map<int, std::vector<std::vector<int>>> LR_blocks_groups_indices;
     std::unordered_map<int, std::vector<T*>> LR_A_data;
     std::unordered_map<int, std::vector<T*>> LR_B_data;
     std::unordered_map<int, std::vector<int>> LR_data_buffer_sizes;
-    std::vector<std::unordered_map<int, std::vector<int>>> LR_group_per_cuda_stream_;
+
+    // Num available GPUs
+    int num_gpus_;
+    
+    std::vector<int> num_FR_per_gpu_;
+    std::vector<int> num_LR_per_gpu_;
+    std::vector<int> offsets_FR_gpu_;
+    
+    std::vector<std::unordered_map<int, std::vector<int>>> LR_group_per_gpu_;
+    std::vector<std::pair<int, int>> LR_group_size_num_;
+
+    // FOR ALL THE DATA STRUCTURES BELLOW, THE FIRST VECTOR RELATES
+    // TO THE GPU REPARTITION
+
+    std::vector<std::vector<std::unordered_map<int, std::vector<int>>>> LR_group_per_cuda_stream_;
 
     // GPU operation handler
-    cublasHandle_t cublas_handle_;
-    cusparseHandle_t cusparse_handle_;
+    std::vector<cublasHandle_t> cublas_handle_;
+    std::vector<cusparseHandle_t> cusparse_handle_;
 
     // Number of CUDA streams = 1 for BSR + the rest for batched opeartions
     // int num_streams_;
-    const int num_streams_ = 32;
-    std::vector<cudaStream_t> cuda_streams_;
+    const int num_streams_ = 4;
+    std::vector<std::vector<cudaStream_t>> cuda_streams_;
 
     // GPU (device) memory buffers
     // Vectors
     size_t vector_size_bytes_;
     size_t vector_size_;
-    T* d_x_;               // Store the lhs vector on device
-    T* d_y_;               // Store the rhs vector on device
-    T* d_y_partial_LR_;    // Partial results for LR blocks operations
-    T* d_tmp_;          // tmp = B*x then y = A*tmp
-    // T* d_ones_;            // For convenience
+    std::vector<T*> d_x_;               // Store the lhs vector on device
+    std::vector<T*> d_y_;               // Store the rhs vector on device
+    std::vector<T*> d_y_partial_LR_;    // Partial results for LR blocks operations
+    std::vector<T*> d_tmp_;          // tmp = B*x then y = A*tmp
 
     // FR data
-    T* d_FR_data_;
+    std::vector<T*> d_FR_data_;
 
     // LR data
-    std::unordered_map<int, std::vector<T*>> d_LR_A_data_;
-    std::unordered_map<int, std::vector<T*>> d_LR_B_data_;
+    std::vector<std::unordered_map<int, std::unordered_map<int, T*>>> d_LR_A_data_;
+    std::vector<std::unordered_map<int, std::unordered_map<int, T*>>> d_LR_B_data_;
 
     // FR metadata = BSR operations
-    cusparseMatDescr_t FR_bsr_descr_;
-    int* d_FR_bsrRowPtr_;  // Device array of row pointers
-    int* d_FR_bsrColInd_;  // Device array of column indices
+    std::vector<cusparseMatDescr_t> FR_bsr_descr_;
+    std::vector<int*> d_FR_bsrRowPtr_;  // Device array of row pointers
+    std::vector<int*> d_FR_bsrColInd_;  // Device array of column indices
 
     // We also keep them on host
-    int* h_FR_bsrRowPtr_; 
-    int* h_FR_bsrColInd_; 
+    std::vector<int*> h_FR_bsrRowPtr_; 
+    std::vector<int*> h_FR_bsrColInd_; 
 
     // LR metadata = array of pointers for batched operations
-    std::unordered_map<int, std::vector<T**>> d_LR_A_data_pointers_;   // to data 
-    std::unordered_map<int, std::vector<T**>> d_LR_B_data_pointers_;   // to data 
-    std::unordered_map<int, std::vector<T**>> d_LR_x_pointers_;      // to input vec (and to intermediate vec)
-    std::unordered_map<int, std::vector<T**>> d_LR_y_pointers_;      // to output vec
-    std::unordered_map<int, std::vector<T**>> d_LR_tmp_pointers_;      // to output vec
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_A_data_pointers_;   // to data 
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_B_data_pointers_;   // to data 
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_x_pointers_;      // to input vec (and to intermediate vec)
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_y_pointers_;      // to output vec
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_tmp_pointers_;      // to output vec
 
     // We also keep them on host
-    std::unordered_map<int, std::vector<T**>> h_LR_A_data_pointers_;    
-    std::unordered_map<int, std::vector<T**>> h_LR_B_data_pointers_;    
-    std::unordered_map<int, std::vector<T**>> h_LR_x_pointers_;       
-    std::unordered_map<int, std::vector<T**>> h_LR_y_pointers_;    
-    std::unordered_map<int, std::vector<T**>> h_LR_tmp_pointers_;    
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_A_data_pointers_;    
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_B_data_pointers_;    
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_x_pointers_;       
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_y_pointers_;    
+    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_tmp_pointers_;    
 
     // To gather the low rank partial results
     size_t y_partial_LR_buffer_size_bytes_;
     size_t tmp_buffer_size_bytes_;
-    int* d_LR_y_partial_src_indices_;
-    int* d_LR_y_partial_dest_indices_;
-    int* d_LR_y_partial_lengths_;
+    std::vector<int*> d_LR_y_partial_src_indices_;
+    std::vector<int*> d_LR_y_partial_dest_indices_;
+    std::vector<int*> d_LR_y_partial_lengths_;
 
 public:
   HmatCuda() = default;
@@ -136,11 +150,11 @@ public:
   il::Array<T> matvec(il::ArrayView<T> x) override;
 
   // debugging functions
-  il::Array2D<T> getFRBlockDataHost(int fr_block);
-  il::Array2D<T> getFRBlockDataDevice(int fr_block);
+  // il::Array2D<T> getFRBlockDataHost(int fr_block);
+  // il::Array2D<T> getFRBlockDataDevice(int fr_block);
 
-  il::Array<int> getFRBlockRowPtrHost();
-  il::Array<int>  getFRBlockColIndHost();
+  // il::Array<int> getFRBlockRowPtrHost();
+  // il::Array<int>  getFRBlockColIndHost();
   // int* getFRBlockColIndDevice(int fr_block);
   // il::Array<int> getFRBlockRowPtrDevice(int fr_block);
   // il::Array2D<T> getLRBlockDataHost(int fr_block);

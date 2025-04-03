@@ -175,6 +175,10 @@ int main(int argc, char * argv[]) {
       }
   }
 
+  std::cout << "max_leaf_size = " << max_leaf_size << std::endl; 
+  std::cout << "eta = " << eta << std::endl; 
+  std::cout << "rank = " << rank << std::endl; 
+
 
   // matvec vectors
   il::Array<double> dd{num_dof, il::align_t(), 64};

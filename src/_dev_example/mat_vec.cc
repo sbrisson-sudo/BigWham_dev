@@ -180,6 +180,10 @@ int main(int argc, char * argv[]) {
   l2_norm = std::sqrt(l2_norm);
   std::cout << "[CPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
 
+  std::cout << "[CPU] res = [" ;
+  for (int i(0); i<num_dof; i++) std::cout << t_view[i] << ", ";
+  std::cout << "\n";
+
   // // Exporting stuff
   // auto hmat = hmat_io.getHmat();
   // auto hmat_cuda = std::dynamic_pointer_cast<bigwham::HmatCuda<double>>(hmat);
