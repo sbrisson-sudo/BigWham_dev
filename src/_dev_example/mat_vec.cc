@@ -174,15 +174,21 @@ int main(int argc, char * argv[]) {
   // cnpy::npy_save("result_cpu.npy", t.data(), {static_cast<size_t>(num_dof)}, "w");
   
   // Compute l2 norm
+  // Compute l2 norm
   double l2_norm = 0;
+  double res_sum = 0;
   auto t_view = t.view();
-  for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
+  for (int i(0); i<num_dof; i++){
+    l2_norm += t_view[i] * t_view[i];
+    res_sum += t_view[i];
+  } 
   l2_norm = std::sqrt(l2_norm);
   std::cout << "[CPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
+  std::cout << "[CPU] sum of the product of H with [0, 1/dof, ...,  1] = " << res_sum  << std::endl;
 
-  std::cout << "[CPU] res = [" ;
-  for (int i(0); i<num_dof; i++) std::cout << t_view[i] << ", ";
-  std::cout << "\n";
+  // std::cout << "[CPU] res = [" ;
+  // for (int i(0); i<num_dof; i++) std::cout << t_view[i] << ", ";
+  // std::cout << "\n";
 
   // // Exporting stuff
   // auto hmat = hmat_io.getHmat();

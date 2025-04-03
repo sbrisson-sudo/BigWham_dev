@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <sstream>
 
 #include "hmat_cuda.h"
 #include "y_partial_scatter_add.h"
@@ -12,7 +13,7 @@
 // #define TIMING
 // #define DEBUG
 // #define DEBUG2
-// #define DEBUG4
+// #define DEBUG5
 
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
@@ -405,6 +406,11 @@ void HmatCuda<T>::copyToDevice(){
     cudaGetDeviceCount(&num_gpus_);
     // num_gpus_ = 1;
 
+    if (this->n_openMP_threads_ <= num_gpus_){
+        std::cerr << "Less OpenMP threads than CPUs, aborting..." << std::endl;
+        std::abort();
+    }
+
     if (this->verbose_){
         std::cout << "--------------------" << std::endl;
         std::cout << "Copying the Hmat to the GPU ..." << std::endl;
@@ -421,20 +427,27 @@ void HmatCuda<T>::copyToDevice(){
 
     // FR standard blocks
     num_FR_per_gpu_.resize(num_gpus_);
-    for (int gpu_id(0); gpu_id<num_gpus_-1; gpu_id++) num_FR_per_gpu_[gpu_id] = num_FR_std_blocks_/num_gpus_;
-    num_FR_per_gpu_[num_gpus_-1] = num_FR_std_blocks_ - (num_gpus_-1)*num_FR_std_blocks_/num_gpus_;
+    for (int gpu_id = 0; gpu_id < num_gpus_-1; gpu_id++) {
+        num_FR_per_gpu_[gpu_id] = num_FR_std_blocks_ / num_gpus_;
+    }
+    int sum_so_far = 0;
+    for (int gpu_id = 0; gpu_id < num_gpus_-1; gpu_id++) {
+        sum_so_far += num_FR_per_gpu_[gpu_id];
+    }
+    num_FR_per_gpu_[num_gpus_-1] = num_FR_std_blocks_ - sum_so_far;
+
+#ifdef DEBUG5
+    std::cout << "num_FR_std_blocks_ = " << num_FR_std_blocks_ << std::endl;
+    std::cout << "Num of FR blocks per GPU = [";
+    for (int n : num_FR_per_gpu_) std::cout << n << ",";
+    std::cout << "]\n";
+#endif
 
     offsets_FR_gpu_.resize(num_gpus_);
     offsets_FR_gpu_[0] = 0;
     for (int gpu_id(1); gpu_id<num_gpus_; gpu_id++){
         offsets_FR_gpu_[gpu_id] = offsets_FR_gpu_[gpu_id-1] + num_FR_per_gpu_[gpu_id-1];
     } 
-
-#ifdef DEBUG3
-    std::cout << "Num of FR blocks per GPU = [";
-    for (int n : num_FR_per_gpu_) std::cout << n << ",";
-    std::cout << "]\n";
-#endif
 
     // Distributng the LR block groups 
     num_LR_per_gpu_.resize(num_gpus_);
@@ -697,6 +710,19 @@ void HmatCuda<T>::copyToDevice(){
         CHECK_CUDA_ERROR(cudaMalloc(&d_FR_data_[gpu_id], FR_data_size_bytes));
         CHECK_CUDA_ERROR(cudaMemcpy(d_FR_data_[gpu_id], FR_standard_size_data + offsets_FR_gpu_[gpu_id]*FR_block_size, FR_data_size_bytes, cudaMemcpyHostToDevice));
 
+// #ifdef DEBUG5
+//         std::cout << "[GPU "<< gpu_id << "] FR std data : offset = " << offsets_FR_gpu_[gpu_id] << ", length = " << num_FR_per_gpu_[gpu_id] << std::endl;
+
+//         il::Array<double> fr_data(num_FR_per_gpu_[gpu_id] * FR_block_size, 0.0);
+//         double* fr_data_ = fr_data.Data();
+//         CHECK_CUDA_ERROR(cudaMemcpy(fr_data_, d_FR_data_[gpu_id], FR_data_size_bytes, cudaMemcpyDeviceToHost));
+
+//         std::stringstream ss;
+//         ss << "gpu" << gpu_id << "_" << num_gpus_ <<  "_fr_data.npy";
+//         std::string filename = ss.str();
+//         cnpy::npy_save(filename, fr_data_, {static_cast<size_t>(num_FR_per_gpu_[gpu_id] * FR_block_size)}, "w");
+// #endif
+
 
         if (this->verbose_){
             size_t total_to_allocate = FR_data_size_bytes;
@@ -764,7 +790,7 @@ void HmatCuda<T>::copyToDevice(){
             col_pointer++;
         }
 
-    #ifdef DEBUG4
+    #ifdef DEBUG5
         // Print it to check 
         std::cout << "[GPU "<< gpu_id << "] h_FR_bsrRowPtr_ = [";
         for (int i = 0; i < num_block_rows+1; i++) std::cout << h_FR_bsrRowPtr_[gpu_id][i] << ", ";
@@ -1394,8 +1420,6 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
             int gpu_id = thread_id;
 
-            // std::cout << "Entering matvec for GPU # " << gpu_id << std::endl;
-
             CHECK_CUDA_ERROR(cudaSetDevice(gpu_id));
 
             // // Add explicit CUDA error check
@@ -1406,6 +1430,7 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             // }
 
             CHECK_CUDA_ERROR(cudaMemcpy(d_x_[gpu_id], x.data(), vector_size_bytes_, cudaMemcpyHostToDevice));
+            // CHECK_CUDA_ERROR(cudaMemset(d_y_[gpu_id], 0, vector_size_bytes_));
             
             double alpha = 1.0;
             double beta = 0.0;
@@ -1438,6 +1463,22 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                 &beta,
                 d_y_[gpu_id]                    // FR blocks results written directly in d_y_
             );
+
+#ifdef DEBUG5
+            il::Array<double> y_fr_tmp(vector_size_, 0.0);
+
+            double* y_fr_data = y_fr_tmp.Data();
+            CHECK_CUDA_ERROR(cudaMemcpy(y_fr_data, d_y_[gpu_id], vector_size_bytes_, cudaMemcpyDeviceToHost));
+
+            std::stringstream ss;
+            ss << "gpu" << gpu_id << "_" << num_gpus_ <<  "_y_fr.npy";
+            std::string filename = ss.str();
+            cnpy::npy_save(filename, y_fr_data, {static_cast<size_t>(vector_size_)}, "w");
+
+            double y_fr_sum = 0;
+            for (int i(0); i<vector_size_; i++) y_fr_sum += y_fr_data[i];
+            std::cout << "[GPU "<< gpu_id << "] std FR : y.sum() = " << std::scientific << std::setprecision(17) << y_fr_sum << std::endl;
+#endif
 
             // // Add explicit CUDA error check
             // cudaDeviceSynchronize();
@@ -1597,6 +1638,17 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             // Finnally, copy it back to cpu
             double* y_data = y_private.Data();
             CHECK_CUDA_ERROR(cudaMemcpy(y_data, d_y_[gpu_id], vector_size_bytes_, cudaMemcpyDeviceToHost));
+
+#ifdef DEBUG5
+            std::stringstream ss2;
+            ss2 << "gpu" << gpu_id << "_" << num_gpus_ <<  "_y_fr_lr.npy";
+            std::string filename2 = ss2.str();            
+            cnpy::npy_save(filename2, y_fr_data, {static_cast<size_t>(vector_size_)}, "w");
+
+            double y_f_sum = 0;
+            for (int i(0); i<vector_size_; i++) y_f_sum += y_data[i];
+            std::cout << "[GPU "<< gpu_id << "] std FR + LR : y.sum() = " << std::scientific << std::setprecision(17) << y_f_sum << std::endl;
+#endif
 
         } // GPU - assigned threads
 

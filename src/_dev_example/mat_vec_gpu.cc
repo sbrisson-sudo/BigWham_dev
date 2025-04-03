@@ -187,13 +187,18 @@ int main(int argc, char * argv[]) {
   
   // Compute l2 norm
   double l2_norm = 0;
+  double res_sum = 0;
   auto t_view = t.view();
-  for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
+  for (int i(0); i<num_dof; i++){
+    l2_norm += t_view[i] * t_view[i];
+    res_sum += t_view[i];
+  } 
   l2_norm = std::sqrt(l2_norm);
   std::cout << "[GPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
+  std::cout << "[GPU] sum of the product of H with [0, 1/dof, ...,  1] = " << res_sum  << std::endl;
 
-  std::cout << "[GPU] res = [" ;
-  for (int i(0); i<num_dof; i++) std::cout << t_view[i] << ", ";
-  std::cout << "\n";
+  // std::cout << "[GPU] res = [" ;
+  // for (int i(0); i<num_dof; i++) std::cout << t_view[i] << ", ";
+  // std::cout << "\n";
 
 }
