@@ -112,7 +112,10 @@ endif()
 ################################################
 # TO LINK CUDA LIBRARIES
 if (USE_CUDA)
+    SET(CUDA_SEPARABLE_COMPILATION ON) # cf https://stackoverflow.com/questions/22115197/dynamic-parallelism-undefined-reference-to-cudaregisterlinkedbinary-linking
+
     find_package(CUDA REQUIRED)
+    enable_language(CUDA)
     set(CMAKE_CUDA_ARCHITECTURES 70 75 80 86)
 
     message(STATUS "Building with CUDA support : ${CUDA_INCLUDE_DIRS}")
@@ -157,6 +160,11 @@ target_link_libraries(BigWham PUBLIC
     ${CUDA_cudart_static_LIBRARY}
     )
     target_compile_definitions(BigWham PRIVATE USE_CUDA)
+
+    # set_target_properties(BigWham PROPERTIES
+    # CUDA_SEPARABLE_COMPILATION ON)
+    set_property(TARGET BigWham PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+
 endif()
 
 

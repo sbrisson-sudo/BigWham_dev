@@ -174,9 +174,9 @@ public:
   }
 
   bool GetCudaAvailable();
+  size_t GetGPUMemoryRequired();
 
   int GetOmpThreads() {
-    std::cout << "NUM OF OMP THREADS used by BigWham: " << this->n_openMP_threads_ << std::endl;
     return this->n_openMP_threads_;
   };
 
@@ -187,10 +187,6 @@ public:
 #pragma omp parallel
     {
 #pragma omp single
-      if (this->verbose_){
-        std::cout << "NUM OF AVAILABLE OMP THREADS: " << omp_get_num_threads() <<
-        std::endl;
-      }
       threads = omp_get_num_threads();
     }
 #endif

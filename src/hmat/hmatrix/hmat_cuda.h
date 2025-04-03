@@ -67,14 +67,15 @@ private:
     std::unordered_map<int, std::vector<T*>> LR_A_data;
     std::unordered_map<int, std::vector<T*>> LR_B_data;
     std::unordered_map<int, std::vector<int>> LR_data_buffer_sizes;
+    std::vector<std::unordered_map<int, std::vector<int>>> LR_group_per_cuda_stream_;
 
     // GPU operation handler
     cublasHandle_t cublas_handle_;
     cusparseHandle_t cusparse_handle_;
 
-    // Number of CUDA streams = 1 for BSR + num of batched opeartions
-    int num_streams_;
-    // const int num_streams_ = 2;
+    // Number of CUDA streams = 1 for BSR + the rest for batched opeartions
+    // int num_streams_;
+    const int num_streams_ = 32;
     std::vector<cudaStream_t> cuda_streams_;
 
     // GPU (device) memory buffers
@@ -83,9 +84,9 @@ private:
     size_t vector_size_;
     T* d_x_;               // Store the lhs vector on device
     T* d_y_;               // Store the rhs vector on device
-    T* d_y_partial_;       // Partial results for all the operations
+    T* d_y_partial_LR_;    // Partial results for LR blocks operations
     T* d_tmp_;          // tmp = B*x then y = A*tmp
-    T* d_ones_;            // For convenience
+    // T* d_ones_;            // For convenience
 
     // FR data
     T* d_FR_data_;
@@ -103,7 +104,6 @@ private:
     int* h_FR_bsrRowPtr_; 
     int* h_FR_bsrColInd_; 
 
-
     // LR metadata = array of pointers for batched operations
     std::unordered_map<int, std::vector<T**>> d_LR_A_data_pointers_;   // to data 
     std::unordered_map<int, std::vector<T**>> d_LR_B_data_pointers_;   // to data 
@@ -117,6 +117,13 @@ private:
     std::unordered_map<int, std::vector<T**>> h_LR_x_pointers_;       
     std::unordered_map<int, std::vector<T**>> h_LR_y_pointers_;    
     std::unordered_map<int, std::vector<T**>> h_LR_tmp_pointers_;    
+
+    // To gather the low rank partial results
+    size_t y_partial_LR_buffer_size_bytes_;
+    size_t tmp_buffer_size_bytes_;
+    int* d_LR_y_partial_src_indices_;
+    int* d_LR_y_partial_dest_indices_;
+    int* d_LR_y_partial_lengths_;
 
 public:
   HmatCuda() = default;

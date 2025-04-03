@@ -7,6 +7,7 @@ set(TMP_SOURCES_FILES ${SOURCE_FILES}
 
 if(USE_CUDA)
     list(APPEND TMP_SOURCES_FILES ${CMAKE_CURRENT_SOURCE_DIR}/hmatrix/hmat_cuda.cc)
+    list(APPEND TMP_SOURCES_FILES ${CMAKE_CURRENT_SOURCE_DIR}/hmatrix/y_partial_scatter_add.cu)
 endif()
 
 set(SOURCE_FILES ${TMP_SOURCES_FILES} PARENT_SCOPE)

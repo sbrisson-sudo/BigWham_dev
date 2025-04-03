@@ -51,6 +51,11 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
     this->kernel_name_ = kernel;
     this->fixed_rank_ = fixed_rank;
 
+    if (this->verbose_){
+        std::cout << "--------------------" << std::endl;
+        std::cout << "Creation of a BigWhamIO object with verbose on" << std::endl;
+    }
+
     // Ensuring CUDA compatible arguments
     this->use_cuda_hmat = useCuda;
 
@@ -86,9 +91,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
 #endif
 
     if (this->verbose_){
-        std::cout << "BigWham using " << this->n_openMP_threads_ << " OpenMP threads\n";
-        std::cout << " Now setting things for kernel ... " << kernel_name_
-                  << " with properties size " << properties.size() << "\n";
+        std::cout << "Kernel = " << kernel_name_ << ", number of physical properties = " << properties.size() << "\n";
     }
     
 
@@ -281,6 +284,11 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         this->n_openMP_threads_ = n_available;
     };
 
+    if (this->verbose_){
+        std::cout << "--------------------" << std::endl;
+        std::cout << "Creation of a BigWhamIO object with verbose on" << std::endl;
+    }
+
 #ifdef BIGWHAM_OPENMP
     if (this->verbose_)
         std::cout << "Forcing the number of OpenMP threads to " << this->n_openMP_threads_ << std::endl;
@@ -292,11 +300,8 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
     this->kernel_name_ = kernel;
 
     if (this->verbose_){
-        std::cout << "BigWham using " << this->n_openMP_threads_ << " OpenMP threads\n";
-        std::cout << "Now setting things for kernel ... " << kernel_name_
-                  << " with properties size " << properties.size() << "\n";
+        std::cout << "Kernel = " << kernel_name_ << ", number of physical properties = " << properties.size() << "\n";
     }
-
     
 
     switch (hash_djb2a(kernel_name_))
@@ -464,6 +469,63 @@ void BigWhamIO::BuildPattern(const int max_leaf_size, const double eta)
 }
 /* -------------------------------------------------------------------------- */
 
+// Method to get the GPU memory requirement
+size_t BigWhamIO::GetGPUMemoryRequired(){
+    if (!is_pattern_built_){
+        std::cerr << "GetGPUMemoryRequired called before pattern built" << std::endl;
+        return -1;
+    }
+
+    if (!use_cuda_hmat){
+        std::cerr << "GetGPUMemoryRequired called but cuda not used" << std::endl;
+        return -1;
+    }
+
+    size_t total_gpu_mem_bytes = 0;
+    int num_FR_blocks_standard_size = 0;
+    const int dim_dof = dof_dimension_;
+    const int vector_size = mesh_rec_->num_collocation_points() * dim_dof;
+
+    // FR blocks data
+    for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+        il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
+        il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
+        il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
+        il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
+
+        if ((iend-i0 == max_leaf_size_) && (jend-j0 == max_leaf_size_)){ 
+            num_FR_blocks_standard_size++;
+            total_gpu_mem_bytes += (iend-i0)*(jend-j0) * dim_dof*dim_dof * sizeof(double);
+        }
+    }
+
+    // FR metadata : bsr row tr and col indices > neglected
+
+    // LR blocks data
+    for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+        il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
+        il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
+
+        // block data 
+        total_gpu_mem_bytes += 2 * (iend-i0)*fixed_rank_ * dim_dof*dim_dof * sizeof(double); 
+
+        // partial result
+        total_gpu_mem_bytes += (iend-i0) * dim_dof * sizeof(double);
+
+        // tmp vector 
+        total_gpu_mem_bytes += fixed_rank_ * dim_dof * sizeof(double);
+
+        // pointers : 5 pointers per block 
+        total_gpu_mem_bytes += 5 * sizeof(double*);
+    }
+
+    // input and output vector 
+    total_gpu_mem_bytes += 2 * vector_size*sizeof(double);
+
+    return total_gpu_mem_bytes;
+}
+
+
 // method to only get the permutation of the source mesh...
 
 std::vector<long> BigWhamIO::GetPermutation() const
@@ -565,7 +627,7 @@ void BigWhamIO::BuildHierarchicalMatrix(const int max_leaf_size, const double et
         if (this->verbose_){
             std::cout << "Compression Ratio = " << test_cr << ", eps_aca = " << epsilon_aca_
                   << ", eta = " << eta_ << "\n";
-            std::cout << "Hierarchical matrix  construction time = :  " << hmat_time_ << "\n";
+            std::cout << "Hierarchical matrix total construction time : " << hmat_time_ << " s\n";
         }
         
     }

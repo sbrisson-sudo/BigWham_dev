@@ -46,7 +46,7 @@ namespace bigwham {
         tt.Stop();
         if (this->verbose_){
             std::cout << "HMAT num openMP threads = " << this->n_openMP_threads_ << "\n";
-            std::cout << "Creation of hmat done in " << tt.time() << "\n";
+            std::cout << "Creation of hmat done in " << tt.time() << " s\n";
             std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
             std::cout << "Hmat object - built "<< "\n";
         }
@@ -314,8 +314,7 @@ template <typename T>
 void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
 
     if (this->verbose_){
-        std::cout << " Loop on full blocks construction  \n";
-        std::cout << " N full blocks " << hr_->pattern_.n_FRB << " \n";
+        std::cout << "Loop on full blocks construction  \n";
     }
 
     // We create a tmp vector 
@@ -360,8 +359,6 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     dof_dimension_ = matrix_gen.blockSize();
     if (this->verbose_){
         std::cout << "Loop on low rank blocks construction\n";
-        std::cout << "N low rank blocks " << hr_->pattern_.n_LRB << "\n";
-        std::cout << "dof_dimension: " << dof_dimension_ << "\n";
     }
 
     // First we generate a tmp vector that will hold all the blocks

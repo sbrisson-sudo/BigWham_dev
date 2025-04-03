@@ -90,16 +90,16 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
 
   tt.Start();
   Cluster cluster_s = cluster(max_leaf_size, il::io, Xcol_source, homegeneous_size);
-  if (verbose)
-    std::cout << "Cluster tree creation time for the source mesh :  " << tt.time() << "\n";
+  // if (verbose)
+  //   std::cout << "Cluster tree creation time for the source mesh :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
   hr->permutation_1_ = cluster_s.permutation; // sources permutation
 
   tt.Start();
   Cluster cluster_r = cluster(max_leaf_size, il::io, Xcol_receiver, homegeneous_size);
-  if (verbose)
-    std::cout << "Cluster tree creation time for the receiver mesh :  " << tt.time() << "\n";
+  // if (verbose)
+  //   std::cout << "Cluster tree creation time for the receiver mesh :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
   hr->permutation_0_ = cluster_r.permutation; // receivers permutation
@@ -110,8 +110,8 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
                      cluster_s.partition, eta, homegeneous_size);
   tt.Stop();
   if (verbose){
-    std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
-    std::cout << " binary cluster tree depth =" << block_tree.depth() << "\n";
+    std::cout << "Time for binary cluster tree construction  " << tt.time() << " s\n";
+    std::cout << "Binary cluster tree depth =" << block_tree.depth() << "\n";
   }
   
   hr->pattern_ = createPattern(block_tree);
@@ -119,10 +119,9 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
   //        hr.pattern_.nc = source_mesh.numberCollocationPoints();
 
   if (verbose){
-    std::cout << " Number of blocks =" << hr->pattern_.n_B << "\n";
-    std::cout << " Number of full blocks =" << hr->pattern_.n_FRB << "\n";
-    std::cout << " Number of low rank blocks =" << hr->pattern_.n_LRB << "\n";
-    std::cout << "Pattern Created \n";
+    std::cout << "Number of blocks =" << hr->pattern_.n_B << "\n";
+    std::cout << "Number of full blocks =" << hr->pattern_.n_FRB << "\n";
+    std::cout << "Number of low rank blocks =" << hr->pattern_.n_LRB << "\n";
   }
   
 

@@ -5,11 +5,13 @@
 #include <iomanip>
 
 #include "hmat_cuda.h"
+#include "y_partial_scatter_add.h"
 
 #include "cnpy.h"
 
 // #define TIMING
 // #define DEBUG
+// #define DEBUG2
 
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
@@ -166,8 +168,8 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     if (this->verbose_){
         std::cout << num_FR_blocks_standard_size << " FR blocks with standard size\n";
         std::cout << num_FR_blocks_non_standard_size << " FR blocks with non standard size\n";
-        std::cout << "Allocating " << num_FR_blocks_standard_size * leaf_size * leaf_size * dim*dim << " for FR_standard\n";
-        std::cout << "Allocating " << total_size_non_standard_blocks * dim*dim << " for FR_non_standard\n";
+        // std::cout << "Allocating " << num_FR_blocks_standard_size * leaf_size * leaf_size * dim*dim << " for FR_standard\n";
+        // std::cout << "Allocating " << total_size_non_standard_blocks * dim*dim << " for FR_non_standard\n";
     }
 
     FR_standard_size_data_buffer_size = num_FR_blocks_standard_size * leaf_size * leaf_size * dim*dim;
@@ -332,9 +334,8 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
                 total_size += buffer_size;
             }
         }
-        double total_size_Gb = static_cast<double>(total_size*sizeof(double)) / (1024*1024*1024);
     
-        std::cout << "Total memory allocated = " << total_size_Gb << " GB\n";
+        std::cout << "Total memory allocated on CPU = " << formatBytes(total_size*sizeof(double)) << " \n";
     }
 
 #ifdef TIMING
@@ -350,7 +351,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     this->buildCuda(matrix_gen, epsilon_aca);
     tt.Stop();
     if (this->verbose_){
-        std::cout << "Creation of hmat done in " << tt.time() << "\n";
+        std::cout << "Creation of hmat done in " << tt.time() << " s\n";
         std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
         std::cout << "Hmat object - built "<< "\n";
     }
@@ -378,6 +379,11 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
 template <typename T>
 void HmatCuda<T>::copyToDevice(){
 
+    if (this->verbose_){
+        std::cout << "--------------------" << std::endl;
+        std::cout << "Copying the Hmat to the GPU ..." << std::endl;
+    }
+
     auto hr = this->hr_;
     const int dim_dof = this->dof_dimension_;
 
@@ -385,15 +391,73 @@ void HmatCuda<T>::copyToDevice(){
     CHECK_CUBLAS_ERROR(cublasCreate(&cublas_handle_));
     cusparseCreate(&cusparse_handle_);
 
-    // First we create the CUDA streams
-    num_streams_ = 1; // for the BSR (FR) operation
-    for (const auto& pair : LR_data_buffer_sizes) {
-        num_streams_ += pair.second.size();
-    }
+    // // First we create the CUDA streams
+    // num_streams_ = 1; // for the BSR (FR) operation
+    // for (const auto& pair : LR_data_buffer_sizes) {
+    //     num_streams_ += pair.second.size();
+    // }
 
     if (this->verbose_) std::cout << "Initiating " << num_streams_ << " CUDA streams\n";
     cuda_streams_.resize(num_streams_);
     for (int i = 0; i < num_streams_; i++) CHECK_CUDA_ERROR(cudaStreamCreate(&cuda_streams_[i]));
+
+    // Here we balance the load for the LR blocks over num_streams_ - 1 streams 
+
+    // We get and sort the sizes so start with the biggest blocks
+    std::vector<int> LR_sizes;
+    for (const auto& pair : LR_data_buffer_sizes) {
+        LR_sizes.push_back(pair.first);
+    }
+    std::sort(LR_sizes.begin(), LR_sizes.end(), std::greater<int>());
+
+    // We set the associated cuda streams following a greedy approach : we give the block to the 
+    // less loaded cuda stream
+    std::vector<int> cuda_streams_load(num_streams_-1, 0);    
+    LR_group_per_cuda_stream_.resize(num_streams_-1);
+    // std::vector<std::unordered_map<int, std::vector<int>>> LR_group_per_cuda_stream_;
+    for (auto&  [block_size, buffer_sizes] : LR_data_buffer_sizes){
+
+        int num_groups = buffer_sizes.size();
+
+        for (int group_i(0); group_i<num_groups; group_i++){
+
+            // We find the less loaded stream
+            int min_load_stream = 0;
+            for (int i = 1; i < num_streams_-1; ++i) {
+                if (cuda_streams_load[i] < cuda_streams_load[min_load_stream]) {
+                    min_load_stream = i;
+                }
+            }
+
+            // We add the block to it
+            if (LR_group_per_cuda_stream_[min_load_stream].find(block_size) == LR_group_per_cuda_stream_[min_load_stream].end()) {
+                // We set up a new vector of grup id for this stream and this block size
+                LR_group_per_cuda_stream_[min_load_stream][block_size] = {};
+            }
+
+            LR_group_per_cuda_stream_[min_load_stream][block_size].push_back(group_i);
+            cuda_streams_load[min_load_stream] += buffer_sizes[group_i];
+        }
+    }
+
+#ifdef DEBUG2
+    std::cout << "cuda_streams_load = [";
+    for (int load : cuda_streams_load) std::cout << load << ", ";
+    std::cout << "]\n";
+
+    std::cout << "LR_group_per_cuda_stream_ = [\n";
+    for (int cuda_stream_i(0); cuda_stream_i < num_streams_-1; cuda_stream_i++){
+        std::cout << " - stream # " << cuda_stream_i+1 << " : [\n";
+        for (auto&  [block_size, group_i_list] : LR_group_per_cuda_stream_[cuda_stream_i]){
+            std::cout << "   - size # " << block_size << " : [";
+            for (int group_i : group_i_list) std::cout << group_i << ", ";
+            std::cout << "]\n";
+        }
+        std::cout << "]\n";
+    }
+    std::cout << "]\n";
+#endif
+
 
     // Then we set up the memory for the vectors
     if (this->size_[0] != this->size_[1]){
@@ -404,23 +468,47 @@ void HmatCuda<T>::copyToDevice(){
     vector_size_ = this->size_[0];
     vector_size_bytes_ = this->size_[0]* sizeof(T);
 
+    // Here we need to compute the buffer size needed for tmp and y_partial so that each LR block has its owns
+    // size allocated for y_partial = size for BSR (vector_size_) + sizes for LR blocks
+    y_partial_LR_buffer_size_bytes_ = 0;
+    tmp_buffer_size_bytes_ = 0;
+    
+    for (auto& pair : LR_data_buffer_sizes){
+        int num_groups = pair.second.size();
+        int block_size = pair.first;
+        for (int group_i(0); group_i<num_groups; group_i++){
+            int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
+
+            y_partial_LR_buffer_size_bytes_ += num_blocks * block_size * dim_dof * sizeof(T);
+            tmp_buffer_size_bytes_ += num_blocks * this->fixed_rank_ * dim_dof * sizeof(T);
+        }
+    }
     if (this->verbose_){
-        std::cout << "Allocating " << formatBytes(vector_size_bytes_*(2*num_streams_+2)) << " on the GPU for auxilliary vectors" << std::endl;
+        std::cout << "Allocating " << formatBytes(2*vector_size_bytes_ + y_partial_LR_buffer_size_bytes_ + tmp_buffer_size_bytes_) << " on the GPU for auxilliary vectors" << std::endl;
+    }
+
+#ifdef DEBUG2
+    std::cout << "y_partial_buffer_size_bytes = " << y_partial_LR_buffer_size_bytes_ << std::endl;
+    std::cout << "tmp_buffer_size_bytes = " << tmp_buffer_size_bytes_ << std::endl;
+#endif 
+
+
+    if (this->verbose_){
+        std::cout << "(previoulsy) Allocating " << formatBytes(vector_size_bytes_*(2*num_streams_+2)) << " on the GPU for auxilliary vectors" << std::endl;
     }
 
     CHECK_CUDA_ERROR(cudaMalloc(&d_x_, vector_size_bytes_));
     CHECK_CUDA_ERROR(cudaMalloc(&d_y_, vector_size_bytes_));
-    CHECK_CUDA_ERROR(cudaMalloc(&d_ones_, vector_size_bytes_));
-    CHECK_CUDA_ERROR(cudaMalloc(&d_y_partial_, vector_size_bytes_ * num_streams_));
-    CHECK_CUDA_ERROR(cudaMalloc(&d_tmp_, vector_size_bytes_ * (num_streams_-1))); // That's more than what we actually need
 
-#ifdef DEBUG
-    std::cout << "Allocated "<< vector_size_bytes_ * num_streams_ << " bytes for d_partial_y_ @ " << d_y_partial_ << std::endl;
-#endif
-    // Fill d_ones with 1
-    T h_ones[vector_size_];
-    for (int i = 0; i < vector_size_; i++) h_ones[i] = 1.0;
-    CHECK_CUDA_ERROR(cudaMemcpy(d_ones_, h_ones, vector_size_bytes_, cudaMemcpyHostToDevice));
+    // Here we change the sized allocated 
+    CHECK_CUDA_ERROR(cudaMalloc(&d_y_partial_LR_, y_partial_LR_buffer_size_bytes_));
+    CHECK_CUDA_ERROR(cudaMalloc(&d_tmp_, tmp_buffer_size_bytes_));
+
+    // // Fill d_ones to cumulate on d_y_partial_
+    // CHECK_CUDA_ERROR(cudaMalloc(&d_ones_, vector_size_bytes_));
+    // T h_ones[vector_size_];
+    // for (int i = 0; i < vector_size_; i++) h_ones[i] = 1.0;
+    // CHECK_CUDA_ERROR(cudaMemcpy(d_ones_, h_ones, vector_size_bytes_, cudaMemcpyHostToDevice));
 
     // ----------------------------
     // COPYING FULL RANKS BLOCKS START
@@ -529,17 +617,6 @@ void HmatCuda<T>::copyToDevice(){
         }
         std::cout << "Allocating " << formatBytes(total_to_allocate_metadata) << " on the GPU for hierarchical matrix metadata" << std::endl;
 
-        size_t aux_vectors_min_data = 0;
-        for (auto& pair : LR_data_buffer_sizes){
-            int num_groups = pair.second.size();
-            int block_size = pair.first;
-            for (int group_i(0); group_i<num_groups; group_i++){
-                int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
-                aux_vectors_min_data += num_blocks*(block_size + this->fixed_rank_)* sizeof(T);
-            }
-        }
-        std::cout << "Minimum storage for all output vectors =" << formatBytes(aux_vectors_min_data) << std::endl;
-
     }
 
     // Then copy it to device
@@ -585,9 +662,14 @@ void HmatCuda<T>::copyToDevice(){
 
     // Finally we need to set the pointers array to perform the batched operations
 
-    int count_y_partial_offset = 1; // BSR FR write in the first column
+    size_t y_partial_LR_ptr_counter = 0;
+    size_t tmp_ptr_counter = 0;
 
-    // std::cout << "-------------------\nDumping the LR pointers :\n\n";
+    // Offsets for summing partial results
+    int* h_LR_y_partial_src_indices = new int[hr->pattern_.n_LRB];
+    int* h_LR_y_partial_dest_indices = new int[hr->pattern_.n_LRB];
+    int* h_LR_y_partial_lengths = new int[hr->pattern_.n_LRB];
+    int lr_block_i = 0;
 
     for (auto& pair : LR_data_buffer_sizes){
         int block_size = pair.first;
@@ -641,17 +723,21 @@ void HmatCuda<T>::copyToDevice(){
                 int j0 = hr->pattern_.LRB_pattern(2, block_id);
 
                 h_LR_x_pointers_[block_size][group_i][i] = d_x_ + j0*dim_dof;
-                h_LR_y_pointers_[block_size][group_i][i] = d_y_partial_ +  vector_size_*count_y_partial_offset + i0*dim_dof;
-                h_LR_tmp_pointers_[block_size][group_i][i] = d_tmp_ +  vector_size_*(count_y_partial_offset-1) + i0*dim_dof;
 
-                // std::cout << "      - &A = " << h_LR_A_data_pointers_[block_size][group_i][i] << "\n";
-                // std::cout << "      - &B = " << h_LR_B_data_pointers_[block_size][group_i][i] << "\n";
-                // std::cout << "      - &x = " << h_LR_x_pointers_[block_size][group_i][i] << "\n";
-                // std::cout << "      - &y = " << h_LR_y_pointers_[block_size][group_i][i] << "\n";
-                // std::cout << "      - &tmp = " << h_LR_tmp_pointers_[block_size][group_i][i] << "\n";                
+                // Here we change how these two are computed : we track an offset for both tmp and y_partial
+                // Note that it is rather optimized : block groups that will be called within the same batched gemv are contiguous in memory
+
+                h_LR_y_pointers_[block_size][group_i][i] = d_y_partial_LR_ + y_partial_LR_ptr_counter;
+                h_LR_tmp_pointers_[block_size][group_i][i] = d_tmp_ + tmp_ptr_counter;
+
+                h_LR_y_partial_src_indices[lr_block_i] = y_partial_LR_ptr_counter;
+                h_LR_y_partial_dest_indices[lr_block_i] = i0*dim_dof;
+                h_LR_y_partial_lengths[lr_block_i] = block_size*dim_dof;
+
+                y_partial_LR_ptr_counter += block_size*dim_dof;
+                tmp_ptr_counter += this->fixed_rank_*dim_dof;
+                lr_block_i++;
             }
-
-            count_y_partial_offset++;
 
             // Now we copy it to device
             T** d_LR_A_data_tmp;
@@ -680,6 +766,27 @@ void HmatCuda<T>::copyToDevice(){
             d_LR_tmp_pointers_[block_size][group_i] = d_LR_tmp_tmp;
         }
     }
+
+    // Then we copy the array of offsets needed for gathering the partial results
+    CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_src_indices_, hr->pattern_.n_LRB*sizeof(int)));
+    CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_dest_indices_, hr->pattern_.n_LRB*sizeof(int)));
+    CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_lengths_, hr->pattern_.n_LRB*sizeof(int)));
+
+    CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_src_indices_, h_LR_y_partial_src_indices, hr->pattern_.n_LRB*sizeof(int), cudaMemcpyHostToDevice));
+    CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_dest_indices_, h_LR_y_partial_dest_indices, hr->pattern_.n_LRB*sizeof(int), cudaMemcpyHostToDevice));
+    CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_lengths_, h_LR_y_partial_lengths, hr->pattern_.n_LRB*sizeof(int), cudaMemcpyHostToDevice));
+
+#ifdef DEBUG2
+    cnpy::npy_save("LR_y_partial_src_indices.npy", h_LR_y_partial_src_indices, {static_cast<size_t>(hr->pattern_.n_LRB)}, "w");
+    cnpy::npy_save("LR_y_partial_dest_indices.npy", h_LR_y_partial_dest_indices, {static_cast<size_t>(hr->pattern_.n_LRB)}, "w");
+    cnpy::npy_save("LR_y_partiallengths.npy", h_LR_y_partial_lengths, {static_cast<size_t>(hr->pattern_.n_LRB)}, "w");
+#endif
+
+    delete[] h_LR_y_partial_src_indices;
+    delete[] h_LR_y_partial_dest_indices;
+    delete[] h_LR_y_partial_lengths;
+
+    if (this->verbose_) std::cout << "--------------------" << std::endl;
 }
 
 
@@ -692,11 +799,14 @@ void HmatCuda<T>::deallocateOnDevice(){
     // Deallocate
     CHECK_CUDA_ERROR(cudaFree(d_x_));
     CHECK_CUDA_ERROR(cudaFree(d_y_));
-    CHECK_CUDA_ERROR(cudaFree(d_ones_));
-    CHECK_CUDA_ERROR(cudaFree(d_y_partial_));
+    // CHECK_CUDA_ERROR(cudaFree(d_ones_));
+    CHECK_CUDA_ERROR(cudaFree(d_y_partial_LR_));
     CHECK_CUDA_ERROR(cudaFree(d_FR_data_));
     CHECK_CUDA_ERROR(cudaFree(d_FR_bsrColInd_));
     CHECK_CUDA_ERROR(cudaFree(d_FR_bsrRowPtr_));
+    CHECK_CUDA_ERROR(cudaFree(d_LR_y_partial_src_indices_));
+    CHECK_CUDA_ERROR(cudaFree(d_LR_y_partial_dest_indices_));
+    CHECK_CUDA_ERROR(cudaFree(d_LR_y_partial_lengths_));
 
     for (auto& pair : LR_data_buffer_sizes){
         int block_size = pair.first;
@@ -835,8 +945,7 @@ template <typename T>
 void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
 
     if (this->verbose_){
-        std::cout << " Loop on full blocks construction  \n";
-        std::cout << " N full blocks " << this->hr_->pattern_.n_FRB << " \n";
+        std::cout << "Loop on full blocks construction  \n";
     }
 
     /*
@@ -944,7 +1053,6 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
     // constructing the low rank blocks
     if (this->verbose_){
         std::cout << "Loop on low rank blocks construction\n";
-        std::cout << "N low rank blocks " << this->hr_->pattern_.n_LRB << "\n";
     }
 
     const int dim_dof = matrix_gen.blockSize();
@@ -1104,9 +1212,6 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             double alpha = 1.0;
             double beta = 0.0;
 
-            // We memset the y_partial to zero
-            CHECK_CUDA_ERROR(cudaMemset(d_y_partial_, 0, vector_size_bytes_*num_streams_));
-
             // Then we launch a first stream and assign it the BSR (FR) matvec
             int fr_block_size = this->hr_->leaf_size * this->dof_dimension_;
 
@@ -1132,136 +1237,148 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                 fr_block_size,          // Block sizes
                 d_x_,
                 &beta,
-                d_y_partial_            // we write to the first column of it 
+                d_y_                    // FR blocks results written directly in d_y_
             );
 
-            // Then for each LR group : we call a batched gemv
-            int lr_group_counter = 1;
-            for (auto& pair : LR_data_buffer_sizes){
-                int block_size = pair.first;
-                int num_groups = pair.second.size();
+            // Then for the LR blocks : we loop on the CUDA streams and for each cuda stream 
+            // we excuted its associated groups of LR blocks
+            for (int cuda_stream_i(0); cuda_stream_i < num_streams_-1; cuda_stream_i++){
 
-                for (int group_i(0); group_i<pair.second.size(); group_i++){
+                // Associate cuda stream (+1 bc first stream is for BSR)
+                CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[cuda_stream_i+1]));
 
-                    int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
+                // Loop on groups
+                for (auto&  [block_size, group_i_list] : LR_group_per_cuda_stream_[cuda_stream_i]){
+                    for (int group_i : group_i_list){
 
-                    // Associate cuda stream
-                    CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_, cuda_streams_[lr_group_counter]));
+                        int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
 
 #if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
 
-                    // Compute tmp = B*x
-                    CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                        cublas_handle_, CUBLAS_OP_N,
-                        this->fixed_rank_*this->dof_dimension_,        // num rows
-                        block_size*this->dof_dimension_, // num cols 
-                        &alpha,
-                        (const double**)d_LR_B_data_pointers_[block_size][group_i],        
-                        this->fixed_rank_*this->dof_dimension_, 
-                        (const double**)d_LR_x_pointers_[block_size][group_i], 
-                        1,
-                        &beta,
-                        d_LR_tmp_pointers_[block_size][group_i], 
-                        1,
-                        num_blocks
-                    ));
+                        // Compute tmp = B*x
+                        CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                            cublas_handle_, CUBLAS_OP_N,
+                            this->fixed_rank_*this->dof_dimension_,        // num rows
+                            block_size*this->dof_dimension_, // num cols 
+                            &alpha,
+                            (const double**)d_LR_B_data_pointers_[block_size][group_i],        
+                            this->fixed_rank_*this->dof_dimension_, 
+                            (const double**)d_LR_x_pointers_[block_size][group_i], 
+                            1,
+                            &beta,
+                            d_LR_tmp_pointers_[block_size][group_i], 
+                            1,
+                            num_blocks
+                        ));
+    
+                        // // Add explicit CUDA error check
+                        // cudaDeviceSynchronize();
+                        // cudaError_t err = cudaGetLastError();
+                        // if (err != cudaSuccess) {
+                        //     printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
+                        // }
+                        
+                        // Compute y = A*tmp
+                        CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                            cublas_handle_, CUBLAS_OP_N,
+                            block_size*this->dof_dimension_,        // num rows
+                            this->fixed_rank_*this->dof_dimension_, // num cols 
+                            &alpha,
+                            (const double**)d_LR_A_data_pointers_[block_size][group_i],        
+                            // this->fixed_rank_*this->dof_dimension_,
+                            block_size*this->dof_dimension_, 
+                            (const double**)d_LR_tmp_pointers_[block_size][group_i], 
+                            1,
+                            &beta,
+                            d_LR_y_pointers_[block_size][group_i], 
+                            1,
+                            num_blocks
+                        ));
+    
+                        // cudaDeviceSynchronize();
+                        // // Add explicit CUDA error check
+                        // err = cudaGetLastError();
+                        // if (err != cudaSuccess) {
+                        //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
+                        // }
+    
+    #else // For CUDA versions before 11.6.2
+    
+                        // Compute tmp = B*x
+                        CHECK_CUBLAS_ERROR(cublasDgemmBatched(
+                            cublas_handle_, CUBLAS_OP_N, CUBLAS_OP_N, 
+                            this->fixed_rank_*this->dof_dimension_,
+                            1, // 1 column matrix 
+                            block_size*this->dof_dimension_, 
+                            &alpha,
+                            (const double**)d_LR_B_data_pointers_[block_size][group_i],
+                            this->fixed_rank_*this->dof_dimension_, 
+                            (const double**)d_LR_x_pointers_[block_size][group_i],
+                            block_size*this->dof_dimension_, 
+                            &beta,
+                            d_LR_tmp_pointers_[block_size][group_i],
+                            this->fixed_rank_*this->dof_dimension_,
+                            num_blocks
+                        ));
+    
+                        // Compute y = A*tmp 
+                        CHECK_CUBLAS_ERROR(cublasDgemmBatched(
+                            cublas_handle_, CUBLAS_OP_N, CUBLAS_OP_N,
+                            block_size*this->dof_dimension_, 
+                            1, // 1 column matrix
+                            this->fixed_rank_*this->dof_dimension_, 
+                            &alpha,
+                            (const double**)d_LR_A_data_pointers_[block_size][group_i],
+                            block_size*this->dof_dimension_,
+                            (const double**)d_LR_tmp_pointers_[block_size][group_i],
+                            this->fixed_rank_*this->dof_dimension_,
+                            &beta,
+                            d_LR_y_pointers_[block_size][group_i],
+                            block_size*this->dof_dimension_,
+                            num_blocks
+                        ));
+    
+    #endif
 
-                    // // Add explicit CUDA error check
-                    // cudaDeviceSynchronize();
-                    // cudaError_t err = cudaGetLastError();
-                    // if (err != cudaSuccess) {
-                    //     printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
-                    // }
-                    
-                    // Compute y = A*tmp
-                    CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                        cublas_handle_, CUBLAS_OP_N,
-                        block_size*this->dof_dimension_,        // num rows
-                        this->fixed_rank_*this->dof_dimension_, // num cols 
-                        &alpha,
-                        (const double**)d_LR_A_data_pointers_[block_size][group_i],        
-                        // this->fixed_rank_*this->dof_dimension_,
-                        block_size*this->dof_dimension_, 
-                        (const double**)d_LR_tmp_pointers_[block_size][group_i], 
-                        1,
-                        &beta,
-                        d_LR_y_pointers_[block_size][group_i], 
-                        1,
-                        num_blocks
-                    ));
+                    } // loop on groups
+                } // loop on block size
+            } // loop on cuda streams
 
-                    // cudaDeviceSynchronize();
-                    // // Add explicit CUDA error check
-                    // err = cudaGetLastError();
-                    // if (err != cudaSuccess) {
-                    //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
-                    // }
-
-#else // For CUDA versions before 11.6.2
-
-                    // Compute tmp = B*x
-                    CHECK_CUBLAS_ERROR(cublasDgemmBatched(
-                        cublas_handle_, CUBLAS_OP_N, CUBLAS_OP_N, 
-                        this->fixed_rank_*this->dof_dimension_,
-                        1, // 1 column matrix 
-                        block_size*this->dof_dimension_, 
-                        &alpha,
-                        (const double**)d_LR_B_data_pointers_[block_size][group_i],
-                        this->fixed_rank_*this->dof_dimension_, 
-                        (const double**)d_LR_x_pointers_[block_size][group_i],
-                        block_size*this->dof_dimension_, 
-                        &beta,
-                        d_LR_tmp_pointers_[block_size][group_i],
-                        this->fixed_rank_*this->dof_dimension_,
-                        num_blocks
-                    ));
-
-                    // Compute y = A*tmp 
-                    CHECK_CUBLAS_ERROR(cublasDgemmBatched(
-                        cublas_handle_, CUBLAS_OP_N, CUBLAS_OP_N,
-                        block_size*this->dof_dimension_, 
-                        1, // 1 column matrix
-                        this->fixed_rank_*this->dof_dimension_, 
-                        &alpha,
-                        (const double**)d_LR_A_data_pointers_[block_size][group_i],
-                        block_size*this->dof_dimension_,
-                        (const double**)d_LR_tmp_pointers_[block_size][group_i],
-                        this->fixed_rank_*this->dof_dimension_,
-                        &beta,
-                        d_LR_y_pointers_[block_size][group_i],
-                        block_size*this->dof_dimension_,
-                        num_blocks
-                    ));
-
-#endif
-
-                    lr_group_counter++;
-                }
-            }
 
             cudaDeviceSynchronize();
 
-#ifdef DEBUG
+#ifdef DEBUG2
             // Copy back and save  partial results
-            double* h_y_partial_ = new double[vector_size_ * num_streams_];
-            CHECK_CUDA_ERROR(cudaMemcpy(h_y_partial_, d_y_partial_, vector_size_bytes_*num_streams_, cudaMemcpyDeviceToHost));
+            double* h_y_partial_ = new double[y_partial_LR_buffer_size_bytes_/sizeof(double)];
+            CHECK_CUDA_ERROR(cudaMemcpy(h_y_partial_, d_y_partial_LR_, y_partial_LR_buffer_size_bytes_, cudaMemcpyDeviceToHost));
+            cnpy::npy_save("y_partial.npy", h_y_partial_, {y_partial_LR_buffer_size_bytes_/sizeof(double)}, "w");
 
-            cnpy::npy_save("y_partial.npy", h_y_partial_, {static_cast<size_t>(vector_size_),static_cast<size_t>(num_streams_)}, "w");
+            // Print y_partial sum
+            double y_part_sum = 0;
+            for (int i(0); i<y_partial_LR_buffer_size_bytes_/sizeof(double); i++){
+                y_part_sum += h_y_partial_[i];
+            }
+            std::cout << "y_partial.sum() = " << y_part_sum << std::endl;
 #endif 
 
-            // Sum partial results
-            cublasDgemv(cublas_handle_, 
-                CUBLAS_OP_N, 
-                vector_size_,           
-                num_streams_,            
-                &alpha,     
-                d_y_partial_, 
-                vector_size_,            
-                d_ones_,      
-                1,            
-                &beta,        
-                d_y_,         
-                1);
+            // Most important : here we need to define and use a custom scatter add function to gather the partials y of LR blocks on d_y_
+            scatter_add(
+                d_y_,
+                d_y_partial_LR_,
+                d_LR_y_partial_src_indices_,
+                d_LR_y_partial_dest_indices_,
+                d_LR_y_partial_lengths_,
+                this->hr_->pattern_.n_LRB
+            );
+
+#ifdef DEBUG2
+            // Copy back and save  partial results
+            double* h_y = new double[vector_size_];
+            CHECK_CUDA_ERROR(cudaMemcpy(h_y, d_y_, vector_size_bytes_, cudaMemcpyDeviceToHost));
+            cnpy::npy_save("y_final.npy", h_y, {vector_size_}, "w");
+
+
+#endif 
                 
             cudaDeviceSynchronize();
 

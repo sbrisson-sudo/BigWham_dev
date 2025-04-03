@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <iomanip>
 // #include <chrono>
 #include <ctime>
 
@@ -48,6 +49,28 @@
 #include "hmat/hmatrix/hmat.h"
 #include "hmat/square_matrix_generator.h"
 #include "io/bigwham_io.h"
+
+
+std::string formatBytes(size_t bytes) {
+  const double KB = 1024.0;
+  const double MB = KB * 1024.0;
+  const double GB = MB * 1024.0;
+
+  std::ostringstream oss;
+  oss << std::fixed << std::setprecision(2);
+
+  if (bytes >= GB) {
+      oss << (bytes / GB) << " GB";
+  } else if (bytes >= MB) {
+      oss << (bytes / MB) << " MB";
+  } else if (bytes >= KB) {
+      oss << (bytes / KB) << " KB";
+  } else {
+      oss << bytes << " B";
+  }
+
+  return oss.str();
+}
 /* -------------------------------------------------------------------------- */
 
 using namespace bigwham;
@@ -105,12 +128,53 @@ int main(int argc, char * argv[]) {
   std::vector<double> properties = {G, nu};
 
   // H-mat parameters
-  il::int_t max_leaf_size = 32;
-  double eta = 3.0;
-  double eps_aca = 1.e-3;
 
-  std::cout << "max_leaf_size = " << max_leaf_size << std::endl; 
-  std::cout << "eta = " << eta << std::endl; 
+  int max_leaf_size;
+  double eta;
+  int rank;
+
+    // Ask for max leaf size
+    while (true) {
+      std::cout << "Enter max leaf size (strictly positive integer): ";
+      std::cin >> max_leaf_size;
+
+      if (std::cin.fail() || max_leaf_size <= 0) {
+          std::cin.clear(); // Clear the error flag
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+          std::cout << "Invalid input. Please enter a strictly positive integer.\n";
+      } else {
+          break;
+      }
+  }
+
+  // Ask for eta
+  while (true) {
+      std::cout << "Enter eta (strictly positive double): ";
+      std::cin >> eta;
+
+      if (std::cin.fail() || eta <= 0.0) {
+          std::cin.clear(); // Clear the error flag
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+          std::cout << "Invalid input. Please enter a strictly positive double.\n";
+      } else {
+          break;
+      }
+  }
+
+  // Ask for rank
+  while (true) {
+      std::cout << "Enter rank (strictly positive integer, lower than max leaf size): ";
+      std::cin >> rank;
+
+      if (std::cin.fail() || rank <= 0 || rank >= max_leaf_size) {
+          std::cin.clear(); // Clear the error flag
+          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+          std::cout << "Invalid input. Please enter a strictly positive integer lower than max leaf size.\n";
+      } else {
+          break;
+      }
+  }
+
 
   // matvec vectors
   il::Array<double> dd{num_dof, il::align_t(), 64};
@@ -132,64 +196,19 @@ int main(int argc, char * argv[]) {
   
   // GPU matvec
   int n_omp_threads = 999;
-  bool verbose = true;
+  bool verbose = false;
   bool homogeneous_size = true;
   bool use_Cuda = true;
-  const int rank = 15;
-  std::cout << "[GPU] fixed rank = " << rank << std::endl; 
 
   // auto start = std::chrono::high_resolution_clock::now();
   clock_gettime(CLOCK_MONOTONIC, &start);
 
   BigWhamIO hmat_io_2(coor_vec, conn_vec, kernel, properties, n_omp_threads, verbose, homogeneous_size, use_Cuda, rank);
   hmat_io_2.BuildPattern(max_leaf_size, eta);
-  hmat_io_2.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
-
-  clock_gettime(CLOCK_MONOTONIC, &end);
-  gpu_hmat_construction_time = (end.tv_sec - start.tv_sec) +
-                      (end.tv_nsec - start.tv_nsec) / 1e9;
-  std::cout << "[GPU] Hmat construction time = " << gpu_hmat_construction_time*1000 << " ms" << std::endl;
-
-  // auto end = std::chrono::high_resolution_clock::now();
-  // gpu_hmat_construction_time = end - start;
-  // std::cout << "[CPU] Hmat construction time = " << gpu_hmat_construction_time.count() << " ms" << std::endl;
 
 
-  max_error_aca = hmat_io_2.GetMaxErrorACA();
-  std::cout << "[GPU] Max ACA error = " << max_error_aca << std::endl;
+  size_t memory_required = hmat_io_2.GetGPUMemoryRequired();
 
-  t = hmat_io_2.MatVec(dd_view); 
-
-
-  // Compute matvec
-
-  cudaProfilerStart();  
-
-  
-  // start = std::chrono::high_resolution_clock::now(); 
-  clock_gettime(CLOCK_MONOTONIC, &start);
-
-  for (int i(0); i<N_matvec; i++) t = hmat_io_2.MatVec(dd_view);
-
-  clock_gettime(CLOCK_MONOTONIC, &end);
-
-  cudaProfilerStop();  
-
-  gpu_matvec_time = (end.tv_sec - start.tv_sec) +
-  (end.tv_nsec - start.tv_nsec) / 1e9;
-  std::cout << "[GPU] Hmat matvec time = " << gpu_matvec_time/N_matvec*1000 << " ms" << std::endl;
-  
-  // end = std::chrono::high_resolution_clock::now();
-  // gpu_matvec_time = end - start;
-  // std::cout << "[GPU] Matvec time = " << gpu_matvec_time.count()/N_matvec << " ms" << std::endl;
-
-  // cnpy::npy_save("result_gpu.npy", t.data(), {static_cast<size_t>(num_dof)}, "w");
-  
-  // Compute l2 norm
-  double l2_norm = 0;
-  auto t_view = t.view();
-  for (int i(0); i<num_dof; i++) l2_norm += t_view[i] * t_view[i];
-  l2_norm = std::sqrt(l2_norm);
-  std::cout << "[GPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
+  std::cout << "[GPU] memory required = " << formatBytes(memory_required) << std::endl; 
 
 }
