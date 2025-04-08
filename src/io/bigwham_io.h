@@ -25,6 +25,8 @@
 #include "hmat/hmatrix/hmat.h"
 
 #ifdef USE_CUDA
+#include <cuda_runtime.h>
+#include <cuda.h>
 #include "hmat/hmatrix/hmat_cuda.h"
 #endif
 
@@ -49,6 +51,7 @@ private:
   bool verbose_ = true;
 
   // Road to CUDA
+  int num_GPUs_;
   bool homogeneous_size_pattern_ = false;
   int fixed_rank_ = -1;
   bool use_cuda_hmat = true;
@@ -70,6 +73,7 @@ public:
               const std::string &kernel, 
               const std::vector<double> &properties, 
               const int n_openMP_threads,
+              const int n_GPUs,
               const bool verbose, 
               const bool homogeneous_size_pattern, 
               const bool useCuda, 
@@ -83,6 +87,7 @@ public:
               const std::string &kernel,
               const std::vector<double> &properties, 
               const int n_openMP_threads,
+              const int n_GPUs,
               const bool verbose, 
               const bool homogeneous_size_pattern, 
               const bool useCuda,

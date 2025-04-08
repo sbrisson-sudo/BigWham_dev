@@ -141,7 +141,7 @@ private:
 
 public:
   HmatCuda() = default;
-  HmatCuda(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca, const int n_openMP_threads, const bool verbose=true, const int fixed_rank=-1);
+  HmatCuda(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca, const int n_openMP_threads, const int num_GPUs, const bool verbose=true, const int fixed_rank=-1);
   ~HmatCuda();
 
   void copyToDevice(); // Just to not end up with a 1000 lines constructor

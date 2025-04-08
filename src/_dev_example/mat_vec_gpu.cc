@@ -132,6 +132,7 @@ int main(int argc, char * argv[]) {
   
   // GPU matvec
   int n_omp_threads = 999;
+  int n_GPUs = 999;
   bool verbose = true;
   bool homogeneous_size = true;
   bool use_Cuda = true;
@@ -141,7 +142,7 @@ int main(int argc, char * argv[]) {
   // auto start = std::chrono::high_resolution_clock::now();
   clock_gettime(CLOCK_MONOTONIC, &start);
 
-  BigWhamIO hmat_io_2(coor_vec, conn_vec, kernel, properties, n_omp_threads, verbose, homogeneous_size, use_Cuda, rank);
+  BigWhamIO hmat_io_2(coor_vec, conn_vec, kernel, properties, n_omp_threads, n_GPUs, verbose, homogeneous_size, use_Cuda, rank);
   hmat_io_2.BuildPattern(max_leaf_size, eta);
   hmat_io_2.BuildHierarchicalMatrix(max_leaf_size, eta, eps_aca);
 

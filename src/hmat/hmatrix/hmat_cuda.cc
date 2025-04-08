@@ -84,7 +84,7 @@ std::string formatBytes(size_t bytes) {
 namespace bigwham {
 
 template <typename T>
-HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const int n_openMP_threads, const bool verbose, const int fixed_rank) {
+HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const int n_openMP_threads, const int num_GPUs, const bool verbose, const int fixed_rank) {
 
 #ifdef TIMING
     struct timespec start, end;
@@ -96,6 +96,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     this->verbose_ = verbose;
     this->fixed_rank_ = fixed_rank;
     this->n_openMP_threads_=n_openMP_threads;
+    this->num_gpus_ = num_GPUs;
 
     this->dof_dimension_ = matrix_gen.blockSize();
     this->size_[0] = matrix_gen.size(0);
@@ -401,15 +402,6 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
 
 template <typename T>
 void HmatCuda<T>::copyToDevice(){
-
-    // Getting the number of GPUs available
-    cudaGetDeviceCount(&num_gpus_);
-    // num_gpus_ = 1;
-
-    if (this->n_openMP_threads_ <= num_gpus_){
-        std::cerr << "Less OpenMP threads than CPUs, aborting..." << std::endl;
-        std::abort();
-    }
 
     if (this->verbose_){
         std::cout << "--------------------" << std::endl;
@@ -1517,12 +1509,12 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                             this->fixed_rank_*this->dof_dimension_,        // num rows
                             block_size*this->dof_dimension_, // num cols 
                             &alpha,
-                            (const double**)d_LR_B_data_pointers_[gpu_id][block_size][group_j],        
+                            (const double**)d_LR_B_data_pointers_[gpu_id][block_size][group_i],        
                             this->fixed_rank_*this->dof_dimension_, 
-                            (const double**)d_LR_x_pointers_[gpu_id][block_size][group_j], 
+                            (const double**)d_LR_x_pointers_[gpu_id][block_size][group_i], 
                             1,
                             &beta,
-                            d_LR_tmp_pointers_[gpu_id][block_size][group_j], 
+                            d_LR_tmp_pointers_[gpu_id][block_size][group_i], 
                             1,
                             num_blocks
                         ));
@@ -1540,13 +1532,13 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                             block_size*this->dof_dimension_,        // num rows
                             this->fixed_rank_*this->dof_dimension_, // num cols 
                             &alpha,
-                            (const double**)d_LR_A_data_pointers_[gpu_id][block_size][group_j],        
+                            (const double**)d_LR_A_data_pointers_[gpu_id][block_size][group_i],        
                             // this->fixed_rank_*this->dof_dimension_,
                             block_size*this->dof_dimension_, 
-                            (const double**)d_LR_tmp_pointers_[gpu_id][block_size][group_j], 
+                            (const double**)d_LR_tmp_pointers_[gpu_id][block_size][group_i], 
                             1,
                             &beta,
-                            d_LR_y_pointers_[gpu_id][block_size][group_j], 
+                            d_LR_y_pointers_[gpu_id][block_size][group_i], 
                             1,
                             num_blocks
                         ));

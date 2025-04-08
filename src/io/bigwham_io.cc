@@ -8,6 +8,8 @@
 //
 // last modifications :: Dec. 2023 - new interface improvements
 
+#include <cmath>
+
 #include "bigwham_io.h"
 #include "bigwham_io_helper.h"
 
@@ -40,6 +42,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
                      const std::string &kernel,
                      const std::vector<double> &properties,
                      const int n_openMP_threads,
+                     const int n_GPUs,
                      const bool verbose,
                      const bool homogeneous_size_pattern,
                      const bool useCuda,
@@ -56,23 +59,6 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         std::cout << "Creation of a BigWhamIO object with verbose on" << std::endl;
     }
 
-    // Ensuring CUDA compatible arguments
-    this->use_cuda_hmat = useCuda;
-
-    if( this->use_cuda_hmat  && (!GetCudaAvailable())){
-        std::cerr << "WARNING: Bigwham hasn't been compiled with CUDA support, falling back to CPU matvec" << std::endl;
-        this->use_cuda_hmat = false;
-    }
-    
-    if (this->use_cuda_hmat  && (fixed_rank <= 0)) {
-        std::cerr << "WARNING: CUDA matvec can't be used without using fixed rank, falling back to CPU matvec" << std::endl;
-        this->use_cuda_hmat = false;
-    }
-    if (this->use_cuda_hmat  && !homogeneous_size_pattern) {
-        std::cerr << "WARNING: CUDA matvec can't be used without using homogeneous sized pattern, falling back to CPU matvec" << std::endl;
-        this->use_cuda_hmat = false;
-    }
-    
     // This should be cleaned properly
     this->n_openMP_threads_ = n_openMP_threads;
     int n_available = this->GetAvailableOmpThreads();
@@ -80,14 +66,51 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
     {
         this->n_openMP_threads_ = n_available;
     };
-
-#ifdef BIGWHAM_OPENMP
-    if (this->verbose_)
+    
+    #ifdef BIGWHAM_OPENMP
+        if (this->verbose_)
             std::cout << "Forcing the number of OpenMP threads to " << this->n_openMP_threads_ << std::endl;
-    omp_set_max_active_levels(1);  // Limit parallel region depth
-    // omp_set_nested(0);  // Disable nested parallelism
+        omp_set_max_active_levels(1);  // Limit parallel region depth    
+        omp_set_num_threads(this->n_openMP_threads_);
+    #endif
 
-    omp_set_num_threads(this->n_openMP_threads_);
+    // Ensuring CUDA compatible arguments
+    this->use_cuda_hmat = useCuda;
+
+    if( this->use_cuda_hmat  && (!GetCudaAvailable())){
+        std::cerr << "[WARNING] Bigwham hasn't been compiled with CUDA support, falling back to CPU matvec" << std::endl;
+        this->use_cuda_hmat = false;
+    }
+    
+    if (this->use_cuda_hmat  && (fixed_rank <= 0)) {
+        std::cerr << "[WARNING] CUDA matvec can't be used without using fixed rank, falling back to CPU matvec" << std::endl;
+        this->use_cuda_hmat = false;
+    }
+    if (this->use_cuda_hmat  && !homogeneous_size_pattern) {
+        std::cerr << "[WARNING] CUDA matvec can't be used without using homogeneous sized pattern, falling back to CPU matvec" << std::endl;
+        this->use_cuda_hmat = false;
+    }
+
+    // Getting the number of GPUs to use
+#ifdef USE_CUDA
+    if (this->use_cuda_hmat){
+        num_GPUs_ = n_GPUs;
+        int num_available_GPUs;
+        cudaGetDeviceCount(&num_available_GPUs);
+        if (num_available_GPUs < num_GPUs_){
+            std::cout << "[WARNING] You asked for more GPUs than available" << std::endl;
+            std::cout << "Setting number of GPUs to use to " << num_available_GPUs << " (number of available GPUs)" << std::endl;
+            num_GPUs_ = num_available_GPUs;
+        } else {
+            std::cout << "Using " << num_GPUs_ << " GPUs out of " << num_available_GPUs << " detected" << std::endl;
+        }
+    }
+
+    // Ensuring we have more OpenMP threads than GPUs
+    if (this->n_openMP_threads_ <= num_GPUs_){
+        std::cerr << "Less OpenMP threads than GPUs, aborting..." << std::endl;
+        std::abort();
+    }
 #endif
 
     if (this->verbose_){
@@ -264,6 +287,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
                      const std::vector<int> &conn_rec, const std::string &kernel,
                      const std::vector<double> &properties,
                      const int n_openMP_threads,
+                     const int n_GPUs,
                     const bool verbose,
                     const bool homogeneous_size_pattern,
                     const bool useCuda,
@@ -273,9 +297,11 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
     this->homogeneous_size_pattern_ = homogeneous_size_pattern;
     this->fixed_rank_ = fixed_rank;
 
-#ifdef USE_CUDA
-    this->use_cuda_hmat = useCuda;
-#endif
+    // No CUDA support for rectangular hmat yet
+    if (useCuda){
+        std::cerr << "No CUDA support for rectangular matrices yet, please use standard square matrices or fall back for CPU matvec" << std::endl;
+        std::abort();
+    }
 
     this->n_openMP_threads_ = n_openMP_threads;
     auto n_available = this->GetAvailableOmpThreads();
@@ -605,7 +631,7 @@ void BigWhamIO::BuildHierarchicalMatrix(const int max_leaf_size, const double et
 
 #ifdef USE_CUDA
     if (this->use_cuda_hmat){
-        hmat_ = std::make_shared<HmatCuda<double>>(M, epsilon_aca_, this->n_openMP_threads_, this->verbose_, this->fixed_rank_);
+        hmat_ = std::make_shared<HmatCuda<double>>(M, epsilon_aca_, this->n_openMP_threads_, this->num_GPUs_, this->verbose_, this->fixed_rank_);
     } else {
 #endif
 
@@ -642,6 +668,17 @@ void BigWhamIO::BuildHierarchicalMatrix(const int max_leaf_size, const double et
                 << " X " << "(" << mesh_src_->num_collocation_points()
                 << " x " << mesh_rec_->spatial_dimension() << ")" << "\n";
         std::cout << "--------------------\n";
+    }
+
+    // If using fixed rank : we compare the max ACA error to eps ACA
+    // max ACA error = max(il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank))
+    // Comparison done : il::abs(frobenius_norm_ab) <= il::ipow<2>(epsilon) * il::abs(frobenius_low_rank)
+    if (this->fixed_rank_ > 0){
+        double max_ACA_error = GetMaxErrorACA();
+        if ( max_ACA_error > this->epsilon_aca_){
+            std::cout << "[WARNING] Your maximum ACA error is above your eps_aca parameter (max ACA error = " << max_ACA_error << ", eps_ACA = " << this->epsilon_aca_ << ")" << std::endl;
+            std::cout << "You may be fine, consider using a greater rank if memory allows it" << std::endl;
+        }
     }
 }
 /* -------------------------------------------------------------------------- */

@@ -14,6 +14,7 @@
 #include <il/Timer.h>
 #include <il/linearAlgebra/dense/blas/blas_static.h>
 #include <il/math.h>
+#include <cmath>
 
 #include "hmat/compression/routines.h"
 #include "hmat/hmatrix/LowRank.h"
@@ -198,7 +199,7 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
     // Break if fixed rank 
     if (use_fixed_rank && (rank >= fixed_rank)) {
       // We retrieve the frobenius error
-      lrb->error_on_approximation = il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank);
+      lrb->error_on_approximation = std::sqrt(il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank));
       break;
     }
 
@@ -206,7 +207,7 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
     if (!use_fixed_rank &&
         il::abs(frobenius_norm_ab) <=
             il::ipow<2>(epsilon) * il::abs(frobenius_low_rank)) {
-      lrb->error_on_approximation = il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank);
+      lrb->error_on_approximation = std::sqrt(il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank));
       break;
     }
   }

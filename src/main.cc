@@ -40,8 +40,9 @@ int main() {
     bool verbose = true;
     bool homegeneous_block_size = false;
     bool useCuda = false;
+    int n_GPUs = -1;
     int n_omp_threads = 4;
-    BigWhamIO my_io{coor, conn, "2DS0-H", properties, n_omp_threads, verbose, homegeneous_block_size, useCuda};
+    BigWhamIO my_io{coor, conn, "2DS0-H", properties, n_omp_threads,n_GPUs, verbose, homegeneous_block_size, useCuda};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
     auto nt = my_io.GetOmpThreads() ;
     std::cout <<"numb of threads " << nt <<"\n";
