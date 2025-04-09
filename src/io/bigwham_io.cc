@@ -102,15 +102,19 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
             std::cout << "Setting number of GPUs to use to " << num_available_GPUs << " (number of available GPUs)" << std::endl;
             num_GPUs_ = num_available_GPUs;
         } else {
-            std::cout << "Using " << num_GPUs_ << " GPUs out of " << num_available_GPUs << " detected" << std::endl;
+            if (this->verbose_) std::cout << "Using " << num_GPUs_ << " GPUs out of " << num_available_GPUs << " detected" << std::endl;
         }
+        
+        // Ensuring we have more OpenMP threads than GPUs
+        if (this->n_openMP_threads_ <= num_GPUs_){
+
+            std::cerr << "[ERROR] Less OpenMP threads than GPUs (" << this->n_openMP_threads  << " OpenMP threads and " << num_GPUs_<< " GPUs) aborting..." << std::endl;
+            std::abort();
+        }
+
     }
 
-    // Ensuring we have more OpenMP threads than GPUs
-    if (this->n_openMP_threads_ <= num_GPUs_){
-        std::cerr << "Less OpenMP threads than GPUs, aborting..." << std::endl;
-        std::abort();
-    }
+    
 #endif
 
     if (this->verbose_){
@@ -496,14 +500,14 @@ void BigWhamIO::BuildPattern(const int max_leaf_size, const double eta)
 /* -------------------------------------------------------------------------- */
 
 // Method to get the GPU memory requirement
-size_t BigWhamIO::GetGPUMemoryRequired(){
+size_t BigWhamIO::GetGPUStorageRequirement() const {
     if (!is_pattern_built_){
-        std::cerr << "GetGPUMemoryRequired called before pattern built" << std::endl;
+        std::cerr << "[ERROR] GetGPUMemoryRequired called before pattern built" << std::endl;
         return -1;
     }
 
     if (!use_cuda_hmat){
-        std::cerr << "GetGPUMemoryRequired called but cuda not used" << std::endl;
+        std::cerr << "[ERROR] GetGPUMemoryRequired called but cuda not used" << std::endl;
         return -1;
     }
 

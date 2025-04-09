@@ -212,7 +212,7 @@ int main(int argc, char * argv[]) {
   hmat_io_2.BuildPattern(max_leaf_size, eta);
 
 
-  size_t memory_required = hmat_io_2.GetGPUMemoryRequired();
+  size_t memory_required = hmat_io_2.GetGPUStorageRequirement();
 
   std::cout << "[GPU] memory required = " << formatBytes(memory_required) << std::endl; 
 

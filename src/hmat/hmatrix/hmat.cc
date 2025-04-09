@@ -17,7 +17,7 @@
 #include "hdf5.h"
 #endif
 
-#define TIMING
+// #define TIMING
 #include <ctime>
 
 

@@ -163,6 +163,8 @@ public:
     return hmat_->nbOfEntries() * sizeof(double);
   }
 
+  size_t GetGPUStorageRequirement() const;
+
 
 
   [[nodiscard]] double hmat_time() const { return hmat_time_; };
@@ -179,7 +181,6 @@ public:
   }
 
   bool GetCudaAvailable();
-  size_t GetGPUMemoryRequired();
 
   int GetOmpThreads() {
     return this->n_openMP_threads_;

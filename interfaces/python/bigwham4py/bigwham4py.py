@@ -167,6 +167,9 @@ class BEMatrix(LinearOperator):
     
     def getStorageRequirement(self):
         return self.H_.get_storage_requirement()
+    
+    def getGPUStorageRequirement(self):
+        return self.H_.get_gpu_storage_requirement()
 
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
