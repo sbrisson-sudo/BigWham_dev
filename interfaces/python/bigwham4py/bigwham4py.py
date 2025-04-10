@@ -286,9 +286,9 @@ class BEMatrix(LinearOperator):
         ax.set_ylim([data_pattern[:, 0].min(), data_pattern[:, 3].max()])
         ax.set_xlim([data_pattern[:, 1].min(), data_pattern[:, 2].max()])
         ax.set_aspect("equal")
-        # fig.colorbar(p)
-        fig.show()
-        plt.show(block=True)
+        # # fig.colorbar(p)
+        # fig.show()
+        # plt.show(block=True)
         return fig
 
     # a method constructing an ILU Preconditionner of the H matrix

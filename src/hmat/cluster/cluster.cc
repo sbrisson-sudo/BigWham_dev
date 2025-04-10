@@ -7,6 +7,7 @@
 // file for more details.
 //
 #include <limits>
+#include <cmath>
 
 #include <il/Tree.h>
 
@@ -507,9 +508,20 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
   }
 
   // Compute child cardinal 
+  // il::int_t card_s1 = ((i_end - i_begin) / leaf_size / 2) * leaf_size; // use of c++ integer division
+  // if (card_s1 < 2*leaf_size) card_s1 = leaf_size;
 
-  il::int_t card_s1 = ((i_end - i_begin) / leaf_size / 2) * leaf_size; // use of c++ integer division
-  if (card_s1 < 2*leaf_size) card_s1 = leaf_size;
+  int k = 0;
+  while (leaf_size * pow(2, k + 1) <= (i_end - i_begin)) {
+      k++;
+  }
+
+  il::int_t card_s1;
+  if ((i_end - i_begin) == (leaf_size * pow(2, k))){
+    card_s1 = (i_end - i_begin)/2;
+  } else {
+    card_s1 = leaf_size * pow(2, k);;
+  }
 
   tree.AddChild(s, 0);
   const il::spot_t s0 = tree.child(s, 0);

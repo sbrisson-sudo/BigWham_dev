@@ -15,6 +15,8 @@
 // #define DEBUG2
 // #define DEBUG5
 
+// #define PRINT_N_GROUPS
+
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
 void check_cuda(cudaError_t err, const char* const func, const char* const file,
@@ -283,6 +285,27 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
             LR_group_size_num_.push_back({block_size, num_blocks_group});
         }
     }
+
+    // We print the result 
+    #ifdef PRINT_N_GROUPS
+    std::cout << "LR blocks size distribution : ";
+    for (const auto& size_count : num_LR_blocks_per_size) {
+        int block_size = size_count.first;
+        int num_lr_blocks = size_count.second;
+        std::cout << num_lr_blocks << " LR blocks of size " << block_size;
+    }
+    std::cout << std::endl;
+
+    std::cout << "LR blocks groups : ";
+    for (const auto& size_groups : LR_blocks_groups_indices) {
+        int block_size = size_groups.first;
+        int num_groups = size_groups.second.size();
+        int total_num_blocks = 0;
+        for (auto& indices : size_groups.second) total_num_blocks += indices.size();
+        std::cout << num_groups << " groups of size " << block_size << " (accounting for " << total_num_blocks << " LR blocks in total), ";
+    }
+    std::cout << std::endl;
+    #endif
 
 
 #ifdef DEBUG3
