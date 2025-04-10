@@ -12,6 +12,7 @@
 #define BIGWHAM_HMAT_CUDA_H
 
 #include <vector>
+#include <unordered_map>
 
 #include <cuda_runtime.h>
 #include <cuda.h>
