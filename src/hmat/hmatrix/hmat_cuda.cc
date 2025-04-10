@@ -413,6 +413,11 @@ void HmatCuda<T>::copyToDevice(){
     int leaf_size = this->hr_->leaf_size;
     const int dim_dof = this->dof_dimension_;
 
+    // Initializing MAGMA
+    #ifdef USE_MAGMA
+    magma_init();
+    #endif
+
     // ---------------------------
     // Distributing load on GPUS
     // ---------------------------
@@ -507,6 +512,10 @@ void HmatCuda<T>::copyToDevice(){
     // Number of CUDA streams = 1 for BSR + the rest for batched opeartions
     cuda_streams_.resize(num_gpus_);
 
+    #ifdef USE_MAGMA
+    magma_queues_.resize(num_gpus_);
+    #endif
+
     // GPU (device) memory buffers
     d_x_.resize(num_gpus_);               // Store the lhs vector on device
     d_y_.resize(num_gpus_);               // Store the rhs vector on device
@@ -580,6 +589,20 @@ void HmatCuda<T>::copyToDevice(){
         if (this->verbose_) std::cout << "[GPU "<< gpu_id << "] Initiating " << num_streams_ << " CUDA streams\n";
         cuda_streams_[gpu_id].resize(num_streams_);
         for (int i = 0; i < num_streams_; i++) CHECK_CUDA_ERROR(cudaStreamCreate(&cuda_streams_[gpu_id][i]));
+
+        // Here we associate the Cuda streams (but the first one used by Cusparse) to Magma queues       
+        #ifdef USE_MAGMA
+        magma_queues_[gpu_id].resize(num_streams_-1);
+        for (int i = 1; i < num_streams_; i++){
+            magma_queue_create_from_cuda(
+                gpu_id,                  
+                cuda_streams_[gpu_id][i],        
+                NULL,              
+                NULL,               
+                &magma_queues_[gpu_id][i-1]      
+            );
+        }
+        #endif
 
         // Here we balance the load for the LR blocks over num_streams_ - 1 streams 
 
@@ -1018,6 +1041,14 @@ void HmatCuda<T>::deallocateOnDevice(){
                 CHECK_CUDA_ERROR(cudaFree(d_LR_tmp_pointers_[gpu_id][block_size][group_i]));
             }
         }
+
+        // Destroy the Magma queues
+        #ifdef USE_MAGMA
+        for (int i = 1; i < num_streams_; i++) magma_queue_destroy(magma_queues_[gpu_id][i-1]);
+        #endif
+
+        // Destroy the cuda streams
+        for (int i = 0; i < num_streams_; i++) cudaStreamDestroy(cuda_streams_[gpu_id][i]);
     }
 
 }
@@ -1501,24 +1532,26 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
                         int num_blocks = LR_blocks_groups_indices[block_size][group_i].size();
 
-                        #if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
+                        #ifdef USE_MAGMA
+                        // Use MAGMA BLAS implementation
 
                         // Compute tmp = B*x
-                        CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                            cublas_handle_[gpu_id], CUBLAS_OP_N,
+                        magmablas_dgemv_batched(
+                            MagmaNoTrans, 
                             this->fixed_rank_*this->dof_dimension_,        // num rows
                             block_size*this->dof_dimension_, // num cols 
-                            &alpha,
-                            (const double**)d_LR_B_data_pointers_[gpu_id][block_size][group_i],        
+                            alpha,
+                            (const double**)d_LR_B_data_pointers_[gpu_id][block_size][group_i],
                             this->fixed_rank_*this->dof_dimension_, 
                             (const double**)d_LR_x_pointers_[gpu_id][block_size][group_i], 
                             1,
-                            &beta,
+                            beta,
                             d_LR_tmp_pointers_[gpu_id][block_size][group_i], 
                             1,
-                            num_blocks
-                        ));
-    
+                            num_blocks,
+                            magma_queues_[gpu_id][cuda_stream_i]
+                        );
+
                         // // Add explicit CUDA error check
                         // cudaDeviceSynchronize();
                         // cudaError_t err = cudaGetLastError();
@@ -1527,80 +1560,134 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                         // }
                         
                         // Compute y = A*tmp
-                        CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                            cublas_handle_[gpu_id], CUBLAS_OP_N,
+                        magmablas_dgemv_batched(
+                            MagmaNoTrans, 
                             block_size*this->dof_dimension_,        // num rows
                             this->fixed_rank_*this->dof_dimension_, // num cols 
-                            &alpha,
+                            alpha,
                             (const double**)d_LR_A_data_pointers_[gpu_id][block_size][group_i],        
-                            // this->fixed_rank_*this->dof_dimension_,
                             block_size*this->dof_dimension_, 
-                            (const double**)d_LR_tmp_pointers_[gpu_id][block_size][group_i], 
+                            (const double**)d_LR_tmp_pointers_[gpu_id][block_size][group_i],  
                             1,
-                            &beta,
+                            beta,
                             d_LR_y_pointers_[gpu_id][block_size][group_i], 
                             1,
-                            num_blocks
-                        ));
-    
-                        // cudaDeviceSynchronize();
-                        // // Add explicit CUDA error check
-                        // err = cudaGetLastError();
-                        // if (err != cudaSuccess) {
-                        //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
-                        // }
-    
-                        #else // For CUDA versions before 11.6.2
-    
-                        // Compute tmp = B*x
-                        CHECK_CUBLAS_ERROR(cublasDgemmBatched(
-                            cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N, 
-                            this->fixed_rank_*this->dof_dimension_,
-                            1, // 1 column matrix ß
-                            block_size*this->dof_dimension_, 
-                            &alpha,
-                            (const double**)d_LR_B_data_pointers_[gpu_id][block_size][group_i],
-                            this->fixed_rank_*this->dof_dimension_, 
-                            (const double**)d_LR_x_pointers_[gpu_id][block_size][group_i],
-                            block_size*this->dof_dimension_, 
-                            &beta,
-                            d_LR_tmp_pointers_[gpu_id][block_size][group_i],
-                            this->fixed_rank_*this->dof_dimension_,
-                            num_blocks
-                        ));
+                            num_blocks,
+                            magma_queues_[gpu_id][cuda_stream_i]
+                        );    
 
                         // // Add explicit CUDA error check
                         // cudaDeviceSynchronize();
-                        // err = cudaGetLastError();
+                        // cudaError_t err = cudaGetLastError();
                         // if (err != cudaSuccess) {
                         //     printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
                         // }
-    
-                        // Compute y = A*tmp 
-                        CHECK_CUBLAS_ERROR(cublasDgemmBatched(
-                            cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N,
-                            block_size*this->dof_dimension_, 
-                            1, // 1 column matrix
-                            this->fixed_rank_*this->dof_dimension_, 
-                            &alpha,
-                            (const double**)d_LR_A_data_pointers_[gpu_id][block_size][group_i],
-                            block_size*this->dof_dimension_,
-                            (const double**)d_LR_tmp_pointers_[gpu_id][block_size][group_i],
-                            this->fixed_rank_*this->dof_dimension_,
-                            &beta,
-                            d_LR_y_pointers_[gpu_id][block_size][group_i],
-                            block_size*this->dof_dimension_,
-                            num_blocks
-                        ));
 
-                        // // Add explicit CUDA error check
-                        // cudaDeviceSynchronize();
-                        // err = cudaGetLastError();
-                        // if (err != cudaSuccess) {
-                        //     printf("CUDA error after y = A*tmp: %s\n", cudaGetErrorString(err));
-                        // }
-    
-                        #endif
+                        #else 
+                        // Use CUBLAS implementation
+
+                            #if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
+
+                            // Compute tmp = B*x
+                            CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                                cublas_handle_[gpu_id], CUBLAS_OP_N,
+                                this->fixed_rank_*this->dof_dimension_,        // num rows
+                                block_size*this->dof_dimension_, // num cols 
+                                &alpha,
+                                (const double**)d_LR_B_data_pointers_[gpu_id][block_size][group_i],        
+                                this->fixed_rank_*this->dof_dimension_, 
+                                (const double**)d_LR_x_pointers_[gpu_id][block_size][group_i], 
+                                1,
+                                &beta,
+                                d_LR_tmp_pointers_[gpu_id][block_size][group_i], 
+                                1,
+                                num_blocks
+                            ));
+        
+                            // // Add explicit CUDA error check
+                            // cudaDeviceSynchronize();
+                            // cudaError_t err = cudaGetLastError();
+                            // if (err != cudaSuccess) {
+                            //     printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
+                            // }
+                            
+                            // Compute y = A*tmp
+                            CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                                cublas_handle_[gpu_id], CUBLAS_OP_N,
+                                block_size*this->dof_dimension_,        // num rows
+                                this->fixed_rank_*this->dof_dimension_, // num cols 
+                                &alpha,
+                                (const double**)d_LR_A_data_pointers_[gpu_id][block_size][group_i],        
+                                // this->fixed_rank_*this->dof_dimension_,
+                                block_size*this->dof_dimension_, 
+                                (const double**)d_LR_tmp_pointers_[gpu_id][block_size][group_i], 
+                                1,
+                                &beta,
+                                d_LR_y_pointers_[gpu_id][block_size][group_i], 
+                                1,
+                                num_blocks
+                            ));
+        
+                            // cudaDeviceSynchronize();
+                            // // Add explicit CUDA error check
+                            // err = cudaGetLastError();
+                            // if (err != cudaSuccess) {
+                            //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
+                            // }
+        
+                            #else // For CUDA versions before 11.6.2
+        
+                            // Compute tmp = B*x
+                            CHECK_CUBLAS_ERROR(cublasDgemmBatched(
+                                cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N, 
+                                this->fixed_rank_*this->dof_dimension_,
+                                1, // 1 column matrix ß
+                                block_size*this->dof_dimension_, 
+                                &alpha,
+                                (const double**)d_LR_B_data_pointers_[gpu_id][block_size][group_i],
+                                this->fixed_rank_*this->dof_dimension_, 
+                                (const double**)d_LR_x_pointers_[gpu_id][block_size][group_i],
+                                block_size*this->dof_dimension_, 
+                                &beta,
+                                d_LR_tmp_pointers_[gpu_id][block_size][group_i],
+                                this->fixed_rank_*this->dof_dimension_,
+                                num_blocks
+                            ));
+
+                            // // Add explicit CUDA error check
+                            // cudaDeviceSynchronize();
+                            // err = cudaGetLastError();
+                            // if (err != cudaSuccess) {
+                            //     printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
+                            // }
+        
+                            // Compute y = A*tmp 
+                            CHECK_CUBLAS_ERROR(cublasDgemmBatched(
+                                cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N,
+                                block_size*this->dof_dimension_, 
+                                1, // 1 column matrix
+                                this->fixed_rank_*this->dof_dimension_, 
+                                &alpha,
+                                (const double**)d_LR_A_data_pointers_[gpu_id][block_size][group_i],
+                                block_size*this->dof_dimension_,
+                                (const double**)d_LR_tmp_pointers_[gpu_id][block_size][group_i],
+                                this->fixed_rank_*this->dof_dimension_,
+                                &beta,
+                                d_LR_y_pointers_[gpu_id][block_size][group_i],
+                                block_size*this->dof_dimension_,
+                                num_blocks
+                            ));
+
+                            // // Add explicit CUDA error check
+                            // cudaDeviceSynchronize();
+                            // err = cudaGetLastError();
+                            // if (err != cudaSuccess) {
+                            //     printf("CUDA error after y = A*tmp: %s\n", cudaGetErrorString(err));
+                            // }
+        
+                            #endif // CUDA version
+
+                        #endif // MAGMA BLAS or CUBLAS
 
                     } // loop on groups
 

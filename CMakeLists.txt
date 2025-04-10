@@ -129,6 +129,25 @@ if (USE_CUDA)
         ${CUDA_INCLUDE_DIRS}
         )
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -std=c++14)
+
+    ################################################
+    # TO LINK MAGMA LIBRARY
+    # Allow the user to specify MAGMA_ROOT via command line
+    option(MAGMA_ROOT "Path to MAGMA installation directory" "")
+
+    # Check if MAGMA_ROOT was provided
+    if(MAGMA_ROOT)
+        # Set variables based on MAGMA_ROOT
+        message(STATUS "MAGMA support enabled. Using MAGMA at: ${MAGMA_ROOT}")
+        set(MAGMA_LIBRARY ${MAGMA_ROOT}/lib/libmagma.so)
+        set(MAGMA_INCLUDE_DIR ${MAGMA_ROOT}/include)
+        message(STATUS "MAGMA_LIBRARY : ${MAGMA_LIBRARY}")
+        message(STATUS "MAGMA_INCLUDE_DIR : ${MAGMA_INCLUDE_DIR}")
+    else()
+        message(STATUS "MAGMA support disabled. To enable, specify -DMAGMA_ROOT=/path/to/magma")
+    endif()
+    ################################################
+
 endif()
 ################################################
 
@@ -165,9 +184,13 @@ target_link_libraries(BigWham PUBLIC
     # CUDA_SEPARABLE_COMPILATION ON)
     set_property(TARGET BigWham PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
 
+    if(MAGMA_ROOT)
+        target_include_directories(BigWham PRIVATE ${MAGMA_INCLUDE_DIR})
+        target_link_libraries(BigWham PRIVATE ${MAGMA_LIBRARY})
+        target_compile_definitions(BigWham PRIVATE USE_MAGMA)
+    endif()
+
 endif()
-
-
 
 add_library(BigWhamShared SHARED $<TARGET_OBJECTS:BigWham>)
 add_library(BigWhamStatic STATIC $<TARGET_OBJECTS:BigWham>)

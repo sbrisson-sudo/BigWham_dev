@@ -30,6 +30,13 @@
 #include "contiguous_array2d_vector.hpp"
 #include "hmat.h"
 
+// #define USE_MAGMA
+
+#ifdef USE_MAGMA
+#include "magma_v2.h"
+#include "magmablas_d_v1.h"
+#endif
+
 
 namespace bigwham {
 
@@ -92,6 +99,11 @@ private:
     // int num_streams_;
     const int num_streams_ = 32;
     std::vector<std::vector<cudaStream_t>> cuda_streams_;
+
+#ifdef USE_MAGMA
+    std::vector<std::vector<magma_queue_t>> magma_queues_;
+#endif
+
 
     // GPU (device) memory buffers
     // Vectors
