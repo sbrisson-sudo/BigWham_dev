@@ -117,8 +117,11 @@ int main(int argc, char * argv[]) {
   il::Array<double> t{num_dof, il::align_t(), 64};
   auto dd_edit = dd.Edit();
   dd_edit[0] = 0;
-  for (int i(1); i<num_dof; i++) dd_edit[i] = dd_edit[i-1] + 1/static_cast<double>(num_dof);
+  for (int i(1); i<num_dof; i++) dd_edit[i] = dd_edit[i-1] + 1/(static_cast<double>(num_dof)-1);
   auto dd_view = dd.view();
+
+  // Save it 
+  cnpy::npy_save("mat_vec_gpu_input.npy", dd.data(), {static_cast<size_t>(num_dof)}, "w");
 
   // Timing
   const int N_matvec = 10;
@@ -136,7 +139,7 @@ int main(int argc, char * argv[]) {
   bool verbose = true;
   bool homogeneous_size = true;
   bool use_Cuda = true;
-  const int rank = 15;
+  const int rank = 16;
   std::cout << "[GPU] fixed rank = " << rank << std::endl; 
 
   // auto start = std::chrono::high_resolution_clock::now();
@@ -197,6 +200,8 @@ int main(int argc, char * argv[]) {
   l2_norm = std::sqrt(l2_norm);
   std::cout << "[GPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
   std::cout << "[GPU] sum of the product of H with [0, 1/dof, ...,  1] = " << res_sum  << std::endl;
+
+  cnpy::npy_save("mat_vec_gpu_res.npy", t_view.data(), {static_cast<size_t>(t_view.size())}, "w");
 
   // std::cout << "[GPU] res = [" ;
   // for (int i(0); i<num_dof; i++) std::cout << t_view[i] << ", ";

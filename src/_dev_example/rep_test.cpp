@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
   std::cout << "Number of Collocation points  = " << xcol.size(0) << " X "
             << xcol.size(1) << std::endl;
 
-  auto hr = HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  auto hr = HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta, true);
 
   SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   const int n_openmp_threads = 4;

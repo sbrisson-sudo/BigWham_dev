@@ -18,13 +18,13 @@ namespace bigwham {
 // Block Cluster Tree Creation - IxI :: square H-matrix
 il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxI(
     const il::Array2D<double> &node, const il::Tree<il::Range, 2> &range_tree,
-    double eta, const bool homogeneous_size) {
+    double eta, const bool homogeneous_size, const int fixed_rank) {
   il::Tree<bigwham::SubHMatrix, 4> hmatrix_tree{};
- 
+
   if (homogeneous_size){
     bigwham::hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.root(),
     range_tree.root(), range_tree.root(), il::io,
-    hmatrix_tree);
+    hmatrix_tree, fixed_rank);
 
   } else {
     bigwham::hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.root(),
@@ -84,15 +84,35 @@ void hmatrixTreeIxI_rec(const il::Array2D<double> &node,
 void hmatrixTreeIxI_rec_size_conservative(const il::Array2D<double> &node,
   const il::Tree<il::Range, 2> &range_tree, double eta,
   il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
-  il::Tree<bigwham::SubHMatrix, 4> &hmatrix_tree) {
+  il::Tree<bigwham::SubHMatrix, 4> &hmatrix_tree, const int fixed_rank) {
 
   const bool is_admissible =
   isAdmissible(node, eta, range_tree.value(s0), range_tree.value(s1));
 
-  if (is_admissible) {
-    hmatrix_tree.Set(s,
-      bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
-                        bigwham::HMatrixType::LowRank});
+  // If using fixed rank : we have to ensure that both dimensions of the block are 
+  // at least twice the fixed rank
+  int size_range_0 = range_tree.value(s0).end - range_tree.value(s0).begin;
+  int size_range_1 = range_tree.value(s1).end - range_tree.value(s1).begin;
+  bool is_bigger_than_rank = (fixed_rank < 0) || ((size_range_0 > fixed_rank) && (size_range_1 > fixed_rank));
+
+  // std::cout << "size_range_0 = " << size_range_0 << "; size_range_1 = " << size_range_1 << "; fixed_rank = " << fixed_rank << " -> " << is_bigger_than_rank << std::endl;
+
+  if (is_admissible && is_bigger_than_rank) {
+
+    // if (size_range_0 == size_range_1) {
+    //   hmatrix_tree.Set(s,
+    //     bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
+    //                       bigwham::HMatrixType::LowRank});
+    // } else {
+    //   hmatrix_tree.Set(
+    //     s, bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
+    //                             bigwham::HMatrixType::FullRank});
+    // }
+
+      hmatrix_tree.Set(s,
+        bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
+                          bigwham::HMatrixType::LowRank});
+    
   } else {
     if (range_tree.hasChild(s0, 0) && range_tree.hasChild(s0, 1) &&
     range_tree.hasChild(s1, 0) && range_tree.hasChild(s1, 1)) { // Both clusters have children
@@ -101,57 +121,32 @@ void hmatrixTreeIxI_rec_size_conservative(const il::Array2D<double> &node,
         bigwham::HMatrixType::Hierarchical});
 
       hmatrix_tree.AddChild(s, 0);
-      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 0),
+      hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 0),
       range_tree.child(s0, 0), range_tree.child(s1, 0),
-      il::io, hmatrix_tree);
+      il::io, hmatrix_tree, fixed_rank);
       hmatrix_tree.AddChild(s, 1);
-      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 1),
+      hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 1),
       range_tree.child(s0, 1), range_tree.child(s1, 0),
-      il::io, hmatrix_tree);
+      il::io, hmatrix_tree, fixed_rank);
       hmatrix_tree.AddChild(s, 2);
-      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 2),
+      hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 2),
       range_tree.child(s0, 0), range_tree.child(s1, 1),
-      il::io, hmatrix_tree);
+      il::io, hmatrix_tree, fixed_rank);
       hmatrix_tree.AddChild(s, 3);
-      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 3),
+      hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 3),
       range_tree.child(s0, 1), range_tree.child(s1, 1),
-      il::io, hmatrix_tree);
+      il::io, hmatrix_tree, fixed_rank);
 
-    } else if (range_tree.hasChild(s0, 0) && range_tree.hasChild(s0, 1) &&
-    !range_tree.hasChild(s1, 0) && !range_tree.hasChild(s1, 1)) { // Only s0 does 
-
-      hmatrix_tree.Set(s, bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
-        bigwham::HMatrixType::Hierarchical});
-        
-      hmatrix_tree.AddChild(s, 0);
-      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 0),
-      range_tree.child(s0, 0), s1,
-      il::io, hmatrix_tree);
-      hmatrix_tree.AddChild(s, 1);
-      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 1),
-      range_tree.child(s0, 1), s1,
-      il::io, hmatrix_tree);
+    } else if ((range_tree.hasChild(s0, 0) && range_tree.hasChild(s0, 1)) ||
+              (range_tree.hasChild(s1, 0) && range_tree.hasChild(s1, 1))) {
+      hmatrix_tree.Set(
+      s, bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
+                              bigwham::HMatrixType::FullRank});
 
     } else if (!range_tree.hasChild(s0, 0) && !range_tree.hasChild(s0, 1) &&
-    range_tree.hasChild(s1, 0) && range_tree.hasChild(s1, 1)) { // Only s1 does 
-
-      hmatrix_tree.Set(s, bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
-        bigwham::HMatrixType::Hierarchical});
-        
-      hmatrix_tree.AddChild(s, 0);
-      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 0),
-      s0, range_tree.child(s1, 0),
-      il::io, hmatrix_tree);
-      hmatrix_tree.AddChild(s, 1);
-      hmatrixTreeIxI_rec(node, range_tree, eta, hmatrix_tree.child(s, 1),
-      s0, range_tree.child(s1, 0),
-      il::io, hmatrix_tree);
-
-
-    } else if (!range_tree.hasChild(s0, 0) && !range_tree.hasChild(s0, 1) &&
-    !range_tree.hasChild(s1, 0) && !range_tree.hasChild(s1, 1)) { // None does
-      hmatrix_tree.Set(s, bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
-                          bigwham::HMatrixType::FullRank});
+      !range_tree.hasChild(s1, 0) && !range_tree.hasChild(s1, 1)) { // None does
+        hmatrix_tree.Set(s, bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
+                            bigwham::HMatrixType::FullRank});
 
     } else {
       std::cerr << "Invalid cluster tree, see hmatrixTreeIxJ_rec_size_conservative" << std::endl;
@@ -522,6 +517,8 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
   } else {
     card_s1 = leaf_size * pow(2, k);;
   }
+
+  // std::cout << i_end - i_begin << " -> " << card_s1 << " + " << i_end - i_begin - card_s1 << std::endl;
 
   tree.AddChild(s, 0);
   const il::spot_t s0 = tree.child(s, 0);

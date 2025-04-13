@@ -49,6 +49,7 @@ private:
   double hmat_time_;
 
   bool verbose_ = true;
+  bool is_square_ = true;
 
   // Road to CUDA
   int num_GPUs_;

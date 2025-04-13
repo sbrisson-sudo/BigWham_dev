@@ -36,10 +36,9 @@ struct HRepresentation {
 };
 
 inline std::shared_ptr<HRepresentation>
-HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
-                            const il::int_t max_leaf_size, const double eta, const bool homegeneous_size = false) {
+HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh, const il::int_t max_leaf_size, const double eta, const bool verbose, const bool homegeneous_size = false, const int fixed_rank = -1) {
                             
-  // std::cout << "Pattern construction started .... \n";
+  std::cout << "Pattern construction square  started .... \n";
   auto hr = std::make_shared<HRepresentation>();
   hr->is_square_ = true;
   hr->leaf_size = max_leaf_size;
@@ -58,16 +57,21 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh,
 
   tt.Start();
   const il::Tree<SubHMatrix, 4> block_tree =
-      hmatrixTreeIxI(Xcol, cluster.partition, eta, homegeneous_size);
+      hmatrixTreeIxI(Xcol, cluster.partition, eta, homegeneous_size, fixed_rank);
   tt.Stop();
-  // std::cout << "Time for binary cluster tree construction  " << tt.time() << "\n";
-  std::cout << "Binary cluster tree depth = " << block_tree.depth() << "\n";
+
+  if (verbose){
+    std::cout << "Time for binary cluster tree construction  " << tt.time() << " s\n";
+    std::cout << "Binary cluster tree depth =" << block_tree.depth() << "\n";
+  }
+
   hr->pattern_ = createPattern(block_tree);
 
-  std::cout << "Number of blocks = " << hr->pattern_.n_B << "\n";
-  std::cout << "Number of full blocks = " << hr->pattern_.n_FRB << "\n";
-  std::cout << "Number of low rank blocks = " << hr->pattern_.n_LRB << "\n";
-  std::cout << "Pattern Created \n";
+  if (verbose){
+    std::cout << "Number of blocks =" << hr->pattern_.n_B << "\n";
+    std::cout << "Number of full blocks =" << hr->pattern_.n_FRB << "\n";
+    std::cout << "Number of low rank blocks =" << hr->pattern_.n_LRB << "\n";
+  }
 
   return hr;
 }

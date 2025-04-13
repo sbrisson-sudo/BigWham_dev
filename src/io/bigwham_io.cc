@@ -56,7 +56,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
 
     if (this->verbose_){
         std::cout << "--------------------" << std::endl;
-        std::cout << "Creation of a BigWhamIO object with verbose on" << std::endl;
+        std::cout << "Creation of a square BigWhamIO object with verbose on" << std::endl;
     }
 
     // This should be cleaned properly
@@ -301,6 +301,8 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
     this->homogeneous_size_pattern_ = homogeneous_size_pattern;
     this->fixed_rank_ = fixed_rank;
 
+    this->is_square_ = false;
+
     // No CUDA support for rectangular hmat yet
     if (useCuda){
         std::cerr << "No CUDA support for rectangular matrices yet, please use standard square matrices or fall back for CPU matvec" << std::endl;
@@ -491,7 +493,13 @@ void BigWhamIO::BuildPattern(const int max_leaf_size, const double eta)
         }
     }
     tt.Start();
-    this->hr_ = HRepresentationRectangularMatrix(mesh_src_, mesh_rec_, max_leaf_size_, eta_, verbose_, homogeneous_size_pattern_);
+
+    if (this->is_square_){
+        this->hr_ = HRepresentationSquareMatrix(mesh_src_, max_leaf_size_, eta_, verbose_, homogeneous_size_pattern_, fixed_rank_);
+    } else {
+        this->hr_ = HRepresentationRectangularMatrix(mesh_src_, mesh_rec_, max_leaf_size_, eta_, verbose_, homogeneous_size_pattern_);
+    }
+
     is_pattern_built_ = true;
     tt.Stop();
     if (this->verbose_)
@@ -741,11 +749,16 @@ std::vector<double> BigWhamIO::GetHPattern() const
 
         // If not using fixde rank we return the rank, otherwise we return the
         // frobenius norm error
-        if (this->fixed_rank_ > 0){
-            patternlist[index++] = hmat_->getLowRankBlock(j)->error_on_approximation;
+        if (is_built_){
+            if (this->fixed_rank_ > 0){
+                patternlist[index++] = hmat_->getLowRankBlock(j)->error_on_approximation;
+            } else {
+                patternlist[index++] = pattern.LRB_pattern(5, j); // the rank
+            }
         } else {
-            patternlist[index++] = pattern.LRB_pattern(5, j); // the rank
+            patternlist[index++] = -999;
         }
+        
         
     }
     // return a row major flatten vector

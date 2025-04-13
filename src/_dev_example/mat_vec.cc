@@ -112,7 +112,7 @@ int main(int argc, char * argv[]) {
   il::Array<double> t{num_dof, il::align_t(), 64};
   auto dd_edit = dd.Edit();
   dd_edit[0] = 0;
-  for (int i(1); i<num_dof; i++) dd_edit[i] = dd_edit[i-1] + 1/static_cast<double>(num_dof);
+  for (int i(1); i<num_dof; i++) dd_edit[i] = dd_edit[i-1] + 1/(static_cast<double>(num_dof)-1);
   auto dd_view = dd.view();
 
   // Timing
@@ -129,7 +129,8 @@ int main(int argc, char * argv[]) {
   int n_omp_threads = 999;
   int n_GPUs = 999;
   bool verbose = false;
-  bool homogeneous_size = false;
+  // bool homogeneous_size = false;
+  bool homogeneous_size = true;
   bool use_Cuda = false;
   std::cout << "[CPU] eps_aca = " << eps_aca << std::endl; 
 
@@ -152,8 +153,6 @@ int main(int argc, char * argv[]) {
 
   max_error_aca = hmat_io.GetMaxErrorACA();
   std::cout << "[CPU] Max ACA error = " << max_error_aca << std::endl;
-
-
 
   // Compute matvec
   t = hmat_io.MatVec(dd_view); 
@@ -186,6 +185,8 @@ int main(int argc, char * argv[]) {
   l2_norm = std::sqrt(l2_norm);
   std::cout << "[CPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
   std::cout << "[CPU] sum of the product of H with [0, 1/dof, ...,  1] = " << res_sum  << std::endl;
+
+  cnpy::npy_save("mat_vec_res.npy", t_view.data(), {static_cast<size_t>(t_view.size())}, "w");
 
   // std::cout << "[CPU] res = [" ;
   // for (int i(0); i<num_dof; i++) std::cout << t_view[i] << ", ";

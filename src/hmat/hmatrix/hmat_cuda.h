@@ -62,49 +62,54 @@ private:
     int total_block_size_;
 
     // CPU (host) memory buffers
-    T* FR_standard_size_data;
-    T* FR_non_standard_size_data;
-    int FR_standard_size_data_buffer_size;
-    int FR_non_standard_size_data_buffer_size;
+
+    // for full rank (FR) blocks
+    T* FR_standard_size_data;           // standard size FR blocks data
+    T* FR_non_standard_size_data;       // non standard size FR blocks data
+    int FR_standard_size_data_buffer_size;      // standard size FR blocks data size
+    int FR_non_standard_size_data_buffer_size;  // non standard size FR blocks data size
     std::vector<int> FR_std_orderedIndices; // to cpmply with BSR : blocks sorted by row then column
     int num_FR_std_blocks_;
     std::vector<int> FR_non_std_indices;
 
-    std::vector<int> LR_sizes;
+    // for low rank (LR) blocks
+    std::unordered_map<int, int> num_LR_std_blocks_per_size_;
+    T* LR_non_standard_size_A_data_;
+    T* LR_non_standard_size_B_data_;
+    int LR_non_standard_size_data_A_buffer_size_;
+    int LR_non_standard_size_data_B_buffer_size_;
+    std::unordered_map<int, T*> LR_standard_size_A_data_;
+    std::unordered_map<int, T*> LR_standard_size_B_data_;
+    std::unordered_map<int, int> LR_standard_size_data_buffer_sizes_;
 
-    std::unordered_map<int, std::vector<std::vector<int>>> LR_blocks_groups_indices;
-    std::unordered_map<int, std::vector<T*>> LR_A_data;
-    std::unordered_map<int, std::vector<T*>> LR_B_data;
-    std::unordered_map<int, std::vector<int>> LR_data_buffer_sizes;
+    std::unordered_map<int, std::vector<int>> LR_std_indices_;
+    std::vector<int> LR_non_std_indices_;
 
     // Num available GPUs
     int num_gpus_;
     
-    std::vector<int> num_FR_per_gpu_;
-    std::vector<int> num_LR_per_gpu_;
-    std::vector<int> offsets_FR_gpu_;
-    
-    std::vector<std::unordered_map<int, std::vector<int>>> LR_group_per_gpu_;
-    std::vector<std::pair<int, int>> LR_group_size_num_;
+
 
     // FOR ALL THE DATA STRUCTURES BELLOW, THE FIRST VECTOR RELATES
     // TO THE GPU REPARTITION
 
-    std::vector<std::vector<std::unordered_map<int, std::vector<int>>>> LR_group_per_cuda_stream_;
+    std::vector<int> num_FR_per_gpu_;
+    std::vector<int> offsets_FR_gpu_;    
+    std::vector<int> num_LR_per_gpu_;
+    std::vector<std::vector<int>> LR_std_sizes_per_gpu_;
+
 
     // GPU operation handler
     std::vector<cublasHandle_t> cublas_handle_;
     std::vector<cusparseHandle_t> cusparse_handle_;
 
-    // Number of CUDA streams = 1 for BSR + the rest for batched opeartions
-    // int num_streams_;
-    const int num_streams_ = 32;
+    // Number of CUDA streams = 1 for FR + 1 for LR
+    const int num_streams_ = 2;
     std::vector<std::vector<cudaStream_t>> cuda_streams_;
 
 #ifdef USE_MAGMA
     std::vector<std::vector<magma_queue_t>> magma_queues_;
 #endif
-
 
     // GPU (device) memory buffers
     // Vectors
@@ -113,14 +118,14 @@ private:
     std::vector<T*> d_x_;               // Store the lhs vector on device
     std::vector<T*> d_y_;               // Store the rhs vector on device
     std::vector<T*> d_y_partial_LR_;    // Partial results for LR blocks operations
-    std::vector<T*> d_tmp_;          // tmp = B*x then y = A*tmp
+    std::vector<T*> d_tmp_;             // tmp = B*x then y = A*tmp
 
     // FR data
     std::vector<T*> d_FR_data_;
 
-    // LR data
-    std::vector<std::unordered_map<int, std::unordered_map<int, T*>>> d_LR_A_data_;
-    std::vector<std::unordered_map<int, std::unordered_map<int, T*>>> d_LR_B_data_;
+    // LR data, for each size
+    std::vector<std::unordered_map<int, T*>> d_LR_A_data_;
+    std::vector<std::unordered_map<int, T*>> d_LR_B_data_;
 
     // FR metadata = BSR operations
     std::vector<cusparseMatDescr_t> FR_bsr_descr_;
@@ -132,22 +137,22 @@ private:
     std::vector<int*> h_FR_bsrColInd_; 
 
     // LR metadata = array of pointers for batched operations
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_A_data_pointers_;   // to data 
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_B_data_pointers_;   // to data 
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_x_pointers_;      // to input vec (and to intermediate vec)
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_y_pointers_;      // to output vec
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> d_LR_tmp_pointers_;      // to output vec
+    std::vector<std::unordered_map<int, T**>> d_LR_A_data_pointers_;    // to data 
+    std::vector<std::unordered_map<int, T**>> d_LR_B_data_pointers_;    // to data 
+    std::vector<std::unordered_map<int, T**>> d_LR_x_pointers_;         // to input vec 
+    std::vector<std::unordered_map<int, T**>> d_LR_y_pointers_;         // to output vec
+    std::vector<std::unordered_map<int, T**>> d_LR_tmp_pointers_;       // to tmp output vec
 
     // We also keep them on host
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_A_data_pointers_;    
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_B_data_pointers_;    
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_x_pointers_;       
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_y_pointers_;    
-    std::vector<std::unordered_map<int, std::unordered_map<int, T**>>> h_LR_tmp_pointers_;    
+    std::vector<std::unordered_map<int, T**>> h_LR_A_data_pointers_;    
+    std::vector<std::unordered_map<int, T**>> h_LR_B_data_pointers_;    
+    std::vector<std::unordered_map<int, T**>> h_LR_x_pointers_;       
+    std::vector<std::unordered_map<int, T**>> h_LR_y_pointers_;    
+    std::vector<std::unordered_map<int, T**>> h_LR_tmp_pointers_;    
 
     // To gather the low rank partial results
-    size_t y_partial_LR_buffer_size_bytes_;
-    size_t tmp_buffer_size_bytes_;
+    std::vector<size_t> y_partial_LR_buffer_size_bytes_;
+    std::vector<size_t> tmp_buffer_size_bytes_;
     std::vector<int*> d_LR_y_partial_src_indices_;
     std::vector<int*> d_LR_y_partial_dest_indices_;
     std::vector<int*> d_LR_y_partial_lengths_;
@@ -173,14 +178,9 @@ public:
   // il::Array2D<T> getLRBlockDataHost(int fr_block);
   // il::Array2D<T> getLRBlockBDataDevice(int size, int group_id);
   // il::Array2D<T> getLRBlockADataDevice(int size, int group_id);
-  
 
 };  
 
 } // namespace bigwham
 
 #endif // BIGWHAM_HMAT_H
-
-// #if defined(__clang__) && !defined(FMT_ICC_VERSION)
-// #pragma clang diagnostic pop
-// #endif
