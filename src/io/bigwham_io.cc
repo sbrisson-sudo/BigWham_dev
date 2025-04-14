@@ -72,6 +72,9 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
             std::cout << "Forcing the number of OpenMP threads to " << this->n_openMP_threads_ << std::endl;
         omp_set_max_active_levels(1);  // Limit parallel region depth    
         omp_set_num_threads(this->n_openMP_threads_);
+
+        // Binding the threads to cores to preserve CUDA cache 
+        omp_set_schedule(omp_sched_static, 0);
     #endif
 
     // Ensuring CUDA compatible arguments

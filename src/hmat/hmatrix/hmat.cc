@@ -558,6 +558,14 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         IL_EXPECT_FAST(this->isBuilt_);
         IL_EXPECT_FAST(x.size()==size_[1]);
         il::Array<T> z{static_cast<il::int_t>(x.size())};
+
+        #ifdef TIMING
+        struct timespec start, end;
+        double duration;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        #endif // TIMING 
+
+
         // permutation of the dofs according to the re-ordering sue to clustering
         il::int_t ncolpoints = this->size(1) / dof_dimension_;
         il::int_t nrowpoints = this->size(0) / dof_dimension_;
@@ -567,7 +575,24 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
                         x[dof_dimension_ * hr_->permutation_1_[i] + j];
             }
         }
+
+        #ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] matvecOriginal : permuting x = " << duration*1000 << "ms\n";
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        #endif // TIMING
+
+
         il::Array<T> y = this->matvec(z.view());
+
+        #ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] matvecOriginal : computing matvec = " << duration*1000 << "ms\n";
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        #endif // TIMING
+
         il::Array<T> yout;
         yout.Resize(y.size(), 0.);
         // permut back
@@ -577,6 +602,13 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
                         y[dof_dimension_ * i + j];
             }
         }
+
+        #ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] matvecOriginal : permuting y = " << duration*1000 << "ms\n" << std::flush;
+        #endif // TIMING
+
         return yout;
     }
 /* -------------------------------------------------------------------------- */
