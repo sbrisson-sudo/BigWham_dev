@@ -557,16 +557,17 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
         IL_EXPECT_FAST(this->isBuilt_);
         IL_EXPECT_FAST(x.size()==size_[1]);
-        il::Array<T> z{static_cast<il::int_t>(x.size())};
+        il::Array<T> z{static_cast<il::int_t>(x.size())}; // We are allocating this one every time, should be allocated once and for all
 
-        #ifdef TIMING
-        struct timespec start, end;
-        double duration;
-        clock_gettime(CLOCK_MONOTONIC, &start);
-        #endif // TIMING 
+        // #ifdef TIMING
+        // struct timespec start, end;
+        // double duration;
+        // clock_gettime(CLOCK_MONOTONIC, &start);
+        // #endif // TIMING 
 
 
         // permutation of the dofs according to the re-ordering sue to clustering
+        // this could be passed to OpenMP if needed
         il::int_t ncolpoints = this->size(1) / dof_dimension_;
         il::int_t nrowpoints = this->size(0) / dof_dimension_;
         for (il::int_t i = 0; i < ncolpoints; i++) {
@@ -576,12 +577,18 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
             }
         }
 
+        // #ifdef TIMING
+        // clock_gettime(CLOCK_MONOTONIC, &end);
+        // duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        // std::cout << "[Timing] matvecOriginal : permuting x = " << duration*1000 << "ms\n";
+        // clock_gettime(CLOCK_MONOTONIC, &start);
+        // #endif // TIMING
+
         #ifdef TIMING
-        clock_gettime(CLOCK_MONOTONIC, &end);
-        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
-        std::cout << "[Timing] matvecOriginal : permuting x = " << duration*1000 << "ms\n";
+        struct timespec start, end;
+        double duration;
         clock_gettime(CLOCK_MONOTONIC, &start);
-        #endif // TIMING
+        #endif // TIMING 
 
 
         il::Array<T> y = this->matvec(z.view());
@@ -589,8 +596,8 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         #ifdef TIMING
         clock_gettime(CLOCK_MONOTONIC, &end);
         duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
-        std::cout << "[Timing] matvecOriginal : computing matvec = " << duration*1000 << "ms\n";
-        clock_gettime(CLOCK_MONOTONIC, &start);
+        std::cout << "[Timing] Hmat<T>::matvecOriginal : " << duration*1000 << "ms\n";
+        // clock_gettime(CLOCK_MONOTONIC, &start);
         #endif // TIMING
 
         il::Array<T> yout;
@@ -603,11 +610,11 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
             }
         }
 
-        #ifdef TIMING
-        clock_gettime(CLOCK_MONOTONIC, &end);
-        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
-        std::cout << "[Timing] matvecOriginal : permuting y = " << duration*1000 << "ms\n" << std::flush;
-        #endif // TIMING
+        // #ifdef TIMING
+        // clock_gettime(CLOCK_MONOTONIC, &end);
+        // duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        // std::cout << "[Timing] matvecOriginal : permuting y = " << duration*1000 << "ms\n" << std::flush;
+        // #endif // TIMING
 
         return yout;
     }

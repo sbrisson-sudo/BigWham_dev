@@ -130,6 +130,12 @@ if (USE_CUDA)
         )
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -std=c++14)
 
+    # # CUDA NVTX : only for debugging purposes
+    # set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/nsight-compute-2024.1.1/host/target-linux-x64/nvtx/include)
+    # message(STATUS "NVTX_INCLUDE_DIR: ${NVTX_INCLUDE_DIR}")
+
+    include_directories(${NVTX_INCLUDE_DIR})
+
     ################################################
     # TO LINK MAGMA LIBRARY
     # Allow the user to specify MAGMA_ROOT via command line
@@ -170,13 +176,13 @@ set_target_properties(BigWham PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(BigWham PUBLIC src il cnpy)
 
 if (USE_CUDA)
-target_link_libraries(BigWham PUBLIC
-    dl pthread rt # https://stackoverflow.com/questions/62962539/linking-error-for-cuda-separate-compilation-mode-and-static-linking-of-cudart
-    ${BLAS_LIBRARIES}
-    ${CUDA_LIBRARIES}
-    ${CUDA_CUBLAS_LIBRARIES}
-    ${CUDA_cusparse_LIBRARY}
-    ${CUDA_cudart_static_LIBRARY}
+    target_link_libraries(BigWham PUBLIC
+        dl pthread rt # https://stackoverflow.com/questions/62962539/linking-error-for-cuda-separate-compilation-mode-and-static-linking-of-cudart
+        ${BLAS_LIBRARIES}
+        ${CUDA_LIBRARIES}
+        ${CUDA_CUBLAS_LIBRARIES}
+        ${CUDA_cusparse_LIBRARY}
+        ${CUDA_cudart_static_LIBRARY}
     )
     target_compile_definitions(BigWham PRIVATE USE_CUDA)
 

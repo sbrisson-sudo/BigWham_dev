@@ -5,6 +5,12 @@
 #include <iomanip>
 #include <sstream>
 
+// #define USE_NVTX
+
+#ifdef USE_NVTX
+#include <nvtx3/nvtx3.hpp>
+#endif
+
 #include "hmat_cuda.h"
 #include "y_partial_scatter_add.h"
 
@@ -15,7 +21,6 @@
 // #define WRITE_TMP_RES
 // #define WRITE_LR_DATA_NPY
 // #define WRITE_INPUT_OUTPUT_VEC
-
 // #define PRINT_N_GROUPS
 
 // Error checking helper functions
@@ -1297,14 +1302,25 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
     cnpy::npy_save(filename1, x.data(), {static_cast<size_t>(vector_size_)}, "w");
     #endif
 
-    il::Array<double> y(vector_size_, 0.0);
+    #ifdef TIMING
+    struct timespec start, end;
+    double duration;
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    #endif // TIMING 
 
-    #pragma omp parallel num_threads(this->n_openMP_threads_)
+    #ifdef USE_NVTX
+    NVTX3_FUNC_RANGE();   
+    #endif
+
+    il::Array<double> y(vector_size_, 0.0); // This also should be allocated once and for all 
+
+    // #pragma omp parallel num_threads(this->n_openMP_threads_)
+    #pragma omp parallel num_threads(num_gpus_+1)
     {   
 
         int thread_id = omp_get_thread_num();
 
-        il::Array<double> y_private(vector_size_, 0.0);
+        il::Array<double> y_private(vector_size_, 0.0); // This also should be allocated once and for all 
 
         // In a first num_gpu therads manafge GPU computation
         if (thread_id < num_gpus_) {
@@ -1578,7 +1594,7 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
 
             // Last but not least, we add the contribution of the non standard full blocks
-            #pragma omp for schedule(guided) nowait
+            // #pragma omp for schedule(guided) nowait
             for (int i : FR_non_std_indices) {
                 auto i0 = hr_->pattern_.FRB_pattern(1, i);
                 auto j0 = hr_->pattern_.FRB_pattern(2, i);
@@ -1599,7 +1615,7 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             }
 
             // And the contribution of the non standard LR blocks
-            #pragma omp for schedule(guided) nowait
+            // #pragma omp for schedule(guided) nowait
             for (int i : LR_non_std_indices_) {
 
                 auto i0 = hr_->pattern_.LRB_pattern(1, i);
@@ -1628,6 +1644,11 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
     
     } // pragma omp parallel
 
+    #ifdef TIMING
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+    std::cout << "[Timing] HmatCuda<double>::matvec : " << duration*1000 << "ms\n";
+    #endif  
 
     #ifdef WRITE_INPUT_OUTPUT_VEC
     std::stringstream ss2;
