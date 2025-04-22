@@ -141,6 +141,13 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         }
     }
 
+    std::cout << "total_size_non_standard_FR_blocks = " << total_size_non_standard_FR_blocks << std::endl;
+
+    std::cout << "Count of non standard FR blocks :" << std::endl;
+    for (auto& [sizes,count] : num_FR_nonstd_blocks_per_size_){
+        std::cout << " - " << sizes.first << " x " << sizes.second << " -> " << count << std::endl;
+    }
+
     this->num_FR_std_blocks_ = num_FR_blocks_standard_size;
 
     // Then we get the permutation to have the standard blocks arranged in row-major order, then sorted by their columns
@@ -168,7 +175,6 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         FR_std_orderedIndices.push_back(std::get<2>(block));
     }
 
-    #ifdef DEBUG
     // Print it 
     std::cout << " FR blocks std order : [";
     for (auto i : FR_std_orderedIndices){
@@ -179,7 +185,6 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     std::cout << "FR_non_std_indices = [";
     for (int i : FR_non_std_indices) std::cout << i << ", ";
     std::cout << "]\n";
-    #endif
 
     // We allocate the memory for standardized FR blocks
     FR_standard_size_data_buffer_size = num_FR_blocks_standard_size * leaf_size * leaf_size * dim*dim;
@@ -209,8 +214,16 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
             num_LR_nonstd_blocks_per_size_[{iend-i0, jend-j0}]++;
         }
     }
+
+    std::cout << "total_size_non_standard_LR_blocks = " << total_size_non_standard_LR_blocks << std::endl;
+
+    std::cout << "Count of non standard LR blocks :" << std::endl;
+    for (auto& [sizes,count] : num_LR_nonstd_blocks_per_size_){
+        std::cout << " - " << sizes.first << " x " << sizes.second << " -> " << count << std::endl;
+    }
+
     // Just print it 
-    #ifdef DEBUG
+#ifdef DEBUG
     std::cout << "Num of non square LR blocks " << LR_non_std_indices_.size() << std::endl;
     for (auto& [block_size, indices] : LR_std_indices_){
         std::cout << "Num of square LR blocks of size " << block_size << " : " << LR_std_indices_[block_size].size() << std::endl;
@@ -219,7 +232,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     std::cout << "LR_non_std_indices_ = [";
     for (int i : LR_non_std_indices_) std::cout << i << ",";
     std::cout << "]\n";
-    #endif
+#endif
 
     // We allocate the memory for the low rank blocks
 
@@ -269,12 +282,12 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         std::cout << "Total memory allocated on CPU = " << formatBytes(total_size*sizeof(double)) << " \n";
     }
 
-    #ifdef TIMING
+#ifdef TIMING
     clock_gettime(CLOCK_MONOTONIC, &end);
     duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
     std::cout << "[Timing] allocated memory on host = " << duration*1000 << "ms\n";
     clock_gettime(CLOCK_MONOTONIC, &start);
-    #endif // TIMING 
+#endif // TIMING 
 
     // Now we construct the hmat (on host)
     il::Timer tt;
@@ -287,21 +300,21 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         std::cout << "Hmat object - built "<< "\n";
     }
 
-    #ifdef TIMING
+#ifdef TIMING
     clock_gettime(CLOCK_MONOTONIC, &end);
     duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
     std::cout << "[Timing] populated the hmat = " << duration*1000 << "ms\n";
     clock_gettime(CLOCK_MONOTONIC, &start);
-    #endif // TIMING 
+#endif // TIMING 
 
     // Here we print the number of each blocks
     if (this->verbose_){
-        std::cout << "Num of standard FR blocks : " << num_FR_blocks_standard_size << std::endl;
-        std::cout << "Num of non standard FR blocks : " << num_FR_blocks_non_standard_size << std::endl;
+        std::cout << "Num of FR blocks sent on GPU : " << num_FR_blocks_standard_size << std::endl;
+        std::cout << "Num of FR blocks sent on CPU : " << num_FR_blocks_non_standard_size << std::endl;
         int num_LR_std = 0;
         for (auto& [block_size, indices] : LR_std_indices_) num_LR_std += indices.size();
-        std::cout << "Num of standard LR blocks : " << num_LR_std << std::endl;
-        std::cout << "Num of non standard LR blocks : " << LR_non_std_indices_.size() << std::endl;
+        std::cout << "Num of LR blocks sent on GPU : " << num_LR_std << std::endl;
+        std::cout << "Num of LR blocks sent on CPU : " << LR_non_std_indices_.size() << std::endl;
 
     }
 
@@ -309,12 +322,12 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     // And we copy it on device
     copyToDevice();
 
-    #ifdef TIMING
+#ifdef TIMING
     clock_gettime(CLOCK_MONOTONIC, &end);
     duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
     std::cout << "[Timing] copied the hmat to device = " << duration*1000 << "ms\n";
     clock_gettime(CLOCK_MONOTONIC, &start);
-    #endif // TIMING 
+#endif // TIMING 
 
 }
 
@@ -352,12 +365,12 @@ void HmatCuda<T>::copyToDevice(){
     }
     num_FR_per_gpu_[num_gpus_-1] = num_FR_std_blocks_ - sum_so_far;
 
-    #ifdef DEBUG5
+#ifdef DEBUG5
     std::cout << "num_FR_std_blocks_ = " << num_FR_std_blocks_ << std::endl;
     std::cout << "Num of FR blocks per GPU = [";
     for (int n : num_FR_per_gpu_) std::cout << n << ",";
     std::cout << "]\n";
-    #endif
+#endif
 
     offsets_FR_gpu_.resize(num_gpus_);
     offsets_FR_gpu_[0] = 0;
@@ -370,11 +383,8 @@ void HmatCuda<T>::copyToDevice(){
     LR_std_sizes_per_gpu_.resize(num_gpus_);
     std::vector<int> gpu_load(num_gpus_, 0); 
 
-    num_LR_per_gpu_.resize(num_gpus_);
-    for (int gpu_id(0); gpu_id<num_gpus_; gpu_id++) num_LR_per_gpu_[gpu_id] = 0;
-
     for (auto& [block_size, indices] :  LR_std_indices_){
-        int num_blocks =  LR_std_indices_[block_size].size();
+        int num_blocks =  LR_std_indices_.size();
         int load = num_blocks * block_size;
 
         // We find the less loaded gpu
@@ -387,7 +397,6 @@ void HmatCuda<T>::copyToDevice(){
 
         // We attribute this size to the less loaded GPU
         LR_std_sizes_per_gpu_[min_load_gpu].push_back(block_size);
-        num_LR_per_gpu_[min_load_gpu] += num_blocks;
     }
 
     #ifdef DEBUG
@@ -467,6 +476,7 @@ void HmatCuda<T>::copyToDevice(){
     h_LR_tmp_pointers_.resize(num_gpus_);    
 
     // To gather the low rank partial results
+    num_LR_per_gpu_.resize(num_gpus_);
     y_partial_LR_buffer_size_bytes_.resize(num_gpus_);
     tmp_buffer_size_bytes_.resize(num_gpus_);
     d_LR_y_partial_src_indices_.resize(num_gpus_);
@@ -783,8 +793,6 @@ void HmatCuda<T>::copyToDevice(){
                 h_FR_nonStd_data_pointers[sizes] = h_data_pointers_tmp;
                 h_FR_nonStd_x_pointers[sizes] = h_x_pointers_tmp;
                 h_FR_nonStd_y_partial_pointers[sizes] = h_y_partial_pointers_tmp;
-
-                std::cout << "Allocating for entries of size " << sizes.first << " x " << sizes.second << " : " << count << " pointers" << std::endl;
             }
 
             // Then we set there values by looping on the blocks
@@ -810,6 +818,8 @@ void HmatCuda<T>::copyToDevice(){
                 std::pair<int, int> sizes = {iend-i0, jend-j0};
 
                 int k = block_counter[sizes];
+
+                std::cout << "Setting pointer for block " << i << " ;  size " << sizes.first << " x " << sizes.second << " : k = " << k << std::endl;
 
                 h_FR_nonStd_data_pointers[sizes][k] = d_FR_non_std_data_ + FR_non_std_offsets_data_[sizes] + k*data_size;
                 h_FR_nonStd_y_partial_pointers[sizes][k] = d_y_partial_FR_nonStd + FR_non_std_offsets_y_[sizes] + k*(iend-i0)*dim_dof;
@@ -871,12 +881,19 @@ void HmatCuda<T>::copyToDevice(){
         // COPYING FULL RANKS BLOCKS - done
         // ----------------------------
 
+        cudaDeviceSynchronize();
+        cudaError_t err1 = cudaGetLastError();
+        if (err1 != cudaSuccess) {
+            printf("CUDA error at the end of copy2device: %s\n", cudaGetErrorString(err1));
+        }
+
         // ----------------------------
         // COPYING LOW RANKS BLOCKS
         // ----------------------------
 
-        // We copy all buffers ;
-        // 1 = std size
+        // We copy all buffers
+
+        // standard size buffers
         for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
             int buffer_size = LR_standard_size_data_buffer_sizes_[block_size];
 
@@ -905,29 +922,38 @@ void HmatCuda<T>::copyToDevice(){
             #endif
         }
 
-        // 2 = non std size
-        if (gpu_id == 0){
+        // // On 1st GPU : non std size blocks buffers
+        // if (gpu_id == 0){
 
-            CHECK_CUDA_ERROR(cudaMalloc(&d_LR_non_std_A_data_, LR_non_standard_size_data_A_buffer_size_*sizeof(T)));
-            CHECK_CUDA_ERROR(cudaMalloc(&d_LR_non_std_B_data_, LR_non_standard_size_data_B_buffer_size_*sizeof(T)));
+        //     std::cout << "Allocating " << LR_non_standard_size_data_A_buffer_size_*sizeof(T) << " for A matrices of non std LR blocks" << std::endl;
+        //     std::cout << "Allocating " << LR_non_standard_size_data_B_buffer_size_*sizeof(T) << " for A matrices of non std LR blocks" << std::endl;
 
-            CHECK_CUDA_ERROR(cudaMemcpy(d_LR_non_std_A_data_, LR_non_standard_size_A_data_, LR_non_standard_size_data_A_buffer_size_*sizeof(T), cudaMemcpyHostToDevice));
-            CHECK_CUDA_ERROR(cudaMemcpy(d_LR_non_std_B_data_, LR_non_standard_size_B_data_, LR_non_standard_size_data_B_buffer_size_*sizeof(T), cudaMemcpyHostToDevice));
-        }
+        //     CHECK_CUDA_ERROR(cudaMalloc(&d_LR_non_std_A_data_, LR_non_standard_size_data_A_buffer_size_*sizeof(T)));
+        //     CHECK_CUDA_ERROR(cudaMalloc(&d_LR_non_std_B_data_, LR_non_standard_size_data_B_buffer_size_*sizeof(T)));
+
+        //     // CHECK_CUDA_ERROR(cudaMemcpy(d_LR_non_std_A_data_, LR_non_standard_size_A_data_, LR_non_standard_size_data_A_buffer_size_*sizeof(T), cudaMemcpyHostToDevice));
+        //     // CHECK_CUDA_ERROR(cudaMemcpy(d_LR_non_std_B_data_, LR_non_standard_size_B_data_, LR_non_standard_size_data_B_buffer_size_*sizeof(T), cudaMemcpyHostToDevice));
+        // }
+
+        // cudaDeviceSynchronize();
+        // auto err2 = cudaGetLastError();
+        // if (err2 != cudaSuccess) {
+        //     printf("CUDA error at the end of copy2device: %s\n", cudaGetErrorString(err2));
+        // }
 
         // We set the array of pointers needed to perform the batched operations
-
+        // 1. For the standard sized blocks
         size_t y_partial_LR_ptr_counter = 0;
         size_t tmp_ptr_counter = 0;
 
         // Offsets for summing partial results
 
-        int num_lr_blocks_this_gpu = num_LR_per_gpu_[gpu_id];
-        if (gpu_id == 0) num_lr_blocks_this_gpu += LR_non_std_indices_.size();
+        num_blocks_tot = num_LR_per_gpu_[gpu_id];
+        // if (gpu_id == 0) num_blocks_tot += LR_non_std_indices_.size();
 
-        int* h_LR_y_partial_src_indices = new int[num_lr_blocks_this_gpu];
-        int* h_LR_y_partial_dest_indices = new int[num_lr_blocks_this_gpu];
-        int* h_LR_y_partial_lengths = new int[num_lr_blocks_this_gpu];
+        int* h_LR_y_partial_src_indices = new int[num_blocks_tot];
+        int* h_LR_y_partial_dest_indices = new int[num_blocks_tot];
+        int* h_LR_y_partial_lengths = new int[num_blocks_tot];
         int lr_block_i = 0;
 
         for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
@@ -997,128 +1023,131 @@ void HmatCuda<T>::copyToDevice(){
             d_LR_tmp_pointers_[gpu_id][block_size] = d_LR_tmp_tmp;
         }
 
+        num_LR_per_gpu_[gpu_id] = lr_block_i;
+
+        // // On the first GPU : we also set up the pointers for the non std size blocks
+        // if (gpu_id == 0){
+
+        //     // We first allocate all the arrays of pointers on host
+        //     std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_A_data_pointers;
+        //     std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_B_data_pointers;
+        //     std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_x_pointers;
+        //     std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_y_partial_pointers;
+        //     std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_tmp_pointers;
+        //     for (auto& [sizes,count] : num_LR_nonstd_blocks_per_size_){
+        //         T** h_A_data_pointers_tmp = new T*[count];
+        //         T** h_B_data_pointers_tmp = new T*[count];
+        //         T** h_x_pointers_tmp = new T*[count];
+        //         T** h_y_partial_pointers_tmp = new T*[count];
+        //         T** h_tmp_pointers_tmp = new T*[count];
+        //         h_LR_nonStd_A_data_pointers[sizes] = h_A_data_pointers_tmp;
+        //         h_LR_nonStd_B_data_pointers[sizes] = h_B_data_pointers_tmp;
+        //         h_LR_nonStd_x_pointers[sizes] = h_x_pointers_tmp;
+        //         h_LR_nonStd_y_partial_pointers[sizes] = h_y_partial_pointers_tmp;
+        //         h_LR_nonStd_tmp_pointers[sizes] = h_tmp_pointers_tmp;
+        //     }
+
+        //     // Then we set there values by looping on the blocks
+        //     std::unordered_map<std::pair<int, int>, int, pair_hash> block_counter;
+        //     for (auto& [sizes,count] : num_LR_nonstd_blocks_per_size_){
+        //         block_counter[sizes] = 0;
+        //     }
+
+        //     // We offset the partial result by the space takn by the std sized FR blocks
+        //     T* d_y_partial_LR_nonStd = d_y_partial_FR_[0];
+        //     T* d_tmp_LR_nonStd = d_tmp_[0];
+        //     for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
+        //         int num_blocks = LR_std_indices_[block_size].size();
+        //         d_y_partial_LR_nonStd += num_blocks * block_size * dim_dof;
+        //         d_tmp_LR_nonStd += num_blocks * fixed_rank * dim_dof;
+        //     }
+
+        //     for (int idx(0); idx<LR_non_std_indices_.size(); idx++){
+
+        //         int i = LR_non_std_indices_[idx];
         
-        // On the first GPU : we also set up the pointers for the non std size blocks
-        if (gpu_id == 0){
-
-            // We first allocate all the arrays of pointers on host
-            std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_A_data_pointers;
-            std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_B_data_pointers;
-            std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_x_pointers;
-            std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_y_partial_pointers;
-            std::unordered_map<std::pair<int, int>, T**, pair_hash> h_LR_nonStd_tmp_pointers;
-            for (auto& [sizes,count] : num_LR_nonstd_blocks_per_size_){
-                T** h_A_data_pointers_tmp = new T*[count];
-                T** h_B_data_pointers_tmp = new T*[count];
-                T** h_x_pointers_tmp = new T*[count];
-                T** h_y_partial_pointers_tmp = new T*[count];
-                T** h_tmp_pointers_tmp = new T*[count];
-                h_LR_nonStd_A_data_pointers[sizes] = h_A_data_pointers_tmp;
-                h_LR_nonStd_B_data_pointers[sizes] = h_B_data_pointers_tmp;
-                h_LR_nonStd_x_pointers[sizes] = h_x_pointers_tmp;
-                h_LR_nonStd_y_partial_pointers[sizes] = h_y_partial_pointers_tmp;
-                h_LR_nonStd_tmp_pointers[sizes] = h_tmp_pointers_tmp;
-            }
-
-            // Then we set there values by looping on the blocks
-            std::unordered_map<std::pair<int, int>, int, pair_hash> block_counter;
-            for (auto& [sizes,count] : num_LR_nonstd_blocks_per_size_){
-                block_counter[sizes] = 0;
-            }
-
-            // We offset the partial result by the space takn by the std sized FR blocks
-            T* d_y_partial_LR_nonStd = d_y_partial_LR_[0];
-            T* d_tmp_LR_nonStd = d_tmp_[0];
-            for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
-                int num_blocks = LR_std_indices_[block_size].size();
-                d_y_partial_LR_nonStd += num_blocks * block_size * dim_dof;
-                d_tmp_LR_nonStd += num_blocks * fixed_rank * dim_dof;
-            }
-
-            for (int idx(0); idx<LR_non_std_indices_.size(); idx++){
-
-                int i = LR_non_std_indices_[idx];
+        //         il::int_t i0 = hr->pattern_.LRB_pattern(1, i);
+        //         il::int_t j0 = hr->pattern_.LRB_pattern(2, i);
+        //         il::int_t iend = hr->pattern_.LRB_pattern(3, i);
+        //         il::int_t jend = hr->pattern_.LRB_pattern(4, i);
         
-                il::int_t i0 = hr->pattern_.LRB_pattern(1, i);
-                il::int_t j0 = hr->pattern_.LRB_pattern(2, i);
-                il::int_t iend = hr->pattern_.LRB_pattern(3, i);
-                il::int_t jend = hr->pattern_.LRB_pattern(4, i);
-        
-                int data_size_A = (iend-i0)*fixed_rank * dim_dof*dim_dof;
-                int data_size_B = (jend-j0)*fixed_rank * dim_dof*dim_dof;
+        //         int data_size_A = (iend-i0)*fixed_rank * dim_dof*dim_dof;
+        //         int data_size_B = (jend-j0)*fixed_rank * dim_dof*dim_dof;
 
-                std::pair<int, int> sizes = {iend-i0, jend-j0};
+        //         std::pair<int, int> sizes = {iend-i0, jend-j0};
 
-                int k = block_counter[sizes];
+        //         int k = block_counter[sizes];
 
-                h_LR_nonStd_A_data_pointers[sizes][k] = d_LR_non_std_A_data_ + LR_non_std_A_offsets_data_[sizes] + k*data_size_A;
-                h_LR_nonStd_B_data_pointers[sizes][k] = d_LR_non_std_B_data_ + LR_non_std_B_offsets_data_[sizes] + k*data_size_B;
+        //         std::cout << "Setting pointer for block " << i << " ;  size " << sizes.first << " x " << sizes.second << " : k = " << k << std::endl;
+
+        //         h_LR_nonStd_A_data_pointers[sizes][k] = d_LR_non_std_A_data_ + LR_non_std_A_offsets_data_[sizes] + k*data_size_A;
+        //         h_LR_nonStd_B_data_pointers[sizes][k] = d_LR_non_std_B_data_ + LR_non_std_B_offsets_data_[sizes] + k*data_size_B;
 
 
-                h_LR_nonStd_y_partial_pointers[sizes][k] = d_y_partial_LR_nonStd + LR_non_std_offsets_y_[sizes] + k*(iend-i0)*dim_dof;
-                h_LR_nonStd_tmp_pointers[sizes][k] = d_tmp_LR_nonStd + LR_non_std_offsets_tmp_[sizes] + k*fixed_rank*dim_dof;
+        //         h_LR_nonStd_y_partial_pointers[sizes][k] = d_y_partial_LR_nonStd + LR_non_std_offsets_y_[sizes] + k*(iend-i0)*dim_dof;
+        //         h_LR_nonStd_tmp_pointers[sizes][k] = d_tmp_LR_nonStd + LR_non_std_offsets_tmp_[sizes] + k*fixed_rank*dim_dof;
 
-                // x : depends on position of the block
-                h_LR_nonStd_x_pointers[sizes][k] = d_x_[0] + j0*dim_dof;
+        //         // x : depends on position of the block
+        //         h_LR_nonStd_x_pointers[sizes][k] = d_x_[0] + j0*dim_dof;
 
-                // We also add to the partial result summation arrays
-                h_LR_y_partial_src_indices[num_LR_per_gpu_[0] + idx] = (d_y_partial_LR_nonStd - d_y_partial_LR_[0]) + LR_non_std_offsets_y_[sizes] + k*(iend-i0)*dim_dof;
-                h_LR_y_partial_dest_indices[num_LR_per_gpu_[0] + idx] = i0*dim_dof;
-                h_LR_y_partial_lengths[num_LR_per_gpu_[0] + idx] = (iend-i0)*dim_dof;
+        //         // We also add to the partial result summation arrays
+        //         h_LR_y_partial_src_indices[num_LR_per_gpu_[0] + idx] = (d_y_partial_LR_nonStd - d_y_partial_FR_[0]) + LR_non_std_offsets_y_[sizes] + k*(iend-i0)*dim_dof;
+        //         h_LR_y_partial_dest_indices[num_LR_per_gpu_[0] + idx] = i0*dim_dof;
+        //         h_LR_y_partial_lengths[num_LR_per_gpu_[0] + idx] = (iend-i0)*dim_dof;
 
-                block_counter[sizes]++;
-            }
+        //         block_counter[sizes]++;
+        //     }
 
-            // Finally we copy it to the device memory
-            for (auto& [sizes,num_blocks] : num_LR_nonstd_blocks_per_size_){
+        //     // Finally we copy it to the device memory
+        //     for (auto& [sizes,num_blocks] : num_FR_nonstd_blocks_per_size_){
 
-                T** device_ptr_data_A;
-                CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_data_A, num_blocks * sizeof(T*)));
-                d_LR_nonStd_A_data_pointers_[sizes] = device_ptr_data_A;
-                CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_A_data_pointers_[sizes], h_LR_nonStd_A_data_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
+        //         T** device_ptr_data_A;
+        //         CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_data_A, num_blocks * sizeof(T*)));
+        //         d_LR_nonStd_A_data_pointers_[sizes] = device_ptr_data_A;
+        //         CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_A_data_pointers_[sizes], h_LR_nonStd_A_data_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
 
-                T** device_ptr_data_B;
-                CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_data_B, num_blocks * sizeof(T*)));
-                d_LR_nonStd_B_data_pointers_[sizes] = device_ptr_data_B;
-                CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_B_data_pointers_[sizes], h_LR_nonStd_B_data_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
+        //         T** device_ptr_data_B;
+        //         CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_data_B, num_blocks * sizeof(T*)));
+        //         d_LR_nonStd_B_data_pointers_[sizes] = device_ptr_data_B;
+        //         CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_B_data_pointers_[sizes], h_LR_nonStd_B_data_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
 
-                T** device_ptr_x;
-                CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_x, num_blocks * sizeof(T*)));
-                d_LR_nonStd_x_pointers_[sizes] = device_ptr_x;
-                CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_x_pointers_[sizes], h_LR_nonStd_x_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
+        //         T** device_ptr_x;
+        //         CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_x, num_blocks * sizeof(T*)));
+        //         d_LR_nonStd_x_pointers_[sizes] = device_ptr_x;
+        //         CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_x_pointers_[sizes], h_LR_nonStd_x_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
 
-                T** device_ptr_y;
-                CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_y, num_blocks * sizeof(T*)));
-                d_LR_nonStd_y_partial_pointers_[sizes] = device_ptr_y;
-                CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_y_partial_pointers_[sizes], h_LR_nonStd_y_partial_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
+        //         T** device_ptr_y;
+        //         CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_y, num_blocks * sizeof(T*)));
+        //         d_LR_nonStd_y_partial_pointers_[sizes] = device_ptr_y;
+        //         CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_y_partial_pointers_[sizes], h_LR_nonStd_x_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
                 
-                T** device_ptr_tmp;
-                CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_tmp, num_blocks * sizeof(T*)));
-                d_LR_nonStd_tmp_pointers_[sizes] = device_ptr_tmp;
-                CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_tmp_pointers_[sizes], h_LR_nonStd_tmp_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
+        //         T** device_ptr_tmp;
+        //         CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_tmp, num_blocks * sizeof(T*)));
+        //         d_LR_nonStd_tmp_pointers_[sizes] = device_ptr_tmp;
+        //         CHECK_CUDA_ERROR(cudaMemcpy(d_LR_nonStd_tmp_pointers_[sizes], h_LR_nonStd_tmp_pointers[sizes], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
 
-            }
+        //     }
 
-            // And we deallocate on host
-            for (auto& [sizes,num_blocks] : num_LR_nonstd_blocks_per_size_){
-                delete[] h_LR_nonStd_A_data_pointers[sizes];
-                delete[] h_LR_nonStd_B_data_pointers[sizes];
-                delete[] h_LR_nonStd_x_pointers[sizes];
-                delete[] h_LR_nonStd_y_partial_pointers[sizes];
-                delete[] h_LR_nonStd_tmp_pointers[sizes];
-            }
+        //     // And we deallocate on host
+        //     for (auto& [sizes,num_blocks] : num_FR_nonstd_blocks_per_size_){
+        //         delete[] h_LR_nonStd_A_data_pointers[sizes];
+        //         delete[] h_LR_nonStd_B_data_pointers[sizes];
+        //         delete[] h_LR_nonStd_x_pointers[sizes];
+        //         delete[] h_LR_nonStd_y_partial_pointers[sizes];
+        //         delete[] h_LR_nonStd_tmp_pointers[sizes];
+        //     }
 
-        }
-
+        // }
+    
 
         // Then we copy the array of offsets needed for gathering the partial results
-        CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_src_indices_[gpu_id], num_lr_blocks_this_gpu*sizeof(int)));
-        CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_dest_indices_[gpu_id], num_lr_blocks_this_gpu*sizeof(int)));
-        CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_lengths_[gpu_id], num_lr_blocks_this_gpu*sizeof(int)));
+        CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_src_indices_[gpu_id], num_blocks_tot*sizeof(int)));
+        CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_dest_indices_[gpu_id], num_blocks_tot*sizeof(int)));
+        CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_lengths_[gpu_id], num_blocks_tot*sizeof(int)));
 
-        CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_src_indices_[gpu_id], h_LR_y_partial_src_indices, num_lr_blocks_this_gpu*sizeof(int), cudaMemcpyHostToDevice));
-        CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_dest_indices_[gpu_id], h_LR_y_partial_dest_indices, num_lr_blocks_this_gpu*sizeof(int), cudaMemcpyHostToDevice));
-        CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_lengths_[gpu_id], h_LR_y_partial_lengths, num_lr_blocks_this_gpu*sizeof(int), cudaMemcpyHostToDevice));
+        CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_src_indices_[gpu_id], h_LR_y_partial_src_indices, num_blocks_tot*sizeof(int), cudaMemcpyHostToDevice));
+        CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_dest_indices_[gpu_id], h_LR_y_partial_dest_indices, num_blocks_tot*sizeof(int), cudaMemcpyHostToDevice));
+        CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_lengths_[gpu_id], h_LR_y_partial_lengths, num_blocks_tot*sizeof(int), cudaMemcpyHostToDevice));
 
         delete[] h_LR_y_partial_src_indices;
         delete[] h_LR_y_partial_dest_indices;
@@ -1191,13 +1220,13 @@ void HmatCuda<T>::deallocateOnDevice(){
             CHECK_CUDA_ERROR(cudaFree(d_FR_nonStd_y_partial_pointers_[sizes]));
         }
 
-        for (auto& [sizes,num_blocks] : num_LR_nonstd_blocks_per_size_){
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_A_data_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_B_data_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_x_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_y_partial_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_tmp_pointers_[sizes]));
-        }
+        // for (auto& [sizes,num_blocks] : num_LR_nonstd_blocks_per_size_){
+        //     CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_A_data_pointers_[sizes]));
+        //     CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_B_data_pointers_[sizes]));
+        //     CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_x_pointers_[sizes]));
+        //     CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_y_partial_pointers_[sizes]));
+        //     CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_tmp_pointers_[sizes]));
+        // }
 
 
         // Destroy the Magma queues
@@ -1723,8 +1752,8 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
     il::Array<double> y(vector_size_, 0.0); // This also should be allocated once and for all 
 
-    // #pragma omp parallel num_threads(this->n_openMP_threads_)
-    #pragma omp parallel num_threads(num_gpus_+1)
+    #pragma omp parallel num_threads(this->n_openMP_threads_)
+    // #pragma omp parallel num_threads(num_gpus_+1)
     {   
 
         int thread_id = omp_get_thread_num();
@@ -1773,129 +1802,63 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
                 CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_[gpu_id], cuda_streams_[gpu_id][0]));
 
-                #ifdef USE_MAGMA
+                #if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
 
-                    magmablas_dgemv_batched(
-                        MagmaNoTrans, 
-                        this->hr_->leaf_size * this->dof_dimension_,  
-                        this->hr_->leaf_size * this->dof_dimension_,  
-                        alpha,
-                        (const double**)d_FR_data_pointers_[gpu_id],
+                    CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                        cublas_handle_[gpu_id], CUBLAS_OP_N,
+                        this->hr_->leaf_size * this->dof_dimension_, // num rows
+                        this->hr_->leaf_size * this->dof_dimension_, // num cols 
+                        &alpha,
+                        (const double**)d_FR_data_pointers_[gpu_id],        
                         this->hr_->leaf_size * this->dof_dimension_, 
                         (const double**)d_FR_x_pointers_[gpu_id], 
                         1,
-                        beta,
+                        &beta,
                         d_FR_y_partial_pointers_[gpu_id],
                         1,
-                        num_FR_per_gpu_[gpu_id],
-                        magma_queues_[gpu_id][0]
-                    );
+                        num_FR_per_gpu_[gpu_id]
+                    ));
 
                 #else 
 
-                    #if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
-
-                        CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                            cublas_handle_[gpu_id], CUBLAS_OP_N,
-                            this->hr_->leaf_size * this->dof_dimension_, // num rows
-                            this->hr_->leaf_size * this->dof_dimension_, // num cols 
-                            &alpha,
-                            (const double**)d_FR_data_pointers_[gpu_id],        
-                            this->hr_->leaf_size * this->dof_dimension_, 
-                            (const double**)d_FR_x_pointers_[gpu_id], 
-                            1,
-                            &beta,
-                            d_FR_y_partial_pointers_[gpu_id],
-                            1,
-                            num_FR_per_gpu_[gpu_id]
-                        ));
-
-                    #else 
-
-                        CHECK_CUBLAS_ERROR(cublasDgemmBatched(
-                            cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N, 
-                            this->hr_->leaf_size * this->dof_dimension_,
-                            1, // 1 column matrix 
-                            this->hr_->leaf_size * this->dof_dimension_, 
-                            &alpha,
-                            (const double**)d_FR_data_pointers_[gpu_id],
-                            this->hr_->leaf_size * this->dof_dimension_, 
-                            (const double**)d_FR_x_pointers_[gpu_id], 
-                            this->hr_->leaf_size * this->dof_dimension_, 
-                            &beta,
-                            d_FR_y_partial_pointers_[gpu_id],
-                            this->hr_->leaf_size * this->dof_dimension_,
-                            num_FR_per_gpu_[gpu_id]
-                        ));
+                    CHECK_CUBLAS_ERROR(cublasDgemmBatched(
+                        cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N, 
+                        this->hr_->leaf_size * this->dof_dimension_,
+                        1, // 1 column matrix 
+                        this->hr_->leaf_size * this->dof_dimension_, 
+                        &alpha,
+                        (const double**)d_FR_data_pointers_[gpu_id],
+                        this->hr_->leaf_size * this->dof_dimension_, 
+                        (const double**)d_FR_x_pointers_[gpu_id], 
+                        this->hr_->leaf_size * this->dof_dimension_, 
+                        &beta,
+                        d_FR_y_partial_pointers_[gpu_id],
+                        this->hr_->leaf_size * this->dof_dimension_,
+                        num_FR_per_gpu_[gpu_id]
+                    ));
 
 
-                    #endif // CUBLAS version
-
-                #endif // MAGMA BLAS or CUBLAS
+                #endif
 
                 // FR non std blocks computation
                 if (gpu_id == 0){
 
                     for (auto& [sizes,num_blocks] : num_FR_nonstd_blocks_per_size_){
 
-                        #ifdef USE_MAGMA
-
-                            magmablas_dgemv_batched(
-                                MagmaNoTrans, 
-                                sizes.first * this->dof_dimension_,  
-                                sizes.second * this->dof_dimension_,  
-                                alpha,
-                                (const double**)d_FR_nonStd_data_pointers_[sizes], 
-                                sizes.first * this->dof_dimension_,
-                                (const double**)d_FR_nonStd_x_pointers_[sizes],
-                                1,
-                                beta,
-                                d_FR_nonStd_y_partial_pointers_[sizes],
-                                1,
-                                num_blocks,
-                                magma_queues_[gpu_id][0]
-                            );
-
-                        #else 
-
-                            #if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
-
-                                CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                                    cublas_handle_[gpu_id], CUBLAS_OP_N,
-                                    sizes.first * this->dof_dimension_, // num rows
-                                    sizes.second * this->dof_dimension_, // num cols 
-                                    &alpha,
-                                    (const double**)d_FR_nonStd_data_pointers_[sizes],        
-                                    sizes.first * this->dof_dimension_,
-                                    (const double**)d_FR_nonStd_x_pointers_[sizes], 
-                                    1,
-                                    &beta,
-                                    d_FR_nonStd_y_partial_pointers_[sizes],
-                                    1,
-                                    num_blocks
-                                ));
-
-                            #else 
-
-                                CHECK_CUBLAS_ERROR(cublasDgemmBatched(
-                                    cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N, 
-                                    sizes.first * this->dof_dimension_,
-                                    1, // 1 column matrix 
-                                    sizes.second * this->dof_dimension_, 
-                                    &alpha,
-                                    (const double**)d_FR_nonStd_data_pointers_[sizes],
-                                    sizes.first * this->dof_dimension_, 
-                                    (const double**)d_FR_x_pointers_[gpu_id], 
-                                    (const double**)d_FR_nonStd_x_pointers_[sizes], 
-                                    &beta,
-                                    d_FR_nonStd_y_partial_pointers_[sizes],
-                                    sizes.second * this->dof_dimension_,
-                                    num_blocks
-                                ));
-
-                            #endif // CUBLAS version
-
-                        #endif // MAGMA BLAS or CUBLAS
+                        CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                            cublas_handle_[gpu_id], CUBLAS_OP_N,
+                            sizes.first * this->dof_dimension_, // num rows
+                            sizes.second * this->dof_dimension_, // num cols 
+                            &alpha,
+                            (const double**)d_FR_nonStd_data_pointers_[sizes],        
+                            sizes.first * this->dof_dimension_,
+                            (const double**)d_FR_nonStd_x_pointers_[sizes], 
+                            1,
+                            &beta,
+                            d_FR_nonStd_y_partial_pointers_[sizes],
+                            1,
+                            num_blocks
+                        ));
 
                     }
                 }
@@ -1941,6 +1904,12 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             std::cout << "[GPU "<< gpu_id << "] std FR : y.sum() = " << std::scientific << std::setprecision(17) << y_fr_sum << std::endl;
             #endif
 
+            // // Add explicit CUDA error check
+            // cudaDeviceSynchronize();
+            // err = cudaGetLastError();
+            // if (err != cudaSuccess) {
+            //     printf("CUDA error after cusparseDbsrmv: %s\n", cudaGetErrorString(err));
+            // }
 
             // Then for the LR blocks : we loop on the sizes associated to this GPU
 
@@ -2009,6 +1978,13 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                             1,
                             num_blocks
                         ));
+
+                        // // Add explicit CUDA error check
+                        // cudaDeviceSynchronize();
+                        // cudaError_t err = cudaGetLastError();
+                        // if (err != cudaSuccess) {
+                        //     printf("CUDA error after t = B*x: %s\n", cudaGetErrorString(err));
+                        // }
                 
                         // Compute y = A*tmp
                         CHECK_CUBLAS_ERROR(cublasDgemvBatched(
@@ -2026,6 +2002,13 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                             1,
                             num_blocks
                         ));
+
+                        // cudaDeviceSynchronize();
+                        // // Add explicit CUDA error check
+                        // err = cudaGetLastError();
+                        // if (err != cudaSuccess) {
+                        //     printf("CUDA error after y = A*t: %s\n", cudaGetErrorString(err));
+                        // }
 
                     #else // For CUDA versions before 11.6.2
                         
@@ -2046,6 +2029,12 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                             num_blocks
                         ));
 
+                        // // Add explicit CUDA error check
+                        // cudaDeviceSynchronize();
+                        // err = cudaGetLastError();
+                        // if (err != cudaSuccess) {
+                        //     printf("CUDA error after t = B*x: %s\n", cudaG
+
                         // Compute y = A*tmp 
                         CHECK_CUBLAS_ERROR(cublasDgemmBatched(
                             cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N,
@@ -2063,149 +2052,30 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                             num_blocks
                         ));
 
+                        // // Add explicit CUDA error check
+                        // cudaDeviceSynchronize();
+                        // err = cudaGetLastError();
+                        // if (err != cudaSuccess) {
+                        //     printf("CUDA error after y = A*tmp: %s\n", cudaGetEr
+
                     #endif // CUDA version
 
                 #endif // MAGMA BLAS or CUBLAS
 
-            } // Loop on std LR block sizes
-
-            // We add the contributions of the non std blocks
-            if (gpu_id == 0){
-
-                for (auto& [sizes,num_blocks] : num_LR_nonstd_blocks_per_size_){
-
-                    #ifdef USE_MAGMA // Use MAGMA BLAS implementation
-
-                         // Compute tmp = B*x
-                        magmablas_dgemv_batched(
-                            MagmaNoTrans, 
-                            this->fixed_rank_*this->dof_dimension_,        // num rows
-                            sizes.second*this->dof_dimension_, // num cols 
-                            alpha,
-                            (const double**)d_LR_nonStd_B_data_pointers_[sizes],
-                            this->fixed_rank_*this->dof_dimension_, 
-                            (const double**)d_LR_nonStd_x_pointers_[sizes], 
-                            1,
-                            beta,
-                            d_LR_nonStd_tmp_pointers_[sizes], 
-                            1,
-                            num_blocks,
-                            magma_queues_[gpu_id][0]
-                        );
-
-                        // Compute y = A*tmp
-                        magmablas_dgemv_batched(
-                            MagmaNoTrans, 
-                            sizes.first*this->dof_dimension_,         // num rows
-                            this->fixed_rank_*this->dof_dimension_, // num cols 
-                            alpha,
-                            (const double**)d_LR_nonStd_A_data_pointers_[sizes],        
-                            sizes.first*this->dof_dimension_,  
-                            (const double**)d_LR_nonStd_tmp_pointers_[sizes], 
-                            1,
-                            beta,
-                            d_LR_nonStd_y_partial_pointers_[sizes],
-                            1,
-                            num_blocks,
-                            magma_queues_[gpu_id][0]
-                        );  
-
-                    #else // Use CUBLAS implementation
-
-                        #if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
-
-                            // Compute tmp = B*x
-                            CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                                cublas_handle_[gpu_id], CUBLAS_OP_N,
-                                this->fixed_rank_*this->dof_dimension_,     // num rows
-                                sizes.second*this->dof_dimension_,          // num cols 
-                                &alpha,
-                                (const double**)d_LR_nonStd_B_data_pointers_[sizes],        
-                                this->fixed_rank_*this->dof_dimension_, 
-                                (const double**)d_LR_nonStd_x_pointers_[sizes], 
-                                1,
-                                &beta,
-                                d_LR_nonStd_tmp_pointers_[sizes], 
-                                1,
-                                num_blocks
-                            ));
-
-                            // Compute y = A*tmp
-                            CHECK_CUBLAS_ERROR(cublasDgemvBatched(
-                                cublas_handle_[gpu_id], CUBLAS_OP_N,
-                                sizes.first*this->dof_dimension_,        // num rows
-                                this->fixed_rank_*this->dof_dimension_, // num cols 
-                                &alpha,
-                                (const double**)d_LR_nonStd_A_data_pointers_[sizes],        
-                                sizes.first*this->dof_dimension_, 
-                                (const double**)d_LR_nonStd_tmp_pointers_[sizes], 
-                                1,
-                                &beta,
-                                d_LR_nonStd_y_partial_pointers_[sizes], 
-                                1,
-                                num_blocks
-                            ));
-
-                        #else 
-
-                            // Compute tmp = B*x
-                            CHECK_CUBLAS_ERROR(cublasDgemmBatched(
-                                cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N, 
-                                this->fixed_rank_*this->dof_dimension_,
-                                1, // 1 column matrix ß
-                                sizes.second*this->dof_dimension_,
-                                &alpha,
-                                (const double**)d_LR_nonStd_B_data_pointers_[sizes], 
-                                this->fixed_rank_*this->dof_dimension_, 
-                                (const double**)d_LR_nonStd_x_pointers_[sizes], 
-                                sizes.second*this->dof_dimension_, 
-                                &beta,
-                                d_LR_nonStd_tmp_pointers_[sizes], 
-                                this->fixed_rank_*this->dof_dimension_,
-                                num_blocks
-                            ));
-
-                            // Compute y = A*tmp 
-                            CHECK_CUBLAS_ERROR(cublasDgemmBatched(
-                                cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N,
-                                sizes.first*this->dof_dimension_, 
-                                1, // 1 column matrix
-                                this->fixed_rank_*this->dof_dimension_, 
-                                &alpha,
-                                (const double**)d_LR_nonStd_A_data_pointers_[sizes],
-                                sizes.first*this->dof_dimension_,
-                                (const double**)d_LR_nonStd_tmp_pointers_[sizes],
-                                this->fixed_rank_*this->dof_dimension_,
-                                &beta,
-                                d_LR_nonStd_y_partial_pointers_[sizes], 
-                                sizes.first*this->dof_dimension_,
-                                num_blocks
-                            ));
-
-
-
-                        #endif // CUDA version
-
-                    #endif // MAGMA BLAS or CUBLAS
-
-
-                }
             }
+
 
             // We sync the streams
             cudaDeviceSynchronize();
 
             // Here we gather the partial results of the LR blocks on d_y_ that was used to store the results of the FR blocks
-            int num_lr_blocks = num_LR_per_gpu_[gpu_id];
-            if (gpu_id == 0) num_lr_blocks += LR_non_std_indices_.size();
-
             scatter_add(
                 d_y_[gpu_id],
                 d_y_partial_LR_[gpu_id],
                 d_LR_y_partial_src_indices_[gpu_id],
                 d_LR_y_partial_dest_indices_[gpu_id],
                 d_LR_y_partial_lengths_[gpu_id],
-                num_lr_blocks
+                num_LR_per_gpu_[gpu_id]
             );
 
             cudaDeviceSynchronize();
@@ -2248,7 +2118,50 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
         } // GPU - assigned threads
 
+        else { // remaining threads
+        // else if (thread_id == num_gpus_) {
+            // // Last but not least, we add the contribution of the non standard full blocks
+            // #pragma omp for schedule(guided) nowait
+            // for (int i : FR_non_std_indices) {
+            //     auto i0 = hr_->pattern_.FRB_pattern(1, i);
+            //     auto j0 = hr_->pattern_.FRB_pattern(2, i);
+            //     auto iend = hr_->pattern_.FRB_pattern(3, i);
+            //     auto jend = hr_->pattern_.FRB_pattern(4, i);
 
+            //     auto a = (*full_rank_blocks_[i]).view();
+
+            //     #ifdef DEBUG 
+            //     std::cout << "Mult of non std FR block " << i << " of shape " << a.size(0) << " x " << a.size(1) << std::endl;
+            //     #endif
+
+
+            //     auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
+            //     auto ys = y_private.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+
+            //     il::blas(1.0, a, xs, 1.0, il::io, ys);
+            // }
+
+            // And the contribution of the non standard LR blocks
+            #pragma omp for schedule(guided) nowait
+            for (int i : LR_non_std_indices_) {
+
+                auto i0 = hr_->pattern_.LRB_pattern(1, i);
+                auto j0 = hr_->pattern_.LRB_pattern(2, i);
+                auto iend = hr_->pattern_.LRB_pattern(3, i);
+                auto jend = hr_->pattern_.LRB_pattern(4, i);
+
+                auto a = low_rank_blocks_[i]->A.view();
+                auto b = low_rank_blocks_[i]->B.view();
+
+                auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
+                auto ys =y_private.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+                auto r = a.size(1);
+                il::Array<double> tmp{r, 0.0};
+
+                il::blas(1.0, b, il::Dot::None, xs, 0.0, il::io, tmp.Edit()); // Note here we have stored b (not b^T)
+                il::blas(1.0, a, tmp.view(), 1.0, il::io, ys);
+            }
+        }
 
         // We sum the partial results of each thread
         #pragma omp critical

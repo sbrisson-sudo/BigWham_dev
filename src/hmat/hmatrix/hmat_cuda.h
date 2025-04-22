@@ -13,6 +13,8 @@
 
 #include <vector>
 #include <unordered_map>
+#include <utility>      // std::pair
+#include <functional>   // std::hash
 
 #include <cuda_runtime.h>
 #include <cuda.h>
@@ -38,6 +40,14 @@
 #include "magmablas_d_v1.h"
 #endif
 
+struct pair_hash {
+    std::size_t operator()(const std::pair<int, int>& p) const noexcept {
+        // A better hash combiner (from Boost)
+        std::size_t h1 = std::hash<int>{}(p.first);
+        std::size_t h2 = std::hash<int>{}(p.second);
+        return h1 ^ (h2 << 1); // Or use std::hash<std::tuple<int, int>> if available
+    }
+};
 
 namespace bigwham {
 
@@ -85,19 +95,18 @@ private:
     std::unordered_map<int, std::vector<int>> LR_std_indices_;
     std::vector<int> LR_non_std_indices_;
 
+    std::unordered_map<std::pair<int, int>, int, pair_hash> num_FR_nonstd_blocks_per_size_;
+    std::unordered_map<std::pair<int, int>, int, pair_hash> num_LR_nonstd_blocks_per_size_;
+
     // Num available GPUs
     int num_gpus_;
-    
-
 
     // FOR ALL THE DATA STRUCTURES BELLOW, THE FIRST VECTOR RELATES
     // TO THE GPU REPARTITION
-
     std::vector<int> num_FR_per_gpu_;
     std::vector<int> offsets_FR_gpu_;    
     std::vector<int> num_LR_per_gpu_;
     std::vector<std::vector<int>> LR_std_sizes_per_gpu_;
-
 
     // GPU operation handler
     std::vector<cublasHandle_t> cublas_handle_;
@@ -168,6 +177,29 @@ private:
     std::vector<int*> d_LR_y_partial_src_indices_;
     std::vector<int*> d_LR_y_partial_dest_indices_;
     std::vector<int*> d_LR_y_partial_lengths_;
+
+    // Array of pointers for the batched operations on the non std blocks 
+    // Note that it is all carried by the first GPU
+    std::unordered_map<std::pair<int, int>, T**, pair_hash> d_FR_nonStd_data_pointers_;
+    std::unordered_map<std::pair<int, int>, T**, pair_hash> d_FR_nonStd_x_pointers_;
+    std::unordered_map<std::pair<int, int>, T**, pair_hash> d_FR_nonStd_y_partial_pointers_;
+
+    std::unordered_map<std::pair<int, int>, T**, pair_hash> d_LR_nonStd_A_data_pointers_;
+    std::unordered_map<std::pair<int, int>, T**, pair_hash> d_LR_nonStd_B_data_pointers_;
+    std::unordered_map<std::pair<int, int>, T**, pair_hash> d_LR_nonStd_x_pointers_;
+    std::unordered_map<std::pair<int, int>, T**, pair_hash> d_LR_nonStd_y_partial_pointers_;
+    std::unordered_map<std::pair<int, int>, T**, pair_hash> d_LR_nonStd_tmp_pointers_;
+
+    // And the data buffers
+    T* d_FR_non_std_data_;
+    T* d_LR_non_std_A_data_;
+    T* d_LR_non_std_B_data_;
+
+    // To keep track of the offsets to use for the non std blocks
+    // Offsets on data
+    std::unordered_map<std::pair<int, int>, int, pair_hash> FR_non_std_offsets_data_,LR_non_std_A_offsets_data_,LR_non_std_B_offsets_data_;
+    // Offsets on aux vectors
+    std::unordered_map<std::pair<int, int>, int, pair_hash> FR_non_std_offsets_y_,LR_non_std_offsets_y_,LR_non_std_offsets_tmp_;
 
 public:
   HmatCuda() = default;
