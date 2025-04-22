@@ -720,7 +720,6 @@ std::vector<double> BigWhamIO::GetHPattern() const
 
     long numberofblocks = pattern.n_B;
     long len = 6 * numberofblocks;
-    std::cout << "number of blocks " << numberofblocks << "\n";
 
     // std::vector<long> patternlist(len, 0);
     std::vector<double> patternlist(len, 0); // to contain error

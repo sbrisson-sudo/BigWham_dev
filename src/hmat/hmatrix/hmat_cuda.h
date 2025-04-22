@@ -118,6 +118,7 @@ private:
     std::vector<T*> d_x_;               // Store the lhs vector on device
     std::vector<T*> d_y_;               // Store the rhs vector on device
     std::vector<T*> d_y_partial_LR_;    // Partial results for LR blocks operations
+    std::vector<T*> d_y_partial_FR_;    // Partial results for FR blocks operations
     std::vector<T*> d_tmp_;             // tmp = B*x then y = A*tmp
 
     // FR data
@@ -135,6 +136,17 @@ private:
     // We also keep them on host
     std::vector<int*> h_FR_bsrRowPtr_; 
     std::vector<int*> h_FR_bsrColInd_; 
+
+    // FR metadata to use cublas operations and not cusparse
+    std::vector<T**> d_FR_data_pointers_;
+    std::vector<T**> d_FR_x_pointers_;
+    std::vector<T**> d_FR_y_partial_pointers_;
+
+    // FR : gather partial results
+    std::vector<size_t> y_partial_FR_buffer_size_bytes_;
+    std::vector<int*> d_FR_y_partial_src_indices_;
+    std::vector<int*> d_FR_y_partial_dest_indices_;
+    std::vector<int*> d_FR_y_partial_lengths_;
 
     // LR metadata = array of pointers for batched operations
     std::vector<std::unordered_map<int, T**>> d_LR_A_data_pointers_;    // to data 

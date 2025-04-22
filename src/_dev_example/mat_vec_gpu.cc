@@ -105,8 +105,8 @@ int main(int argc, char * argv[]) {
   std::vector<double> properties = {G, nu};
 
   // H-mat parameters
-  il::int_t max_leaf_size = 32;
-  double eta = 3.0;
+  il::int_t max_leaf_size = 64;
+  double eta = 5.0;
   double eps_aca = 1.e-3;
 
   std::cout << "max_leaf_size = " << max_leaf_size << std::endl; 
@@ -121,7 +121,7 @@ int main(int argc, char * argv[]) {
   auto dd_view = dd.view();
 
   // Save it 
-  cnpy::npy_save("mat_vec_gpu_input.npy", dd.data(), {static_cast<size_t>(num_dof)}, "w");
+  // cnpy::npy_save("mat_vec_gpu_input.npy", dd.data(), {static_cast<size_t>(num_dof)}, "w");
 
   // Timing
   const int N_matvec = 10;
@@ -201,7 +201,7 @@ int main(int argc, char * argv[]) {
   std::cout << "[GPU] L2 norm of the product of H with [0, 1/dof, ...,  1] = " << l2_norm << std::endl;
   std::cout << "[GPU] sum of the product of H with [0, 1/dof, ...,  1] = " << res_sum  << std::endl;
 
-  cnpy::npy_save("mat_vec_gpu_res.npy", t_view.data(), {static_cast<size_t>(t_view.size())}, "w");
+  // cnpy::npy_save("mat_vec_gpu_res.npy", t_view.data(), {static_cast<size_t>(t_view.size())}, "w");
 
   // std::cout << "[GPU] res = [" ;
   // for (int i(0); i<num_dof; i++) std::cout << t_view[i] << ", ";

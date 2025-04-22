@@ -118,7 +118,7 @@ if (USE_CUDA)
     enable_language(CUDA)
     set(CMAKE_CUDA_ARCHITECTURES 70 75 80 86)
 
-    message(STATUS "Building with CUDA support : ${CUDA_INCLUDE_DIRS}")
+    message(STATUS "Building with CUDA support : ${CUDA_TOOLKIT_ROOT_DIR}")
     message(STATUS "CUDA_LIBRARIES: ${CUDA_LIBRARIES}")
     message(STATUS "CUDA_CUBLAS_LIBRARIES: ${CUDA_CUBLAS_LIBRARIES}")
     message(STATUS "CUDA_cusparse_LIBRARY: ${CUDA_cusparse_LIBRARY}")
@@ -130,9 +130,9 @@ if (USE_CUDA)
         )
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -std=c++14)
 
-    # # CUDA NVTX : only for debugging purposes
-    # set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/nsight-compute-2024.1.1/host/target-linux-x64/nvtx/include)
-    # message(STATUS "NVTX_INCLUDE_DIR: ${NVTX_INCLUDE_DIR}")
+    # CUDA NVTX : only for debugging purposes
+    set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/nsight-compute-2024.1.1/host/target-linux-x64/nvtx/include)
+    message(STATUS "NVTX_INCLUDE_DIR: ${NVTX_INCLUDE_DIR}")
 
     include_directories(${NVTX_INCLUDE_DIR})
 

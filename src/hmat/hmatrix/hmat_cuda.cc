@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <sstream>
 
-// #define USE_NVTX
+#define USE_NVTX
 
 #ifdef USE_NVTX
 #include <nvtx3/nvtx3.hpp>
@@ -15,6 +15,8 @@
 #include "y_partial_scatter_add.h"
 
 #include "cnpy.h"
+
+// #define USE_CUSPARSE_BSRMV
 
 // #define TIMING
 // #define DEBUG
@@ -122,7 +124,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     // First we get the number of full rank blokcks of standard and non standard size 
     int num_FR_blocks_standard_size = 0;
     int num_FR_blocks_non_standard_size = 0;
-    int total_size_non_standard_blocks = 0;
+    int total_size_non_standard_FR_blocks = 0;
 
     for (int i(0); i<pattern.n_FRB; i++){
         int i0 = pattern.FRB_pattern(1,i);
@@ -134,9 +136,14 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
             num_FR_blocks_standard_size++;
         } else {
             num_FR_blocks_non_standard_size++;
-            total_size_non_standard_blocks += (jend-j0)*(iend-i0);
+            total_size_non_standard_FR_blocks += (jend-j0)*(iend-i0);
+
+            std::cout << "non std FR block of size " << iend-i0 << " x " << jend-j0 << std::endl;
+
         }
     }
+
+    std::cout << "total_size_non_standard_FR_blocks = " << total_size_non_standard_FR_blocks << std::endl;
 
     this->num_FR_std_blocks_ = num_FR_blocks_standard_size;
 
@@ -179,20 +186,17 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
 #endif
 
     // We allocate the memory for standardized FR blocks
-    if (this->verbose_){
-        std::cout << num_FR_blocks_standard_size << " FR blocks with standard size\n";
-        std::cout << num_FR_blocks_non_standard_size << " FR blocks with non standard size\n";
-    }
-
     FR_standard_size_data_buffer_size = num_FR_blocks_standard_size * leaf_size * leaf_size * dim*dim;
     this->FR_standard_size_data = new T[FR_standard_size_data_buffer_size];
 
-    FR_non_standard_size_data_buffer_size = total_size_non_standard_blocks * dim*dim;
+    FR_non_standard_size_data_buffer_size = total_size_non_standard_FR_blocks * dim*dim;
     this->FR_non_standard_size_data = new T[FR_non_standard_size_data_buffer_size];
 
     // LR MEM ALLOCATION
     // Here also we put apart the non square blocks 
     std::unordered_map<int, std::vector<int>> LR_blocks_per_size_indices;
+
+    int total_size_non_standard_LR_blocks = 0;
 
     for (int i(0); i<pattern.n_LRB; i++){
         int i0 = pattern.LRB_pattern(1,i);
@@ -205,8 +209,15 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
             LR_std_indices_[iend-i0].push_back(i);
         } else {
             LR_non_std_indices_.push_back(i);
+            total_size_non_standard_LR_blocks += (iend-i0) * this->fixed_rank_;
+
+            std::cout << "non std LR block of size " << iend-i0 << " x " << jend-j0 << std::endl;
+
         }
     }
+
+    std::cout << "total_size_non_standard_LR_blocks = " << total_size_non_standard_LR_blocks << std::endl;
+
 
     // Just print it 
 #ifdef DEBUG
@@ -257,7 +268,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     // Print total memory footprint
     if (this->verbose_){
         // FR blocks
-        int total_size = FR_standard_size_data_buffer_size + FR_non_standard_size_data_buffer_size;
+        size_t total_size = FR_standard_size_data_buffer_size + FR_non_standard_size_data_buffer_size;
         // non std LR blocks
         total_size += LR_non_standard_size_data_A_buffer_size_ + LR_non_standard_size_data_B_buffer_size_;
         // std LR blocks
@@ -419,6 +430,7 @@ void HmatCuda<T>::copyToDevice(){
     d_y_.resize(num_gpus_);               // Store the rhs vector on device
     d_y_partial_LR_.resize(num_gpus_);    // Partial results for LR blocks operations
     d_tmp_.resize(num_gpus_);          // tmp = B*x then y = A*tmp
+    d_y_partial_FR_.resize(num_gpus_); 
 
     // FR data
     d_FR_data_.resize(num_gpus_);
@@ -435,6 +447,16 @@ void HmatCuda<T>::copyToDevice(){
     // We also keep them on host
     h_FR_bsrRowPtr_.resize(num_gpus_); 
     h_FR_bsrColInd_.resize(num_gpus_); 
+
+    // FR metadata for cublas operations
+    d_FR_data_pointers_.resize(num_gpus_);
+    d_FR_x_pointers_.resize(num_gpus_);
+    d_FR_y_partial_pointers_.resize(num_gpus_);
+
+    y_partial_FR_buffer_size_bytes_.resize(num_gpus_);
+    d_FR_y_partial_src_indices_.resize(num_gpus_);
+    d_FR_y_partial_dest_indices_.resize(num_gpus_);
+    d_FR_y_partial_lengths_.resize(num_gpus_);
 
     // LR metadata = array of pointers for batched operations
     d_LR_A_data_pointers_.resize(num_gpus_);   // to data 
@@ -507,13 +529,13 @@ void HmatCuda<T>::copyToDevice(){
         // ---------------------------
 
         // ---------------------------
-        // Initialiazing the aux vectors (for LR blocks)
+        // Initialiazing the aux vectors 
         // ---------------------------
 
         vector_size_ = this->size_[0];
         vector_size_bytes_ = this->size_[0]* sizeof(T);
 
-        // Here we need to compute the buffer size needed for tmp and y_partial so that each LR block has its own
+        // Here we need to compute the buffer size needed for tmp and y_partial for LR blocks
         y_partial_LR_buffer_size_bytes_[gpu_id] = 0;
         tmp_buffer_size_bytes_[gpu_id] = 0;
 
@@ -523,21 +545,22 @@ void HmatCuda<T>::copyToDevice(){
             tmp_buffer_size_bytes_[gpu_id] += num_blocks * this->fixed_rank_ * dim_dof * sizeof(T);
         }
 
+        // Idem for FR blocks
+        y_partial_FR_buffer_size_bytes_[gpu_id] = num_FR_per_gpu_[gpu_id] * leaf_size * dim_dof * sizeof(T);
+
+        std::cout << "y_partial_FR_buffer_size_bytes_[gpu_id] = " << y_partial_FR_buffer_size_bytes_[gpu_id] << std::endl;
+
         // Print associated memory consumption
         if (this->verbose_){
-            std::cout << "[GPU "<< gpu_id << "] Allocating " << formatBytes(2*vector_size_bytes_ + y_partial_LR_buffer_size_bytes_[gpu_id] + tmp_buffer_size_bytes_[gpu_id]) << " on the GPU for auxilliary vectors" << std::endl;
+            std::cout << "[GPU "<< gpu_id << "] Allocating " << formatBytes(2*vector_size_bytes_ + y_partial_LR_buffer_size_bytes_[gpu_id] + tmp_buffer_size_bytes_[gpu_id] + y_partial_FR_buffer_size_bytes_[gpu_id]) << " on the GPU for auxilliary vectors" << std::endl;
         }
-
-        #ifdef DEBUG
-        std::cout << "[GPU "<< gpu_id << "] y_partial_buffer_size_bytes = " << y_partial_LR_buffer_size_bytes_[gpu_id] << std::endl;
-        std::cout << "[GPU "<< gpu_id << "] tmp_buffer_size_bytes = " << tmp_buffer_size_bytes_[gpu_id] << std::endl;
-        #endif 
 
         // We allocate them
         CHECK_CUDA_ERROR(cudaMalloc(&d_x_[gpu_id], vector_size_bytes_));
         CHECK_CUDA_ERROR(cudaMalloc(&d_y_[gpu_id], vector_size_bytes_));
 
-        // Here we change the sized allocated 
+        CHECK_CUDA_ERROR(cudaMalloc(&d_y_partial_FR_[gpu_id], y_partial_FR_buffer_size_bytes_[gpu_id]));
+
         CHECK_CUDA_ERROR(cudaMalloc(&d_y_partial_LR_[gpu_id], y_partial_LR_buffer_size_bytes_[gpu_id]));
         CHECK_CUDA_ERROR(cudaMalloc(&d_tmp_[gpu_id], tmp_buffer_size_bytes_[gpu_id]));
 
@@ -572,90 +595,221 @@ void HmatCuda<T>::copyToDevice(){
             std::cout << "[GPU "<< gpu_id << "] Allocating " << formatBytes(total_to_allocate) << " on the GPU for hierarchical matrix data" << std::endl;
         }
 
-        // Then we set up the BSR description of the FR 
-        cusparseCreateMatDescr(&FR_bsr_descr_[gpu_id]);
-        cusparseSetMatType(FR_bsr_descr_[gpu_id], CUSPARSE_MATRIX_TYPE_GENERAL);
-        cusparseSetMatIndexBase(FR_bsr_descr_[gpu_id], CUSPARSE_INDEX_BASE_ZERO);
+        // Then we set up the CUSPARSE BSR description of the FR 
+        #ifdef USE_CUSPARSE_BSRMV
 
-        // We set d_FR_bsrRowPtr_ = array of size n_block_rows + 1 
-        // with the index of the first block of the row
-        // see https://medium.com/gpgpu/block-sparse-matrix-vector-multiplication-with-cuda-4e616b30267
+            cusparseCreateMatDescr(&FR_bsr_descr_[gpu_id]);
+            cusparseSetMatType(FR_bsr_descr_[gpu_id], CUSPARSE_MATRIX_TYPE_GENERAL);
+            cusparseSetMatIndexBase(FR_bsr_descr_[gpu_id], CUSPARSE_INDEX_BASE_ZERO);
 
-        // GETTING bsrRowPtr
-        // First we compute the nb of block rows
-        int num_block_rows = -1;
-        
-        for (int i : FR_std_orderedIndices) {
-            int i0 = hr->pattern_.FRB_pattern(1, i);
-            int iend = hr->pattern_.FRB_pattern(3, i);
-            int blockRow = i0 / leaf_size; // Assuming blockDim is your block size
-            num_block_rows = std::max(num_block_rows, blockRow);
-        }
-        num_block_rows++; // +1 because indices are 0-based
+            // We set d_FR_bsrRowPtr_ = array of size n_block_rows + 1 
+            // with the index of the first block of the row
+            // see https://medium.com/gpgpu/block-sparse-matrix-vector-multiplication-with-cuda-4e616b30267
 
-        // Store it 
-        this->total_block_size_ = num_block_rows;
+            // GETTING bsrRowPtr
+            // First we compute the nb of block rows
+            int num_block_rows = -1;
+            
+            for (int i : FR_std_orderedIndices) {
+                int i0 = hr->pattern_.FRB_pattern(1, i);
+                int iend = hr->pattern_.FRB_pattern(3, i);
+                int blockRow = i0 / leaf_size; // Assuming blockDim is your block size
+                num_block_rows = std::max(num_block_rows, blockRow);
+            }
+            num_block_rows++; // +1 because indices are 0-based
 
-        h_FR_bsrRowPtr_[gpu_id] = new int[num_block_rows+1];
-        for (int i = 0; i <= num_block_rows; i++) h_FR_bsrRowPtr_[gpu_id][i] = 0;
+            // Store it 
+            this->total_block_size_ = num_block_rows;
 
-        // Count blocks per row
-        for (int idx(0); idx<num_FR_per_gpu_[gpu_id]; idx++){
-            int idx_offset = idx + offsets_FR_gpu_[gpu_id];
-            int i = FR_std_orderedIndices[idx_offset];
-            int i0 = hr->pattern_.FRB_pattern(1, i);
-            int blockRow = i0 / leaf_size;
-            h_FR_bsrRowPtr_[gpu_id][blockRow + 1]++;
-        }
+            h_FR_bsrRowPtr_[gpu_id] = new int[num_block_rows+1];
+            for (int i = 0; i <= num_block_rows; i++) h_FR_bsrRowPtr_[gpu_id][i] = 0;
 
-        // Cumulative sum to get row pointers
-        for (int i = 0; i < num_block_rows; i++) {
-            h_FR_bsrRowPtr_[gpu_id][i + 1] += h_FR_bsrRowPtr_[gpu_id][i];
-        }
-
-        // GETTTING bsrColInd_
-        const int nnzb = num_FR_per_gpu_[gpu_id];
-        h_FR_bsrColInd_[gpu_id] = new int[nnzb];
-
-        // Fill colInd array
-        int col_pointer = 0;
-        for (int idx(0); idx<num_FR_per_gpu_[gpu_id]; idx++){
-            int idx_offset = idx + offsets_FR_gpu_[gpu_id];
-            int i = FR_std_orderedIndices[idx_offset];
-            int j0 = hr->pattern_.FRB_pattern(2, i);
-            int blockCol = j0 / leaf_size;
-            h_FR_bsrColInd_[gpu_id][col_pointer] = blockCol;
-            col_pointer++;
-        }
-
-        #ifdef DEBUG
-        // Print it to check 
-        std::cout << "[GPU "<< gpu_id << "] h_FR_bsrRowPtr_ = [";
-        for (int i = 0; i < num_block_rows+1; i++) std::cout << h_FR_bsrRowPtr_[gpu_id][i] << ", ";
-        std::cout << "]\n";
-        std::cout << "[GPU "<< gpu_id << "] h_FR_bsrColInd_ = [";
-        for (int i = 0; i < nnzb; i++) std::cout << h_FR_bsrColInd_[gpu_id][i] << ", ";
-        std::cout << "]\n";
-        #endif
-
-        if (this->verbose_){
-            size_t total_to_allocate_metadata = 0;
-            total_to_allocate_metadata += (num_block_rows+1)*sizeof(int) + nnzb*sizeof(int);
-            for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
-                int num_blocks = LR_std_indices_[block_size].size();
-                total_to_allocate_metadata += num_blocks * sizeof(T*) * 5;
+            // Count blocks per row
+            for (int idx(0); idx<num_FR_per_gpu_[gpu_id]; idx++){
+                int idx_offset = idx + offsets_FR_gpu_[gpu_id];
+                int i = FR_std_orderedIndices[idx_offset];
+                int i0 = hr->pattern_.FRB_pattern(1, i);
+                int blockRow = i0 / leaf_size;
+                h_FR_bsrRowPtr_[gpu_id][blockRow + 1]++;
             }
 
-            std::cout << "[GPU "<< gpu_id << "] Allocating " << formatBytes(total_to_allocate_metadata) << " on the GPU for hierarchical matrix metadata" << std::endl;
+            // Cumulative sum to get row pointers
+            for (int i = 0; i < num_block_rows; i++) {
+                h_FR_bsrRowPtr_[gpu_id][i + 1] += h_FR_bsrRowPtr_[gpu_id][i];
+            }
 
-        }
+            // GETTTING bsrColInd_
+            const int nnzb = num_FR_per_gpu_[gpu_id];
+            h_FR_bsrColInd_[gpu_id] = new int[nnzb];
 
-        // Then copy it to device
-        CHECK_CUDA_ERROR(cudaMalloc(&d_FR_bsrRowPtr_[gpu_id], (num_block_rows+1)*sizeof(int)));
-        CHECK_CUDA_ERROR(cudaMemcpy(d_FR_bsrRowPtr_[gpu_id], h_FR_bsrRowPtr_[gpu_id], (num_block_rows+1)*sizeof(int), cudaMemcpyHostToDevice));
+            // Fill colInd array
+            int col_pointer = 0;
+            for (int idx(0); idx<num_FR_per_gpu_[gpu_id]; idx++){
+                int idx_offset = idx + offsets_FR_gpu_[gpu_id];
+                int i = FR_std_orderedIndices[idx_offset];
+                int j0 = hr->pattern_.FRB_pattern(2, i);
+                int blockCol = j0 / leaf_size;
+                h_FR_bsrColInd_[gpu_id][col_pointer] = blockCol;
+                col_pointer++;
+            }
 
-        CHECK_CUDA_ERROR(cudaMalloc(&d_FR_bsrColInd_[gpu_id], nnzb*sizeof(int)));
-        CHECK_CUDA_ERROR(cudaMemcpy(d_FR_bsrColInd_[gpu_id], h_FR_bsrColInd_[gpu_id], nnzb*sizeof(int), cudaMemcpyHostToDevice));
+            #ifdef DEBUG
+            // Print it to check 
+            std::cout << "[GPU "<< gpu_id << "] h_FR_bsrRowPtr_ = [";
+            for (int i = 0; i < num_block_rows+1; i++) std::cout << h_FR_bsrRowPtr_[gpu_id][i] << ", ";
+            std::cout << "]\n";
+            std::cout << "[GPU "<< gpu_id << "] h_FR_bsrColInd_ = [";
+            for (int i = 0; i < nnzb; i++) std::cout << h_FR_bsrColInd_[gpu_id][i] << ", ";
+            std::cout << "]\n";
+            #endif
+
+            if (this->verbose_){
+                size_t total_to_allocate_metadata = 0;
+                total_to_allocate_metadata += (num_block_rows+1)*sizeof(int) + nnzb*sizeof(int);
+                for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
+                    int num_blocks = LR_std_indices_[block_size].size();
+                    total_to_allocate_metadata += num_blocks * sizeof(T*) * 5;
+                }
+
+                std::cout << "[GPU "<< gpu_id << "] Allocating " << formatBytes(total_to_allocate_metadata) << " on the GPU for hierarchical matrix metadata" << std::endl;
+
+            }
+
+            // Then copy it to device
+            CHECK_CUDA_ERROR(cudaMalloc(&d_FR_bsrRowPtr_[gpu_id], (num_block_rows+1)*sizeof(int)));
+            CHECK_CUDA_ERROR(cudaMemcpy(d_FR_bsrRowPtr_[gpu_id], h_FR_bsrRowPtr_[gpu_id], (num_block_rows+1)*sizeof(int), cudaMemcpyHostToDevice));
+
+            CHECK_CUDA_ERROR(cudaMalloc(&d_FR_bsrColInd_[gpu_id], nnzb*sizeof(int)));
+            CHECK_CUDA_ERROR(cudaMemcpy(d_FR_bsrColInd_[gpu_id], h_FR_bsrColInd_[gpu_id], nnzb*sizeof(int), cudaMemcpyHostToDevice));
+
+        #else
+            // Initiating the vectors of pointers for Cublas support of FR blocks
+
+            int num_blocks = num_FR_per_gpu_[gpu_id];
+
+            T** h_FR_data_pointers = new T*[num_blocks];
+            T** h_FR_x_pointers = new T*[num_blocks];
+            T** h_FR_y_partial_pointers = new T*[num_blocks];
+
+            int* h_FR_y_partial_src_indices = new int[num_blocks];
+            int* h_FR_y_partial_dest_indices = new int[num_blocks];
+            int* h_FR_y_partial_lengths = new int[num_blocks];
+
+            int fr_block_size = leaf_size*leaf_size * dim_dof*dim_dof;
+
+            // Loop on blocks
+            for (int idx(0); idx<num_blocks; idx++){
+                int idx_offset = idx + offsets_FR_gpu_[gpu_id];
+                int i = FR_std_orderedIndices[idx_offset];
+
+                int i0 = hr->pattern_.FRB_pattern(1, i);
+                int j0 = hr->pattern_.FRB_pattern(2, i);
+
+                h_FR_data_pointers[idx] = d_FR_data_[gpu_id] + idx*fr_block_size;
+
+                // x vector : dep on position
+                h_FR_x_pointers[idx] = d_x_[gpu_id] + j0*dim_dof;
+
+                // y_partial and tmp vectors : dep of offset
+                h_FR_y_partial_pointers[idx] = d_y_partial_FR_[gpu_id] + idx*leaf_size*dim_dof;
+
+                // Metadata for summing partial results
+                h_FR_y_partial_src_indices[idx] = idx*leaf_size*dim_dof;
+                h_FR_y_partial_dest_indices[idx] = i0*dim_dof;
+                h_FR_y_partial_lengths[idx] = leaf_size*dim_dof;
+            }
+
+            // Copy on device
+
+            // pointers
+            T** device_ptr_data;
+            CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_data, num_blocks * sizeof(T*)));
+            d_FR_data_pointers_[gpu_id] = device_ptr_data;
+            CHECK_CUDA_ERROR(cudaMemcpy(d_FR_data_pointers_[gpu_id], h_FR_data_pointers, num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
+
+            T** device_ptr_x;
+            CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_x, num_blocks * sizeof(T*)));
+            d_FR_x_pointers_[gpu_id] = device_ptr_x;
+            CHECK_CUDA_ERROR(cudaMemcpy(d_FR_x_pointers_[gpu_id], h_FR_x_pointers, num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
+
+            T** device_ptr_y;
+            CHECK_CUDA_ERROR(cudaMalloc((void**)&device_ptr_y, num_blocks * sizeof(T*)));
+            d_FR_y_partial_pointers_[gpu_id] = device_ptr_y;
+            CHECK_CUDA_ERROR(cudaMemcpy(d_FR_y_partial_pointers_[gpu_id], h_FR_y_partial_pointers, num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
+
+            // summation
+            CHECK_CUDA_ERROR(cudaMalloc(&d_FR_y_partial_src_indices_[gpu_id], num_blocks*sizeof(int)));
+            CHECK_CUDA_ERROR(cudaMalloc(&d_FR_y_partial_dest_indices_[gpu_id], num_blocks*sizeof(int)));
+            CHECK_CUDA_ERROR(cudaMalloc(&d_FR_y_partial_lengths_[gpu_id], num_blocks*sizeof(int)));
+
+            CHECK_CUDA_ERROR(cudaMemcpy(d_FR_y_partial_src_indices_[gpu_id], h_FR_y_partial_src_indices, num_blocks*sizeof(int), cudaMemcpyHostToDevice));
+            CHECK_CUDA_ERROR(cudaMemcpy(d_FR_y_partial_dest_indices_[gpu_id], h_FR_y_partial_dest_indices, num_blocks*sizeof(int), cudaMemcpyHostToDevice));
+            CHECK_CUDA_ERROR(cudaMemcpy(d_FR_y_partial_lengths_[gpu_id], h_FR_y_partial_lengths, num_blocks*sizeof(int), cudaMemcpyHostToDevice));
+
+            // deallocate on host
+            delete[] h_FR_data_pointers;
+            delete[] h_FR_x_pointers;
+            delete[] h_FR_y_partial_pointers;
+            delete[] h_FR_y_partial_src_indices;
+            delete[] h_FR_y_partial_dest_indices;
+            delete[] h_FR_y_partial_lengths;
+
+            // // DBEUG
+
+            // // Allocate host memory for receiving the device pointers
+            // T** h_debug_FR_data = new T*[num_FR_per_gpu_[gpu_id]];
+            // T** h_debug_FR_x = new T*[num_FR_per_gpu_[gpu_id]];  
+            // T** h_debug_FR_y = new T*[num_FR_per_gpu_[gpu_id]];
+
+            // // Copy the pointer arrays from device back to host
+            // CHECK_CUDA_ERROR(cudaMemcpy(h_debug_FR_data, d_FR_data_pointers_[gpu_id], 
+            //                         num_FR_per_gpu_[gpu_id] * sizeof(T*), 
+            //                         cudaMemcpyDeviceToHost));
+                                    
+            // CHECK_CUDA_ERROR(cudaMemcpy(h_debug_FR_x, d_FR_x_pointers_[gpu_id], 
+            //                         num_FR_per_gpu_[gpu_id] * sizeof(T*), 
+            //                         cudaMemcpyDeviceToHost));
+                                    
+            // CHECK_CUDA_ERROR(cudaMemcpy(h_debug_FR_y, d_FR_y_partial_pointers_[gpu_id], 
+            //                         num_FR_per_gpu_[gpu_id] * sizeof(T*), 
+            //                         cudaMemcpyDeviceToHost));
+
+            // // Print base addresses for reference
+            // std::cout << "Base addresses:" << std::endl;
+            // std::cout << "d_FR_data_[gpu_id]: " << (void*)d_FR_data_[gpu_id] << std::endl;
+            // std::cout << "d_x_[gpu_id]: " << (void*)d_x_[gpu_id] << std::endl;
+            // std::cout << "d_y_partial_FR_[gpu_id]: " << (void*)d_y_partial_FR_[gpu_id] << std::endl;
+
+            // // Print offsets for each pointer in the arrays
+            // std::cout << "\nPointer offsets:" << std::endl;
+            // for (int i = 0; i < num_FR_per_gpu_[gpu_id]; i++) {
+            //     // Calculate and print offsets
+            //     ptrdiff_t data_offset = (char*)h_debug_FR_data[i] - (char*)d_FR_data_[gpu_id];
+            //     ptrdiff_t x_offset = (char*)h_debug_FR_x[i] - (char*)d_x_[gpu_id];
+            //     ptrdiff_t y_offset = (char*)h_debug_FR_y[i] - (char*)d_y_partial_FR_[gpu_id];
+                
+            //     std::cout << "Block " << i << ":" << std::endl;
+            //     std::cout << "  Data offset: " << data_offset << " bytes" << std::endl;
+            //     std::cout << "  X offset: " << x_offset << " bytes" << std::endl;
+            //     std::cout << "  Y offset: " << y_offset << " bytes" << std::endl;
+                
+            //     // Check for NULL pointers or other issues
+            //     if (h_debug_FR_data[i] == nullptr || h_debug_FR_x[i] == nullptr || h_debug_FR_y[i] == nullptr) {
+            //         std::cout << "  ERROR: NULL pointer detected!" << std::endl;
+            //     }
+                
+            //     // Check for pointers outside array bounds
+            //     if (data_offset < 0 || x_offset < 0 || y_offset < 0) {
+            //         std::cout << "  ERROR: Negative offset detected!" << std::endl;
+            //     }
+            // }
+
+            // // Free debug memory
+            // delete[] h_debug_FR_data;
+            // delete[] h_debug_FR_x;
+            // delete[] h_debug_FR_y;
+
+        #endif 
 
         // ----------------------------
         // COPYING FULL RANKS BLOCKS - done
@@ -693,9 +847,6 @@ void HmatCuda<T>::copyToDevice(){
             cnpy::npy_save(filename, LR_standard_size_B_data_[block_size], {static_cast<size_t>(buffer_size)}, "w");
             #endif
         }
-
-        
-
 
         // We set the array of pointers needed to perform the batched operations
 
@@ -751,17 +902,17 @@ void HmatCuda<T>::copyToDevice(){
             // Now we copy it to device
             T** d_LR_A_data_tmp;
             CHECK_CUDA_ERROR(cudaMalloc((void**)&d_LR_A_data_tmp, num_blocks * sizeof(T*)));
-            CHECK_CUDA_ERROR(cudaMemcpy(d_LR_A_data_tmp, h_LR_A_data_pointers_[gpu_id][block_size], num_blocks * sizeof(double*), cudaMemcpyHostToDevice));
+            CHECK_CUDA_ERROR(cudaMemcpy(d_LR_A_data_tmp, h_LR_A_data_pointers_[gpu_id][block_size], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
             d_LR_A_data_pointers_[gpu_id][block_size] = d_LR_A_data_tmp;
 
             T** d_LR_B_data_tmp;
             CHECK_CUDA_ERROR(cudaMalloc((void**)&d_LR_B_data_tmp, num_blocks * sizeof(T*)));
-            CHECK_CUDA_ERROR(cudaMemcpy(d_LR_B_data_tmp, h_LR_B_data_pointers_[gpu_id][block_size], num_blocks * sizeof(double*), cudaMemcpyHostToDevice));
+            CHECK_CUDA_ERROR(cudaMemcpy(d_LR_B_data_tmp, h_LR_B_data_pointers_[gpu_id][block_size], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
             d_LR_B_data_pointers_[gpu_id][block_size] = d_LR_B_data_tmp;
 
             T** d_LR_x_tmp;
             CHECK_CUDA_ERROR(cudaMalloc((void**)&d_LR_x_tmp, num_blocks * sizeof(T*)));
-            CHECK_CUDA_ERROR(cudaMemcpy(d_LR_x_tmp, h_LR_x_pointers_[gpu_id][block_size], num_blocks * sizeof(double*), cudaMemcpyHostToDevice));
+            CHECK_CUDA_ERROR(cudaMemcpy(d_LR_x_tmp, h_LR_x_pointers_[gpu_id][block_size], num_blocks * sizeof(T*), cudaMemcpyHostToDevice));
             d_LR_x_pointers_[gpu_id][block_size] = d_LR_x_tmp;
 
             T** d_LR_y_tmp;
@@ -823,11 +974,20 @@ void HmatCuda<T>::deallocateOnDevice(){
         // Deallocate
         CHECK_CUDA_ERROR(cudaFree(d_x_[gpu_id]));
         CHECK_CUDA_ERROR(cudaFree(d_y_[gpu_id]));
-        // CHECK_CUDA_ERROR(cudaFree(d_ones_));
+
         CHECK_CUDA_ERROR(cudaFree(d_y_partial_LR_[gpu_id]));
         CHECK_CUDA_ERROR(cudaFree(d_FR_data_[gpu_id]));
         CHECK_CUDA_ERROR(cudaFree(d_FR_bsrColInd_[gpu_id]));
         CHECK_CUDA_ERROR(cudaFree(d_FR_bsrRowPtr_[gpu_id]));
+
+        CHECK_CUDA_ERROR(cudaFree(d_FR_data_pointers_[gpu_id]));
+        CHECK_CUDA_ERROR(cudaFree(d_FR_x_pointers_[gpu_id]));
+        CHECK_CUDA_ERROR(cudaFree(d_FR_y_partial_pointers_[gpu_id]));
+
+        CHECK_CUDA_ERROR(cudaFree(d_FR_y_partial_src_indices_[gpu_id]));
+        CHECK_CUDA_ERROR(cudaFree(d_FR_y_partial_dest_indices_[gpu_id]));
+        CHECK_CUDA_ERROR(cudaFree(d_FR_y_partial_lengths_[gpu_id]));
+
         CHECK_CUDA_ERROR(cudaFree(d_LR_y_partial_src_indices_[gpu_id]));
         CHECK_CUDA_ERROR(cudaFree(d_LR_y_partial_dest_indices_[gpu_id]));
         CHECK_CUDA_ERROR(cudaFree(d_LR_y_partial_lengths_[gpu_id]));
@@ -1314,8 +1474,8 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
     il::Array<double> y(vector_size_, 0.0); // This also should be allocated once and for all 
 
-    // #pragma omp parallel num_threads(this->n_openMP_threads_)
-    #pragma omp parallel num_threads(num_gpus_+1)
+    #pragma omp parallel num_threads(this->n_openMP_threads_)
+    // #pragma omp parallel num_threads(num_gpus_+1)
     {   
 
         int thread_id = omp_get_thread_num();
@@ -1330,7 +1490,7 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             CHECK_CUDA_ERROR(cudaSetDevice(gpu_id));
 
             CHECK_CUDA_ERROR(cudaMemcpy(d_x_[gpu_id], x.data(), vector_size_bytes_, cudaMemcpyHostToDevice));
-            // CHECK_CUDA_ERROR(cudaMemset(d_y_[gpu_id], 0, vector_size_bytes_));
+            CHECK_CUDA_ERROR(cudaMemset(d_y_[gpu_id], 0, vector_size_bytes_));
             
             double alpha = 1.0;
             double beta = 0.0;
@@ -1338,26 +1498,91 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             // FR blocks computation
             int fr_block_size = this->hr_->leaf_size * this->dof_dimension_;
 
-            // -> assigned to the first stream :
-            cusparseSetStream(cusparse_handle_[gpu_id], cuda_streams_[gpu_id][0]);
+            #ifdef USE_CUSPARSE_BSRMV
+                // -> assigned to the first stream :
+                cusparseSetStream(cusparse_handle_[gpu_id], cuda_streams_[gpu_id][0]);
 
-            cusparseDbsrmv(
-                cusparse_handle_[gpu_id],
-                CUSPARSE_DIRECTION_COLUMN,
-                CUSPARSE_OPERATION_NON_TRANSPOSE,
-                total_block_size_,      // # block rows
-                total_block_size_,      // # block columns
-                num_FR_per_gpu_[gpu_id],     // # non zero blocks
-                &alpha,                 
-                FR_bsr_descr_[gpu_id],              
-                d_FR_data_[gpu_id],            
-                d_FR_bsrRowPtr_[gpu_id],      
-                d_FR_bsrColInd_[gpu_id],
-                fr_block_size,          // Block sizes
-                d_x_[gpu_id],
-                &beta,
-                d_y_[gpu_id]                    // FR blocks results written directly in d_y_
-            );
+                cusparseDbsrmv(
+                    cusparse_handle_[gpu_id],
+                    CUSPARSE_DIRECTION_COLUMN,
+                    CUSPARSE_OPERATION_NON_TRANSPOSE,
+                    total_block_size_,      // # block rows
+                    total_block_size_,      // # block columns
+                    num_FR_per_gpu_[gpu_id],     // # non zero blocks
+                    &alpha,                 
+                    FR_bsr_descr_[gpu_id],              
+                    d_FR_data_[gpu_id],            
+                    d_FR_bsrRowPtr_[gpu_id],      
+                    d_FR_bsrColInd_[gpu_id],
+                    fr_block_size,          // Block sizes
+                    d_x_[gpu_id],
+                    &beta,
+                    d_y_[gpu_id]                    // FR blocks results written directly in d_y_
+                );
+
+            #else 
+
+                CHECK_CUBLAS_ERROR(cublasSetStream(cublas_handle_[gpu_id], cuda_streams_[gpu_id][0]));
+
+                #if CUDART_VERSION >= 11620 // CUDA 11.6.2 or newer
+
+                    CHECK_CUBLAS_ERROR(cublasDgemvBatched(
+                        cublas_handle_[gpu_id], CUBLAS_OP_N,
+                        this->hr_->leaf_size * this->dof_dimension_, // num rows
+                        this->hr_->leaf_size * this->dof_dimension_, // num cols 
+                        &alpha,
+                        (const double**)d_FR_data_pointers_[gpu_id],        
+                        this->hr_->leaf_size * this->dof_dimension_, 
+                        (const double**)d_FR_x_pointers_[gpu_id], 
+                        1,
+                        &beta,
+                        d_FR_y_partial_pointers_[gpu_id],
+                        1,
+                        num_FR_per_gpu_[gpu_id]
+                    ));
+
+                #else 
+
+                    CHECK_CUBLAS_ERROR(cublasDgemmBatched(
+                        cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N, 
+                        this->hr_->leaf_size * this->dof_dimension_,
+                        1, // 1 column matrix 
+                        this->hr_->leaf_size * this->dof_dimension_, 
+                        &alpha,
+                        (const double**)d_FR_data_pointers_[gpu_id],
+                        this->hr_->leaf_size * this->dof_dimension_, 
+                        (const double**)d_FR_x_pointers_[gpu_id], 
+                        this->hr_->leaf_size * this->dof_dimension_, 
+                        &beta,
+                        d_FR_y_partial_pointers_[gpu_id],
+                        this->hr_->leaf_size * this->dof_dimension_,
+                        num_FR_per_gpu_[gpu_id]
+                    ));
+
+
+                #endif
+
+                cudaDeviceSynchronize();
+
+                // And we sum the partial results
+                scatter_add(
+                    d_y_[gpu_id],
+                    d_y_partial_FR_[gpu_id],
+                    d_FR_y_partial_src_indices_[gpu_id],
+                    d_FR_y_partial_dest_indices_[gpu_id],
+                    d_FR_y_partial_lengths_[gpu_id],
+                    num_FR_per_gpu_[gpu_id]
+                );
+    
+                // cudaDeviceSynchronize();
+    
+                // auto err = cudaGetLastError();
+                // if (err != cudaSuccess) {
+                //     printf("CUDA error after scatter_add: %s\n", cudaGetErrorString(err));
+                // }
+
+
+            #endif
 
             #ifdef WRITE_TMP_RES
             il::Array<double> y_fr_tmp(vector_size_, 0.0);
@@ -1590,11 +1815,9 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
         } // GPU - assigned threads
 
         else { // remaining threads
-
-
-
+        // else if (thread_id == num_gpus_) {
             // Last but not least, we add the contribution of the non standard full blocks
-            // #pragma omp for schedule(guided) nowait
+            #pragma omp for schedule(guided) nowait
             for (int i : FR_non_std_indices) {
                 auto i0 = hr_->pattern_.FRB_pattern(1, i);
                 auto j0 = hr_->pattern_.FRB_pattern(2, i);
@@ -1615,7 +1838,7 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             }
 
             // And the contribution of the non standard LR blocks
-            // #pragma omp for schedule(guided) nowait
+            #pragma omp for schedule(guided) nowait
             for (int i : LR_non_std_indices_) {
 
                 auto i0 = hr_->pattern_.LRB_pattern(1, i);
