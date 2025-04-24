@@ -523,7 +523,6 @@ size_t BigWhamIO::GetGPUStorageRequirement() const {
     }
 
     size_t total_gpu_mem_bytes = 0;
-    int num_FR_blocks_standard_size = 0;
     const int dim_dof = dof_dimension_;
     const int vector_size = mesh_rec_->num_collocation_points() * dim_dof;
 
@@ -534,30 +533,35 @@ size_t BigWhamIO::GetGPUStorageRequirement() const {
         il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
         il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
 
-        if ((iend-i0 == max_leaf_size_) && (jend-j0 == max_leaf_size_)){ 
-            num_FR_blocks_standard_size++;
-            total_gpu_mem_bytes += (iend-i0)*(jend-j0) * dim_dof*dim_dof * sizeof(double);
-        }
-    }
+        // block data 
+        total_gpu_mem_bytes += (iend-i0)*(jend-j0) * dim_dof*dim_dof * sizeof(double);
 
-    // FR metadata : bsr row tr and col indices > neglected
+        // partial y result
+        total_gpu_mem_bytes += (iend-i0) * dim_dof * sizeof(double);
+
+        // pointers to data, x and y 
+        total_gpu_mem_bytes += 3*sizeof(double*);
+    }
 
     // LR blocks data
     for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
         il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
+        il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
         il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
+        il::int_t jend = hr_->pattern_.LRB_pattern(4, i);
 
         // block data 
-        total_gpu_mem_bytes += 2 * (iend-i0)*fixed_rank_ * dim_dof*dim_dof * sizeof(double); 
+        total_gpu_mem_bytes += (iend-i0)*fixed_rank_ * dim_dof*dim_dof * sizeof(double); 
+        total_gpu_mem_bytes += (jend-j0)*fixed_rank_ * dim_dof*dim_dof * sizeof(double); 
 
-        // partial result
+        // partial y result
         total_gpu_mem_bytes += (iend-i0) * dim_dof * sizeof(double);
 
-        // tmp vector 
+        // partial tmp result
         total_gpu_mem_bytes += fixed_rank_ * dim_dof * sizeof(double);
 
-        // pointers : 5 pointers per block 
-        total_gpu_mem_bytes += 5 * sizeof(double*);
+        // pointers to data, x, y and tmp 
+        total_gpu_mem_bytes += 4*sizeof(double*);
     }
 
     // input and output vector 

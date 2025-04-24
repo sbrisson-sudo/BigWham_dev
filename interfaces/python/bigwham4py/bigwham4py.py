@@ -81,6 +81,8 @@ class BEMatrix(LinearOperator):
         if not(kernel in kernels_id):
             print(f"ERROR : Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]")
             return
+        
+        self.useCuda = useCuda
 
         self.kernel_ : str = kernel
         self.properties_ : np.ndarray = properties
@@ -299,6 +301,10 @@ class BEMatrix(LinearOperator):
         :param drop_tol: float (default 1e-3) for the tolerance to drop the entries (see scipy spilu)
         :return: a linear operator with the corresponding ILU
         """
+        if self.useCuda:
+            print("ERROR : the ILU on the hierachical matrix can't be called when using CUDA as the data is not on host memory anymore, falling back to jacobi preconditionner.")
+            return self.H_jacobi_prec()
+        
         self._build()
         fb = self._getFullBlocks()
         fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
@@ -308,9 +314,12 @@ class BEMatrix(LinearOperator):
         """
         :return: the diagonal of the matrix as n array
         """
-        self._build()
-        fb = self._getFullBlocks()
-        return fb.diagonal()
+        if self.useCuda:
+            return self.get_diagonal()
+        else :
+            self._build()
+            fb = self._getFullBlocks()
+            return fb.diagonal()
 
     def H_jacobi_prec(self):
         """

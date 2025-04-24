@@ -82,6 +82,10 @@ private:
     int num_FR_std_blocks_;
     std::vector<int> FR_non_std_indices;
 
+    // To store the diagonal
+    bool diagonal_stored_ = false;
+    std::vector<T> diagonal_;
+
     // for low rank (LR) blocks
     std::unordered_map<int, int> num_LR_std_blocks_per_size_;
     T* LR_non_standard_size_A_data_;
@@ -207,21 +211,14 @@ public:
   ~HmatCuda();
 
   void copyToDevice(); // Just to not end up with a 1000 lines constructor
+  void deallocateOnHost();
   void deallocateOnDevice();
 
+  void setDiagonal();
+  std::vector<T> diagonal() override;
+  std::vector<T> diagonalOriginal() override;
+
   il::Array<T> matvec(il::ArrayView<T> x) override;
-
-  // debugging functions
-  // il::Array2D<T> getFRBlockDataHost(int fr_block);
-  // il::Array2D<T> getFRBlockDataDevice(int fr_block);
-
-  // il::Array<int> getFRBlockRowPtrHost();
-  // il::Array<int>  getFRBlockColIndHost();
-  // int* getFRBlockColIndDevice(int fr_block);
-  // il::Array<int> getFRBlockRowPtrDevice(int fr_block);
-  // il::Array2D<T> getLRBlockDataHost(int fr_block);
-  // il::Array2D<T> getLRBlockBDataDevice(int size, int group_id);
-  // il::Array2D<T> getLRBlockADataDevice(int size, int group_id);
 
 };  
 

@@ -255,19 +255,19 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     }
 
 
-    // Print total memory footprint
-    if (this->verbose_){
-        // FR blocks
-        size_t total_size = FR_standard_size_data_buffer_size + FR_non_standard_size_data_buffer_size;
-        // non std LR blocks
-        total_size += LR_non_standard_size_data_A_buffer_size_ + LR_non_standard_size_data_B_buffer_size_;
-        // std LR blocks
-        for (auto& [block_size, data_size] : LR_standard_size_data_buffer_sizes_){
-            total_size += 2*data_size;
-        }
+    // // Print total memory footprint
+    // if (this->verbose_){
+    //     // FR blocks
+    //     size_t total_size = FR_standard_size_data_buffer_size + FR_non_standard_size_data_buffer_size;
+    //     // non std LR blocks
+    //     total_size += LR_non_standard_size_data_A_buffer_size_ + LR_non_standard_size_data_B_buffer_size_;
+    //     // std LR blocks
+    //     for (auto& [block_size, data_size] : LR_standard_size_data_buffer_sizes_){
+    //         total_size += 2*data_size;
+    //     }
     
-        std::cout << "Total memory allocated on CPU = " << formatBytes(total_size*sizeof(double)) << " \n";
-    }
+    //     std::cout << "Total memory allocated on CPU = " << formatBytes(total_size*sizeof(double)) << " \n";
+    // }
 
     #ifdef TIMING
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -308,6 +308,12 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
 
     // And we copy it on device
     copyToDevice();
+
+    // Before deallocating on the host memory we store the diagonal
+    setDiagonal();
+
+    // Once all the Hmat data is on device, we deallocate it on host memory
+    deallocateOnHost();
 
     #ifdef TIMING
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -783,8 +789,6 @@ void HmatCuda<T>::copyToDevice(){
                 h_FR_nonStd_data_pointers[sizes] = h_data_pointers_tmp;
                 h_FR_nonStd_x_pointers[sizes] = h_x_pointers_tmp;
                 h_FR_nonStd_y_partial_pointers[sizes] = h_y_partial_pointers_tmp;
-
-                std::cout << "Allocating for entries of size " << sizes.first << " x " << sizes.second << " : " << count << " pointers" << std::endl;
             }
 
             // Then we set there values by looping on the blocks
@@ -1144,6 +1148,67 @@ void HmatCuda<T>::copyToDevice(){
     if (this->verbose_) std::cout << "--------------------" << std::endl;
 }
 
+template <typename T>
+void HmatCuda<T>::deallocateOnHost(){
+
+    // First we nullify the pointers of the Array2d objects
+    // to avoid double freeing
+    for (auto& array2d : this->full_rank_blocks_){
+        if (array2d) {
+            array2d->nullifyData(); 
+        }
+    }
+    for (auto& low_rank : this->low_rank_blocks_){
+        if (low_rank){
+            auto& A = low_rank->A;
+            auto& B = low_rank->B;
+            A.nullifyData(); 
+            B.nullifyData(); 
+        }
+    }
+
+    // Deallocate FR buffers
+    if (FR_standard_size_data) {
+        delete[] FR_standard_size_data;
+        FR_standard_size_data = nullptr;
+    }
+    if (FR_non_standard_size_data) {
+        delete[] FR_non_standard_size_data;
+        FR_non_standard_size_data = nullptr;
+    }
+
+    // Deallocate non std LR buffers
+    delete[] LR_non_standard_size_A_data_;
+    delete[] LR_non_standard_size_B_data_;
+
+    // Deallocate std LR buffers
+    for (auto& pair : LR_std_indices_){
+        int block_size = pair.first;
+        delete[] LR_standard_size_A_data_[block_size];
+        delete[] LR_standard_size_B_data_[block_size];
+    }
+    LR_standard_size_A_data_.clear();
+    LR_standard_size_B_data_.clear();
+
+    // Deallocate associated pointers array
+    for (int gpu_id(0); gpu_id<num_gpus_; gpu_id++){
+        for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
+            delete[] h_LR_A_data_pointers_[gpu_id][block_size];
+            delete[] h_LR_B_data_pointers_[gpu_id][block_size];
+            delete[] h_LR_x_pointers_[gpu_id][block_size];
+            delete[] h_LR_y_pointers_[gpu_id][block_size];
+            delete[] h_LR_tmp_pointers_[gpu_id][block_size];
+        }
+        h_LR_A_data_pointers_[gpu_id].clear();
+        h_LR_B_data_pointers_[gpu_id].clear();
+        h_LR_x_pointers_[gpu_id].clear();
+        h_LR_y_pointers_[gpu_id].clear();
+        h_LR_tmp_pointers_[gpu_id].clear();
+    
+        delete[] h_FR_bsrRowPtr_[gpu_id];
+        delete[] h_FR_bsrColInd_[gpu_id];    
+    }
+}
 
 template <typename T>
 void HmatCuda<T>::deallocateOnDevice(){
@@ -1213,68 +1278,8 @@ void HmatCuda<T>::deallocateOnDevice(){
 
 template <typename T>
 HmatCuda<T>::~HmatCuda(){
-
     // Clear device memory
     deallocateOnDevice();
-
-    // First we nullify the pointers of the Array2d objects
-    // to avoid double freeing
-    for (auto& array2d : this->full_rank_blocks_){
-        if (array2d) {
-            array2d->nullifyData(); 
-        }
-    }
-    for (auto& low_rank : this->low_rank_blocks_){
-        if (low_rank){
-            auto& A = low_rank->A;
-            auto& B = low_rank->B;
-            A.nullifyData(); 
-            B.nullifyData(); 
-        }
-    }
-
-    // Deallocate FR buffers
-    if (FR_standard_size_data) {
-        delete[] FR_standard_size_data;
-        FR_standard_size_data = nullptr;
-    }
-    if (FR_non_standard_size_data) {
-        delete[] FR_non_standard_size_data;
-        FR_non_standard_size_data = nullptr;
-    }
-
-    // Deallocate non std LR buffers
-    delete[] LR_non_standard_size_A_data_;
-    delete[] LR_non_standard_size_B_data_;
-
-    // Deallocate std LR buffers
-    for (auto& pair : LR_std_indices_){
-        int block_size = pair.first;
-        delete[] LR_standard_size_A_data_[block_size];
-        delete[] LR_standard_size_B_data_[block_size];
-    }
-    LR_standard_size_A_data_.clear();
-    LR_standard_size_B_data_.clear();
-
-    // Deallocate associated pointers array
-    for (int gpu_id(0); gpu_id<num_gpus_; gpu_id++){
-        for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
-            delete[] h_LR_A_data_pointers_[gpu_id][block_size];
-            delete[] h_LR_B_data_pointers_[gpu_id][block_size];
-            delete[] h_LR_x_pointers_[gpu_id][block_size];
-            delete[] h_LR_y_pointers_[gpu_id][block_size];
-            delete[] h_LR_tmp_pointers_[gpu_id][block_size];
-        }
-        h_LR_A_data_pointers_[gpu_id].clear();
-        h_LR_B_data_pointers_[gpu_id].clear();
-        h_LR_x_pointers_[gpu_id].clear();
-        h_LR_y_pointers_[gpu_id].clear();
-        h_LR_tmp_pointers_[gpu_id].clear();
-    
-        delete[] h_FR_bsrRowPtr_[gpu_id];
-        delete[] h_FR_bsrColInd_[gpu_id];    
-    }
-
 }
 
 
@@ -2274,181 +2279,67 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
     return y;
 }
 
-// // Debugging functions
-// template <typename T>
-// il::Array2D<T> HmatCuda<T>::getFRBlockDataHost(int block_id){
+template <typename T>
+void HmatCuda<T>::setDiagonal(){
 
-//     if (block_id >= this->hr_->pattern_.n_FRB){
-//         std::cerr << "getFRBlockDataHost : block requested out of range";
-//     }
+    // Store the diagonal for later use as Jacobi preconditionner
+    IL_EXPECT_FAST(this->isBuilt_FR_);
+    il::int_t diag_size = il::max(this->size_[0], this->size_[1]);
+    diagonal_.resize(static_cast<long>(diag_size));
 
-//     // Get if standard or non standard
-//     bool is_standard = false;
-//     int idx;
-//     for (int i(0); i<FR_std_orderedIndices.size(); i++){
-//         idx = i;
-//         if (FR_std_orderedIndices[i] == block_id){
-//             is_standard = true;
-//             break;
-//         }
-//     } // idx stores the ordered index
+    for (il::int_t k = 0; k < this->hr_->pattern_.n_FRB; k++) {
+        il::Array2D<double> aux = *this->full_rank_blocks_[k];
+        il::int_t i0 = this->hr_->pattern_.FRB_pattern(1, k);
+        il::int_t j0 = this->hr_->pattern_.FRB_pattern(2, k);
+        il::int_t iend = this->hr_->pattern_.FRB_pattern(3, k);
+        il::int_t jend = this->hr_->pattern_.FRB_pattern(4, k);
+        // check if it intersects the diagonal
+        bool in_lower = (i0 > j0) && (i0 > jend) && (iend > j0) && (iend > jend);
+        bool in_upper = (i0 < j0) && (i0 < jend) && (iend < j0) && (iend < jend);
+        if ((!in_lower) && (!in_upper)) // this fb intersect the diagonal....
+        {
+            for (il::int_t j = 0; j < aux.size(1); j++) {
+                for (il::int_t i = 0; i < aux.size(0); i++) {
+                    if ((i + this->dof_dimension_ * i0) ==
+                        (j + this->dof_dimension_ * j0)) { // on diagonal !
+                        diagonal_[(i + this->dof_dimension_ * i0)] = aux(i, j);
+                    }
+                }
+            }
+        }
+    }
 
-//     // Get the non standard index
-//     if (!is_standard){
-//         std::cerr << "getFRBlockDataHost : non standard size";
-//         // for (int i(0); i<FR_non_std_indices.size(); i++){
-//         //     idx = FR_non_std_indices[i];
-//         //     if (idx == block_id) break;
-//         // }
-//     }
+    diagonal_stored_ = true;
+}
 
-//     int fr_block_size = this->hr_->leaf_size * this->dof_dimension_;
-//     int fr_block_data_size = fr_block_size*fr_block_size;
+template <typename T>
+std::vector<T> HmatCuda<T>::diagonal(){
 
-//     int offset = idx * fr_block_data_size;
+    if (!diagonal_stored_){
+        std::cout << "ERROR : accessing the diagonal before building the hmat.";
+    }
+    return diagonal_;
+}
 
-//     if (offset + fr_block_data_size > FR_standard_size_data_buffer_size){
-//         std::cerr << "Reading outsite FR standard size data buffer\n";
-//     }
+template <typename T>
+std::vector<T> HmatCuda<T>::diagonalOriginal(){
 
-//     auto block = il::Array2D<T>(fr_block_size, fr_block_size);
-//     auto block_edit = block.Edit();
+    if (!diagonal_stored_){
+        std::cout << "ERROR : accessing the diagonal before building the hmat.";
+    }
 
-
-//     for (int i(0); i<fr_block_size; i++){
-//         for (int j(0); j<fr_block_size; j++){
-//             block_edit(i,j) = FR_standard_size_data[ offset + i*fr_block_size + j];
-//         }
-//     }
-
-//     return block;
-// }
-
-// template <typename T>
-// il::Array2D<T> HmatCuda<T>::getFRBlockDataDevice(int block_id){
-
-//     if (block_id >= this->hr_->pattern_.n_FRB){
-//         std::cerr << "getFRBlockDataHost : block requested out of range";
-//     }
-
-//     // Get if standard or non standard
-//     bool is_standard = false;
-//     int idx;
-//     for (int i(0); i<FR_std_orderedIndices.size(); i++){
-//         idx = i;
-//         if (FR_std_orderedIndices[i] == block_id){
-//             is_standard = true;
-//             break;
-//         }
-//     } // idx stores the ordered index
-
-//     // Get the non standard index
-//     if (!is_standard){
-//         std::cerr << "getFRBlockDataHost : non standard size";
-//         // for (int i(0); i<FR_non_std_indices.size(); i++){
-//         //     idx = FR_non_std_indices[i];
-//         //     if (idx == block_id) break;
-//         // }
-//     }
-
-//     int fr_block_size = this->hr_->leaf_size * this->dof_dimension_;
-//     int fr_block_data_size = fr_block_size*fr_block_size;
-
-//     int offset = idx * fr_block_data_size;
-
-//     // First we copy back the data
-//     T* h_data = new T[fr_block_data_size];
-//     CHECK_CUDA_ERROR(cudaMemcpy(h_data, d_FR_data_ +offset, fr_block_data_size*sizeof(T), cudaMemcpyDeviceToHost)); 
-
-//     il::Array2D<T> block(fr_block_size, fr_block_size);
-//     auto block_edit = block.Edit();
-
-//     for (int i(0); i<block.size(0); i++){
-//         for (int j(0); j<block.size(0); j++){
-//             block_edit(i,j) = h_data[i*fr_block_size + j];
-//         }
-//     }
-
-//     delete[] h_data;
-
-//     return block;
-// }
-
-// template <typename T>
-// il::Array<int>  HmatCuda<T>::getFRBlockRowPtrHost(){
-
-//     il::Array<int> rowPtr(total_block_size_+1);
-//     auto rowPtr_edit = rowPtr.Edit();
-
-//     for (int i(0); i<total_block_size_+1; i++ ){
-//         rowPtr_edit[i] = h_FR_bsrRowPtr_[i];
-//     }
-
-//     return rowPtr;
-// }
-
-// template <typename T>
-// il::Array<int>  HmatCuda<T>::getFRBlockColIndHost(){
-
-//     il::Array<int> colInd(num_FR_std_blocks_);
-//     auto colInd_edit = colInd.Edit();
-
-//     for (int i(0); i<num_FR_std_blocks_; i++ ){
-//         colInd_edit[i] = h_FR_bsrColInd_[i];
-//     }
-
-//     return colInd;
-// }
-
-
-// template <typename T>
-// il::Array2D<T>  HmatCuda<T>::getLRBlockBDataDevice(int size, int group_id){
-
-//     // First we copy back data from device
-//     int rank = this->fixed_rank_;
-//     int dim = this->dof_dimension_;
-//     T* tmp_data = new T[size*rank*dim*dim];
-
-//     CHECK_CUDA_ERROR(cudaMemcpy(tmp_data, d_LR_B_data_[size][group_id], size*rank*dim*dim*sizeof(T), cudaMemcpyDeviceToHost)); 
-
-//     // Then pass it to an Array object
-//     il::Array2D<T> block(rank*dim, size*dim);
-//     auto block_edit = block.Edit();
-
-//     for (int i(0); i<block.size(0); i++){
-//         for (int j(0); j<block.size(1); j++){
-//             block_edit(i,j) = tmp_data[i*rank*dim + j];
-//         }
-//     }
-//     delete[] tmp_data;
-
-//     return block;
-// }
-
-// template <typename T>
-// il::Array2D<T>  HmatCuda<T>::getLRBlockADataDevice(int size, int group_id){
-
-//     // First we copy back data from device
-//     int rank = this->fixed_rank_;
-//     int dim = this->dof_dimension_;
-//     T* tmp_data = new T[size*rank*dim*dim];
-
-//     CHECK_CUDA_ERROR(cudaMemcpy(tmp_data, d_LR_A_data_[size][group_id], size*rank*dim*dim*sizeof(T), cudaMemcpyDeviceToHost)); 
-
-//     // Then pass it to an Array object
-//     il::Array2D<T> block(size*dim, rank*dim);
-//     auto block_edit = block.Edit();
-
-//     for (int i(0); i<block.size(0); i++){
-//         for (int j(0); j<block.size(1); j++){
-//             block_edit(i,j) = tmp_data[i*size*dim + j];
-//         }
-//     }
-//     delete[] tmp_data;
-
-//     return block;
-// }
-
+    // return diagonal in original state....
+    il::int_t diag_size = il::max(this->size_[0], this->size_[1]);
+    il::int_t ncolpoints = diag_size / this->dof_dimension_;
+    std::vector<T> diagonal_perm(diagonal_.size(), 0.);
+    // permut back
+    for (il::int_t i = 0; i < ncolpoints; i++) {
+        for (int j = 0; j < this->dof_dimension_; j++) {
+            diagonal_perm[this->dof_dimension_ * this->hr_->permutation_1_[i] + j] = diagonal_[this->dof_dimension_ * i + j];
+        }
+    }
+    return diagonal_perm;
+}
 
 template class HmatCuda<double>;
 
