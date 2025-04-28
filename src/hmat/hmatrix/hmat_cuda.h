@@ -102,6 +102,8 @@ private:
     std::unordered_map<std::pair<int, int>, int, pair_hash> num_FR_nonstd_blocks_per_size_;
     std::unordered_map<std::pair<int, int>, int, pair_hash> num_LR_nonstd_blocks_per_size_;
 
+    bool FR_deallocated_on_host_ = false;
+
     // Num available GPUs
     int num_gpus_;
 
@@ -211,7 +213,7 @@ public:
   ~HmatCuda();
 
   void copyToDevice(); // Just to not end up with a 1000 lines constructor
-  void deallocateOnHost();
+  void deallocateOnHost(bool deallocate_FR_host);
   void deallocateOnDevice();
 
   void setDiagonal();

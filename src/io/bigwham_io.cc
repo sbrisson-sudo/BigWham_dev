@@ -109,9 +109,10 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         }
         
         // Ensuring we have more OpenMP threads than GPUs
-        if (this->n_openMP_threads_ <= num_GPUs_){
+        if (this->n_openMP_threads_ < num_GPUs_){
 
             std::cerr << "[ERROR] Less OpenMP threads than GPUs (" << this->n_openMP_threads_  << " OpenMP threads and " << num_GPUs_<< " GPUs) aborting..." << std::endl;
+            std::cerr.flush(); 
             std::abort();
         }
 

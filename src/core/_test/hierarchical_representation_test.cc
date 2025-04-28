@@ -32,7 +32,8 @@ TEST(H_representation, mesh2d_square_1) {
   }
   auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(coor, conn);
   my_mesh->ConstructMesh();
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 32, 1.0);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 32, 1.0, verbose);
   ASSERT_TRUE(hr->pattern_.n_FRB == 1 && hr->pattern_.n_LRB == 0);
 }
 /* -------------------------------------------------------------------------- */
@@ -53,7 +54,8 @@ TEST(H_representation, mesh2d_square_2) {
   }
   auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(coor, conn);
   my_mesh->ConstructMesh();
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 50, 0.0);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 50, 0.0, verbose);
   ASSERT_TRUE(hr->pattern_.n_FRB == 4 && hr->pattern_.n_LRB == 0);
 }
 /* -------------------------------------------------------------------------- */
@@ -81,7 +83,8 @@ TEST(H_representation, mesh2d_square_3) {
   }
   auto my_mesh = std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(coor, conn);
   my_mesh->ConstructMesh();
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, n_elts / 2, 4.0);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, n_elts / 2, 4.0, verbose);
   ASSERT_TRUE(hr->pattern_.n_FRB == 2 && hr->pattern_.n_LRB == 2);
 }
 /* -------------------------------------------------------------------------- */
@@ -118,8 +121,9 @@ TEST(H_representation, mesh2d_rectangle_1) {
   auto rec_mesh =
       std::make_shared<bigwham::BEMesh<bigwham::Segment<0>>>(coor_r, conn_r);
   rec_mesh->ConstructMesh();
+  bool verbose = true;
   auto hr = bigwham::HRepresentationRectangularMatrix(
-      source_mesh, rec_mesh, 60, 14.0);
+      source_mesh, rec_mesh, 60, 14.0, verbose);
 
   ASSERT_TRUE(hr->pattern_.n_FRB == 0 && hr->pattern_.n_LRB == 1);
 }

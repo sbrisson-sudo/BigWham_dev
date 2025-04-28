@@ -79,7 +79,7 @@ class BEMatrix(LinearOperator):
                 
         # Ensure kernel exists
         if not(kernel in kernels_id):
-            print(f"ERROR : Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]")
+            print(f"[ERROR] Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]")
             return
         
         self.useCuda = useCuda
@@ -301,9 +301,9 @@ class BEMatrix(LinearOperator):
         :param drop_tol: float (default 1e-3) for the tolerance to drop the entries (see scipy spilu)
         :return: a linear operator with the corresponding ILU
         """
-        if self.useCuda:
-            print("ERROR : the ILU on the hierachical matrix can't be called when using CUDA as the data is not on host memory anymore, falling back to jacobi preconditionner.")
-            return self.H_jacobi_prec()
+        # if self.useCuda:
+        #     print("[ERROR] The ILU on the hierachical matrix can't be called when using CUDA as the data is not on host memory anymore, falling back to jacobi preconditionner.")
+        #     return self.H_jacobi_prec()
         
         self._build()
         fb = self._getFullBlocks()

@@ -313,7 +313,8 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     setDiagonal();
 
     // Once all the Hmat data is on device, we deallocate it on host memory
-    deallocateOnHost();
+    bool deallocate_FR_host = false;
+    deallocateOnHost(deallocate_FR_host);
 
     #ifdef TIMING
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -1149,15 +1150,31 @@ void HmatCuda<T>::copyToDevice(){
 }
 
 template <typename T>
-void HmatCuda<T>::deallocateOnHost(){
+void HmatCuda<T>::deallocateOnHost(bool deallocate_FR_host){
 
     // First we nullify the pointers of the Array2d objects
     // to avoid double freeing
-    for (auto& array2d : this->full_rank_blocks_){
-        if (array2d) {
-            array2d->nullifyData(); 
+    if (deallocate_FR_host){
+        for (auto& array2d : this->full_rank_blocks_){
+            if (array2d) {
+                array2d->nullifyData(); 
+            }
         }
+
+        // Deallocate FR buffers
+        if (FR_standard_size_data) {
+            delete[] FR_standard_size_data;
+            FR_standard_size_data = nullptr;
+        }
+        if (FR_non_standard_size_data) {
+            delete[] FR_non_standard_size_data;
+            FR_non_standard_size_data = nullptr;
+        }
+
+        FR_deallocated_on_host_ = true;
     }
+
+
     for (auto& low_rank : this->low_rank_blocks_){
         if (low_rank){
             auto& A = low_rank->A;
@@ -1165,16 +1182,6 @@ void HmatCuda<T>::deallocateOnHost(){
             A.nullifyData(); 
             B.nullifyData(); 
         }
-    }
-
-    // Deallocate FR buffers
-    if (FR_standard_size_data) {
-        delete[] FR_standard_size_data;
-        FR_standard_size_data = nullptr;
-    }
-    if (FR_non_standard_size_data) {
-        delete[] FR_non_standard_size_data;
-        FR_non_standard_size_data = nullptr;
     }
 
     // Deallocate non std LR buffers
@@ -1280,6 +1287,25 @@ template <typename T>
 HmatCuda<T>::~HmatCuda(){
     // Clear device memory
     deallocateOnDevice();
+
+    // Deallocate FR on host if not done yet 
+    if (!FR_deallocated_on_host_){
+        for (auto& array2d : this->full_rank_blocks_){
+            if (array2d) {
+                array2d->nullifyData(); 
+            }
+        }
+    
+        // Deallocate FR buffers
+        if (FR_standard_size_data) {
+            delete[] FR_standard_size_data;
+            FR_standard_size_data = nullptr;
+        }
+        if (FR_non_standard_size_data) {
+            delete[] FR_non_standard_size_data;
+            FR_non_standard_size_data = nullptr;
+        }
+    }
 }
 
 
@@ -2316,7 +2342,7 @@ template <typename T>
 std::vector<T> HmatCuda<T>::diagonal(){
 
     if (!diagonal_stored_){
-        std::cout << "ERROR : accessing the diagonal before building the hmat.";
+        std::cout << "[ERROR] Accessing the diagonal before building the hmat.";
     }
     return diagonal_;
 }
@@ -2325,7 +2351,7 @@ template <typename T>
 std::vector<T> HmatCuda<T>::diagonalOriginal(){
 
     if (!diagonal_stored_){
-        std::cout << "ERROR : accessing the diagonal before building the hmat.";
+        std::cout << "[ERROR] Accessing the diagonal before building the hmat.";
     }
 
     // return diagonal in original state....
