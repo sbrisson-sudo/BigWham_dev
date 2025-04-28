@@ -38,7 +38,7 @@ struct HRepresentation {
 inline std::shared_ptr<HRepresentation>
 HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh, const il::int_t max_leaf_size, const double eta, const bool verbose, const bool homegeneous_size = false, const int fixed_rank = -1) {
                             
-  std::cout << "Pattern construction square  started .... \n";
+  // std::cout << "Pattern construction square  started .... \n";
   auto hr = std::make_shared<HRepresentation>();
   hr->is_square_ = true;
   hr->leaf_size = max_leaf_size;
