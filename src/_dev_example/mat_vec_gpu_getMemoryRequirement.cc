@@ -129,51 +129,51 @@ int main(int argc, char * argv[]) {
 
   // H-mat parameters
 
-  int max_leaf_size;
-  double eta;
-  int rank;
+  int max_leaf_size = 64;
+  double eta = 5.0;
+  int rank = 16;
 
-    // Ask for max leaf size
-    while (true) {
-      std::cout << "Enter max leaf size (strictly positive integer): ";
-      std::cin >> max_leaf_size;
+  //   // Ask for max leaf size
+  //   while (true) {
+  //     std::cout << "Enter max leaf size (strictly positive integer): ";
+  //     std::cin >> max_leaf_size;
 
-      if (std::cin.fail() || max_leaf_size <= 0) {
-          std::cin.clear(); // Clear the error flag
-          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
-          std::cout << "Invalid input. Please enter a strictly positive integer.\n";
-      } else {
-          break;
-      }
-  }
+  //     if (std::cin.fail() || max_leaf_size <= 0) {
+  //         std::cin.clear(); // Clear the error flag
+  //         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+  //         std::cout << "Invalid input. Please enter a strictly positive integer.\n";
+  //     } else {
+  //         break;
+  //     }
+  // }
 
-  // Ask for eta
-  while (true) {
-      std::cout << "Enter eta (strictly positive double): ";
-      std::cin >> eta;
+  // // Ask for eta
+  // while (true) {
+  //     std::cout << "Enter eta (strictly positive double): ";
+  //     std::cin >> eta;
 
-      if (std::cin.fail() || eta <= 0.0) {
-          std::cin.clear(); // Clear the error flag
-          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
-          std::cout << "Invalid input. Please enter a strictly positive double.\n";
-      } else {
-          break;
-      }
-  }
+  //     if (std::cin.fail() || eta <= 0.0) {
+  //         std::cin.clear(); // Clear the error flag
+  //         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+  //         std::cout << "Invalid input. Please enter a strictly positive double.\n";
+  //     } else {
+  //         break;
+  //     }
+  // }
 
-  // Ask for rank
-  while (true) {
-      std::cout << "Enter rank (strictly positive integer, lower than max leaf size): ";
-      std::cin >> rank;
+  // // Ask for rank
+  // while (true) {
+  //     std::cout << "Enter rank (strictly positive integer, lower than max leaf size): ";
+  //     std::cin >> rank;
 
-      if (std::cin.fail() || rank <= 0 || rank >= max_leaf_size) {
-          std::cin.clear(); // Clear the error flag
-          std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
-          std::cout << "Invalid input. Please enter a strictly positive integer lower than max leaf size.\n";
-      } else {
-          break;
-      }
-  }
+  //     if (std::cin.fail() || rank <= 0 || rank >= max_leaf_size) {
+  //         std::cin.clear(); // Clear the error flag
+  //         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+  //         std::cout << "Invalid input. Please enter a strictly positive integer lower than max leaf size.\n";
+  //     } else {
+  //         break;
+  //     }
+  // }
 
   std::cout << "max_leaf_size = " << max_leaf_size << std::endl; 
   std::cout << "eta = " << eta << std::endl; 

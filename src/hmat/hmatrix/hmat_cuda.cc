@@ -24,6 +24,7 @@
 // #define WRITE_LR_DATA_NPY
 // #define WRITE_INPUT_OUTPUT_VEC
 // #define PRINT_N_GROUPS
+// #define DEBUG_MULT_GPU
 
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
@@ -359,7 +360,7 @@ void HmatCuda<T>::copyToDevice(){
     }
     num_FR_per_gpu_[num_gpus_-1] = num_FR_std_blocks_ - sum_so_far;
 
-    #ifdef DEBUG5
+    #ifdef DEBUG_MULT_GPU
     std::cout << "num_FR_std_blocks_ = " << num_FR_std_blocks_ << std::endl;
     std::cout << "Num of FR blocks per GPU = [";
     for (int n : num_FR_per_gpu_) std::cout << n << ",";
@@ -393,11 +394,12 @@ void HmatCuda<T>::copyToDevice(){
         }
 
         // We attribute this size to the less loaded GPU
+        gpu_load[min_load_gpu] += load;
         LR_std_sizes_per_gpu_[min_load_gpu].push_back(block_size);
         num_LR_per_gpu_[min_load_gpu] += num_blocks;
     }
 
-    #ifdef DEBUG
+    #ifdef DEBUG_MULT_GPU
     std::cout << "LR block sizes attribution per GPU :" << std::endl;
     for (int gpu_id(0); gpu_id<num_gpus_; gpu_id++){
         auto& sizes = LR_std_sizes_per_gpu_[gpu_id];
@@ -603,12 +605,13 @@ void HmatCuda<T>::copyToDevice(){
 
         if (this->verbose_){
             // total FR blocks data
-            size_t total_to_allocate = FR_data_size_bytes + FR_nonStd_data_size_bytes;
+            size_t total_to_allocate = FR_data_size_bytes;
+            if (gpu_id==0) total_to_allocate += FR_nonStd_data_size_bytes;
             // adding LR non std size data
-            total_to_allocate += (LR_non_standard_size_data_A_buffer_size_ + LR_non_standard_size_data_B_buffer_size_)* sizeof(T);
+            if (gpu_id==0) total_to_allocate += (LR_non_standard_size_data_A_buffer_size_ + LR_non_standard_size_data_B_buffer_size_)* sizeof(T);
             // and LR std data
-            for (auto& [block_size, buffer_size] : LR_standard_size_data_buffer_sizes_){
-                total_to_allocate += 2*buffer_size * sizeof(T);
+            for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
+                total_to_allocate +=  2*LR_standard_size_data_buffer_sizes_[block_size] * sizeof(T);
             }
             std::cout << "[GPU "<< gpu_id << "] Allocating " << formatBytes(total_to_allocate) << " on the GPU for hierarchical matrix data" << std::endl;
         }
@@ -1257,20 +1260,21 @@ void HmatCuda<T>::deallocateOnDevice(){
             CHECK_CUDA_ERROR(cudaFree(d_LR_tmp_pointers_[gpu_id][block_size]));
         }
 
-        for (auto& [sizes,num_blocks] : num_FR_nonstd_blocks_per_size_){
-            CHECK_CUDA_ERROR(cudaFree(d_FR_nonStd_data_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_FR_nonStd_x_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_FR_nonStd_y_partial_pointers_[sizes]));
+        if (gpu_id == 0){
+            for (auto& [sizes,num_blocks] : num_FR_nonstd_blocks_per_size_){
+                CHECK_CUDA_ERROR(cudaFree(d_FR_nonStd_data_pointers_[sizes]));
+                CHECK_CUDA_ERROR(cudaFree(d_FR_nonStd_x_pointers_[sizes]));
+                CHECK_CUDA_ERROR(cudaFree(d_FR_nonStd_y_partial_pointers_[sizes]));
+            }
+    
+            for (auto& [sizes,num_blocks] : num_LR_nonstd_blocks_per_size_){
+                CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_A_data_pointers_[sizes]));
+                CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_B_data_pointers_[sizes]));
+                CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_x_pointers_[sizes]));
+                CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_y_partial_pointers_[sizes]));
+                CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_tmp_pointers_[sizes]));
+            }
         }
-
-        for (auto& [sizes,num_blocks] : num_LR_nonstd_blocks_per_size_){
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_A_data_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_B_data_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_x_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_y_partial_pointers_[sizes]));
-            CHECK_CUDA_ERROR(cudaFree(d_LR_nonStd_tmp_pointers_[sizes]));
-        }
-
 
         // Destroy the Magma queues
         #ifdef USE_MAGMA
@@ -1931,10 +1935,12 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
                     }
                 }
                 
-                cudaDeviceSynchronize();
+                // cudaDeviceSynchronize();
+                cudaStreamSynchronize(cuda_streams_[gpu_id][0]);
 
                 int num_blocks = num_FR_per_gpu_[gpu_id];
                 if (gpu_id == 0) num_blocks += FR_non_std_indices.size();
+
 
                 // And we sum the partial results
                 scatter_add(
@@ -2224,7 +2230,8 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             }
 
             // We sync the streams
-            cudaDeviceSynchronize();
+            // cudaDeviceSynchronize();
+            cudaStreamSynchronize(cuda_streams_[gpu_id][1]);
 
             // Here we gather the partial results of the LR blocks on d_y_ that was used to store the results of the FR blocks
             int num_lr_blocks = num_LR_per_gpu_[gpu_id];
