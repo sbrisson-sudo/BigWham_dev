@@ -32,7 +32,7 @@ Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double>& node, const 
 
 void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
                  il::Tree<il::Range, 2>& tree, il::Array2D<double>& node,
-                 il::Array<il::int_t>& permutation);
+                 il::Array<il::int_t>& permutation, int current_depth=1);
 
 void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
                   il::Tree<il::Range, 2>& tree, il::Array2D<double>& node,
@@ -81,6 +81,8 @@ void hmatrixTreeIxJ_rec_size_conservative(const il::Array2D<double>& node0,
 
 ////////////////////////////////////////////////////////////////////////////////
 //// utilities functions below.
+void saveTreeToJSON(il::Tree<il::Range, 2> tree);
+
 inline double distance(const il::Array2D<double>& node, il::Range range_0,
                        il::Range range_1) {
   IL_EXPECT_FAST(range_0.begin < range_0.end);

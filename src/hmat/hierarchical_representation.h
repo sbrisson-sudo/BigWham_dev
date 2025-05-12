@@ -61,7 +61,7 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh, const il::int_t m
   tt.Stop();
 
   if (verbose){
-    std::cout << "Time for binary cluster tree construction  " << tt.time() << " s\n";
+    // std::cout << "[Timing] quad  cluster tree construction  " << tt.time() << " s\n";
     std::cout << "Binary cluster tree depth =" << block_tree.depth() << "\n";
   }
 
@@ -114,7 +114,7 @@ HRepresentationRectangularMatrix(const std::shared_ptr<Mesh> &source_mesh,
                      cluster_s.partition, eta, homegeneous_size);
   tt.Stop();
   if (verbose){
-    std::cout << "Time for binary cluster tree construction  " << tt.time() << " s\n";
+    // std::cout << "Time for binary cluster tree construction  " << tt.time() << " s\n";
     std::cout << "Binary cluster tree depth =" << block_tree.depth() << "\n";
   }
   

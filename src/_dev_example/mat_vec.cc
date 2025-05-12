@@ -129,8 +129,8 @@ int main(int argc, char * argv[]) {
   int n_omp_threads = 999;
   int n_GPUs = 999;
   bool verbose = false;
-  // bool homogeneous_size = false;
-  bool homogeneous_size = true;
+  bool homogeneous_size = false;
+  // bool homogeneous_size = true;
   bool use_Cuda = false;
   std::cout << "[CPU] eps_aca = " << eps_aca << std::endl; 
 

@@ -82,7 +82,7 @@ if(BIGWHAM_MATHEMATICA_INTERFACE)
 endif()
 
 add_subdirectory(il)
-add_subdirectory(cnpy)
+add_subdirectory(external/cnpy)
 
 set(CMAKE_MACOSX_RPATH ON)
 set(CMAKE_SKIP_BUILD_RPATH OFF)
@@ -173,7 +173,7 @@ target_compile_features(BigWham PUBLIC cxx_std_17)
 target_compile_definitions(BigWham PUBLIC BIGWHAM_OPENMP)
 target_link_libraries(BigWham PUBLIC InsideLoop cnpy)
 set_target_properties(BigWham PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_include_directories(BigWham PUBLIC src il cnpy)
+target_include_directories(BigWham PUBLIC src il external/cnpy external/nlohmann)
 
 if (USE_CUDA)
     target_link_libraries(BigWham PUBLIC

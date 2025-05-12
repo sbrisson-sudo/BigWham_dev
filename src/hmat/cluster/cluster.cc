@@ -9,10 +9,12 @@
 #include <limits>
 #include <cmath>
 #include <ctime>
-
-#include <il/Tree.h>
+#include <fstream>
 
 #include "omp.h"
+
+#include <il/Tree.h>
+#include <json.hpp>
 
 #include "cluster.h"
 
@@ -101,9 +103,25 @@ void hmatrixTreeIxI_rec_size_conservative(const il::Array2D<double> &node,
   int size_range_1 = range_tree.value(s1).end - range_tree.value(s1).begin;
   bool is_bigger_than_rank = (fixed_rank < 0) || ((size_range_0 > fixed_rank) && (size_range_1 > fixed_rank));
 
+  // 3rd condition to be admissible : the two clusters have abput the same size (if the biggest one has children)
+  bool block_aspect_ratio_ok = true;
+  int max_aspect_ratio = 1;
+  if (size_range_0 > max_aspect_ratio*size_range_1){
+    if (range_tree.hasChild(s0, 0)){
+      block_aspect_ratio_ok = false;
+    }
+  }
+
+  if (size_range_1 > max_aspect_ratio*size_range_0){
+    if (range_tree.hasChild(s1, 0)){
+      block_aspect_ratio_ok = false;
+    }
+  }
+
   // std::cout << "size_range_0 = " << size_range_0 << "; size_range_1 = " << size_range_1 << "; fixed_rank = " << fixed_rank << " -> " << is_bigger_than_rank << std::endl;
 
-  if (is_admissible && is_bigger_than_rank) {
+
+  if (is_admissible && is_bigger_than_rank && block_aspect_ratio_ok) {
 
     // if (size_range_0 == size_range_1) {
     //   hmatrix_tree.Set(s,
@@ -126,23 +144,54 @@ void hmatrixTreeIxI_rec_size_conservative(const il::Array2D<double> &node,
       hmatrix_tree.Set(s, bigwham::SubHMatrix{range_tree.value(s0), range_tree.value(s1),
         bigwham::HMatrixType::Hierarchical});
 
-      hmatrix_tree.AddChild(s, 0);
-      hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 0),
-      range_tree.child(s0, 0), range_tree.child(s1, 0),
-      il::io, hmatrix_tree, fixed_rank);
-      hmatrix_tree.AddChild(s, 1);
-      hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 1),
-      range_tree.child(s0, 1), range_tree.child(s1, 0),
-      il::io, hmatrix_tree, fixed_rank);
-      hmatrix_tree.AddChild(s, 2);
-      hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 2),
-      range_tree.child(s0, 0), range_tree.child(s1, 1),
-      il::io, hmatrix_tree, fixed_rank);
-      hmatrix_tree.AddChild(s, 3);
-      hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 3),
-      range_tree.child(s0, 1), range_tree.child(s1, 1),
-      il::io, hmatrix_tree, fixed_rank);
+      // If the two clusters are power of 2 but not the same size, we only go down the biggest one
+      bool s0_power_of_2 = (size_range_0 & (size_range_0 - 1)) == 0;
+      bool s1_power_of_2 = (size_range_1 & (size_range_1 - 1)) == 0;
+      if (s0_power_of_2 && s1_power_of_2 && (size_range_0 != size_range_1)){
 
+        if (size_range_0 > size_range_1){
+
+          hmatrix_tree.AddChild(s, 0);
+          hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 0),
+          range_tree.child(s0, 0), s1,
+          il::io, hmatrix_tree, fixed_rank);
+          hmatrix_tree.AddChild(s, 1);
+          hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 1),
+          range_tree.child(s0, 1), s1,
+          il::io, hmatrix_tree, fixed_rank);
+
+        } else {
+
+          hmatrix_tree.AddChild(s, 0);
+          hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 0),
+          s0, range_tree.child(s1, 0),
+          il::io, hmatrix_tree, fixed_rank);
+          hmatrix_tree.AddChild(s, 1);
+          hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 1),
+          s0, range_tree.child(s1, 1),
+          il::io, hmatrix_tree, fixed_rank);
+
+        }
+      } else {
+        // Otherwise we go down both
+        hmatrix_tree.AddChild(s, 0);
+        hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 0),
+        range_tree.child(s0, 0), range_tree.child(s1, 0),
+        il::io, hmatrix_tree, fixed_rank);
+        hmatrix_tree.AddChild(s, 1);
+        hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 1),
+        range_tree.child(s0, 1), range_tree.child(s1, 0),
+        il::io, hmatrix_tree, fixed_rank);
+        hmatrix_tree.AddChild(s, 2);
+        hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 2),
+        range_tree.child(s0, 0), range_tree.child(s1, 1),
+        il::io, hmatrix_tree, fixed_rank);
+        hmatrix_tree.AddChild(s, 3);
+        hmatrixTreeIxI_rec_size_conservative(node, range_tree, eta, hmatrix_tree.child(s, 3),
+        range_tree.child(s0, 1), range_tree.child(s1, 1),
+        il::io, hmatrix_tree, fixed_rank);
+
+      }
     } else if ((range_tree.hasChild(s0, 0) && range_tree.hasChild(s0, 1)) ||
               (range_tree.hasChild(s1, 0) && range_tree.hasChild(s1, 1))) {
       hmatrix_tree.Set(
@@ -347,6 +396,7 @@ Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double> &node, const 
   int nb_thread = omp_get_max_threads();
   int max_rec_depth_openmp = static_cast<int>(std::log2(nb_thread));
   std::cout << "[DEBUG] clustering number of available threads = " << nb_thread << ", max recursive OpenMP depth = " << max_rec_depth_openmp << "\n";
+  std::cout << "[DEBUG] homogeneous_size = " << homogeneous_size << std::endl;
   #endif
 
   if (homogeneous_size){
@@ -359,7 +409,14 @@ Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double> &node, const 
           }
     }
   } else {
-    cluster_rec(s, leaf_size, il::io, ans.partition, node, ans.permutation);
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            // Only one thread starts the recursion
+            cluster_rec(s, leaf_size, il::io, ans.partition, node, ans.permutation);
+        }
+      }
   }
 
   #ifdef TIMING
@@ -368,6 +425,9 @@ Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double> &node, const 
   std::cout << "[Timing] clustering = " << duration*1000 << "ms\n";
   clock_gettime(CLOCK_MONOTONIC, &start);
   #endif // TIMING 
+
+  // // Save tree to json
+  // saveTreeToJSON(ans.partition);
   
   ans.partition.setDepth();
   return ans;
@@ -375,7 +435,7 @@ Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double> &node, const 
 
 void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
                  il::Tree<il::Range, 2> &tree, il::Array2D<double> &node,
-                 il::Array<il::int_t> &permutation) {
+                 il::Array<il::int_t> &permutation, int current_depth) {
   const il::int_t i_begin = tree.value(s).begin;
   const il::int_t i_end = tree.value(s).end;
 
@@ -415,47 +475,109 @@ void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
     }
   }
 
-  ////////////////////
+  // ////////////////////
+  // // Reorder the nodes
+  // ////////////////////
+  // const double middle = middle_box[d_max];
+  // il::Array<double> tmp_node{dim};
+
+  // il::int_t j = i_begin;
+  // for (il::int_t i = i_begin; i < i_end; ++i) { 
+  //   if (node(i, d_max) < middle) {
+  //     // Swap node(i) and node (j)
+  //     for (il::int_t d = 0; d < dim; ++d) {
+  //       tmp_node[d] = node(i, d);
+  //     }
+  //     const il::int_t index = permutation[i];
+  //     for (il::int_t d = 0; d < dim; ++d) {
+  //       node(i, d) = node(j, d);
+  //     }
+  //     permutation[i] = permutation[j];
+  //     for (il::int_t d = 0; d < dim; ++d) {
+  //       node(j, d) = tmp_node[d];
+  //     }
+  //     permutation[j] = index;
+  //     ++j;
+  //   }
+  // }
+  // if (j == i_begin) {
+  //   ++j;
+  // } else if (j == i_end) {
+  //   --j;
+  // }
+
+    ////////////////////
   // Reorder the nodes
+  // Sorting them along the splitting coordinate
   ////////////////////
   const double middle = middle_box[d_max];
   il::Array<double> tmp_node{dim};
 
-  il::int_t j = i_begin;
-  for (il::int_t i = i_begin; i < i_end; ++i) { 
-    if (node(i, d_max) < middle) {
-      // Swap node(i) and node (j)
-      for (il::int_t d = 0; d < dim; ++d) {
-        tmp_node[d] = node(i, d);
-      }
-      const il::int_t index = permutation[i];
-      for (il::int_t d = 0; d < dim; ++d) {
-        node(i, d) = node(j, d);
-      }
-      permutation[i] = permutation[j];
-      for (il::int_t d = 0; d < dim; ++d) {
-        node(j, d) = tmp_node[d];
-      }
-      permutation[j] = index;
-      ++j;
+  // Sort all nodes from i_begin to i_end based on d_max coordinate
+  for (il::int_t i = i_begin; i < i_end; ++i) {
+    for (il::int_t k = i + 1; k < i_end; ++k) {
+        if (node(i, d_max) > node(k, d_max)) {
+            // Swap node(i) and node(k)
+            for (il::int_t d = 0; d < dim; ++d) {
+                tmp_node[d] = node(i, d);
+                node(i, d) = node(k, d);
+                node(k, d) = tmp_node[d];
+            }
+            
+            // Swap permutation indices
+            const il::int_t index = permutation[i];
+            permutation[i] = permutation[k];
+            permutation[k] = index;
+        }
     }
   }
-  if (j == i_begin) {
-    ++j;
-  } else if (j == i_end) {
-    --j;
+
+  // Compute child cardinal 
+  int j = (i_begin+i_end)/2;
+
+  #ifdef DEBUG
+  std::cout << i_end - i_begin << " -> " << j - i_begin << " + " << i_end - j << std::endl;
+  #endif
+
+  int nb_thread = omp_get_max_threads();
+  int max_rec_depth_openmp = static_cast<int>(std::log2(nb_thread));
+
+  il::spot_t s0, s1;
+
+  #pragma omp critical
+  {
+
+    tree.AddChild(s, 0);
+    s0 = tree.child(s, 0);
+    tree.AddChild(s, 1);
+    s1 = tree.child(s, 1);
+    tree.Set(s0, il::Range{i_begin, j});
+    tree.Set(s1, il::Range{j, i_end});
   }
 
-  tree.AddChild(s, 0);
-  const il::spot_t s0 = tree.child(s, 0);
-  tree.AddChild(s, 1);
-  const il::spot_t s1 = tree.child(s, 1);
+  current_depth ++;
 
-  tree.Set(s0, il::Range{i_begin, j});
-  tree.Set(s1, il::Range{j, i_end});
+  // Parallelize only if we're at a depth where it makes sense
+  if (current_depth <= max_rec_depth_openmp) {
+    // Process the first branch in a new task
+    #pragma omp task shared(tree, node, permutation)
+    {
+      cluster_rec(s0, leaf_size, il::io, tree, node, permutation, current_depth);
+    }
+    
+    // Process the second branch in the current thread
+    cluster_rec(s1, leaf_size, il::io, tree, node, permutation, current_depth);
+    
+    // Wait for all tasks at this level to complete before continuing
+    #pragma omp taskwait
+  } else {
+    // If we're already at a deep level, just use sequential execution
+    cluster_rec(s0, leaf_size, il::io, tree, node, permutation, current_depth);
+    cluster_rec(s1, leaf_size, il::io, tree, node, permutation, current_depth);
+  }
 
-  cluster_rec(s0, leaf_size, il::io, tree, node, permutation);
-  cluster_rec(s1, leaf_size, il::io, tree, node, permutation);
+  // cluster_rec(s0, leaf_size, il::io, tree, node, permutation);
+  // cluster_rec(s1, leaf_size, il::io, tree, node, permutation);
 }
 
 // Binary Cluster tree creation
@@ -466,10 +588,10 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
   il::Tree<il::Range, 2> &tree, il::Array2D<double> &node,
   il::Array<il::int_t> &permutation, int current_depth) {
 
-  #ifdef DEBUG
-  int thread_id = omp_get_thread_num();
-  std::cout << "[Thread " << thread_id << "] entering clustering - depth = " << current_depth << std::endl;
-  #endif
+  // #ifdef DEBUG
+  // int thread_id = omp_get_thread_num();
+  // std::cout << "[Thread " << thread_id << "] entering clustering - depth = " << current_depth << std::endl;
+  // #endif
 
   const il::int_t i_begin = tree.value(s).begin;
   const il::int_t i_end = tree.value(s).end;
@@ -595,5 +717,31 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
   // cluster_rec_size_conservative(s1, leaf_size, il::io, tree, node, permutation, current_depth);
 }
 
+nlohmann::json nodeToJSON(il::Tree<il::Range, 2> tree, il::spot_t node){
+  nlohmann::json result;
+
+  if (!tree.hasChild(node, 0)){
+    // No child
+    il::Range leaf_range = tree.value(node);
+    std::vector<int> range = {static_cast<int>(leaf_range.begin), static_cast<int>(leaf_range.end)};
+    result["range"] = range;
+  } else {
+    // Has children nodes
+    result["left"] = nodeToJSON(tree, tree.child(node, 0));
+    result["right"] = nodeToJSON(tree, tree.child(node, 1));
+  }
+
+  return result;
+}
+
+void saveTreeToJSON(il::Tree<il::Range, 2> tree){
+
+  nlohmann::json tree_json = nodeToJSON(tree, tree.root());
+
+  std::ofstream file("bigwham_binary_cluster_tree.json");
+  file << tree_json.dump(2);
+
+  std::cout << "Clustering binary tree saved in bigwham_binary_cluster_tree.json" << std::endl;
+}
 
 }  // namespace bigwham
