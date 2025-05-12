@@ -36,7 +36,7 @@ void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
 
 void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
                   il::Tree<il::Range, 2>& tree, il::Array2D<double>& node,
-                  il::Array<il::int_t>& permutation);
+                  il::Array<il::int_t>& permutation, int current_depth=1);
 
 // block-cluster Tree I*I
 il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,

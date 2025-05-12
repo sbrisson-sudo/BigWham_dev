@@ -80,7 +80,7 @@ public:
   [[nodiscard]] il::int_t size(int k) const { return size_[k]; }
   bigwham::HPattern pattern() { return hr_->pattern_; }
   [[nodiscard]] il::int_t dofDimension() const { return dof_dimension_; }
-  il::int_t nbOfEntries();
+  virtual il::int_t nbOfEntries();
   void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
   void fullBlocksPerm(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
   // H-Matrix vector multiplication without permutation

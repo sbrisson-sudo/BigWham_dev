@@ -8,10 +8,16 @@
 //
 #include <limits>
 #include <cmath>
+#include <ctime>
 
 #include <il/Tree.h>
 
+#include "omp.h"
+
 #include "cluster.h"
+
+#define TIMING
+// #define DEBUG
 
 namespace bigwham {
 
@@ -331,11 +337,37 @@ Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double> &node, const 
     ans.permutation[i] = i;
   }
 
+  #ifdef TIMING
+  struct timespec start, end;
+  double duration;
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  #endif // TIMING 
+
+  #ifdef DEBUG
+  int nb_thread = omp_get_max_threads();
+  int max_rec_depth_openmp = static_cast<int>(std::log2(nb_thread));
+  std::cout << "[DEBUG] clustering number of available threads = " << nb_thread << ", max recursive OpenMP depth = " << max_rec_depth_openmp << "\n";
+  #endif
+
   if (homogeneous_size){
-    cluster_rec_size_conservative(s, leaf_size, il::io, ans.partition, node, ans.permutation);
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            // Only one thread starts the recursion
+            cluster_rec_size_conservative(s, leaf_size, il::io, ans.partition, node, ans.permutation);
+          }
+    }
   } else {
     cluster_rec(s, leaf_size, il::io, ans.partition, node, ans.permutation);
   }
+
+  #ifdef TIMING
+  clock_gettime(CLOCK_MONOTONIC, &end);
+  duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+  std::cout << "[Timing] clustering = " << duration*1000 << "ms\n";
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  #endif // TIMING 
   
   ans.partition.setDepth();
   return ans;
@@ -432,14 +464,18 @@ void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
 // #sigma_1 = (#tau / m // 2) * m 
 void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
   il::Tree<il::Range, 2> &tree, il::Array2D<double> &node,
-  il::Array<il::int_t> &permutation) {
+  il::Array<il::int_t> &permutation, int current_depth) {
+
+  #ifdef DEBUG
+  int thread_id = omp_get_thread_num();
+  std::cout << "[Thread " << thread_id << "] entering clustering - depth = " << current_depth << std::endl;
+  #endif
+
   const il::int_t i_begin = tree.value(s).begin;
   const il::int_t i_end = tree.value(s).end;
 
-
   if (i_end - i_begin <= leaf_size) {
     // std::cout << "Cluster node of size " << i_end - i_begin << std::endl;
-
     return;
   }
 
@@ -479,7 +515,6 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
   // Reorder the nodes
   // Sorting them along the splitting coordinate
   ////////////////////
-
   const double middle = middle_box[d_max];
   il::Array<double> tmp_node{dim};
 
@@ -503,9 +538,6 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
   }
 
   // Compute child cardinal 
-  // il::int_t card_s1 = ((i_end - i_begin) / leaf_size / 2) * leaf_size; // use of c++ integer division
-  // if (card_s1 < 2*leaf_size) card_s1 = leaf_size;
-
   int k = 0;
   while (leaf_size * pow(2, k + 1) <= (i_end - i_begin)) {
       k++;
@@ -520,16 +552,47 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
 
   // std::cout << i_end - i_begin << " -> " << card_s1 << " + " << i_end - i_begin - card_s1 << std::endl;
 
-  tree.AddChild(s, 0);
-  const il::spot_t s0 = tree.child(s, 0);
-  tree.AddChild(s, 1);
-  const il::spot_t s1 = tree.child(s, 1);
+  int nb_thread = omp_get_max_threads();
+  int max_rec_depth_openmp = static_cast<int>(std::log2(nb_thread));
 
-  tree.Set(s0, il::Range{i_begin, i_begin + card_s1});
-  tree.Set(s1, il::Range{i_begin + card_s1, i_end});
+  // if current_depth <= max_rec_depth_openmp -> one of the recursive calls is made in a different thread
 
-  cluster_rec_size_conservative(s0, leaf_size, il::io, tree, node, permutation);
-  cluster_rec_size_conservative(s1, leaf_size, il::io, tree, node, permutation);
+  // If current_depth
+  il::spot_t s0, s1;
+
+  #pragma omp critical
+  {
+    tree.AddChild(s, 0); 
+    s0 = tree.child(s, 0);
+    tree.AddChild(s, 1);
+    s1 = tree.child(s, 1);
+    tree.Set(s0, il::Range{i_begin, i_begin + card_s1});
+    tree.Set(s1, il::Range{i_begin + card_s1, i_end});
+  }
+
+  current_depth ++;
+
+  // Parallelize only if we're at a depth where it makes sense
+  if (current_depth <= max_rec_depth_openmp) {
+    // Process the first branch in a new task
+    #pragma omp task shared(tree, node, permutation)
+    {
+      cluster_rec_size_conservative(s0, leaf_size, il::io, tree, node, permutation, current_depth);
+    }
+    
+    // Process the second branch in the current thread
+    cluster_rec_size_conservative(s1, leaf_size, il::io, tree, node, permutation, current_depth);
+    
+    // Wait for all tasks at this level to complete before continuing
+    #pragma omp taskwait
+  } else {
+    // If we're already at a deep level, just use sequential execution
+    cluster_rec_size_conservative(s0, leaf_size, il::io, tree, node, permutation, current_depth);
+    cluster_rec_size_conservative(s1, leaf_size, il::io, tree, node, permutation, current_depth);
+  }
+
+  // cluster_rec_size_conservative(s0, leaf_size, il::io, tree, node, permutation, current_depth);
+  // cluster_rec_size_conservative(s1, leaf_size, il::io, tree, node, permutation, current_depth);
 }
 
 

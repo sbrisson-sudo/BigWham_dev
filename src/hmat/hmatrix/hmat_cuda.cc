@@ -324,6 +324,7 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     clock_gettime(CLOCK_MONOTONIC, &start);
     #endif // TIMING 
 
+    std::cout << std::flush;
 }
 
 template <typename T>
@@ -2372,6 +2373,37 @@ std::vector<T> HmatCuda<T>::diagonalOriginal(){
         }
     }
     return diagonal_perm;
+}
+
+template <typename T> il::int_t HmatCuda<T>::nbOfEntries() {
+
+    // IL_EXPECT_FAST(this->isBuilt_);
+
+    auto hr = this->hr_;
+    int fixed_rank = this->fixed_rank_;
+    int leaf_size = this->hr_->leaf_size;
+    const int dim_dof = this->dof_dimension_;
+
+    il::int_t n = 0;
+
+    for (il::int_t i = 0; i < hr->pattern_.n_FRB; i++) {
+        il::int_t i0 = hr->pattern_.FRB_pattern(1, i);
+        il::int_t j0 = hr->pattern_.FRB_pattern(2, i);
+        il::int_t iend = hr->pattern_.FRB_pattern(3, i);
+        il::int_t jend = hr->pattern_.FRB_pattern(4, i);
+
+        n += (iend-i0)*(jend-j0) * dim_dof*dim_dof;
+    }
+    for (il::int_t i = 0; i < hr->pattern_.n_LRB; i++) {
+
+        il::int_t i0 = hr->pattern_.FRB_pattern(1, i);
+        il::int_t j0 = hr->pattern_.FRB_pattern(2, i);
+        il::int_t iend = hr->pattern_.FRB_pattern(3, i);
+        il::int_t jend = hr->pattern_.FRB_pattern(4, i);
+
+        n += (iend-i0)*fixed_rank * dim_dof*dim_dof + (jend-j0)*fixed_rank * dim_dof*dim_dof;
+    }
+    return n;
 }
 
 template class HmatCuda<double>;

@@ -220,6 +220,8 @@ public:
   std::vector<T> diagonal() override;
   std::vector<T> diagonalOriginal() override;
 
+  il::int_t nbOfEntries() override;
+
   il::Array<T> matvec(il::ArrayView<T> x) override;
 
 };  

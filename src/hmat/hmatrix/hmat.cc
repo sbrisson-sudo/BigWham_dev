@@ -67,8 +67,7 @@ namespace bigwham {
         tt.Stop();
         std::cout << "Reading of hmat done in " << tt.time() << "\n";
         std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
-        std::cout << "Hmat object - built "
-                  << "\n";
+        std::cout << "Hmat object - built " << "\n" << std::flush;
     }
 
     /* -------------------------------------------------------------------------- */
