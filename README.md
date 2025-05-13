@@ -17,7 +17,6 @@ The elements currently available are strictly discontinuous, mostly with constan
 
 #### Kernels / Elements type for elasto-static
 
-
 The following table describe the quasi-static elasticity hyper-singular kernels currently available and fully tested (as of version 1.0). 
 They are all for homogeneous isotropic materials and for a full-space. 
 
@@ -100,9 +99,9 @@ If you find BigWham useful for your research, please consider citing it using th
 @software{Lecampion_BigWham_a_C_2025,
 author = {Lecampion, Brice and Fayard, François and Gupta, Ankit and Peruzzo, Carlo and Sáez, Alexis and Richart, Nicolas and Nikolskiy, Dmitry and Ciardo, Federico},
 title = {{BigWham: a C++ library for vectorial Boundary InteGral equations With HierArchical Matrices}},
-month = mar,
+month = Feb,
 version = {0.2.0},
-year = {2025}}
+year = {2025},
+doi = {10.5281/zenodo.14906636}}
 ```
-
 
