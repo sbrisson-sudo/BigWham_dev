@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <sstream>
 
-#define USE_NVTX
+// #define USE_NVTX
 
 #ifdef USE_NVTX
 // #include <nvtx3/nvtx3.hpp>
