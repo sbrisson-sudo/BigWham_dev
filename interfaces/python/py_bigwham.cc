@@ -211,6 +211,16 @@ PYBIND11_MODULE(py_bigwham, m)
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
       .def(
+          "matvec_raw_ptr",
+          [](BigWhamIO &self, uintptr_t x, uintptr_t y) -> void
+          {
+            double* x_ptr = reinterpret_cast<double*> (x);
+            double* y_ptr = reinterpret_cast<double*> (y);
+            self.MatVec(x_ptr, y_ptr);
+          },
+          "dot product using raw pointers (for CuPy arrays on GPU)",
+          py::arg("x"), py::arg("y"))
+      .def(
            "matvecVoid",
            [](BigWhamIO &self, const pbarray<double> &x, pbarray<double> &y) -> decltype(auto)
            {

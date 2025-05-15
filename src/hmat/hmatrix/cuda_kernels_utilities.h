@@ -10,4 +10,18 @@ void scatter_add(double* d_result,
                  const int* d_lengths,
                  int num_vectors);
 
+void forward_permute(
+    const double*  x,
+    double*  z,
+    const int*  permutation_1,
+    int hmat_size,
+    int dof_dimension);
+
+void backward_permute(
+    const double*  y,
+    double*  yout,
+    const int*  permutation_0,
+    int hmat_size,
+    int dof_dimension);
+
 #endif // SCATTER_ADD_H

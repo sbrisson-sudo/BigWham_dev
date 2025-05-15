@@ -20,6 +20,9 @@
 // #define TIMING
 #include <ctime>
 
+#include "cnpy.h"
+
+
 
 namespace bigwham {
 /* -------------------------------------------------------------------------- */
@@ -532,6 +535,19 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
 
         return y;
     }
+
+
+// New matvec function operating directly on arrays, only implemented for hmatcuda
+template <typename T> 
+void Hmat<T>::matvec(T* x, T* y) {
+    return;
+}
+
+template <typename T> 
+void Hmat<T>::matvecOriginal(T* x, T* y) {
+    return;
+}
+
 /* -------------------------------------------------------------------------- */
 // matvect in and outs as std::vector - not great
     template <typename T>

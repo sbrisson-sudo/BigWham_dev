@@ -138,6 +138,7 @@ public:
   void GetDiagonal(std::vector<double> &val_list) const;
   [[nodiscard]] std::vector<double> MatVec(const std::vector<double> &x) const;
   [[nodiscard]] il::Array<double> MatVec(il::ArrayView<double> x) const;
+  void MatVec(double* x, double *y);
   [[nodiscard]] std::vector<double> MatVecPerm(const std::vector<double> &x) const;
   [[nodiscard]] il::Array<double> MatVecPerm(il::ArrayView<double> x) const;
   [[nodiscard]] std::vector<double> ConvertToGlobal(const std::vector<double> &x_local) const;

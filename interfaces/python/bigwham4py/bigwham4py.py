@@ -148,6 +148,37 @@ class BEMatrix(LinearOperator):
         """
         # shall we put a call to self._build() ?
         return self.H_.matvec(v)
+    
+    def _matvec_cupy(self, x, y):
+        """
+        Dot product on cupy arrays, result y is already allocated
+        """
+        import cupy 
+        assert type(x) == cupy.ndarray
+        assert type(y) == cupy.ndarray
+        assert x.dtype == np.float64
+        assert y.dtype == np.float64
+        
+        return self.H_.matvec_raw_ptr(x.data.ptr, y.data.ptr)
+    
+    def _matvec_jax(self, x, y):
+        """
+        Dot product on JAX GPU arrays. Assumes x and y are jax.Array on GPU and of dtype float64.
+        """
+        import jax
+
+        # Ensure correct types and dtype
+        assert x.device.platform == 'gpu'
+        assert y.device.platform == 'gpu'
+        assert x.dtype == np.float64
+        assert y.dtype == np.float64
+
+        # Extract raw pointers from __cuda_array_interface__
+        x_ptr = x.__cuda_array_interface__['data'][0]
+        y_ptr = y.__cuda_array_interface__['data'][0]
+
+        # Call into C++ backend
+        return self.H_.matvec_raw_ptr(x_ptr, y_ptr)
 
     def write_hmatrix(self, filename: str) -> int:
         """

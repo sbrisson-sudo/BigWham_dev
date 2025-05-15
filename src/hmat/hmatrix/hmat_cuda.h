@@ -132,6 +132,8 @@ private:
     size_t vector_size_;
     std::vector<T*> d_x_;               // Store the lhs vector on device
     std::vector<T*> d_y_;               // Store the rhs vector on device
+    T* d_x_tmp_;                       // For permutations / agregations
+    // T* d_y_tmp_;                       // For permutations / agregations
     std::vector<T*> d_y_partial_LR_;    // Partial results for LR blocks operations
     std::vector<T*> d_y_partial_FR_;    // Partial results for FR blocks operations
     std::vector<T*> d_tmp_;             // tmp = B*x then y = A*tmp
@@ -207,6 +209,10 @@ private:
     // Offsets on aux vectors
     std::unordered_map<std::pair<int, int>, int, pair_hash> FR_non_std_offsets_y_,LR_non_std_offsets_y_,LR_non_std_offsets_tmp_;
 
+    // To store the permutations on device
+    int* d_permutation_0_;
+    int* d_permutation_1_;
+
 public:
   HmatCuda() = default;
   HmatCuda(const bigwham::MatrixGenerator<T> &matrix_gen, const double epsilon_aca, const int n_openMP_threads, const int num_GPUs, const bool verbose=true, const int fixed_rank=-1);
@@ -223,6 +229,10 @@ public:
   il::int_t nbOfEntries() override;
 
   il::Array<T> matvec(il::ArrayView<T> x) override;
+  void matvec(); // When data already on device in d_x_ 
+  void matvec(T* x, T* y) override; // When data already on device
+  void matvec(T* x); // When data already on device
+  void matvecOriginal(T* x, T* y) override; // Apply permutation on device
 
 };  
 

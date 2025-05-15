@@ -87,10 +87,12 @@ public:
   // il::Array<T> matvec(const il::Array<T> &x);
   std::vector<T> matvec(const std::vector<T> & x);
 
-  virtual il::Array<T> matvec(il::ArrayView<T> x); // To be overriden
+  virtual il::Array<T> matvec(il::ArrayView<T> x); 
+  virtual void matvec(T* x, T* y);
 
   std::vector<T> matvecOriginal(const std::vector<T> & x);
   il::Array<T> matvecOriginal(il::ArrayView<T> x);
+  virtual void  matvecOriginal(T* x, T* y);
 
   void matvecOriginal(const il::ArrayView<T> x, il::Array<T>& yout);
   void matvecOriginal(const il::ArrayView<T> x, il::ArrayEdit<T> yout);

@@ -5,14 +5,15 @@
 #include <iomanip>
 #include <sstream>
 
-// #define USE_NVTX
+#define USE_NVTX
 
 #ifdef USE_NVTX
-#include <nvtx3/nvtx3.hpp>
+// #include <nvtx3/nvtx3.hpp>
+#include <nvtx3.hpp>
 #endif
 
 #include "hmat_cuda.h"
-#include "y_partial_scatter_add.h"
+#include "cuda_kernels_utilities.h"
 
 #include "cnpy.h"
 
@@ -346,6 +347,32 @@ void HmatCuda<T>::copyToDevice(){
     magma_init();
     #endif
 
+    // Copying the permuttaion arrays on device
+    CHECK_CUDA_ERROR(cudaSetDevice(0));
+
+    // First we cast it to int
+    const int n_elts = hr->permutation_0_.size();
+    int permutation_0[n_elts];
+    int permutation_1[n_elts];
+    for (int i=0; i<n_elts; i++){
+        permutation_0[i] = static_cast<int>(hr->permutation_0_[i]);
+        permutation_1[i] = static_cast<int>(hr->permutation_1_[i]);
+    }
+
+    // Then we copy it 
+    CHECK_CUDA_ERROR(cudaMalloc(&d_permutation_0_, n_elts*sizeof(int)));
+    CHECK_CUDA_ERROR(cudaMemcpy(d_permutation_0_, permutation_0, n_elts*sizeof(int), cudaMemcpyHostToDevice));
+    CHECK_CUDA_ERROR(cudaMalloc(&d_permutation_1_, n_elts*sizeof(int)));
+    CHECK_CUDA_ERROR(cudaMemcpy(d_permutation_1_, permutation_1, n_elts*sizeof(int), cudaMemcpyHostToDevice));
+
+    // cnpy::npy_save("permutation_0.npy", permutation_0, {static_cast<size_t>(n_elts)}, "w");
+    // cnpy::npy_save("permutation_1.npy", permutation_1, {static_cast<size_t>(n_elts)}, "w");
+
+    il::Array<int> tmp{static_cast<il::int_t>(n_elts)};
+    CHECK_CUDA_ERROR(cudaMemcpy(tmp.Data(), d_permutation_0_, n_elts*sizeof(int), cudaMemcpyDeviceToHost));
+    cnpy::npy_save("permutation_0_d.npy", tmp.data(), {static_cast<size_t>(tmp.size())}, "w");
+    
+
     // ---------------------------
     // Distributing load on GPUS
     // ---------------------------
@@ -537,6 +564,8 @@ void HmatCuda<T>::copyToDevice(){
 
         vector_size_ = this->size_[0];
         vector_size_bytes_ = this->size_[0]* sizeof(T);
+
+        CHECK_CUDA_ERROR(cudaMalloc(&d_x_tmp_, vector_size_bytes_));
 
         // Here we need to compute the buffer size needed for tmp and y_partial for LR blocks
         y_partial_LR_buffer_size_bytes_[gpu_id] = 0;
@@ -1224,6 +1253,11 @@ void HmatCuda<T>::deallocateOnHost(bool deallocate_FR_host){
 template <typename T>
 void HmatCuda<T>::deallocateOnDevice(){
 
+    CHECK_CUDA_ERROR(cudaFree(d_permutation_0_));
+    CHECK_CUDA_ERROR(cudaFree(d_permutation_1_));
+
+    CHECK_CUDA_ERROR(cudaFree(d_x_tmp_));
+
     for (int gpu_id(0); gpu_id<num_gpus_; gpu_id++){
 
         // Destroy the handles
@@ -1733,18 +1767,12 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
 }                      
 
 
+// Data already copied to d_x_, result will be in d_y_
 template <> 
-il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
+void HmatCuda<double>::matvec() {
 
     #ifdef DEBUG
     std::cout << "Entering HmatCuda::matvec" << std::endl;
-    #endif
-
-    #ifdef WRITE_INPUT_OUTPUT_VEC
-    std::stringstream ss1;
-    ss1 << "mat_vec_gpu_x.npy";
-    std::string filename1 = ss1.str();
-    cnpy::npy_save(filename1, x.data(), {static_cast<size_t>(vector_size_)}, "w");
     #endif
 
     #ifdef TIMING
@@ -1757,15 +1785,13 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
     NVTX3_FUNC_RANGE();   
     #endif
 
-    il::Array<double> y(vector_size_, 0.0); // This also should be allocated once and for all 
-
     // #pragma omp parallel num_threads(this->n_openMP_threads_)
     #pragma omp parallel num_threads(num_gpus_+1)
     {   
 
         int thread_id = omp_get_thread_num();
 
-        il::Array<double> y_private(vector_size_, 0.0); // This also should be allocated once and for all 
+        // il::Array<double> y_private(vector_size_, 0.0); // This also should be allocated once and for all 
 
         // In a first num_gpu therads manafge GPU computation
         if (thread_id < num_gpus_) {
@@ -1774,7 +1800,6 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
             CHECK_CUDA_ERROR(cudaSetDevice(gpu_id));
 
-            CHECK_CUDA_ERROR(cudaMemcpy(d_x_[gpu_id], x.data(), vector_size_bytes_, cudaMemcpyHostToDevice));
             CHECK_CUDA_ERROR(cudaMemset(d_y_[gpu_id], 0, vector_size_bytes_));
             
             double alpha = 1.0;
@@ -2255,8 +2280,8 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
             }
  
             // Finnally, copy it back to cpu
-            double* y_data = y_private.Data();
-            CHECK_CUDA_ERROR(cudaMemcpy(y_data, d_y_[gpu_id], vector_size_bytes_, cudaMemcpyDeviceToHost));
+            // double* y_data = y_private.Data();
+            // CHECK_CUDA_ERROR(cudaMemcpy(y_data, d_y_[gpu_id], vector_size_bytes_, cudaMemcpyDeviceToHost));
 
             #ifdef WRITE_TMP_RES
             std::stringstream ss2;
@@ -2289,13 +2314,68 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
 
 
 
-        // We sum the partial results of each thread
-        #pragma omp critical
-        {
-            il::blas(1., y_private.view(), il::io_t{}, y.Edit());
-        }
+        // // We sum the partial results of each thread
+        // #pragma omp critical
+        // {
+        //     il::blas(1., y_private.view(), il::io_t{}, y.Edit());
+        // }
     
     } // pragma omp parallel
+
+    // Here now each GPU has its partial result in d_y_gpu_id
+    // Here we gather the results on GPU 0
+    if (num_gpus_ > 1){
+
+        cudaSetDevice(0);
+
+        for (int gpu_id = 1; gpu_id < num_gpus_; ++gpu_id) {
+            // Copy data from GPU i to GPU 0's d_tmp
+            cudaMemcpyPeer(d_x_tmp_, 0, d_y_[gpu_id], gpu_id, vector_size_bytes_);
+            // Add it
+            const double alpha = 1.0;
+            cublasDaxpy(cublas_handle_[0], vector_size_, &alpha, d_x_tmp_, 1, d_y_[0], 1);
+        }
+
+    }
+
+    #ifdef TIMING
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+    std::cout << "[Timing] HmatCuda<double>::matvec : " << duration*1000 << "ms\n";
+    #endif  
+}
+
+// Data needs to be copied from host to device
+template <> 
+il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
+
+    #ifdef WRITE_INPUT_OUTPUT_VEC
+    std::stringstream ss1;
+    ss1 << "mat_vec_gpu_x.npy";
+    std::string filename1 = ss1.str();
+    cnpy::npy_save(filename1, x.data(), {static_cast<size_t>(vector_size_)}, "w");
+    #endif
+
+    il::Array<double> y(vector_size_, 0.0);
+
+    // x data copied to all GPUs
+    #pragma omp parallel num_threads(num_gpus_+1)
+    {   
+        int thread_id = omp_get_thread_num();
+        if (thread_id < num_gpus_) {
+            int gpu_id = thread_id;
+            CHECK_CUDA_ERROR(cudaSetDevice(gpu_id));
+            CHECK_CUDA_ERROR(cudaMemcpy(d_x_[gpu_id], x.data(), vector_size_bytes_, cudaMemcpyHostToDevice));
+        }
+    }
+
+    // Computation 
+    matvec();
+
+    // Copying back result
+    // FInally : copy result on host :
+    double* y_data = y.Data();
+    CHECK_CUDA_ERROR(cudaMemcpy(y_data, d_y_[0], vector_size_bytes_, cudaMemcpyDeviceToHost));
 
     #ifdef TIMING
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -2311,6 +2391,72 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
     #endif
 
     return y;
+}
+
+// Data already on device (on GPU 0), needs only to be copied to d_x_ and d_y_
+template <> 
+void HmatCuda<double>::matvec(double* x, double* y) {
+
+    // Copying data to d_x_ on every device
+    for (int gpu_id = 0; gpu_id < num_gpus_; ++gpu_id) {
+        // Copy data from GPU i to GPU 0's d_tmp
+        cudaMemcpyPeer(d_x_[gpu_id], gpu_id, x, 0, vector_size_bytes_);
+    }
+
+    matvec();
+    
+    // Retrieving result
+    CHECK_CUDA_ERROR(cudaMemcpy(y, d_y_[0], vector_size_bytes_, cudaMemcpyDeviceToDevice));
+}
+
+// Data already on device (on GPU 0), needs only to be copied to d_x_, result in d_y_[0]
+template <> 
+void HmatCuda<double>::matvec(double* x) {
+
+    // Copying data to d_x_ on every device
+    for (int gpu_id = 0; gpu_id < num_gpus_; ++gpu_id) {
+        // Copy data from GPU i to GPU 0's d_tmp
+        cudaMemcpyPeer(d_x_[gpu_id], gpu_id, x, 0, vector_size_bytes_);
+    }
+
+    matvec();
+}
+
+// Here we permute the input and permute back the output
+// while staying on device
+template <> 
+void HmatCuda<double>::matvecOriginal(double* x, double* y){
+
+    const int dim_dof = this->dof_dimension_;
+
+    // Permute input vector
+    forward_permute(x, d_x_[0], d_permutation_1_, this->size_[0], dim_dof);
+
+    cudaDeviceSynchronize();
+
+    if (num_gpus_ > 1){
+        for (int gpu_id = 1; gpu_id < num_gpus_; ++gpu_id) {
+            cudaMemcpyPeer(d_x_[gpu_id], gpu_id, d_x_[0], 0, vector_size_bytes_);
+        }
+
+    }
+
+    // auto err = cudaGetLastError();
+    // if (err != cudaSuccess) {
+    //     printf("CUDA error after forward_permute: %s\n", cudaGetErrorString(err));
+    // }
+
+    // Compute matvec
+    matvec();
+
+    // Permute back results
+    backward_permute(d_y_[0], y, d_permutation_0_, this->size_[0], dim_dof);
+
+    cudaDeviceSynchronize();
+    // err = cudaGetLastError();
+    // if (err != cudaSuccess) {
+    //     printf("CUDA error after backward_permute: %s\n", cudaGetErrorString(err));
+    // }
 }
 
 template <typename T>
@@ -2396,10 +2542,10 @@ template <typename T> il::int_t HmatCuda<T>::nbOfEntries() {
     }
     for (il::int_t i = 0; i < hr->pattern_.n_LRB; i++) {
 
-        il::int_t i0 = hr->pattern_.FRB_pattern(1, i);
-        il::int_t j0 = hr->pattern_.FRB_pattern(2, i);
-        il::int_t iend = hr->pattern_.FRB_pattern(3, i);
-        il::int_t jend = hr->pattern_.FRB_pattern(4, i);
+        il::int_t i0 = hr->pattern_.LRB_pattern(1, i);
+        il::int_t j0 = hr->pattern_.LRB_pattern(2, i);
+        il::int_t iend = hr->pattern_.LRB_pattern(3, i);
+        il::int_t jend = hr->pattern_.LRB_pattern(4, i);
 
         n += (iend-i0)*fixed_rank * dim_dof*dim_dof + (jend-j0)*fixed_rank * dim_dof*dim_dof;
     }

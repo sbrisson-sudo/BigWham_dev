@@ -70,7 +70,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
     #ifdef BIGWHAM_OPENMP
         if (this->verbose_)
             std::cout << "Forcing the number of OpenMP threads to " << this->n_openMP_threads_ << std::endl;
-        omp_set_max_active_levels(1);  // Limit parallel region depth    
+        // omp_set_max_active_levels(1);  // Limit parallel region depth    
         omp_set_num_threads(this->n_openMP_threads_);
 
         // Binding the threads to cores to preserve CUDA cache 
@@ -330,7 +330,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         std::cout << "Forcing the number of OpenMP threads to " << this->n_openMP_threads_ << std::endl;
     omp_set_num_threads(this->n_openMP_threads_);
     // omp_set_nested(0);  // Disable nested parallelism
-    omp_set_max_active_levels(1);  // Limit parallel region depth
+    // omp_set_max_active_levels(1);  // Limit parallel region depth
 #endif
 
     this->kernel_name_ = kernel;
@@ -929,6 +929,14 @@ il::Array<double> BigWhamIO::MatVec(il::ArrayView<double> x) const
     IL_EXPECT_FAST(this->is_built_);
     auto y = hmat_->matvecOriginal(x);
     return y;
+}
+/* -------------------------------------------------------------------------- */
+void BigWhamIO::MatVec(double* x, double* y)
+{
+    // in the original / natural ordering
+    IL_EXPECT_FAST(this->is_built_);
+    hmat_->matvecOriginal(x, y);
+    // hmat_->matvec(x, y);
 }
 /* -------------------------------------------------------------------------- */
 void BigWhamIO::MatVecVoid(const il::ArrayView<double> xin)
