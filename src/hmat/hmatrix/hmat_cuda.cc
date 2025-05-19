@@ -1946,8 +1946,8 @@ void HmatCuda<double>::matvec() {
                                     &alpha,
                                     (const double**)d_FR_nonStd_data_pointers_[sizes],
                                     sizes.first * this->dof_dimension_, 
-                                    (const double**)d_FR_x_pointers_[gpu_id], 
                                     (const double**)d_FR_nonStd_x_pointers_[sizes], 
+                                    sizes.second * this->dof_dimension_, 
                                     &beta,
                                     d_FR_nonStd_y_partial_pointers_[sizes],
                                     sizes.second * this->dof_dimension_,
@@ -2096,7 +2096,7 @@ void HmatCuda<double>::matvec() {
                         CHECK_CUBLAS_ERROR(cublasDgemmBatched(
                             cublas_handle_[gpu_id], CUBLAS_OP_N, CUBLAS_OP_N, 
                             this->fixed_rank_*this->dof_dimension_,
-                            1, // 1 column matrix ß
+                            1, // 1 column matrix
                             block_size*this->dof_dimension_, 
                             &alpha,
                             (const double**)d_LR_B_data_pointers_[gpu_id][block_size],
