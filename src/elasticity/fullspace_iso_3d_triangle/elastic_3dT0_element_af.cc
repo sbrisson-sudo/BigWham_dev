@@ -4,7 +4,7 @@
 // Created by Brice Lecampion on 03.02.2024.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne),
 // Switzerland, Geo-Energy Laboratory, 2016-2025.  All rights reserved.
-// See the LICENSE file for more details.
+// See the LICENSE.TXT file for more details.
 //
 
 // implementation of  Nikkhoo M. and Walter T.R., 2015. Triangular dislocation: An analytical, artefact-free solution.

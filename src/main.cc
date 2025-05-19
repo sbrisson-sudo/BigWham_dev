@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 22.12.19.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2020.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2020.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
@@ -36,7 +36,13 @@ int main() {
     }
 
     std::vector<double> properties{1., 0.};
-    BigWhamIO my_io{coor, conn, "2DS0-H", properties};
+
+    bool verbose = true;
+    bool homegeneous_block_size = false;
+    bool useCuda = false;
+    int n_GPUs = -1;
+    int n_omp_threads = 4;
+    BigWhamIO my_io{coor, conn, "2DS0-H", properties, n_omp_threads,n_GPUs, verbose, homegeneous_block_size, useCuda};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
     auto nt = my_io.GetOmpThreads() ;
     std::cout <<"numb of threads " << nt <<"\n";

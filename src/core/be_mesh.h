@@ -4,7 +4,7 @@
 // Created by Brice Lecampion on 01.02.23.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
 // Geo-Energy Laboratory, 2016-2025.  All rights reserved.
-// See the LICENSE file for more details.
+// See the LICENSE.TXT file for more details.
 //
 
 #ifndef BIGWHAM_BEMESH_H

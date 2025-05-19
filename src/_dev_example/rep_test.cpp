@@ -96,10 +96,11 @@ int main(int argc, char *argv[]) {
   std::cout << "Number of Collocation points  = " << xcol.size(0) << " X "
             << xcol.size(1) << std::endl;
 
-  auto hr = HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  auto hr = HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta, true);
 
   SquareMatrixGenerator<double> M(my_mesh, ker, hr);
-  bigwham::Hmat<double> h_(M, eps_aca);
+  const int n_openmp_threads = 4;
+  bigwham::Hmat<double> h_(M, eps_aca, n_openmp_threads);
 
   il::Array<double> dd{M.size(1), 0.0};
   il::Array<double> dd_perm{M.size(1), 0.0};

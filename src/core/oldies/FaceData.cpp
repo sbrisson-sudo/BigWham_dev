@@ -4,7 +4,7 @@
 // Created by Carlo Peruzzo on 01.01.21 based on a work done by Alexis Sáez on
 // 08.06.20. Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) ,
 // Switzerland, Geo-Energy Laboratory, 2016-2020.  All rights reserved. See the
-// LICENSE file for more details.
+// LICENSE.TXT file for more details.
 //
 
 #include <il/Array.h>

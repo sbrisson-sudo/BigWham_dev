@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 15.12.19.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 // last modifications :: Dec. 2023 - new interface improvements
@@ -24,6 +24,12 @@
 #include "hmat/bie_matrix_generator.h"
 #include "hmat/hmatrix/hmat.h"
 
+#ifdef USE_CUDA
+#include <cuda_runtime.h>
+#include <cuda.h>
+#include "hmat/hmatrix/hmat_cuda.h"
+#endif
+
 class BigWhamIO {
 private:
 
@@ -42,6 +48,15 @@ private:
   double h_representation_time_;
   double hmat_time_;
 
+  bool verbose_ = true;
+  bool is_square_ = true;
+
+  // Road to CUDA
+  int num_GPUs_;
+  bool homogeneous_size_pattern_ = false;
+  int fixed_rank_ = -1;
+  bool use_cuda_hmat = true;
+
   std::shared_ptr<bigwham::Hmat<double>> hmat_;
   std::shared_ptr<bigwham::HRepresentation> hr_;
   std::shared_ptr<bigwham::Mesh> mesh_src_;
@@ -54,16 +69,30 @@ private:
 public:
     BigWhamIO() {};
     // square matrices
-    BigWhamIO(const std::vector<double> &coor, const std::vector<int> &conn,
-              const std::string &kernel, const std::vector<double> &properties, const int n_openMP_threads=8) ;
-
+    BigWhamIO(const std::vector<double> &coor, 
+              const std::vector<int> &conn,
+              const std::string &kernel, 
+              const std::vector<double> &properties, 
+              const int n_openMP_threads,
+              const int n_GPUs,
+              const bool verbose, 
+              const bool homogeneous_size_pattern, 
+              const bool useCuda, 
+              const int fixed_ranks=-1) ;
 
     // rectangular Hmat
     BigWhamIO(const std::vector<double> &coor_src,
               const std::vector<int> &conn_src,
               const std::vector<double> &coor_rec,
-              const std::vector<int> &conn_rec, const std::string &kernel,
-              const std::vector<double> &properties, const int n_openMP_threads=8);
+              const std::vector<int> &conn_rec, 
+              const std::string &kernel,
+              const std::vector<double> &properties, 
+              const int n_openMP_threads,
+              const int n_GPUs,
+              const bool verbose, 
+              const bool homogeneous_size_pattern, 
+              const bool useCuda,
+              const int fixed_ranks=-1);
 
   ~BigWhamIO() {};
 
@@ -95,14 +124,21 @@ public:
   std::vector<double> ComputeTractionsFromUniformStress(const std::vector<double> &stress  ) const;
   std::vector<double> GetRotationMatrix() const;
   [[nodiscard]] std::vector<long> GetPermutation() const;
-  [[nodiscard]] std::vector<long> GetHPattern() const;
+  [[nodiscard]] std::vector<long> GetPermutationReceivers() const;
+  [[nodiscard]] std::vector<double> GetHPattern() const;
+  double GetMaxErrorACA() const;
   void GetFullBlocks(std::vector<double> &val_list,
                      std::vector<int> &pos_list) const;
   void GetFullBlocks(il::Array<double> &val_list,
                      il::Array<int> &pos_list) const;
+  void GetFullBlocksPerm(std::vector<double> &val_list,
+                      std::vector<int> &pos_list) const;
+  void GetFullBlocksPerm(il::Array<double> &val_list,
+                      il::Array<int> &pos_list) const;
   void GetDiagonal(std::vector<double> &val_list) const;
   [[nodiscard]] std::vector<double> MatVec(const std::vector<double> &x) const;
   [[nodiscard]] il::Array<double> MatVec(il::ArrayView<double> x) const;
+  void MatVec(double* x, double *y);
   [[nodiscard]] std::vector<double> MatVecPerm(const std::vector<double> &x) const;
   [[nodiscard]] il::Array<double> MatVecPerm(il::ArrayView<double> x) const;
   [[nodiscard]] std::vector<double> ConvertToGlobal(const std::vector<double> &x_local) const;
@@ -124,6 +160,15 @@ public:
     IL_EXPECT_FAST(is_built_);
     return hmat_->compressionRatio();
   };
+  int GetStorageRequirement() const {
+    IL_EXPECT_FAST(is_built_);
+    return hmat_->nbOfEntries() * sizeof(double);
+  }
+
+  size_t GetGPUStorageRequirement() const;
+
+
+
   [[nodiscard]] double hmat_time() const { return hmat_time_; };
   [[nodiscard]] double pattern_time() const { return h_representation_time_; };
   [[nodiscard]] std::string kernel_name() const { return kernel_name_; };
@@ -137,23 +182,27 @@ public:
     this->hmat_->hmatMemFree();
   }
 
-    int GetOmpThreads() {
-        std::cout << "NUM OF OMP THREADS used by BigWham: " << this->n_openMP_threads_ << std::endl;
-        return this->n_openMP_threads_;};
+  bool GetCudaAvailable();
 
-    int GetAvailableOmpThreads() {
+  int GetOmpThreads() {
+    return this->n_openMP_threads_;
+  };
+
+  int GetAvailableOmpThreads() {
     int threads = 1;
+
 #ifdef BIGWHAM_OPENMP
 #pragma omp parallel
     {
 #pragma omp single
-       std::cout << "NUM OF AVAILABLE OMP THREADS: " << omp_get_num_threads() <<
-       std::endl;
       threads = omp_get_num_threads();
     }
 #endif
     return threads;
   }
+
+  std::shared_ptr<bigwham::Hmat<double>> getHmat(){ return hmat_; };
+
 };
 
 #endif // BIGWHAM_IO_H

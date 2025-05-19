@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 24.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
@@ -38,7 +38,8 @@ TEST(SquareMatGen, segment_0_1) {
       std::make_shared<bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
                                             bigwham::ElasticKernelType::H>>(
           elas, xy.size(1));
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0, verbose);
   bigwham::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   ASSERT_TRUE(M.size(1) == 2 && M.size(0) == 2);
 }
@@ -57,7 +58,8 @@ TEST(SquareMatGen, segment_0_2) {
       std::make_shared<bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
                                             bigwham::ElasticKernelType::H>>(
           elas, xy.size(1));
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0, verbose);
   bigwham::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   ASSERT_TRUE(M.blockSize() == 2 &&
               M.sizeAsBlocks(0) == my_mesh->num_elements());
@@ -79,7 +81,8 @@ TEST(SquareMatGen, segment_0_3) {
           elas, xy.size(1));
   // il::Array<double> prop{1, 1000.};
   // test->set_kernel_properties(prop);
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, 1, 2.0, verbose);
   bigwham::SquareMatrixGenerator<double> M(my_mesh, test, hr);
   il::Array2D<double> A{M.size(0), M.size(1), 0.0};
   il::Array2DEdit<double> v = A.Edit();
@@ -119,9 +122,11 @@ TEST(SquareMatGen, segment_0_Hmat_1) {
           elas, coor.size(1));
 
   il::int_t max_leaf_size = 32;
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, 1.0);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, 1.0, verbose);
   bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
-  bigwham::Hmat<double> h_(M, 1.e-3);
+  const int n_openmp_threads=4;
+  bigwham::Hmat<double> h_(M, 1.e-3, n_openmp_threads);
   ASSERT_TRUE(h_.isBuilt()); // h_.isBuilt()
 }
 /* -------------------------------------------------------------------------- */
@@ -151,10 +156,12 @@ TEST(SquareMatGen, segment_0_Hmat_2) {
           elas, coor.size(1));
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta, verbose);
   bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bigwham::Hmat<double> h_(M, eps_aca);
+  const int n_openmp_threads=4;
+  bigwham::Hmat<double> h_(M, eps_aca, n_openmp_threads);
   // simple opening mode...
   il::Array<double> x{M.size(1), 0.0}, y{M.size(1), 0.0};
   for (il::int_t i = 0; i < M.sizeAsBlocks(0); i++) {
@@ -205,10 +212,12 @@ TEST(SquareMatGen, segment_1_Hmat_1_segs_45_a1) {
           elas, xy.size(1));
   il::int_t max_leaf_size = 320;
   double eta = 0.0;
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta, verbose);
   bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bigwham::Hmat<double> h_(M, eps_aca);
+  const int n_openmp_threads=4;
+  bigwham::Hmat<double> h_(M, eps_aca, n_openmp_threads);
   /// analytical results from mathematica integration for that particular
   // case
   // we compare the results of the assembly w.t the mma code
@@ -334,10 +343,12 @@ TEST(SquareMatGen, segment_1_Hmat_1_two_adjacent_segs) {
 
   il::int_t max_leaf_size = 320;
   double eta = 0.0;
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta, verbose);
   bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bigwham::Hmat<double> h_(M, eps_aca);
+  const int n_openmp_threads=4;
+  bigwham::Hmat<double> h_(M, eps_aca, n_openmp_threads);
   /// analytical results from mathematica integration for that particular
   // case
   // we compare the results of the assembly w.t the mma code
@@ -462,10 +473,12 @@ TEST(SquareMatGen, Triangle_0_1) {
   auto ker = std::make_shared<Kernel>(elas, dim);
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
-  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta);
+  bool verbose = true;
+  auto hr = bigwham::HRepresentationSquareMatrix(my_mesh, max_leaf_size, eta, verbose);
   bigwham::SquareMatrixGenerator<double> M(my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bigwham::Hmat<double> h_(M, eps_aca);
+  const int n_openmp_threads=4;
+  bigwham::Hmat<double> h_(M, eps_aca, n_openmp_threads);
   il::Array<double> val_list;
   il::Array<int> pos_list;
   h_.fullBlocksOriginal(il::io, val_list, pos_list);
@@ -515,11 +528,13 @@ TEST(RectangleMatGen, Triangle_0_1) {
   auto ker = std::make_shared<Kernel>(elas, dim);
   il::int_t max_leaf_size = 32;
   double eta = 2.0;
+  bool verbose = true;
   auto hr = bigwham::HRepresentationRectangularMatrix(my_mesh, my_mesh,
-                                                  max_leaf_size, eta);
+                                                  max_leaf_size, eta, verbose);
   bigwham::BieMatrixGenerator<double> M(my_mesh, my_mesh, ker, hr);
   double eps_aca = 1.e-3;
-  bigwham::Hmat<double> h_(M, eps_aca);
+  const int n_openmp_threads=4;
+  bigwham::Hmat<double> h_(M, eps_aca, n_openmp_threads);
   il::Array<double> val_list;
   il::Array<int> pos_list;
   h_.fullBlocksOriginal(il::io, val_list, pos_list);

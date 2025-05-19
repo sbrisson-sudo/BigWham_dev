@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 31.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 #include <gtest/gtest.h>
@@ -35,8 +35,12 @@ TEST(bigwham_io_gen_3d, 3DT0_1) {
         k = k + 3;
     }
   std::vector<double> properties{1., 0.};
-
-  BigWhamIO my_io{coor, conn, "3DT0-H", properties};
+  int n_openMP_threads = 4;
+  int n_GPUs = -1;
+  bool verbose = true;
+  bool homogeneous_size_pattern = false;
+  bool useCuda = false;
+  BigWhamIO my_io{coor, conn, "3DT0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
   my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
   std::cout << my_io.GetCompressionRatio()<<"\n";
   auto colpts = my_io.GetCollocationPoints();
@@ -61,8 +65,12 @@ TEST(bigwham_io_gen_3d, 3DT0_2) {
         k = k + 3;
     }
     std::vector<double> properties{1., 0.};
-
-    BigWhamIO my_io{coor, conn, "3DT0-H", properties};
+    int n_openMP_threads = 4;
+    int n_GPUs = -1;
+    bool verbose = true;
+    bool homogeneous_size_pattern = false;
+    bool useCuda = false;
+    BigWhamIO my_io{coor, conn, "3DT0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
     my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
     std::cout << my_io.GetCompressionRatio()<<"\n";
     auto colpts = my_io.GetCollocationPoints();
@@ -96,8 +104,13 @@ TEST(bigwham_io_gen_3d, 3DT0_3) {
         k = k + 3;
     }
     std::vector<double> properties{1., 0.};
+    int n_openMP_threads = 4;
+    int n_GPUs = -1;
+    bool verbose = true;
+    bool homogeneous_size_pattern = false;
+    bool useCuda = false;
 
-    BigWhamIO my_io{coor, conn, "3DT0-H", properties};
+    BigWhamIO my_io{coor, conn, "3DT0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
     my_io.BuildHierarchicalMatrix(32, 0, 1.e-3);
     std::cout << "Compression ratio:" << my_io.GetCompressionRatio()<<"\n";
     auto colpts = my_io.GetCollocationPoints();
@@ -139,8 +152,12 @@ TEST(bigwham_io_gen_3d, 3DR0_1) {
         k = k + 4;
     }
     std::vector<double> properties{1., 0.};
-
-    BigWhamIO my_io{coor, conn, "3DR0-H", properties};
+    int n_openMP_threads = 4;
+    int n_GPUs = -1;
+    bool verbose = true;
+    bool homogeneous_size_pattern = false;
+    bool useCuda = false;
+    BigWhamIO my_io{coor, conn, "3DR0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
     std::cout << my_io.kernel_name() <<"\n";
     my_io.BuildHierarchicalMatrix(32, 0.0, 1.e-3);
     std::cout << my_io.GetCompressionRatio()<<"\n";

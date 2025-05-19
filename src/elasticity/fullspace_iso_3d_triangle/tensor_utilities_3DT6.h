@@ -4,7 +4,7 @@
 // Created by D. Nikolski on 1/12/2017.
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
 // Geo-Energy Laboratory, 2016-2025.  All rights reserved.
-// See the LICENSE file for more details.
+// See the LICENSE.TXT file for more details. 
 //
 
 #ifndef BIGWHAM_TENSOR_UTILITIES_3DT6_H

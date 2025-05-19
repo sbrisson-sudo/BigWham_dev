@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 15.12.19.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
@@ -17,15 +17,49 @@
 #include "hdf5.h"
 #endif
 
+// #define TIMING
+#include <ctime>
+
+#include "cnpy.h"
+
+
+
 namespace bigwham {
 /* -------------------------------------------------------------------------- */
 
 // direct constructor
     template <typename T>
-    Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca,const int n_openMP_threads) {
+    Hmat<T>::Hmat(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon_aca, const int n_openMP_threads, const bool verbose, const int fixed_rank) {
         // construction directly
+        this->verbose_ = verbose;
+        this->fixed_rank_ = fixed_rank;
         this->n_openMP_threads_=n_openMP_threads;
-        this->toHmat(matrix_gen, epsilon_aca);
+
+#ifdef TIMING
+        struct timespec start, end;
+        double duration;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
+        
+        // construction directly
+        this->hr_ = matrix_gen.hr();
+        il::Timer tt;
+        tt.Start();
+        this->build(matrix_gen, epsilon_aca);
+        tt.Stop();
+        if (this->verbose_){
+            std::cout << "HMAT num openMP threads = " << this->n_openMP_threads_ << "\n";
+            std::cout << "Creation of hmat done in " << tt.time() << " s\n";
+            std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
+            std::cout << "Hmat object - built "<< "\n";
+        }
+
+#ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] allocating and populating the hmat = " << duration*1000 << "ms\n";
+#endif // TIMING 
+
     }
 /* -------------------------------------------------------------------------- */
     template <typename T> Hmat<T>::Hmat(const std::string & filename) {
@@ -36,17 +70,22 @@ namespace bigwham {
         tt.Stop();
         std::cout << "Reading of hmat done in " << tt.time() << "\n";
         std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
-        std::cout << "Hmat object - built "
-                  << "\n";
+        std::cout << "Hmat object - built " << "\n" << std::flush;
     }
-/* -------------------------------------------------------------------------- */
+
+    /* -------------------------------------------------------------------------- */
     template <typename T>
     void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,
-                                     il::Array<int> & pos_list) {
+                                    il::Array<int> & pos_list) {
+
+        // std::cout << hr_->is_square_ << std::endl;
+        
         // return the full blocks in the permutted Original dof state
         // in the val_list and pos_list 1D arrays.
         IL_EXPECT_FAST(isBuilt_FR_);
+        IL_EXPECT_FAST(hr_->permutation_0_.size() * dof_dimension_ == size_[0]);
         IL_EXPECT_FAST(hr_->permutation_1_.size() * dof_dimension_ == size_[1]);
+
         //  compute the number of  entries in the whole full rank blocks
         int nbfentry = 0;
         for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
@@ -58,14 +97,23 @@ namespace bigwham {
         pos_list.Resize(nbfentry * 2);
         val_list.Resize(nbfentry);
 
-        il::Array<int> permutDOF{dof_dimension_ * hr_->permutation_1_.size(), 0};
-        IL_EXPECT_FAST(permutDOF.size() == size_[0]);
+        il::Array<int> permutDOF_rcv{dof_dimension_ * hr_->permutation_0_.size(), 0};
+        IL_EXPECT_FAST(permutDOF_rcv.size() == size_[0]);
+        for (il::int_t i = 0; i < hr_->permutation_0_.size(); i++) {
+            for (il::int_t j = 0; j < dof_dimension_; j++) {
+                permutDOF_rcv[i * dof_dimension_ + j] =
+                        hr_->permutation_0_[i] * dof_dimension_ + j;
+            }
+        }
+
+        il::Array<int> permutDOF_src{dof_dimension_ * hr_->permutation_1_.size(), 0};
         for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
             for (il::int_t j = 0; j < dof_dimension_; j++) {
-                permutDOF[i * dof_dimension_ + j] =
+                permutDOF_src[i * dof_dimension_ + j] =
                         hr_->permutation_1_[i] * dof_dimension_ + j;
             }
         }
+
         // loop on full rank and get i,j and val
         int nr = 0;
         int npos = 0;
@@ -76,8 +124,16 @@ namespace bigwham {
             il::int_t index = 0;
             for (il::int_t j = 0; j < aux.size(1); j++) {
                 for (il::int_t i = 0; i < aux.size(0); i++) {
-                    pos_list[npos + 2 * index] = permutDOF[(i + dof_dimension_ * i0)];
-                    pos_list[npos + 2 * index + 1] = permutDOF[(j + dof_dimension_ * j0)];
+
+                    pos_list[npos + 2 * index] = permutDOF_src[(i + dof_dimension_ * i0)]; // rows
+                    pos_list[npos + 2 * index + 1] = permutDOF_src[(j + dof_dimension_ * j0)]; // columns 
+
+                    // For PETSc parallel solvers (bc the submatrices are defined in an already permuted dof ordering)
+                    // pos_list[npos + 2 * index] = permutDOF_rcv[(i + dof_dimension_ * i0)];
+                    // pos_list[npos + 2 * index + 1] = (j + dof_dimension_ * j0);
+
+
+                    // columns
                     val_list[nr + index] = aux(i, j);
                     index++;
                 }
@@ -85,10 +141,101 @@ namespace bigwham {
             nr = nr + static_cast<int>(aux.size(0) * aux.size(1));
             npos = npos + static_cast<int>(2 * aux.size(0) * aux.size(1));
         }
-        // std::cout << "Done Full Block: nval " << val_list.size() << " / "
-        //           << pos_list.size() / 2 << " n^2 "
-        //           << (this->size_[0]) * (this->size_[1]) << "\n";
+
     }
+
+    /* -------------------------------------------------------------------------- */
+        template <typename T>
+        void Hmat<T>::fullBlocksPerm(il::io_t, il::Array<T> & val_list,
+                                        il::Array<int> & pos_list) {
+            
+            // return the full blocks in the permutted Original dof state
+            // in the val_list and pos_list 1D arrays.
+            IL_EXPECT_FAST(isBuilt_FR_);
+
+            //  compute the number of  entries in the whole full rank blocks
+            int nbfentry = 0;
+            for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+                il::Array2DView<double> aux = ((*full_rank_blocks_[i]).view());
+                nbfentry = nbfentry + static_cast<int>(aux.size(0) * aux.size(1));
+            }
+    
+            // prepare outputs
+            pos_list.Resize(nbfentry * 2);
+            val_list.Resize(nbfentry);
+    
+            // loop on full rank and get i,j and val
+            int nr = 0;
+            int npos = 0;
+            for (il::int_t k = 0; k < hr_->pattern_.n_FRB; k++) {
+                il::Array2D<double> aux = *full_rank_blocks_[k];
+                il::int_t i0 = hr_->pattern_.FRB_pattern(1, k);
+                il::int_t j0 = hr_->pattern_.FRB_pattern(2, k);
+                il::int_t index = 0;
+                for (il::int_t j = 0; j < aux.size(1); j++) {
+                    for (il::int_t i = 0; i < aux.size(0); i++) {
+                        pos_list[npos + 2 * index] = (i + dof_dimension_ * i0); // rows
+                        pos_list[npos + 2 * index + 1] = (j + dof_dimension_ * j0); // columns
+                        val_list[nr + index] = aux(i, j);
+                        index++;
+                    }
+                }
+                nr = nr + static_cast<int>(aux.size(0) * aux.size(1));
+                npos = npos + static_cast<int>(2 * aux.size(0) * aux.size(1));
+            }
+    
+        }
+
+/* -------------------------------------------------------------------------- */
+    // template <typename T>
+    // void Hmat<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,
+    //                                  il::Array<int> & pos_list) {
+    //     // return the full blocks in the permutted Original dof state
+    //     // in the val_list and pos_list 1D arrays.
+    //     IL_EXPECT_FAST(isBuilt_FR_);
+    //     IL_EXPECT_FAST(hr_->permutation_1_.size() * dof_dimension_ == size_[1]);
+    //     //  compute the number of  entries in the whole full rank blocks
+    //     int nbfentry = 0;
+    //     for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+    //         il::Array2DView<double> aux = ((*full_rank_blocks_[i]).view());
+    //         nbfentry = nbfentry + static_cast<int>(aux.size(0) * aux.size(1));
+    //     }
+
+    //     // prepare outputs
+    //     pos_list.Resize(nbfentry * 2);
+    //     val_list.Resize(nbfentry);
+
+    //     il::Array<int> permutDOF{dof_dimension_ * hr_->permutation_1_.size(), 0};
+    //     IL_EXPECT_FAST(permutDOF.size() == size_[0]);
+    //     for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
+    //         for (il::int_t j = 0; j < dof_dimension_; j++) {
+    //             permutDOF[i * dof_dimension_ + j] =
+    //                     hr_->permutation_1_[i] * dof_dimension_ + j;
+    //         }
+    //     }
+    //     // loop on full rank and get i,j and val
+    //     int nr = 0;
+    //     int npos = 0;
+    //     for (il::int_t k = 0; k < hr_->pattern_.n_FRB; k++) {
+    //         il::Array2D<double> aux = *full_rank_blocks_[k];
+    //         il::int_t i0 = hr_->pattern_.FRB_pattern(1, k);
+    //         il::int_t j0 = hr_->pattern_.FRB_pattern(2, k);
+    //         il::int_t index = 0;
+    //         for (il::int_t j = 0; j < aux.size(1); j++) {
+    //             for (il::int_t i = 0; i < aux.size(0); i++) {
+    //                 pos_list[npos + 2 * index] = permutDOF[(i + dof_dimension_ * i0)];
+    //                 pos_list[npos + 2 * index + 1] = permutDOF[(j + dof_dimension_ * j0)];
+    //                 val_list[nr + index] = aux(i, j);
+    //                 index++;
+    //             }
+    //         }
+    //         nr = nr + static_cast<int>(aux.size(0) * aux.size(1));
+    //         npos = npos + static_cast<int>(2 * aux.size(0) * aux.size(1));
+    //     }
+    //     // std::cout << "Done Full Block: nval " << val_list.size() << " / "
+    //     //           << pos_list.size() / 2 << " n^2 "
+    //     //           << (this->size_[0]) * (this->size_[1]) << "\n";
+    // }
 /* -------------------------------------------------------------------------- */
     template <typename T> std::vector<T> Hmat<T>::diagonalOriginal() {
         // return diagonal in original state....
@@ -136,20 +283,7 @@ namespace bigwham {
         }
         return diag;
     }
-/* -------------------------------------------------------------------------- */
-    template <typename T>
-    void Hmat<T>::toHmat(const MatrixGenerator<T> & matrix_gen,
-                         const double epsilon_aca) {
-        this->hr_ = matrix_gen.hr();
-        // construction directly
-        il::Timer tt;
-        tt.Start();
-        this->build(matrix_gen, epsilon_aca);
-        tt.Stop();
-        std::cout << "Creation of hmat done in " << tt.time() << "\n";
-        std::cout << "Compression ratio - " << this->compressionRatio() << "\n";
-        std::cout << "Hmat object - built "<< "\n";
-    }
+
 /* -------------------------------------------------------------------------- */
 // delete the memory pointed by low_rank_blocks_ and  full_rank_blocks_
 template <typename T> void Hmat<T>::hmatMemFree() {
@@ -177,65 +311,110 @@ template <typename T> il::int_t Hmat<T>::nbOfEntries() {
         return n;
     }
 /* -------------------------------------------------------------------------- */
+
 template <typename T>
-void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
-        // construction of the full rank blocks
-        std::cout << " Loop on full blocks construction  \n";
-        std::cout << " N full blocks " << hr_->pattern_.n_FRB << " \n";
+void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
 
-        full_rank_blocks_.resize(hr_->pattern_.n_FRB);
-#pragma omp parallel for schedule(static, frb_chunk_size_) num_threads(this->n_openMP_threads_)
-        for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
-            il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
-            il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
-            il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
-            il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
-
-            const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
-            const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
-
-            std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
-            matrix_gen.set(i0, j0, il::io, a->Edit());
-            full_rank_blocks_[i] = std::move(a);
-        }
-        isBuilt_FR_ = true;
+    if (this->verbose_){
+        std::cout << "Loop on full blocks construction  \n";
     }
+
+    // We create a tmp vector 
+    // It will go out of scope and be deleted when the function return
+    std::vector<std::unique_ptr<il::Array2D<T>>> full_rank_blocks_tmp;
+
+    // We populate it 
+    full_rank_blocks_tmp.resize(hr_->pattern_.n_FRB);
+
+    // #pragma omp parallel for schedule(static, frb_chunk_size_) num_threads(this->n_openMP_threads_)
+    #pragma omp parallel for schedule(static, frb_chunk_size_)
+    for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
+        il::int_t i0 = hr_->pattern_.FRB_pattern(1, i);
+        il::int_t j0 = hr_->pattern_.FRB_pattern(2, i);
+        il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
+        il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
+
+        const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
+        const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
+
+        std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
+        matrix_gen.set(i0, j0, il::io, a->Edit());
+        full_rank_blocks_tmp[i] = std::move(a);
+    }
+
+    // Now we copy it into the container that guarantees data contiguity
+    full_rank_blocks_container_.copyArray2DVectorContent(full_rank_blocks_tmp);
+
+    // We set the vector
+    full_rank_blocks_ = full_rank_blocks_container_.blocks();
+
+    isBuilt_FR_ = true;
+    
+}
 /* -------------------------------------------------------------------------- */
-/// \param matrix_gen
-/// \param epsilon
-    template <typename T>
-    template <il::int_t dim>
-    void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen,
-                          const double epsilon) {
-        // constructing the low rank blocks
-        dof_dimension_ = matrix_gen.blockSize();
+
+template <typename T>
+template <il::int_t dim>
+void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon) {
+
+    // constructing the low rank blocks
+    dof_dimension_ = matrix_gen.blockSize();
+    if (this->verbose_){
         std::cout << "Loop on low rank blocks construction\n";
-        std::cout << "N low rank blocks " << hr_->pattern_.n_LRB << "\n";
-        std::cout << "dof_dimension: " << dof_dimension_ << "\n";
-
-        low_rank_blocks_.resize(hr_->pattern_.n_LRB);
-#pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
-        for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
-            il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
-            il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
-            il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
-            il::int_t jend = hr_->pattern_.LRB_pattern(4, i);
-            il::Range range0{i0, iend};
-            il::Range range1{j0, jend};
-
-            // we need 7a LRA generator virtual template similar to the Matrix
-            // generator... here we have an if condition for the LRA call dependent on
-            // dof_dimension_
-            auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1,
-                                                                epsilon);
-
-            // store the rank in the low_rank pattern
-            hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
-            low_rank_blocks_[i] =
-                    std::move(lra); // lra_p does not exist after such call
-        }
-        isBuilt_LR_ = true;
     }
+
+    // First we generate a tmp vector that will hold all the blocks
+    std::vector<std::unique_ptr<il::Array2D<T>>> low_rank_blocks_tmp;
+    low_rank_blocks_tmp.resize(2 * hr_->pattern_.n_LRB);
+
+    // And one just to hold the error on approximation 
+    std::vector<std::unique_ptr<LowRank<T>>> low_rank_blocks_tmp_2;
+    low_rank_blocks_tmp_2.resize(hr_->pattern_.n_LRB);
+
+    // #pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
+    #pragma omp parallel for schedule(static, lrb_chunk_size_)
+    for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+        il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
+        il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
+        il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
+        il::int_t jend = hr_->pattern_.LRB_pattern(4, i);
+        il::Range range0{i0, iend};
+        il::Range range1{j0, jend};
+
+        // we need 7a LRA generator virtual template similar to the Matrix
+        // generator... here we have an if condition for the LRA call dependent on
+        // dof_dimension_
+        auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1, epsilon, this->fixed_rank_);
+
+        // store the rank in the low_rank pattern
+        hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
+
+        // Move the pointers to our vector 
+        low_rank_blocks_tmp[2*i] = std::make_unique<il::Array2D<T>>(std::move(lra->A));
+        low_rank_blocks_tmp[2*i+1] = std::make_unique<il::Array2D<T>>(std::move(lra->B));
+
+        low_rank_blocks_tmp_2[i] = std::move(lra); 
+    }
+
+    // Now we copy it to a contiguous container
+    low_rank_blocks_container_.copyArray2DVectorContent(low_rank_blocks_tmp);
+
+    // Now we construct back our vector of LowRank
+    std::vector<std::shared_ptr<il::Array2D<T>>> low_rank_blocks_tmp2 = low_rank_blocks_container_.blocks();
+
+    low_rank_blocks_.resize(hr_->pattern_.n_LRB);
+    for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+        auto lrb = std::make_unique<LowRank<T>>();
+        lrb->A = *low_rank_blocks_tmp2[2*i];
+        lrb->B = *low_rank_blocks_tmp2[2*i+1];
+        lrb->error_on_approximation = low_rank_blocks_tmp_2[i]->error_on_approximation;
+
+        low_rank_blocks_[i] = std::move(lrb);
+    }        
+
+    isBuilt_LR_ = true;
+}                      
+
 /* -------------------------------------------------------------------------- */
 // filling up the h-matrix sub-blocks
     template <typename T>
@@ -244,7 +423,21 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
         dof_dimension_ = matrix_gen.blockSize();
         size_[0] = matrix_gen.size(0);
         size_[1] = matrix_gen.size(1);
+
+#ifdef TIMING
+        struct timespec start, end;
+        double duration;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
+
         buildFR(matrix_gen);
+
+#ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] building the FR blocks = " << duration*1000 << "ms\n";
+        clock_gettime(CLOCK_MONOTONIC, &start);
+#endif // TIMING 
 
         switch (matrix_gen.blockSize()) {
             case 1:
@@ -257,6 +450,12 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
                 buildLR<3>(matrix_gen, epsilon);
                 break;
         }
+
+#ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] building the LR blocks = " << duration*1000 << "ms\n";
+#endif // TIMING
 
         isBuilt_ = isBuilt_FR_ && isBuilt_LR_;
     }
@@ -273,17 +472,22 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
     template <typename T> il::Array<T> Hmat<T>::matvec(il::ArrayView<T> x) {
         IL_EXPECT_FAST(this->isBuilt_);
         IL_EXPECT_FAST(x.size() == size_[1]);
-        il::Array<T> y{size_[0], 0.};
 
-#pragma omp parallel shared(y) num_threads(this->n_openMP_threads_)
+        il::Array<T> y(size_[0], 0.0, il::align_t(), 64);
+        // il::Array<T> y{size_[0], 0.};
+
+// #pragma omp parallel shared(y) num_threads(this->n_openMP_threads_)
+#pragma omp parallel num_threads(this->n_openMP_threads_)
         {
-//            {
-//#pragma omp single
-////                std::cout << "NUM OF OMP THREADS: " << omp_get_num_threads() << std::endl;
-//            }
-            il::Array<T> yprivate{size_[0], 0.};
+            il::Array<T> yprivate(size_[0], 0.0, il::align_t(), 64);
 
-#pragma omp for nowait schedule(static, frb_chunk_size_)
+            // il::Array<T> yprivate{size_[0], 0.};
+
+            // int thread_id = omp_get_thread_num();
+            // double start_time = omp_get_wtime();
+
+// #pragma omp for nowait schedule(static, frb_chunk_size_)
+#pragma omp for schedule(guided) nowait
             for (il::int_t i = 0; i < hr_->pattern_.n_FRB; i++) {
                 auto i0 = hr_->pattern_.FRB_pattern(1, i);
                 auto j0 = hr_->pattern_.FRB_pattern(2, i);
@@ -297,7 +501,12 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
                 il::blas(1.0, a, xs, 1.0, il::io, ys);
             }
 
-#pragma omp for nowait schedule(static, lrb_chunk_size_)
+            // double end_time = omp_get_wtime();
+            // std::cout << "[" << thread_id << "] FRB " << (end_time - start_time) << "\n";
+            // start_time = omp_get_wtime();
+
+// #pragma omp for nowait schedule(static, lrb_chunk_size_)
+#pragma omp for schedule(guided) nowait
             for (il::int_t ii = 0; ii < hr_->pattern_.n_LRB; ii++) {
                 auto i0 = hr_->pattern_.LRB_pattern(1, ii);
                 auto j0 = hr_->pattern_.LRB_pattern(2, ii);
@@ -317,12 +526,28 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
                 il::blas(1.0, a, tmp.view(), 1.0, il::io, ys);
             }
 
+            // end_time = omp_get_wtime();
+            // std::cout << "[" << thread_id << "] LRB " << (end_time - start_time) << "\n";
+
 #pragma omp critical
             il::blas(1., yprivate.view(), il::io_t{}, y.Edit());
         }
 
         return y;
     }
+
+
+// New matvec function operating directly on arrays, only implemented for hmatcuda
+template <typename T> 
+void Hmat<T>::matvec(T* x, T* y) {
+    return;
+}
+
+template <typename T> 
+void Hmat<T>::matvecOriginal(T* x, T* y) {
+    return;
+}
+
 /* -------------------------------------------------------------------------- */
 // matvect in and outs as std::vector - not great
     template <typename T>
@@ -347,8 +572,17 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
     template <typename T> il::Array<T> Hmat<T>::matvecOriginal(il::ArrayView<T> x) {
         IL_EXPECT_FAST(this->isBuilt_);
         IL_EXPECT_FAST(x.size()==size_[1]);
-        il::Array<T> z{static_cast<il::int_t>(x.size())};
+        il::Array<T> z{static_cast<il::int_t>(x.size())}; // We are allocating this one every time, should be allocated once and for all
+
+        // #ifdef TIMING
+        // struct timespec start, end;
+        // double duration;
+        // clock_gettime(CLOCK_MONOTONIC, &start);
+        // #endif // TIMING 
+
+
         // permutation of the dofs according to the re-ordering sue to clustering
+        // this could be passed to OpenMP if needed
         il::int_t ncolpoints = this->size(1) / dof_dimension_;
         il::int_t nrowpoints = this->size(0) / dof_dimension_;
         for (il::int_t i = 0; i < ncolpoints; i++) {
@@ -357,7 +591,30 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
                         x[dof_dimension_ * hr_->permutation_1_[i] + j];
             }
         }
+
+        // #ifdef TIMING
+        // clock_gettime(CLOCK_MONOTONIC, &end);
+        // duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        // std::cout << "[Timing] matvecOriginal : permuting x = " << duration*1000 << "ms\n";
+        // clock_gettime(CLOCK_MONOTONIC, &start);
+        // #endif // TIMING
+
+        #ifdef TIMING
+        struct timespec start, end;
+        double duration;
+        clock_gettime(CLOCK_MONOTONIC, &start);
+        #endif // TIMING 
+
+
         il::Array<T> y = this->matvec(z.view());
+
+        #ifdef TIMING
+        clock_gettime(CLOCK_MONOTONIC, &end);
+        duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        std::cout << "[Timing] Hmat<T>::matvecOriginal : " << duration*1000 << "ms\n";
+        // clock_gettime(CLOCK_MONOTONIC, &start);
+        #endif // TIMING
+
         il::Array<T> yout;
         yout.Resize(y.size(), 0.);
         // permut back
@@ -367,6 +624,13 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen) {
                         y[dof_dimension_ * i + j];
             }
         }
+
+        // #ifdef TIMING
+        // clock_gettime(CLOCK_MONOTONIC, &end);
+        // duration = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;    
+        // std::cout << "[Timing] matvecOriginal : permuting y = " << duration*1000 << "ms\n" << std::flush;
+        // #endif // TIMING
+
         return yout;
     }
 /* -------------------------------------------------------------------------- */

@@ -106,11 +106,11 @@ typedef __int64 intmax_t;
 #define FMT_ICC_VERSION __ICL
 #endif
 
-#if defined(__clang__) && !defined(FMT_ICC_VERSION)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdocumentation-unknown-command"
-#pragma clang diagnostic ignored "-Wpadded"
-#endif
+// #if defined(__clang__) && !defined(FMT_ICC_VERSION)
+// #pragma clang diagnostic push
+// #pragma clang diagnostic ignored "-Wdocumentation-unknown-command"
+// #pragma clang diagnostic ignored "-Wpadded"
+// #endif
 
 #ifdef __GNUC_LIBSTD__
 #define FMT_GNUC_LIBSTD_VERSION (__GNUC_LIBSTD__ * 100 + __GNUC_LIBSTD_MINOR__)
@@ -3963,9 +3963,9 @@ inline internal::UdlArg<wchar_t> operator"" _a(const wchar_t *s, std::size_t) {
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(__clang__) && !defined(FMT_ICC_VERSION)
-#pragma clang diagnostic pop
-#endif
+// #if defined(__clang__) && !defined(FMT_ICC_VERSION)
+// #pragma clang diagnostic pop
+// #endif
 
 #ifdef FMT_HEADER_ONLY
 #define FMT_FUNC inline

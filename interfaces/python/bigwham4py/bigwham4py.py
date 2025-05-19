@@ -3,7 +3,7 @@
 
  Created by Carlo Peruzzo on 12.05.21.
  Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
- Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE
+ Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
  file for more details.
 
  last modifications :: July 2024 by A. Gupta
@@ -17,19 +17,31 @@
 
 # external
 import numpy as np
+import time
 from scipy.sparse.linalg import LinearOperator
 from scipy.sparse import csc_matrix
 
 from scipy.sparse.linalg import spilu
 from scipy.sparse import diags
 
-from py_bigwham import BigWhamIOSelf, BigWhamIORect, PyGetFullBlocks
+from .py_bigwham import BigWhamIOSelf, BigWhamIORect, PyGetFullBlocks
 
 import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.collections import PatchCollection
 from matplotlib.patches import Rectangle
 
+# list kernels
+kernels_id = [
+    "2DS0-H",
+    "2DS1-H",
+    "S3DS0-H",
+    "Axi3DS0-H",
+    "3DT0-H",
+    "3DT6-H",
+    "3DR0-H",
+    "3DR0-H-mode1"
+]
 
 ##############################
 #  Hmatrix class in python   #
@@ -43,8 +55,14 @@ class BEMatrix(LinearOperator):
         properties: np.ndarray,
         max_leaf_size: int = 32,
         eta: float = 3.0,
-        eps_aca: float = 1.0e-3, n_openMP_threads: int =8,
-        directly_build:bool = True
+        eps_aca: float = 1.0e-3, 
+        n_openMP_threads: int =8,
+        n_GPUs:int =1,
+        directly_build:bool = True,
+        verbose:bool = True,
+        homogeneous_size_pattern:bool = False,
+        fixed_rank = -1,
+        useCuda = False
     ):
         """ "
         Name:              Type:                Description:
@@ -58,6 +76,13 @@ class BEMatrix(LinearOperator):
         eps_aca            (float)              approximation factor (usually 0.001 - 0.0001)
         n_openMP_threads    (integer)           number of OMP threads to be used by BigWham
         """
+                
+        # Ensure kernel exists
+        if not(kernel in kernels_id):
+            print(f"[ERROR] Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]")
+            return
+        
+        self.useCuda = useCuda
 
         self.kernel_ : str = kernel
         self.properties_ : np.ndarray = properties
@@ -69,7 +94,13 @@ class BEMatrix(LinearOperator):
             coor.flatten(),
             conn.flatten(),
             kernel,
-            properties.flatten(),n_openMP_threads
+            properties.flatten(),
+            n_openMP_threads,
+            n_GPUs,
+            verbose,
+            homogeneous_size_pattern,
+            useCuda,
+            fixed_rank
         )
         self.built_ = False
         if directly_build :
@@ -117,6 +148,37 @@ class BEMatrix(LinearOperator):
         """
         # shall we put a call to self._build() ?
         return self.H_.matvec(v)
+    
+    def _matvec_cupy(self, x, y):
+        """
+        Dot product on cupy arrays, result y is already allocated
+        """
+        import cupy 
+        assert type(x) == cupy.ndarray
+        assert type(y) == cupy.ndarray
+        assert x.dtype == np.float64
+        assert y.dtype == np.float64
+        
+        return self.H_.matvec_raw_ptr(x.data.ptr, y.data.ptr)
+    
+    def _matvec_jax(self, x, y):
+        """
+        Dot product on JAX GPU arrays. Assumes x and y are jax.Array on GPU and of dtype float64.
+        """
+        import jax
+
+        # Ensure correct types and dtype
+        assert x.device.platform == 'gpu'
+        assert y.device.platform == 'gpu'
+        assert x.dtype == np.float64
+        assert y.dtype == np.float64
+
+        # Extract raw pointers from __cuda_array_interface__
+        x_ptr = x.__cuda_array_interface__['data'][0]
+        y_ptr = y.__cuda_array_interface__['data'][0]
+
+        # Call into C++ backend
+        return self.H_.matvec_raw_ptr(x_ptr, y_ptr)
 
     def write_hmatrix(self, filename: str) -> int:
         """
@@ -135,6 +197,12 @@ class BEMatrix(LinearOperator):
     def getCompression(self) -> float:
         self._build()
         return self.H_.get_compression_ratio()
+    
+    def getStorageRequirement(self):
+        return self.H_.get_storage_requirement()
+    
+    def getGPUStorageRequirement(self):
+        return self.H_.get_gpu_storage_requirement()
 
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
@@ -181,10 +249,10 @@ class BEMatrix(LinearOperator):
     def getSpatialDimension(self) -> int:
         return self.H_.get_spatial_dimension()
 
-    def _getFullBlocks(self) -> csc_matrix:
+    def _getFullBlocks(self, original_order=True) -> csc_matrix:
         fb = PyGetFullBlocks()  # not fan of this way of creating empty object
         # and setting them after - a constructor should do something!
-        fb.set(self.H_)
+        fb.set(self.H_, original_order)
         val = np.asarray(fb.get_val_list(), dtype=float)
         col = np.asarray(fb.get_col())
         row = np.asarray(fb.get_row())
@@ -202,8 +270,11 @@ class BEMatrix(LinearOperator):
         # we output a flatten row-major order std::vector
         nr = 6
         return np.reshape(aux, (int(aux.size / nr), nr))
+    
+    def get_max_error_ACA(self):
+        return self.H_.get_max_error_ACA()
 
-    def plotPattern(self):
+    def plotPattern(self, plot_index=False):
         """
         Plot the hierarchical pattern of the matrix
         :return:
@@ -212,7 +283,15 @@ class BEMatrix(LinearOperator):
         patches = []
         p_colors = []
         max_y = data_pattern[:, 3].max()
+        
+        fr_counter = 0
+        lr_counter = 0
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        
         for i in range(len(data_pattern)):
+            
             height = np.abs(data_pattern[i, 0] - data_pattern[i, 2])
             width = np.abs(data_pattern[i, 1] - data_pattern[i, 3])
             y1 = max_y - data_pattern[i, 0] - height
@@ -220,8 +299,18 @@ class BEMatrix(LinearOperator):
             rectangle = Rectangle((x1, y1), width, height)
             patches.append(rectangle)
             p_colors.append(data_pattern[i, 4])
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
+            
+            if plot_index:
+                idx = fr_counter if data_pattern[i, 4] == 0 else lr_counter
+                ax.text(
+                    x1 + width / 2, y1 + height / 2, str(idx),
+                    ha="center", va="center", fontsize=8, fontweight="bold", color="black"
+                )
+                
+            if data_pattern[i, 4] == 0 : fr_counter+=1
+            if data_pattern[i, 4] == 1 : lr_counter+=1
+            
+        
         p = PatchCollection(
             patches, cmap=matplotlib.cm.PiYG, edgecolors="black", alpha=0.4
         )
@@ -230,9 +319,9 @@ class BEMatrix(LinearOperator):
         ax.set_ylim([data_pattern[:, 0].min(), data_pattern[:, 3].max()])
         ax.set_xlim([data_pattern[:, 1].min(), data_pattern[:, 2].max()])
         ax.set_aspect("equal")
-        # fig.colorbar(p)
-        fig.show()
-        plt.show(block=True)
+        # # fig.colorbar(p)
+        # fig.show()
+        # plt.show(block=True)
         return fig
 
     # a method constructing an ILU Preconditionner of the H matrix
@@ -243,6 +332,10 @@ class BEMatrix(LinearOperator):
         :param drop_tol: float (default 1e-3) for the tolerance to drop the entries (see scipy spilu)
         :return: a linear operator with the corresponding ILU
         """
+        # if self.useCuda:
+        #     print("[ERROR] The ILU on the hierachical matrix can't be called when using CUDA as the data is not on host memory anymore, falling back to jacobi preconditionner.")
+        #     return self.H_jacobi_prec()
+        
         self._build()
         fb = self._getFullBlocks()
         fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
@@ -252,9 +345,12 @@ class BEMatrix(LinearOperator):
         """
         :return: the diagonal of the matrix as n array
         """
-        self._build()
-        fb = self._getFullBlocks()
-        return fb.diagonal()
+        if self.useCuda:
+            return self.get_diagonal()
+        else :
+            self._build()
+            fb = self._getFullBlocks()
+            return fb.diagonal()
 
     def H_jacobi_prec(self):
         """
@@ -263,7 +359,7 @@ class BEMatrix(LinearOperator):
         """
         diag = self.H_diag()  # return a nd.array
         overdiag = 1.0 / diag
-        return diags(overdiag, dtype=np.float_)
+        return diags(overdiag, dtype=np.float64)
 
     def compute_displacements(self,list_coor,local_solu):
         """
@@ -316,8 +412,35 @@ class BEMatrix(LinearOperator):
         [r00,r01,r10,r11,...]
         """
         return np.asarray(self.H_.get_rotation_matrix())
-
-
+    
+    def get_diagonal(self):
+        """
+        Get the diagonal of the matrix, in the original ordering of dof
+        :return: 1D np.array of the diagonal
+        """
+        return self.H_.get_diagonal()
+    
+    def isCudaAvailable(self):
+        """
+        Return if BigWham has been compiled with CUDA support
+        :return: boolean value
+        """
+        return self.H_.get_cuda_available()
+    
+    def getMatvecTime(self, N_matvec=100):
+        """
+        Time the matvec operation
+        :return: matvec time im seconds
+        """
+        x = np.ones(self.shape[0])
+        # One first matvec performed not taken into account
+        self._matvec(x)
+        # Then we time it 
+        start_time = time.time()
+        for _ in range(N_matvec):
+            self._matvec(x)
+        return (time.time() - start_time)/N_matvec
+        
 ########################################################################################################
 #  BEMatrix Rectangular class in python   #
 ########################################################################################################
@@ -333,8 +456,14 @@ class BEMatrixRectangular(LinearOperator):
         properties : np.ndarray,
         max_leaf_size : int =100,
         eta : float=3.0,
-        eps_aca : float=1.0e-3, n_openMP_threads:int =8,
-        directly_build:bool = True
+        eps_aca : float=1.0e-3, 
+        n_openMP_threads:int =8,
+        n_GPUs:int =1,
+        directly_build:bool = True,
+        verbose:bool = True,
+        homogeneous_size_pattern:bool = False,
+        useCuda = False,
+        fixed_rank = -1
     ):
 
         self.kernel_ = kernel
@@ -351,7 +480,13 @@ class BEMatrixRectangular(LinearOperator):
             coor_rec.flatten(),
             conn_rec.flatten(),
             kernel,
-            properties.flatten(),n_openMP_threads
+            properties.flatten(),
+            n_openMP_threads,
+            n_GPUs,
+            verbose,
+            homogeneous_size_pattern,
+            useCuda,
+            fixed_rank
         )
         self.dtype_ = float
 
@@ -408,6 +543,9 @@ class BEMatrixRectangular(LinearOperator):
 
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
+    
+    def getPermutationReceivers(self) -> np.ndarray:
+        return np.asarray(self.H_.get_permutation_receivers())
 
     def get_omp_threads(self) -> int:
         return self.H_.get_omp_threads()
@@ -483,3 +621,50 @@ class BEMatrixRectangular(LinearOperator):
         # fig.show()
         # plt.show(block=True)
         return fig
+
+    def _getFullBlocks(self, original_order=True) -> csc_matrix:
+        fb = PyGetFullBlocks()  # not fan of this way of creating empty object
+        # and setting them after - a constructor should do something!
+        fb.setRect(self.H_, original_order)
+        val = np.asarray(fb.get_val_list(), dtype=float)
+        col = np.asarray(fb.get_col())
+        row = np.asarray(fb.get_row())
+        
+        # print(f"{col.min()=} {col.max()=}", flush=True)
+        # print(f"{row.min()=} {row.max()=}", flush=True)
+        
+        return csc_matrix((val, (row, col)), shape=self.shape_)
+    
+    def isCudaAvailable(self):
+        """
+        Return if BigWham has been compiled with CUDA support
+        :return: boolean value
+        """
+        return self.H_.get_cuda_available()
+    
+    # def get_diagonal(self):
+    #     """
+    #     Get the diagonal of the matrix, in the original ordering of dof
+    #     :return: 1D np.array of the diagonal
+    #     """
+    #     return self.H_.get_diagonal()
+    
+    def getMatvecTime(self, N_matvec=100):
+        """
+        Time the matvec operation
+        :return: matvec time im seconds
+        """
+        x = np.ones(self.shape[0])
+        # One first matvec performed not taken into account
+        self._matvec(x)
+        # Then we time it 
+        start_time = time.time()
+        for _ in range(N_matvec):
+            self._matvec(x)
+        return (time.time() - start_time)/N_matvec
+
+def main():
+    print("bigwham4py successfully imported")
+    
+if __name__ == "__main__":
+    main()

@@ -19,6 +19,7 @@
 #ifndef IL_ARRAY2DVIEW_H
 #define IL_ARRAY2DVIEW_H
 
+// #include <iostream>
 #include <il/core.h>
 
 namespace il {
@@ -182,6 +183,9 @@ const T& Array2DView<T>::operator()(il::int_t i0, il::int_t i1) const {
                    static_cast<std::size_t>(size(0)));
   IL_EXPECT_MEDIUM(static_cast<std::size_t>(i1) <
                    static_cast<std::size_t>(size(1)));
+
+  // std::cout << "Edit operation @ " << data_ << "["<< i1 * (stride_ - data_) + i0 <<"]\n";
+
   return data_[i1 * (stride_ - data_) + i0];
 }
 

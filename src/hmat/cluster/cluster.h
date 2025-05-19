@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 08.09.21.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
@@ -28,28 +28,40 @@ struct Cluster {
   il::Array<il::int_t> permutation;
 };
 
-Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double>& node);
+Cluster cluster(il::int_t leaf_size, il::io_t, il::Array2D<double>& node, const bool homogeneous_size = true);
 
 void cluster_rec(il::spot_t s, il::int_t leaf_size, il::io_t,
                  il::Tree<il::Range, 2>& tree, il::Array2D<double>& node,
-                 il::Array<il::int_t>& permutation);
+                 il::Array<il::int_t>& permutation, int current_depth=1);
+
+void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
+                  il::Tree<il::Range, 2>& tree, il::Array2D<double>& node,
+                  il::Array<il::int_t>& permutation, int current_depth=1);
 
 // block-cluster Tree I*I
 il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,
                                                 const il::Tree<il::Range, 2>& tree,
-                                                double eta);
+                                                double eta,
+                                                const bool homogeneous_size = true,
+                                                const int fixed_rank = -1);
 
 void hmatrixTreeIxI_rec(const il::Array2D<double>& node,
                      const il::Tree<il::Range, 2>& range_tree, double eta,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
                      il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
 
+void hmatrixTreeIxI_rec_size_conservative(const il::Array2D<double>& node,
+                      const il::Tree<il::Range, 2>& range_tree, double eta,
+                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
+                      il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree, const int fixed_rank);
+
 // block-cluster Tree I*J
 il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxJ(const il::Array2D<double>& node0,
                                                 const il::Tree<il::Range, 2>& tree0,
                                                 const il::Array2D<double>& node1,
                                                 const il::Tree<il::Range, 2>& tree1,
-                                                double eta);
+                                                double eta,
+                                                const bool homogeneous_size = true);
 
 void hmatrixTreeIxJ_rec(const il::Array2D<double>& node0,
                      const il::Tree<il::Range, 2>& range_tree0,
@@ -58,10 +70,19 @@ void hmatrixTreeIxJ_rec(const il::Array2D<double>& node0,
                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
                      il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
 
+void hmatrixTreeIxJ_rec_size_conservative(const il::Array2D<double>& node0,
+                      const il::Tree<il::Range, 2>& range_tree0,
+                      const il::Array2D<double>& node1,
+                      const il::Tree<il::Range, 2>& range_tree1, double eta,
+                      il::spot_t s, il::spot_t s0, il::spot_t s1, il::io_t,
+                      il::Tree<bigwham::SubHMatrix, 4>& hmatrix_tree);
+ 
 
 
 ////////////////////////////////////////////////////////////////////////////////
 //// utilities functions below.
+void saveTreeToJSON(il::Tree<il::Range, 2> tree);
+
 inline double distance(const il::Array2D<double>& node, il::Range range_0,
                        il::Range range_1) {
   IL_EXPECT_FAST(range_0.begin < range_0.end);

@@ -82,12 +82,80 @@ if(BIGWHAM_MATHEMATICA_INTERFACE)
 endif()
 
 add_subdirectory(il)
+add_subdirectory(external/cnpy)
 
 set(CMAKE_MACOSX_RPATH ON)
 set(CMAKE_SKIP_BUILD_RPATH OFF)
 #set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${CBLAS_LIBRARY_DIRS}")
 #set(CMAKE_BUILD_RPATH "${CMAKE_CURRENT_BINARY_DIR};${CBLAS_LIBRARY_DIRS}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+
+################################################
+# TO PROFILE WITH VTUNE
+################################################
+option(VTUNE_PROFILING "Enable Intel VTune Profiling" OFF)
+
+if (VTUNE_PROFILING)
+    find_path(ITT_INCLUDE_DIR ittnotify.h PATHS 
+        $ENV{VTUNE_AMPLIFIER_DIR}/include
+        /opt/intel/oneapi/vtune/latest/sdk/include
+        /opt/intel/vtune_profiler/sdk/include
+    )
+    find_library(ITT_LIBRARY NAMES ittnotify PATHS 
+        $ENV{VTUNE_AMPLIFIER_DIR}/lib64
+        /opt/intel/oneapi/vtune/latest/sdk/lib64
+        /opt/intel/vtune_profiler/sdk/lib64
+    )
+    message(STATUS "Found Intel ITT: ${ITT_INCLUDE_DIR}, ${ITT_LIBRARY}")
+endif()
+
+################################################
+# TO LINK CUDA LIBRARIES
+if (USE_CUDA)
+    SET(CUDA_SEPARABLE_COMPILATION ON) # cf https://stackoverflow.com/questions/22115197/dynamic-parallelism-undefined-reference-to-cudaregisterlinkedbinary-linking
+
+    find_package(CUDA REQUIRED)
+    enable_language(CUDA)
+    set(CMAKE_CUDA_ARCHITECTURES 70 75 80 86)
+
+    message(STATUS "Building with CUDA support : ${CUDA_TOOLKIT_ROOT_DIR}")
+    message(STATUS "CUDA_LIBRARIES: ${CUDA_LIBRARIES}")
+    message(STATUS "CUDA_CUBLAS_LIBRARIES: ${CUDA_CUBLAS_LIBRARIES}")
+    message(STATUS "CUDA_cusparse_LIBRARY: ${CUDA_cusparse_LIBRARY}")
+    message(STATUS "CUDA_cudart_static_LIBRARY: ${CUDA_cudart_static_LIBRARY}")
+
+    include_directories(
+        ${CBLAS_INCLUDE_DIR}
+        ${CUDA_INCLUDE_DIRS}
+        )
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -std=c++14)
+
+    # CUDA NVTX : only for debugging purposes
+    # set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/nsight-compute-2024.1.1/host/target-linux-x64/nvtx/include)
+    # set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/include/cub/detail)
+    # message(STATUS "NVTX_INCLUDE_DIR: ${NVTX_INCLUDE_DIR}")
+    # include_directories(${NVTX_INCLUDE_DIR})
+
+    ################################################
+    # TO LINK MAGMA LIBRARY
+    # Allow the user to specify MAGMA_ROOT via command line
+    option(MAGMA_ROOT "Path to MAGMA installation directory" "")
+
+    # Check if MAGMA_ROOT was provided
+    if(MAGMA_ROOT)
+        # Set variables based on MAGMA_ROOT
+        message(STATUS "MAGMA support enabled. Using MAGMA at: ${MAGMA_ROOT}")
+        set(MAGMA_LIBRARY ${MAGMA_ROOT}/lib/libmagma.so)
+        set(MAGMA_INCLUDE_DIR ${MAGMA_ROOT}/include)
+        message(STATUS "MAGMA_LIBRARY : ${MAGMA_LIBRARY}")
+        message(STATUS "MAGMA_INCLUDE_DIR : ${MAGMA_INCLUDE_DIR}")
+    else()
+        message(STATUS "MAGMA support disabled. To enable, specify -DMAGMA_ROOT=/path/to/magma")
+    endif()
+    ################################################
+
+endif()
+################################################
 
 
 ################################################################################
@@ -103,10 +171,32 @@ add_subdirectory(src)
 add_library(BigWham OBJECT ${SOURCE_FILES})
 target_compile_features(BigWham PUBLIC cxx_std_17)
 target_compile_definitions(BigWham PUBLIC BIGWHAM_OPENMP)
-target_link_libraries(BigWham PUBLIC InsideLoop)
-set_target_properties(BigWham PROPERTIES
-    POSITION_INDEPENDENT_CODE ON)
-target_include_directories(BigWham PUBLIC src il)
+target_link_libraries(BigWham PUBLIC InsideLoop cnpy)
+set_target_properties(BigWham PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(BigWham PUBLIC src il external/cnpy external/nlohmann)
+
+if (USE_CUDA)
+    target_link_libraries(BigWham PUBLIC
+        dl pthread rt # https://stackoverflow.com/questions/62962539/linking-error-for-cuda-separate-compilation-mode-and-static-linking-of-cudart
+        ${BLAS_LIBRARIES}
+        ${CUDA_LIBRARIES}
+        ${CUDA_CUBLAS_LIBRARIES}
+        ${CUDA_cusparse_LIBRARY}
+        ${CUDA_cudart_static_LIBRARY}
+    )
+    target_compile_definitions(BigWham PRIVATE USE_CUDA)
+
+    # set_target_properties(BigWham PROPERTIES
+    # CUDA_SEPARABLE_COMPILATION ON)
+    set_property(TARGET BigWham PROPERTY CUDA_RESOLVE_DEVICE_SYMBOLS ON)
+
+    if(MAGMA_ROOT)
+        target_include_directories(BigWham PRIVATE ${MAGMA_INCLUDE_DIR})
+        target_link_libraries(BigWham PRIVATE ${MAGMA_LIBRARY})
+        target_compile_definitions(BigWham PRIVATE USE_MAGMA)
+    endif()
+
+endif()
 
 add_library(BigWhamShared SHARED $<TARGET_OBJECTS:BigWham>)
 add_library(BigWhamStatic STATIC $<TARGET_OBJECTS:BigWham>)
@@ -153,12 +243,16 @@ endif()
 ################################################################
 if(BIGWHAM_PYTHON_INTERFACE)
     message(STATUS "Building python interface: ${BIGWHAM_PYTHON_INTERFACE}")
-    find_package (Python3 COMPONENTS Interpreter Development)
-    message(STATUS "Python Executable: ${Python3_EXECUTABLE}")
-    message(STATUS "Python Version: ${Python3_VERSION}")
-    message(STATUS "Python Include Dir: ${Python3_INCLUDE_DIRS}")
+    # find_package (Python3 COMPONENTS Interpreter Development)
+    # message(STATUS "Python Executable: ${Python3_EXECUTABLE}")
+    # message(STATUS "Python Version: ${Python3_VERSION}")
+    # message(STATUS "Python Include Dir: ${Python3_INCLUDE_DIRS}")
+    find_package (Python REQUIRED COMPONENTS Interpreter Development)
+    message(STATUS "Python Executable: ${Python_EXECUTABLE}")
+    message(STATUS "Python Version: ${Python_VERSION}")
+    message(STATUS "Python Include Dir: ${Python_INCLUDE_DIRS}")
     set(PYBIND11_PYTHON_VERSION 3)
-    add_external_package(pybind11 VERSION 2.8.0 CONFIG)
+    add_external_package(pybind11 VERSION 2.13.0 CONFIG)
     add_subdirectory(interfaces/python)
 endif()
 
@@ -229,3 +323,5 @@ endif()
 if(BIGWHAM_DEV_EXAMPLES)
     add_subdirectory(src/_dev_example)
 endif()
+
+

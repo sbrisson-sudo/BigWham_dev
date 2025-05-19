@@ -4,7 +4,7 @@
 // Created by Brice Lecampion on  29.March.2023
 // Copyright (c) ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland,
 // Geo-Energy Laboratory, 2016-2025.  All rights reserved.
-// See the LICENSE file for more details.
+// See the LICENSE.TXT file for more details.
 //
 //
 #pragma once
@@ -60,6 +60,7 @@ inline BieMatrixGenerator<T>::BieMatrixGenerator(
   block_size_ = this->bie_kernel_->dof_dimension();
   size0_ = num_row_points_ * block_size_;
   size1_ = num_col_points_ * block_size_;
+
 }
 
 template <typename T>

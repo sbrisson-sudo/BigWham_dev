@@ -98,11 +98,15 @@ il::int_t Tree<T, n>::depth_rec(il::spot_t s)  {
   } else {
     il::int_t max = 0;
     for (il::int_t i = 0; i < n; i++) {
-      const il::spot_t st = this->child(s, i);
-      il::int_t aux = this->depth_rec(st);
-      if (aux > max) {
-        max = aux;
+
+      if (hasChild(s, i)){
+        const il::spot_t st = this->child(s, i);
+        il::int_t aux = this->depth_rec(st);
+        if (aux > max) {
+          max = aux;
+        }
       }
+
     }
     return (max+1);
   }

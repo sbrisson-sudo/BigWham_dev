@@ -3,7 +3,7 @@
 //
 // Created by Francois Fayard - 2018
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne), Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 #pragma once
@@ -19,6 +19,8 @@ template <typename T>
 struct LowRank {
   il::Array2D<T> A;
   il::Array2D<T> B;
+
+  T error_on_approximation = -1;
 };
 
 }  // namespace bigwham
