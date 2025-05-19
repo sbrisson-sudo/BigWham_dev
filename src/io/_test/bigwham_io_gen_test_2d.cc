@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 31.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 #include <gtest/gtest.h>
@@ -41,7 +41,12 @@ TEST(bigwham_io_gen_2d, Sp3S0_1_1) {
   }
 
   std::vector<double> properties{1., 0., 100};
-  BigWhamIO my_io{coor, conn, "S3DS0-H", properties};
+  int n_openMP_threads = 4;
+  int n_GPUs = -1;
+  bool verbose = true;
+  bool homogeneous_size_pattern = false;
+  bool useCuda = false;
+  BigWhamIO my_io{coor, conn, "S3DS0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
   ASSERT_TRUE(abs(my_io.GetCompressionRatio() - 0.12664) < 1e-4);
@@ -70,7 +75,12 @@ TEST(bigwham_io_gen_2d, Sp3DS0_1_2) {
   }
 
   std::vector<double> properties{1., 0., 100};
-  BigWhamIO my_io{coor, conn, "S3DS0-H", properties};
+  int n_openMP_threads = 4;
+  int n_GPUs = -1;
+  bool verbose = true;
+  bool homogeneous_size_pattern = false;
+  bool useCuda = false;
+  BigWhamIO my_io{coor, conn, "S3DS0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
 
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
   ASSERT_TRUE(my_io.dof_dimension() == 2 &&
@@ -101,7 +111,12 @@ TEST(bigwham_io_gen_2d, Sp3DS0_1_3) {
   }
 
   std::vector<double> properties{1., 0., 100};
-  BigWhamIO my_io{coor, conn, "S3DS0-H", properties};
+  int n_openMP_threads = 4;
+  int n_GPUs = -1;
+  bool verbose = true;
+  bool homogeneous_size_pattern = false;
+  bool useCuda = false;
+  BigWhamIO my_io{coor, conn, "S3DS0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
   std::vector<double> x(my_io.MatrixSize(1), 0.);
@@ -146,7 +161,12 @@ TEST(bigwham_io_gen_2d, 2DS0_1) {
   }
 
   std::vector<double> properties{1., 0.};
-  BigWhamIO my_io{coor, conn, "2DS0-H", properties};
+  int n_openMP_threads = 4;
+  int n_GPUs = -1;
+  bool verbose = true;
+  bool homogeneous_size_pattern = false;
+  bool useCuda = false;
+  BigWhamIO my_io{coor, conn, "2DS0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
   std::vector<double> x(my_io.MatrixSize(1), 0.);
@@ -191,7 +211,12 @@ TEST(bigwham_io_gen_2d, 2DS0_2) {
     }
 
     std::vector<double> properties{1., 0.};
-    BigWhamIO my_io{coor, conn, "2DS0-H", properties};
+    int n_openMP_threads = 4;
+    int n_GPUs = -1;
+    bool verbose = true;
+    bool homogeneous_size_pattern = false;
+    bool useCuda = false;
+    BigWhamIO my_io{coor, conn, "2DS0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
     std::vector<double> x(my_io.MatrixSize(1), 0.);
@@ -235,7 +260,12 @@ TEST(bigwham_io_gen_2d, 2DS0_3) {
     }
 
     std::vector<double> properties{1., 0.};
-    BigWhamIO my_io{coor, conn, "2DS0-H", properties};
+    int n_openMP_threads = 4;
+    int n_GPUs = -1;
+    bool verbose = true;
+    bool homogeneous_size_pattern = false;
+    bool useCuda = false;
+    BigWhamIO my_io{coor, conn, "2DS0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
     my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
 
     il::Array<double> x(my_io.MatrixSize(1),0.);

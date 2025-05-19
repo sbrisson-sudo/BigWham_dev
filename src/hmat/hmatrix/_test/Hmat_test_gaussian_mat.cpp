@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 26.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 
 #include <memory>
@@ -33,7 +33,8 @@ TEST(hmat, gaussian_1) {
   hr->pattern_ = bigwham::createPattern(block_tree);
   hr->permutation_0_ = cluster.permutation;
   bigwham::GaussianMatrix<double> M{n, beta, hr};
-  bigwham::Hmat<double> h_(M, 1.e-3);
+  const int n_openmp_threads = 4;
+  bigwham::Hmat<double> h_(M, 1.e-3, n_openmp_threads);
   std::cout << " n FB " << hr->pattern_.n_FRB << "\n";
   std::cout << " Size " << M.size(0) << " -" << M.size(1) << "\n";
   std::cout << " Compression " << h_.compressionRatio() << "\n";
@@ -55,7 +56,8 @@ TEST(hmat, gaussian_hmat_diag) {
   hr->pattern_ = bigwham::createPattern(block_tree);
   hr->permutation_0_ = cluster.permutation;
   bigwham::GaussianMatrix<double> M{n, alpha, hr};
-  bigwham::Hmat<double> h_(M, 1.e-3);
+  const int n_openmp_threads = 4;
+  bigwham::Hmat<double> h_(M, 1.e-3, n_openmp_threads);
   std::cout << " n FB " << hr->pattern_.n_FRB << "\n";
   std::cout << " Size " << M.size(0) << " -" << M.size(1) << "\n";
   std::cout << " Compression " << h_.compressionRatio() << "\n";

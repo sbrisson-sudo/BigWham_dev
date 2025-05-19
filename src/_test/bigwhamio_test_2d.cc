@@ -3,7 +3,7 @@
 //
 // Created by Brice Lecampion on 31.01.23.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2025.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 
@@ -13,7 +13,7 @@
 #include <il/math.h>
 
 #include "hmat/hmatrix/hmat.h"
-#include "bigwham_io_old.h"
+// #include "bigwham_io_old.h"
 #include "io/bigwham_io.h"
 
 #include "core/be_mesh.h"

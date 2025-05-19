@@ -3,7 +3,7 @@
 //
 // Created by Carlo Peruzzo on 10.01.21.
 // Copyright (c) EPFL (Ecole Polytechnique Fédérale de Lausanne) , Switzerland,
-// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE
+// Geo-Energy Laboratory, 2016-2021.  All rights reserved. See the LICENSE.TXT
 // file for more details.
 //
 // last modifications ::July 4, 2024 - Ankit Gupta
@@ -37,12 +37,24 @@ public:
                 const std::vector<int> &conn_src,
                 const std::vector<double> &coor_rec,
                 const std::vector<int> &conn_rec, const std::string &kernel,
-                const std::vector<double> &properties,const int n_openMP_threads)
+                const std::vector<double> &properties, 
+                const int num_omp_threads,
+                const int num_GPUs,
+                const bool verbose,
+                const bool homogeneous_pattern_size,
+                const bool useCuda,
+                const int fixed_rank)
       : BigWhamIO(coor_src,
                   conn_src,
                   coor_rec,
                   conn_rec, kernel,
-                  properties, n_openMP_threads) {}
+                  properties,
+                  num_omp_threads,
+                  num_GPUs,
+                  verbose, 
+                  homogeneous_pattern_size,
+                  useCuda,
+                  fixed_rank) {}
 
   ~BigWhamIORect() {}
 };
@@ -59,15 +71,38 @@ public:
   PyGetFullBlocks() = default;
   ~PyGetFullBlocks() = default;
 
-  void set(const BigWhamIO &BigwhamioObj)
+  void set(const BigWhamIO &BigwhamioObj, bool original_order)
   {
     il::Array<int> pos_list;
     int nbfentry;
 
-    // std::cout << " calling getFullBlocks \n";
-    BigwhamioObj.GetFullBlocks(this->val_list, pos_list);
-    // std::cout << " n entries: " << (this->val_list.size()) << "\n";
-    // std::cout << " Preparing the vectors \n";
+    if (original_order){
+      BigwhamioObj.GetFullBlocks(this->val_list, pos_list);
+    } else {
+      BigwhamioObj.GetFullBlocksPerm(this->val_list, pos_list);
+    }
+    
+    nbfentry = this->val_list.size();
+    this->rowN.Resize(nbfentry);
+    this->columN.Resize(nbfentry);
+
+    for (int i = 0; i < nbfentry; i++)
+    {
+      this->rowN[i] = pos_list[2 * i];
+      this->columN[i] = pos_list[2 * i + 1];
+    }
+  };
+
+  void setRect(const BigWhamIORect &BigwhamioObj, bool original_order)
+  {
+    il::Array<int> pos_list;
+    int nbfentry;
+
+    if (original_order){
+      BigwhamioObj.GetFullBlocks(this->val_list, pos_list);
+    } else {
+      BigwhamioObj.GetFullBlocksPerm(this->val_list, pos_list);
+    }
 
     nbfentry = this->val_list.size();
     this->rowN.Resize(nbfentry);
@@ -78,8 +113,9 @@ public:
       this->rowN[i] = pos_list[2 * i];
       this->columN[i] = pos_list[2 * i + 1];
     }
-    // std::cout << " --- set pyGetFullBlocks completed ---- \n";
   };
+
+  
   /* --------------------------------------------------------------------------
    */
 
@@ -91,7 +127,9 @@ public:
   {
     return as_pyarray<int>(std::move(this->columN));
   };
-  pbarray<int> getRowN() { return as_pyarray<int>(std::move(this->rowN)); };
+  pbarray<int> getRowN() { 
+    return as_pyarray<int>(std::move(this->rowN)); 
+  };
 };
 /* -------------------------------------------------------------------------- */
 
@@ -103,9 +141,7 @@ PYBIND11_MODULE(py_bigwham, m)
   // Square Self Interaction matrices
   py::class_<BigWhamIO>(m, "BigWhamIOSelf", py::dynamic_attr(),
                         py::module_local())
-      .def(py::init<const std::vector<double> &,
-                    const std::vector<int> &, const std::string &,
-                    const std::vector<double> &,const int >()) // constructor
+      .def(py::init<const std::vector<double> &, const std::vector<int> &, const std::string &, const std::vector<double> &, const int &,  const int &, const bool, const bool, const bool, const int & >()) // constructor
       .def("hmat_destructor", &BigWhamIO::HmatrixDestructor)
       .def("load_from_file", &BigWhamIO::LoadFromFile)
       .def("build_hierarchical_matrix", &BigWhamIO::BuildHierarchicalMatrix)
@@ -113,13 +149,17 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("get_collocation_points", &BigWhamIO::GetCollocationPoints)
       .def("get_permutation", &BigWhamIO::GetPermutation)
       .def("get_compression_ratio", &BigWhamIO::GetCompressionRatio)
+      .def("get_storage_requirement", &BigWhamIO::GetStorageRequirement)
+      .def("get_gpu_storage_requirement", &BigWhamIO::GetGPUStorageRequirement)
       .def("get_kernel_name", &BigWhamIO::kernel_name)
       .def("get_spatial_dimension", &BigWhamIO::spatial_dimension)
       .def("matrix_size", &BigWhamIO::MatrixSize)
       .def("get_hpattern", &BigWhamIO::GetHPattern)
+      .def("get_max_error_ACA", &BigWhamIORect::GetMaxErrorACA)
       .def("write_hmatrix", &BigWhamIO::WriteHmatrix)
       .def("get_hmat_time", &BigWhamIO::hmat_time)
       .def("get_omp_threads", &BigWhamIO::GetOmpThreads)
+      .def("get_cuda_available", &BigWhamIO::GetCudaAvailable)
       .def("get_element_normals",&BigWhamIO::GetElementNormals)
       .def("get_rotation_matrix",&BigWhamIO::GetRotationMatrix)
       .def(py::pickle(
@@ -171,6 +211,16 @@ PYBIND11_MODULE(py_bigwham, m)
           " dot product between hmat and a vector x in original ordering",
           py::arg("x"))
       .def(
+          "matvec_raw_ptr",
+          [](BigWhamIO &self, uintptr_t x, uintptr_t y) -> void
+          {
+            double* x_ptr = reinterpret_cast<double*> (x);
+            double* y_ptr = reinterpret_cast<double*> (y);
+            self.MatVec(x_ptr, y_ptr);
+          },
+          "dot product using raw pointers (for CuPy arrays on GPU)",
+          py::arg("x"), py::arg("y"))
+      .def(
            "matvecVoid",
            [](BigWhamIO &self, const pbarray<double> &x, pbarray<double> &y) -> decltype(auto)
            {
@@ -200,13 +250,21 @@ PYBIND11_MODULE(py_bigwham, m)
             return as_pyarray<double>(std::move(v));
           },
           " compute stresses at set of points",
-          py::arg("x"), py::arg("coor"));
+          py::arg("x"), py::arg("coor"))
+      .def(
+          "get_diagonal", 
+          [](const BigWhamIO &self) {
+            std::vector<double> val_list;
+            self.GetDiagonal(val_list);
+            return py::array(val_list.size(), val_list.data());
+        });;
 
   /* --------------------------------------------------------------------------
    */
   py::class_<PyGetFullBlocks>(m, "PyGetFullBlocks")
       .def(py::init<>())
       .def("set", &PyGetFullBlocks::set)
+      .def("setRect", &PyGetFullBlocks::setRect)
       .def("get_val_list", &PyGetFullBlocks::getValList)
       .def("get_col", &PyGetFullBlocks::getColumnN)
       .def("get_row", &PyGetFullBlocks::getRowN);
@@ -220,23 +278,24 @@ PYBIND11_MODULE(py_bigwham, m)
    */
 
   py::class_<BigWhamIORect>(m, "BigWhamIORect", py::dynamic_attr())
-      .def(py::init<const std::vector<double> &, const std::vector<int> &,
-                    const std::vector<double> &, const std::vector<int> &,
-                    const std::string &, const std::vector<double> &, const int>())
+      .def(py::init<const std::vector<double> &, const std::vector<int> &, const std::vector<double> &, const std::vector<int> &, const std::string &, const std::vector<double> &, const int &,  const int &, const bool, const bool, const bool, const int & >())
       .def("hmat_destructor", &BigWhamIORect::HmatrixDestructor)
       .def("build_hierarchical_matrix", &BigWhamIORect::BuildHierarchicalMatrix)
       .def("build_pattern", &BigWhamIORect::BuildPattern)
       .def("load_from_file", &BigWhamIORect::LoadFromFile)
       .def("get_collocation_points", &BigWhamIORect::GetCollocationPoints)
       .def("get_permutation", &BigWhamIORect::GetPermutation)
+      .def("get_permutation_receivers", &BigWhamIORect::GetPermutationReceivers)
       .def("get_compression_ratio", &BigWhamIORect::GetCompressionRatio)
       .def("get_kernel_name", &BigWhamIORect::kernel_name)
       .def("get_spatial_dimension", &BigWhamIORect::spatial_dimension)
       .def("matrix_size", &BigWhamIORect::MatrixSize)
       .def("get_hpattern", &BigWhamIORect::GetHPattern)
+      .def("get_max_error_ACA", &BigWhamIORect::GetMaxErrorACA)
       .def("write_hmatrix", &BigWhamIO::WriteHmatrix) // check here why BigWhamIO and not BigWhamIORect ?
       .def("get_hmat_time", &BigWhamIORect::hmat_time)
       .def("get_omp_threads", &BigWhamIORect::GetOmpThreads)
+      .def("get_cuda_available", &BigWhamIO::GetCudaAvailable)
       .def("convert_to_global",
            [](BigWhamIORect &self, const pbarray<double> &x) -> decltype(auto)
            {
@@ -259,7 +318,14 @@ PYBIND11_MODULE(py_bigwham, m)
             auto v = self.MatVec(tx);
             return as_pyarray<double>(std::move(v));
           },
-          " dot product between hmat and a vector x in original ordering");
+          " dot product between hmat and a vector x in original ordering")
+      .def(
+        "get_diagonal", 
+        [](const BigWhamIORect &self) {
+          std::vector<double> val_list;
+          self.GetDiagonal(val_list);
+          return py::array(val_list.size(), val_list.data());
+      });
 
 
 /* --------------------------------------------------------------------------*/
