@@ -23,6 +23,7 @@
 #include "hmat/hierarchical_representation.h"
 #include "hmat/bie_matrix_generator.h"
 #include "hmat/hmatrix/hmat.h"
+#include "hmat/hmatrix/hmat_selection.h"
 
 #ifdef USE_CUDA
 #include <cuda_runtime.h>
@@ -167,8 +168,6 @@ public:
 
   size_t GetGPUStorageRequirement() const;
 
-
-
   [[nodiscard]] double hmat_time() const { return hmat_time_; };
   [[nodiscard]] double pattern_time() const { return h_representation_time_; };
   [[nodiscard]] std::string kernel_name() const { return kernel_name_; };
@@ -202,6 +201,11 @@ public:
   }
 
   std::shared_ptr<bigwham::Hmat<double>> getHmat(){ return hmat_; };
+
+  // Hmat selection
+  void setHmat(const std::shared_ptr<bigwham::Hmat<double>> hmat){ hmat_ = hmat;};
+  BigWhamIO(const BigWhamIO& other); // copy constructor
+  BigWhamIO hmatSelection(const il::Array<int>& row_selection, const il::Array<int>& col_selection) const;
 
 };
 

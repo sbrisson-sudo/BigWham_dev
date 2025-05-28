@@ -257,7 +257,17 @@ PYBIND11_MODULE(py_bigwham, m)
             std::vector<double> val_list;
             self.GetDiagonal(val_list);
             return py::array(val_list.size(), val_list.data());
-        });;
+        })
+      .def(
+        "hmatSelection",
+        [](const BigWhamIO &self, pbarray<int> row_selection, pbarray<int> col_selection){
+          il::Array<int> row_selection_(row_selection.shape(0));
+          il::Array<int> col_selection_(col_selection.shape(0));
+          std::memcpy(row_selection_.Data(), row_selection.data(), row_selection.shape(0) * sizeof(int));
+          std::memcpy(col_selection_.Data(), col_selection.data(), col_selection.shape(0) * sizeof(int));
+          return self.hmatSelection(row_selection_, col_selection_);
+        })
+        ;;
 
   /* --------------------------------------------------------------------------
    */

@@ -81,7 +81,7 @@ public:
   bigwham::HPattern pattern() { return hr_->pattern_; }
   [[nodiscard]] il::int_t dofDimension() const { return dof_dimension_; }
   virtual il::int_t nbOfEntries();
-  void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
+  virtual void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
   void fullBlocksPerm(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
   // H-Matrix vector multiplication without permutation
   // il::Array<T> matvec(const il::Array<T> &x);
@@ -91,7 +91,7 @@ public:
   virtual void matvec(T* x, T* y);
 
   std::vector<T> matvecOriginal(const std::vector<T> & x);
-  il::Array<T> matvecOriginal(il::ArrayView<T> x);
+  virtual il::Array<T> matvecOriginal(il::ArrayView<T> x);
   virtual void  matvecOriginal(T* x, T* y);
 
   void matvecOriginal(const il::ArrayView<T> x, il::Array<T>& yout);
@@ -105,6 +105,20 @@ public:
   bigwham::LowRank<T>* getLowRankBlock(const int i) { return low_rank_blocks_[i].get(); }
   il::Array2D<T>* getFullRankBlock(const int i) { return full_rank_blocks_[i].get(); }
 
+  // Getters for copy purposes
+    bool get_isBuilt() const {return isBuilt_;}
+    bool get_isBuilt_LR() const {return isBuilt_LR_;}
+    bool get_isBuilt_FR() const {return isBuilt_FR_;}
+    std::shared_ptr<HRepresentation> get_hr() const {return hr_;}
+    il::int_t get_dof_dimension() const {return dof_dimension_;};
+    il::StaticArray<il::int_t, 2> get_size() const {return size_;}
+    int get_n_openMP_threads() const {return n_openMP_threads_;}
+    int get_frb_chunk_size() const {return frb_chunk_size_;}
+    int get_lrb_chunk_size() const {return lrb_chunk_size_;}
+    bool get_verbose() const {return verbose_;} 
+    int get_fixed_rank() const {return fixed_rank_;}
+    const std::vector<std::unique_ptr<bigwham::LowRank<T>>>& get_low_rank_blocks() const {return low_rank_blocks_;}
+    const std::vector<std::shared_ptr<il::Array2D<T>>>& get_full_rank_blocks() const {return full_rank_blocks_;}
 };
 
 } // namespace bigwham

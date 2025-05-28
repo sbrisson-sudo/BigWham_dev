@@ -249,13 +249,30 @@ class BEMatrix(LinearOperator):
     def getSpatialDimension(self) -> int:
         return self.H_.get_spatial_dimension()
 
-    def _getFullBlocks(self, original_order=True) -> csc_matrix:
-        fb = PyGetFullBlocks()  # not fan of this way of creating empty object
-        # and setting them after - a constructor should do something!
+    def _getFullBlocks(self, original_order=True, keep_ratio: float = 1.0) -> csc_matrix:
+        if not (0 < keep_ratio <= 1):
+            raise ValueError("ratio must be a float between 0 and 1.")
+
+        fb = PyGetFullBlocks() 
         fb.set(self.H_, original_order)
         val = np.asarray(fb.get_val_list(), dtype=float)
         col = np.asarray(fb.get_col())
         row = np.asarray(fb.get_row())
+
+        if keep_ratio < 1.0:
+            # Number of values to keep
+            k = int(np.ceil(keep_ratio * val.size))
+            if k == 0:
+                return csc_matrix(self.shape_)
+
+            # Find threshold
+            abs_val = np.abs(val)
+            threshold = np.partition(abs_val, -k)[-k]
+            mask = abs_val >= threshold
+            val = val[mask]
+            row = row[mask]
+            col = col[mask]
+
         return csc_matrix((val, (row, col)), shape=self.shape_)
 
     def _getPattern(self) -> np.ndarray:
@@ -325,7 +342,7 @@ class BEMatrix(LinearOperator):
         return fig
 
     # a method constructing an ILU Preconditionner of the H matrix
-    def H_ILU_prec(self, fill_factor=1, drop_tol=1e-3) -> LinearOperator:
+    def H_ILU_prec(self, fill_factor=1, drop_tol=1e-3, keep_ratio=1.0) -> LinearOperator:
         """
         Return an ILU operator (using scipy spilu) built from the full-rank blocks of the matrix.
         :param fill_factor: integer (default 1) for the maximum number of fill-in (see scipy spilu)
@@ -337,7 +354,8 @@ class BEMatrix(LinearOperator):
         #     return self.H_jacobi_prec()
         
         self._build()
-        fb = self._getFullBlocks()
+        fb = self._getFullBlocks(keep_ratio=keep_ratio)
+                
         fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
         return LinearOperator(self.shape_, fbILU.solve)
 
@@ -440,6 +458,31 @@ class BEMatrix(LinearOperator):
         for _ in range(N_matvec):
             self._matvec(x)
         return (time.time() - start_time)/N_matvec
+    
+    def __getitem__(self, indices):
+        """
+        To get a selection of the hmat 
+        """
+        if self.useCuda:
+            raise Exception("Bigwham matrix selection not implemented for CUDA support.")
+        
+        if not isinstance(indices, tuple) or len(indices) != 2:
+            raise IndexError("Subsetting requires indices of the form (np.ix_(row_indices, col_indices))")
+        
+        row_indices, col_indices = indices
+        
+        # Copy attributes (shallow copy, so mutable attributes are shared)
+        new_bematrix = object.__new__(BEMatrix)
+        new_bematrix.__dict__ = self.__dict__.copy()
+        
+        # Update its hmatrix
+        new_bematrix.H_ = self.H_.hmatSelection(row_indices, col_indices)
+        
+        # And its shape
+        new_bematrix.shape = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
+        new_bematrix.shape_ = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
+        
+        return new_bematrix
         
 ########################################################################################################
 #  BEMatrix Rectangular class in python   #

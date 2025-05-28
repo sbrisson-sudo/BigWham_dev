@@ -744,4 +744,21 @@ void saveTreeToJSON(il::Tree<il::Range, 2> tree){
   std::cout << "Clustering binary tree saved in bigwham_binary_cluster_tree.json" << std::endl;
 }
 
+int count_cluster_leaves(il::Tree<il::Range, 2>& tree, il::spot_t s){
+
+    if (!tree.hasChild(s)) {
+        return 1;
+    }
+
+    int count = 0;
+
+    // Binary tree depth search
+    for (int i = 0; i < 2; ++i) {
+        il::spot_t s_child = tree.child(s, i);
+        count += count_cluster_leaves(tree, s_child);
+    }
+
+    return count;
+}
+
 }  // namespace bigwham

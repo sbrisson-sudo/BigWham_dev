@@ -38,6 +38,8 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
                   il::Tree<il::Range, 2>& tree, il::Array2D<double>& node,
                   il::Array<il::int_t>& permutation, int current_depth=1);
 
+int count_cluster_leaves(il::Tree<il::Range, 2>& tree, il::spot_t s);
+
 // block-cluster Tree I*I
 il::Tree<bigwham::SubHMatrix, 4> hmatrixTreeIxI(const il::Array2D<double>& node,
                                                 const il::Tree<il::Range, 2>& tree,
@@ -81,6 +83,7 @@ void hmatrixTreeIxJ_rec_size_conservative(const il::Array2D<double>& node0,
 
 ////////////////////////////////////////////////////////////////////////////////
 //// utilities functions below.
+
 void saveTreeToJSON(il::Tree<il::Range, 2> tree);
 
 inline double distance(const il::Array2D<double>& node, il::Range range_0,
@@ -168,7 +171,6 @@ inline bool isAdmissible(const il::Array2D<double>& node0, const il::Array2D<dou
 
     return il::max(diam_0, diam_1) <= eta * dist;
 }
-
 
 // k: is the node number. The tree is numbered as
 //

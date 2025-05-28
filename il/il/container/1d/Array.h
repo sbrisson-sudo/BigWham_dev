@@ -69,6 +69,10 @@ class Array {
   */
   explicit Array(il::int_t n);
 
+  /* \brief Construct an array from a size and a data buffer
+  */
+  explicit Array(il::int_t n, T* data);
+
   /* \brief Construct an aligned array of n elements
   // \details The pointer data, when considered as an integer, satisfies
   // data_ = 0 (Modulo align_mod)
@@ -303,6 +307,18 @@ Array<T>::Array(il::int_t n) {
   }
   size_ = data_ + n;
   capacity_ = data_ + n;
+  alignment_ = 0;
+  align_r_ = 0;
+  align_mod_ = 0;
+  shift_ = 0;
+}
+
+template <typename T>
+Array<T>::Array(il::int_t n, T* data){
+  IL_EXPECT_FAST(n >= 0);
+  data_ = data;
+  size_ = data + n;
+  capacity_ = data + n;
   alignment_ = 0;
   align_r_ = 0;
   align_mod_ = 0;

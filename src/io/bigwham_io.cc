@@ -9,6 +9,7 @@
 // last modifications :: Dec. 2023 - new interface improvements
 
 #include <cmath>
+#include <memory>
 
 #include "bigwham_io.h"
 #include "bigwham_io_helper.h"
@@ -1328,5 +1329,49 @@ bool BigWhamIO::GetCudaAvailable(){
     return true;
 #endif 
     return false;
+}
+
+// Copy constructor 
+BigWhamIO::BigWhamIO(const BigWhamIO& other) 
+    : n_openMP_threads_(other.n_openMP_threads_),
+      kernel_name_(other.kernel_name_),
+      spatial_dimension_(other.spatial_dimension_),
+      dof_dimension_(other.dof_dimension_),
+      flux_dimension_(other.flux_dimension_),
+      max_leaf_size_(other.max_leaf_size_),
+      eta_(other.eta_),
+      epsilon_aca_(other.epsilon_aca_),
+      is_built_(other.is_built_),
+      is_pattern_built_(other.is_pattern_built_),
+      h_representation_time_(other.h_representation_time_),
+      hmat_time_(other.hmat_time_),
+      verbose_(other.verbose_),
+      is_square_(other.is_square_),
+      num_GPUs_(other.num_GPUs_),
+      homogeneous_size_pattern_(other.homogeneous_size_pattern_),
+      fixed_rank_(other.fixed_rank_),
+      use_cuda_hmat(other.use_cuda_hmat),
+      hmat_(other.hmat_),
+      hr_(other.hr_),
+      mesh_src_(other.mesh_src_),
+      mesh_rec_(other.mesh_rec_),
+      mesh_(other.mesh_),
+      ker_obj_(other.ker_obj_),
+      ker_obs_u_(other.ker_obs_u_),
+      ker_obs_q_(other.ker_obs_q_)
+    {}
+
+// Submatrix selection
+BigWhamIO BigWhamIO::hmatSelection(const il::Array<int>& row_selection, const il::Array<int>& col_selection) const {
+
+    // Call to copy constructor
+    BigWhamIO result(*this);
+
+    // Get hmat selection
+    result.setHmat(std::make_shared<HmatSelection<double>>(
+        *hmat_, row_selection, col_selection
+    ));
+
+    return result;
 }
 
