@@ -76,6 +76,7 @@ public:
 
     // Getting the full blocks for preconditionners 
     void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list) override;
+    std::vector<T> diagonalOriginal() override;
 };
 
 }
