@@ -42,7 +42,6 @@ set_target_properties(py_bigwham
 
 message(STATUS "To use Bigwham python interface bigwham4py, you can :
 1. add ${CMAKE_CURRENT_SOURCE_DIR}/bigwham4py to your python path (via the PYTHONPATH environment variable or via sys.path.append())
-2. build and install it via pip, for that go in ${CMAKE_CURRENT_SOURCE_DIR} and execute :
-python3 setup.py build
-python3 -m pip install .
+2. install it via pip, for that go in ${CMAKE_CURRENT_SOURCE_DIR} and execute :
+python pip install .
 ")

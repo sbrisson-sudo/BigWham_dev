@@ -60,6 +60,8 @@ namespace bigwham {
         std::cout << "[Timing] allocating and populating the hmat = " << duration*1000 << "ms\n";
 #endif // TIMING 
 
+    std::cout << std::flush;
+
     }
 /* -------------------------------------------------------------------------- */
     template <typename T> Hmat<T>::Hmat(const std::string & filename) {

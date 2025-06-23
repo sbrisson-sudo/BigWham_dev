@@ -18,7 +18,7 @@
 
 #include "cluster.h"
 
-#define TIMING
+// #define TIMING
 // #define DEBUG
 
 namespace bigwham {
@@ -637,26 +637,64 @@ void cluster_rec_size_conservative(il::spot_t s, il::int_t leaf_size, il::io_t,
   // Reorder the nodes
   // Sorting them along the splitting coordinate
   ////////////////////
-  const double middle = middle_box[d_max];
-  il::Array<double> tmp_node{dim};
 
-  // Sort all nodes from i_begin to i_end based on d_max coordinate
-  for (il::int_t i = i_begin; i < i_end; ++i) {
-    for (il::int_t k = i + 1; k < i_end; ++k) {
-        if (node(i, d_max) > node(k, d_max)) {
-            // Swap node(i) and node(k)
-            for (il::int_t d = 0; d < dim; ++d) {
-                tmp_node[d] = node(i, d);
-                node(i, d) = node(k, d);
-                node(k, d) = tmp_node[d];
-            }
+
+  // const double middle = middle_box[d_max];
+  // il::Array<double> tmp_node{dim};
+
+  // // Sort all nodes from i_begin to i_end based on d_max coordinate
+  // for (il::int_t i = i_begin; i < i_end; ++i) {
+  //   for (il::int_t k = i + 1; k < i_end; ++k) {
+  //       if (node(i, d_max) > node(k, d_max)) {
+  //           // Swap node(i) and node(k)
+  //           for (il::int_t d = 0; d < dim; ++d) {
+  //               tmp_node[d] = node(i, d);
+  //               node(i, d) = node(k, d);
+  //               node(k, d) = tmp_node[d];
+  //           }
             
-            // Swap permutation indices
-            const il::int_t index = permutation[i];
-            permutation[i] = permutation[k];
-            permutation[k] = index;
-        }
-    }
+  //           // Swap permutation indices
+  //           const il::int_t index = permutation[i];
+  //           permutation[i] = permutation[k];
+  //           permutation[k] = index;
+  //       }
+  //   }
+  // }
+
+  const double middle = middle_box[d_max];
+
+  // Create a vector of indices to sort
+  std::vector<il::int_t> indices;
+  indices.reserve(i_end - i_begin);
+  for (il::int_t i = i_begin; i < i_end; ++i) {
+      indices.push_back(i);
+  }
+
+  // Sort indices based on the d_max coordinate of corresponding nodes
+  std::sort(indices.begin(), indices.end(), 
+      [&](il::int_t a, il::int_t b) {
+          return node(a, d_max) < node(b, d_max);
+      });
+
+  // Create temporary storage for reordered data
+  il::Array2D<double> temp_nodes{i_end - i_begin, dim};
+  il::Array<il::int_t> temp_permutation{i_end - i_begin};
+
+  // Copy data in sorted order
+  for (il::int_t i = 0; i < indices.size(); ++i) {
+      il::int_t orig_idx = indices[i];
+      for (il::int_t d = 0; d < dim; ++d) {
+          temp_nodes(i, d) = node(orig_idx, d);
+      }
+      temp_permutation[i] = permutation[orig_idx];
+  }
+
+  // Copy back to original arrays
+  for (il::int_t i = 0; i < indices.size(); ++i) {
+      for (il::int_t d = 0; d < dim; ++d) {
+          node(i_begin + i, d) = temp_nodes(i, d);
+      }
+      permutation[i_begin + i] = temp_permutation[i];
   }
 
   // Compute child cardinal 

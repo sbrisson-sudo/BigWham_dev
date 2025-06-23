@@ -321,6 +321,7 @@ endif()
 # For compiling _dev_example, folder with examples for developers
 ################################################################################
 if(BIGWHAM_DEV_EXAMPLES)
+    message("Adding dev examples to sources")
     add_subdirectory(src/_dev_example)
 endif()
 

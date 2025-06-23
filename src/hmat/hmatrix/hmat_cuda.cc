@@ -369,9 +369,7 @@ void HmatCuda<T>::copyToDevice(){
     // cnpy::npy_save("permutation_1.npy", permutation_1, {static_cast<size_t>(n_elts)}, "w");
 
     il::Array<int> tmp{static_cast<il::int_t>(n_elts)};
-    CHECK_CUDA_ERROR(cudaMemcpy(tmp.Data(), d_permutation_0_, n_elts*sizeof(int), cudaMemcpyDeviceToHost));
-    cnpy::npy_save("permutation_0_d.npy", tmp.data(), {static_cast<size_t>(tmp.size())}, "w");
-    
+    CHECK_CUDA_ERROR(cudaMemcpy(tmp.Data(), d_permutation_0_, n_elts*sizeof(int), cudaMemcpyDeviceToHost));    
 
     // ---------------------------
     // Distributing load on GPUS
