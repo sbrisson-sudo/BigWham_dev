@@ -28,6 +28,7 @@
 // #define PRINT_N_GROUPS
 // #define DEBUG_MULT_GPU
 // #define DEBUG_CUDA_ERRORS
+// #define DEBUG_ALLOC
 
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
@@ -126,9 +127,9 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
 
     // FR MEM ALLOCATION
     // First we get the number of full rank blokcks of standard and non standard size 
-    int num_FR_blocks_standard_size = 0;
-    int num_FR_blocks_non_standard_size = 0;
-    int total_size_non_standard_FR_blocks = 0;
+    size_t num_FR_blocks_standard_size = 0;
+    size_t num_FR_blocks_non_standard_size = 0;
+    size_t total_size_non_standard_FR_blocks = 0;
 
     for (int i(0); i<pattern.n_FRB; i++){
         int i0 = pattern.FRB_pattern(1,i);
@@ -187,16 +188,22 @@ HmatCuda<T>::HmatCuda(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
 
     // We allocate the memory for standardized FR blocks
     FR_standard_size_data_buffer_size = num_FR_blocks_standard_size * leaf_size * leaf_size * dim*dim;
+    #ifdef DEBUG_ALLOC
+    std::cout << "Allocating FR_standard_size_data : FR_standard_size_data_buffer_size = " << FR_standard_size_data_buffer_size << std::endl;
+    #endif 
     this->FR_standard_size_data = new T[FR_standard_size_data_buffer_size];
 
     FR_non_standard_size_data_buffer_size = total_size_non_standard_FR_blocks * dim*dim;
+    #ifdef DEBUG_ALLOC
+    std::cout << "Allocating FR_non_standard_size_data : FR_non_standard_size_data_buffer_size = " << FR_non_standard_size_data_buffer_size << std::endl;
+    #endif 
     this->FR_non_standard_size_data = new T[FR_non_standard_size_data_buffer_size];
 
     // LR MEM ALLOCATION
     // Here also we put apart the non square blocks 
     std::unordered_map<int, std::vector<int>> LR_blocks_per_size_indices;
 
-    int total_size_non_standard_LR_blocks = 0;
+    size_t total_size_non_standard_LR_blocks = 0;
 
     for (int i(0); i<pattern.n_LRB; i++){
         int i0 = pattern.LRB_pattern(1,i);
@@ -955,7 +962,7 @@ void HmatCuda<T>::copyToDevice(){
         // We copy all buffers ;
         // 1 = std size
         for (int block_size : LR_std_sizes_per_gpu_[gpu_id]){
-            int buffer_size = LR_standard_size_data_buffer_sizes_[block_size];
+            size_t buffer_size = LR_standard_size_data_buffer_sizes_[block_size];
 
             // Allocation
             T* d_A_tmp;
@@ -999,7 +1006,7 @@ void HmatCuda<T>::copyToDevice(){
 
         // Offsets for summing partial results
 
-        int num_lr_blocks_this_gpu = num_LR_per_gpu_[gpu_id];
+        size_t num_lr_blocks_this_gpu = num_LR_per_gpu_[gpu_id];
         if (gpu_id == 0) num_lr_blocks_this_gpu += LR_non_std_indices_.size();
 
         int* h_LR_y_partial_src_indices = new int[num_lr_blocks_this_gpu];
@@ -1459,7 +1466,7 @@ template <typename T>
 void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
 
     if (this->verbose_){
-        std::cout << "Loop on full blocks construction  \n";
+        std::cout << "Loop on full blocks construction\n";
     }
 
     /*
@@ -1496,8 +1503,8 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
         a->deallocateData();
 
         // We set its data to be where we want 
-        int data_size = (iend-i0)*(jend-j0)* dim*dim;
-        int offset = data_size*idx;
+        size_t data_size = (iend-i0)*(jend-j0)* dim*dim;
+        size_t offset = data_size*idx;
         if (offset + data_size > FR_standard_size_data_buffer_size)
             std::cerr << "FR std : setting data outside the allocated buffer (allocated = " << FR_standard_size_data_buffer_size << ", offset = " << offset << ", size = "<< data_size <<")\n";
 
@@ -1511,8 +1518,8 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
     // For the non standard blocks we first need a list of offsets
 
     // We first compute the offset per size 
-    int offset_total_data = 0;
-    int offset_total_y = 0;
+    size_t offset_total_data = 0;
+    size_t offset_total_y = 0;
     for (auto& [sizes,count] : num_FR_nonstd_blocks_per_size_){
         FR_non_std_offsets_data_[sizes] = offset_total_data;
         offset_total_data += count * sizes.first*sizes.second * dim*dim;
@@ -1526,7 +1533,7 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
         block_counter[sizes] = 0;
     }
 
-    int* offsets_non_standard = new int[FR_non_std_indices.size()];
+    size_t* offsets_non_standard = new size_t[FR_non_std_indices.size()];
     for (int idx(0); idx<FR_non_std_indices.size(); idx++){
 
         int i = FR_non_std_indices[idx];
@@ -1536,7 +1543,7 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
         il::int_t iend = hr->pattern_.FRB_pattern(3, i);
         il::int_t jend = hr->pattern_.FRB_pattern(4, i);
 
-        int data_size = (iend-i0)*(jend-j0)* dim*dim;
+        size_t data_size = (iend-i0)*(jend-j0)* dim*dim;
 
         std::pair<int, int> sizes = {iend-i0, jend-j0};
         offsets_non_standard[idx] = FR_non_std_offsets_data_[sizes] + block_counter[sizes]*data_size;
@@ -1566,7 +1573,7 @@ void HmatCuda<T>::buildFRCuda(const bigwham::MatrixGenerator<T> & matrix_gen){
         a->deallocateData();
 
         // We get the correct offset
-        int data_size = (iend-i0)*(jend-j0)* dim*dim;
+        size_t data_size = (iend-i0)*(jend-j0)* dim*dim;
         if (offsets_non_standard[idx] + data_size > FR_non_standard_size_data_buffer_size)
             std::cerr << "FR non std : setting data outside the allocated buffer\n";
 
@@ -1602,10 +1609,10 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
     // We initialize the offsets in the memory buffers
     // For the non std blocks
     // 1. offset per size
-    int offset_total_A = 0;
-    int offset_total_B = 0;
-    int offset_total_y = 0;
-    int offset_total_tmp = 0;
+    size_t offset_total_A = 0;
+    size_t offset_total_B = 0;
+    size_t offset_total_y = 0;
+    size_t offset_total_tmp = 0;
     for (auto& [sizes,count] : num_LR_nonstd_blocks_per_size_){
         LR_non_std_A_offsets_data_[sizes] = offset_total_A;
         LR_non_std_B_offsets_data_[sizes] = offset_total_B;
@@ -1698,10 +1705,10 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
         #endif
 
         // We set their memory 
-        int offset_A = offsets_A_non_std[i];
-        int offset_B = offsets_B_non_std[i];
-        int data_size_A = (iend-i0)*fixed_rank * dim_dof*dim_dof;
-        int data_size_B = (jend-j0)*fixed_rank * dim_dof*dim_dof;
+        size_t offset_A = offsets_A_non_std[i];
+        size_t offset_B = offsets_B_non_std[i];
+        size_t data_size_A = (iend-i0)*fixed_rank * dim_dof*dim_dof;
+        size_t data_size_B = (jend-j0)*fixed_rank * dim_dof*dim_dof;
 
         // Sanity check : ensure memory is allocated
         if (offset_A + data_size_A > LR_non_standard_size_data_A_buffer_size_){
@@ -1785,8 +1792,8 @@ void HmatCuda<T>::buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen, co
             B.deallocateData();
     
             // We set their memory 
-            int offset = offsets_per_size_std[block_size][i];
-            int data_size = block_size*fixed_rank * dim_dof*dim_dof;
+            size_t offset = offsets_per_size_std[block_size][i];
+            size_t data_size = block_size*fixed_rank * dim_dof*dim_dof;
     
             // Sanity check : ensure memory is allocated
             if (offset + data_size > LR_standard_size_data_buffer_sizes_[block_size]){

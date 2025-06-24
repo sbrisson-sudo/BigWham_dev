@@ -69,17 +69,17 @@ private:
     template <il::int_t dim> 
     void buildLRCuda(const bigwham::MatrixGenerator<T> & matrix_gen,const double epsilon);
 
-    int total_block_size_;
+    size_t total_block_size_;
 
     // CPU (host) memory buffers
 
     // for full rank (FR) blocks
     T* FR_standard_size_data;           // standard size FR blocks data
     T* FR_non_standard_size_data;       // non standard size FR blocks data
-    int FR_standard_size_data_buffer_size;      // standard size FR blocks data size
-    int FR_non_standard_size_data_buffer_size;  // non standard size FR blocks data size
+    size_t FR_standard_size_data_buffer_size;      // standard size FR blocks data size
+    size_t FR_non_standard_size_data_buffer_size;  // non standard size FR blocks data size
     std::vector<int> FR_std_orderedIndices; // to cpmply with BSR : blocks sorted by row then column
-    int num_FR_std_blocks_;
+    size_t num_FR_std_blocks_;
     std::vector<int> FR_non_std_indices;
 
     // To store the diagonal
@@ -90,11 +90,11 @@ private:
     std::unordered_map<int, int> num_LR_std_blocks_per_size_;
     T* LR_non_standard_size_A_data_;
     T* LR_non_standard_size_B_data_;
-    int LR_non_standard_size_data_A_buffer_size_;
-    int LR_non_standard_size_data_B_buffer_size_;
+    size_t LR_non_standard_size_data_A_buffer_size_;
+    size_t LR_non_standard_size_data_B_buffer_size_;
     std::unordered_map<int, T*> LR_standard_size_A_data_;
     std::unordered_map<int, T*> LR_standard_size_B_data_;
-    std::unordered_map<int, int> LR_standard_size_data_buffer_sizes_;
+    std::unordered_map<int, size_t> LR_standard_size_data_buffer_sizes_;
 
     std::unordered_map<int, std::vector<int>> LR_std_indices_;
     std::vector<int> LR_non_std_indices_;
