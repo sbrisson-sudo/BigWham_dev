@@ -4,6 +4,7 @@
 #include <string>
 #include <iomanip>
 #include <sstream>
+#include <cstdlib>
 
 // #define USE_NVTX
 
@@ -26,6 +27,7 @@
 // #define WRITE_INPUT_OUTPUT_VEC
 // #define PRINT_N_GROUPS
 // #define DEBUG_MULT_GPU
+// #define DEBUG_CUDA_ERRORS
 
 // Error checking helper functions
 #define CHECK_CUDA_ERROR(val) check_cuda((val), #val, __FILE__, __LINE__)
@@ -347,6 +349,29 @@ void HmatCuda<T>::copyToDevice(){
     magma_init();
     #endif
 
+    // If using multiple GPUs, ensuring that we have peer to peer access
+    if (num_gpus_ > 1){
+
+        for (int i = 0; i < num_gpus_; ++i) {
+            cudaSetDevice(i);
+            for (int j = 0; j < num_gpus_; ++j) {
+                if (i != j) {
+                    int can_access_peer;
+                    cudaDeviceCanAccessPeer(&can_access_peer, i, j);
+                    if (can_access_peer) {
+                        cudaError_t err = cudaDeviceEnablePeerAccess(j, 0);
+                        if (err != cudaSuccess && err != cudaErrorPeerAccessAlreadyEnabled) {
+                            printf("Failed to enable peer access from GPU %d to GPU %d: %s\n", 
+                                i, j, cudaGetErrorString(err));
+                        }
+                    } else {
+                        printf("GPU %d cannot access GPU %d\n", i, j);
+                    }
+                }
+            }
+        }
+    }
+
     // Copying the permuttaion arrays on device
     CHECK_CUDA_ERROR(cudaSetDevice(0));
 
@@ -386,6 +411,14 @@ void HmatCuda<T>::copyToDevice(){
     }
     num_FR_per_gpu_[num_gpus_-1] = num_FR_std_blocks_ - sum_so_far;
 
+    // Sanity check : ensure that all GPUs have some LR blocks
+    for (int gpu_id(0); gpu_id<num_gpus_; gpu_id++) {
+        if (num_FR_per_gpu_[gpu_id] == 0){
+            std::cerr << "Error: GPU " << gpu_id << " has zero FR blocks, it is likely that you don't need several GPUs." << std::endl;
+            std::exit(EXIT_FAILURE);  // Exit the program with failure status
+        }
+    }
+
     #ifdef DEBUG_MULT_GPU
     std::cout << "num_FR_std_blocks_ = " << num_FR_std_blocks_ << std::endl;
     std::cout << "Num of FR blocks per GPU = [";
@@ -423,6 +456,14 @@ void HmatCuda<T>::copyToDevice(){
         gpu_load[min_load_gpu] += load;
         LR_std_sizes_per_gpu_[min_load_gpu].push_back(block_size);
         num_LR_per_gpu_[min_load_gpu] += num_blocks;
+    }
+
+    // Sanity check : ensure that all GPUs have some LR blocks
+    for (int gpu_id(0); gpu_id<num_gpus_; gpu_id++) {
+        if (num_LR_per_gpu_[gpu_id] == 0){
+            std::cerr << "Error: GPU " << gpu_id << " has zero LR blocks, it is likely that you don't need several GPUs." << std::endl;
+            std::exit(EXIT_FAILURE);  // Exit the program with failure status
+        }
     }
 
     #ifdef DEBUG_MULT_GPU
@@ -1152,6 +1193,25 @@ void HmatCuda<T>::copyToDevice(){
         CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_dest_indices_[gpu_id], num_lr_blocks_this_gpu*sizeof(int)));
         CHECK_CUDA_ERROR(cudaMalloc(&d_LR_y_partial_lengths_[gpu_id], num_lr_blocks_this_gpu*sizeof(int)));
 
+        #ifdef DEBUG_MULT_GPU
+        std::cout << "LR blocks scatter add metadata :" << std::endl;
+        std::cout << "LR_y_partial_src_indices = [";
+        for (int i(0); i<num_lr_blocks_this_gpu; i++){
+            std::cout << h_LR_y_partial_src_indices[i] << ", ";
+        }
+        std::cout << "]" << std::endl;
+        std::cout << "LR_y_partial_dest_indices = [";
+        for (int i(0); i<num_lr_blocks_this_gpu; i++){
+            std::cout << h_LR_y_partial_dest_indices[i] << ", ";
+        }
+        std::cout << "]" << std::endl;
+        std::cout << "h_LR_y_partial_lengths = [";
+        for (int i(0); i<num_lr_blocks_this_gpu; i++){
+            std::cout << h_LR_y_partial_lengths[i] << ", ";
+        }
+        std::cout << "]" << std::endl;
+        #endif
+
         CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_src_indices_[gpu_id], h_LR_y_partial_src_indices, num_lr_blocks_this_gpu*sizeof(int), cudaMemcpyHostToDevice));
         CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_dest_indices_[gpu_id], h_LR_y_partial_dest_indices, num_lr_blocks_this_gpu*sizeof(int), cudaMemcpyHostToDevice));
         CHECK_CUDA_ERROR(cudaMemcpy(d_LR_y_partial_lengths_[gpu_id], h_LR_y_partial_lengths, num_lr_blocks_this_gpu*sizeof(int), cudaMemcpyHostToDevice));
@@ -1794,6 +1854,10 @@ void HmatCuda<double>::matvec() {
         // In a first num_gpu therads manafge GPU computation
         if (thread_id < num_gpus_) {
 
+            #ifdef DEBUG_CUDA_ERRORS
+            auto err = cudaGetLastError();
+            #endif
+
             int gpu_id = thread_id;
 
             CHECK_CUDA_ERROR(cudaSetDevice(gpu_id));
@@ -1958,6 +2022,14 @@ void HmatCuda<double>::matvec() {
 
                     }
                 }
+
+                #ifdef DEBUG_CUDA_ERRORS
+                cudaDeviceSynchronize();
+                err = cudaGetLastError();
+                if (err != cudaSuccess) {
+                    printf("CUDA error after FR blocks mult: %s\n", cudaGetErrorString(err));
+                }
+                #endif
                 
                 // cudaDeviceSynchronize();
                 cudaStreamSynchronize(cuda_streams_[gpu_id][0]);
@@ -1967,6 +2039,10 @@ void HmatCuda<double>::matvec() {
 
 
                 // And we sum the partial results
+                #ifdef DEBUG_MULT_GPU
+                std::cout << "[GPU " << gpu_id << "] scatter_add FR, num blocks = " << num_blocks << std::endl;
+                #endif
+
                 scatter_add(
                     d_y_[gpu_id],
                     d_y_partial_FR_[gpu_id],
@@ -1975,6 +2051,14 @@ void HmatCuda<double>::matvec() {
                     d_FR_y_partial_lengths_[gpu_id],
                     num_blocks
                 );
+
+                #ifdef DEBUG_CUDA_ERRORS
+                cudaDeviceSynchronize();
+                err = cudaGetLastError();
+                if (err != cudaSuccess) {
+                    printf("CUDA error after FR blocks scatter_add: %s\n", cudaGetErrorString(err));
+                }
+                #endif
     
                 // cudaDeviceSynchronize();
     
@@ -2130,6 +2214,14 @@ void HmatCuda<double>::matvec() {
 
             } // Loop on std LR block sizes
 
+            #ifdef DEBUG_CUDA_ERRORS
+            cudaDeviceSynchronize();
+            err = cudaGetLastError();
+            if (err != cudaSuccess) {
+                printf("CUDA error after LR blocks mult: %s\n", cudaGetErrorString(err));
+            }
+            #endif
+
             // We add the contributions of the non std blocks
             if (gpu_id == 0){
 
@@ -2253,6 +2345,14 @@ void HmatCuda<double>::matvec() {
                 }
             }
 
+            #ifdef DEBUG_CUDA_ERRORS
+            cudaDeviceSynchronize();
+            err = cudaGetLastError();
+            if (err != cudaSuccess) {
+                printf("CUDA error after non std LR blocks mult: %s\n", cudaGetErrorString(err));
+            }
+            #endif
+
             // We sync the streams
             // cudaDeviceSynchronize();
             cudaStreamSynchronize(cuda_streams_[gpu_id][1]);
@@ -2260,6 +2360,10 @@ void HmatCuda<double>::matvec() {
             // Here we gather the partial results of the LR blocks on d_y_ that was used to store the results of the FR blocks
             int num_lr_blocks = num_LR_per_gpu_[gpu_id];
             if (gpu_id == 0) num_lr_blocks += LR_non_std_indices_.size();
+
+            #ifdef DEBUG_MULT_GPU
+            std::cout << "[GPU " << gpu_id << "] scatter_add LR, num blocks = " << num_lr_blocks << std::endl;
+            #endif
 
             scatter_add(
                 d_y_[gpu_id],
@@ -2270,12 +2374,13 @@ void HmatCuda<double>::matvec() {
                 num_lr_blocks
             );
 
+            #ifdef DEBUG_CUDA_ERRORS
             cudaDeviceSynchronize();
-
-            auto err = cudaGetLastError();
+            err = cudaGetLastError();
             if (err != cudaSuccess) {
-                printf("CUDA error after scatter_add: %s\n", cudaGetErrorString(err));
+                printf("CUDA error after LR blocks scatter_add: %s\n", cudaGetErrorString(err));
             }
+            #endif
  
             // Finnally, copy it back to cpu
             // double* y_data = y_private.Data();
@@ -2310,8 +2415,6 @@ void HmatCuda<double>::matvec() {
 
         } // GPU - assigned threads
 
-
-
         // // We sum the partial results of each thread
         // #pragma omp critical
         // {
@@ -2328,13 +2431,21 @@ void HmatCuda<double>::matvec() {
 
         for (int gpu_id = 1; gpu_id < num_gpus_; ++gpu_id) {
             // Copy data from GPU i to GPU 0's d_tmp
-            cudaMemcpyPeer(d_x_tmp_, 0, d_y_[gpu_id], gpu_id, vector_size_bytes_);
+            CHECK_CUDA_ERROR(cudaMemcpyPeer(d_x_tmp_, 0, d_y_[gpu_id], gpu_id, vector_size_bytes_));
             // Add it
             const double alpha = 1.0;
-            cublasDaxpy(cublas_handle_[0], vector_size_, &alpha, d_x_tmp_, 1, d_y_[0], 1);
+            CHECK_CUBLAS_ERROR(cublasDaxpy(cublas_handle_[0], vector_size_, &alpha, d_x_tmp_, 1, d_y_[0], 1));
         }
 
     }
+
+    #ifdef DEBUG_CUDA_ERRORS
+    cudaDeviceSynchronize();
+    auto err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("CUDA error after mult GPUs result gather: %s\n", cudaGetErrorString(err));
+    }
+    #endif
 
     #ifdef TIMING
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -2370,8 +2481,17 @@ il::Array<double> HmatCuda<double>::matvec(il::ArrayView<double> x) {
     // Computation 
     matvec();
 
+    #ifdef DEBUG_CUDA_ERRORS
+    cudaDeviceSynchronize();
+    auto err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        printf("CUDA error after matvec(): %s\n", cudaGetErrorString(err));
+    }
+    #endif
+
     // Copying back result
     // FInally : copy result on host :
+    CHECK_CUDA_ERROR(cudaSetDevice(0));
     double* y_data = y.Data();
     CHECK_CUDA_ERROR(cudaMemcpy(y_data, d_y_[0], vector_size_bytes_, cudaMemcpyDeviceToHost));
 
