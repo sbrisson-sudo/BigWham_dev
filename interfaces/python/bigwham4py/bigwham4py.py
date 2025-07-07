@@ -43,6 +43,18 @@ kernels_id = [
     "3DR0-H-mode1"
 ]
 
+# I need to check that
+kernel_to_dim_dof = {
+    "2DS0-H":2,
+    "2DS1-H":4,
+    "S3DS0-H":2,
+    "Axi3DS0-H":2,
+    "3DT0-H":3,
+    "3DT6-H":6,
+    "3DR0-H":3,
+    "3DR0-H-mode1":1
+}
+
 ##############################
 #  Hmatrix class in python   #
 ##############################
@@ -62,7 +74,9 @@ class BEMatrix(LinearOperator):
         verbose:bool = True,
         homogeneous_size_pattern:bool = False,
         fixed_rank = -1,
-        useCuda = False
+        useCuda = False,
+        selection_indices=None,
+        shape_orig = None
     ):
         """ "
         Name:              Type:                Description:
@@ -75,6 +89,8 @@ class BEMatrix(LinearOperator):
         eta,               (float)            approximation factor (usually ~3, 0 is non compressed HMAT)
         eps_aca            (float)              approximation factor (usually 0.001 - 0.0001)
         n_openMP_threads    (integer)           number of OMP threads to be used by BigWham
+        selection_indices   (array of int)      if the BEMatrix is generated via selection, store the indices used to perform the selection
+        shape_orig          (array of int)      shape before selection
         """
                 
         # Ensure kernel exists
@@ -85,11 +101,13 @@ class BEMatrix(LinearOperator):
         self.useCuda = useCuda
 
         self.kernel_ : str = kernel
+        self.dim_dof_ = kernel_to_dim_dof[kernel]
         self.properties_ : np.ndarray = properties
         self.max_leaf_size_ : int = int(max_leaf_size)
         self.eta_ : float = float(eta)
         self.eps_aca_ : float = float(eps_aca)
         self.n_openMP_threads_ : int = n_openMP_threads
+        
         self.H_ : BigWhamIOSelf = BigWhamIOSelf(
             coor.flatten(),
             conn.flatten(),
@@ -123,6 +141,10 @@ class BEMatrix(LinearOperator):
             self.shape_ =(0,0)
         self.dtype_ = float
         super().__init__(self.dtype_, self.shape_)
+        
+        # if created by selection
+        self.selection_indices_ = selection_indices
+        self.shape_orig_ = shape_orig
 
     def _build(self):
         if not(self.built_):
@@ -214,6 +236,7 @@ class BEMatrix(LinearOperator):
         """
         Get collocation points from mesh (no permutations ....)
         return: (no_collocation_pts, dim) array from mesh
+        Dupplicated, should be removed
         """
         dim = self.H_.get_spatial_dimension()
         return np.asarray(self.H_.get_collocation_points()).reshape(
@@ -226,7 +249,14 @@ class BEMatrix(LinearOperator):
         :param x_local: local vector
         :return: global vector
         """
-        return self.H_.convert_to_global(x_local)
+        if self.selection_indices_ is None :
+            return self.H_.convert_to_global(x_local)
+        else :
+            # We pad with zeros 
+            x_local_padded = np.zeros((int(self.shape_orig_[0]//self.dim_dof_), self.dim_dof_))
+            x_local_padded[self.selection_indices_,:] = x_local.reshape((-1,self.dim_dof_))
+            x_global_padded = self.H_.convert_to_global(x_local_padded.ravel()).reshape((-1,self.dim_dof_))
+            return x_global_padded[self.selection_indices_,:].ravel()
 
     def convert_to_local(self, x_global: np.ndarray) -> np.ndarray:
         """
@@ -234,7 +264,14 @@ class BEMatrix(LinearOperator):
         :param x_global: global vector
         :return: local vector
         """
-        return self.H_.convert_to_local(x_global)
+        if self.selection_indices_ is None :
+            return self.H_.convert_to_local(x_global)
+        else :
+            # We pad with zeros 
+            x_global_padded = np.zeros((int(self.shape_orig_[0]//self.dim_dof_), self.dim_dof_))
+            x_global_padded[self.selection_indices_,:] = x_global.reshape((-1,self.dim_dof_))
+            x_local_padded = self.H_.convert_to_local(x_global_padded.ravel()).reshape((-1,self.dim_dof_))
+            return x_local_padded[self.selection_indices_,:].ravel()
 
     def getCollocationPoints(self) -> np.ndarray:
         """
@@ -244,7 +281,11 @@ class BEMatrix(LinearOperator):
         n = self.H_.get_spatial_dimension()
         aux = np.asarray(self.H_.get_collocation_points())
         colPts = np.reshape(aux, (int(aux.size / n), n))
-        return colPts
+        
+        if self.selection_indices_ is None :
+            return colPts
+        else :
+            return colPts[self.selection_indices_,:]
 
     def getSpatialDimension(self) -> int:
         return self.H_.get_spatial_dimension()
@@ -363,12 +404,13 @@ class BEMatrix(LinearOperator):
         """
         :return: the diagonal of the matrix as n array
         """
-        if self.useCuda:
-            return self.get_diagonal()
-        else :
-            self._build()
-            fb = self._getFullBlocks()
-            return fb.diagonal()
+        raise Exception("H_diag deprecated, use get_diagonal")
+        # if self.useCuda:
+        #     return self.get_diagonal()
+        # else :
+        #     self._build()
+        #     fb = self._getFullBlocks()
+        #     return fb.diagonal()
 
     def H_jacobi_prec(self):
         """
@@ -481,7 +523,11 @@ class BEMatrix(LinearOperator):
         # And its shape
         new_bematrix.shape = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
         new_bematrix.shape_ = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
+        new_bematrix.matvec_size_ = new_bematrix.shape[0]
         
+        new_bematrix.selection_indices_ = row_indices
+        new_bematrix.shape_orig_ = self.shape_
+                
         return new_bematrix
         
 ########################################################################################################

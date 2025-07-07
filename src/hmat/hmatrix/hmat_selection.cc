@@ -380,13 +380,12 @@ std::vector<T> HmatSelection<T>::diagonalOriginal(){
     const int dim_dof = this->dof_dimension_;
 
     // Initiate the diag
-    if (this->size[0] != this->size[1]){
+    if (this->size(0) != this->size(1)){
         throw std::logic_error("get diagonal not implemented for non square hmatrix subset, use the get_full_rank method");
-        return;
     }
 
     std::vector<T> diag_orig;
-    diag_orig.resize(this->size[0]);
+    diag_orig.resize(this->size(0));
 
     // Compute the boolean indices arrays
     il::Array<int> x_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_), 0};
@@ -417,7 +416,7 @@ std::vector<T> HmatSelection<T>::diagonalOriginal(){
         if ((!in_lower) && (!in_upper)) // this fb intersect the diagonal....
         {
             auto a = (*full_rank_blocks_ref_[i]).view();
-            int min_size_block = std::min(a.size[0], a.size[1]);
+            int min_size_block = std::min(a.size(0), a.size(1));
 
             for (il::int_t ii = 0; ii < min_size_block; ii++) {
 
