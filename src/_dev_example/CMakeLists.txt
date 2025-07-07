@@ -28,6 +28,9 @@ if (USE_CUDA)
     target_link_libraries(mat_vec_gpu_getMemoryRequirement PRIVATE ${CUDA_LIBRARIES})
 endif()
 
+add_executable(mat_vec_selection mat_vec_selection.cc)
+target_link_libraries(mat_vec_selection PRIVATE BigWhamShared cnpy)
+
 add_executable(test_contiguous_array2d test_contiguous_array2d_vector.cpp)
 target_include_directories(test_contiguous_array2d PUBLIC ../../il ../../src)
 

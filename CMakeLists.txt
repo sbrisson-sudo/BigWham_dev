@@ -131,10 +131,10 @@ if (USE_CUDA)
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -std=c++14)
 
     # CUDA NVTX : only for debugging purposes
-    # set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/nsight-compute-2024.1.1/host/target-linux-x64/nvtx/include)
-    # set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/include/cub/detail)
-    # message(STATUS "NVTX_INCLUDE_DIR: ${NVTX_INCLUDE_DIR}")
-    # include_directories(${NVTX_INCLUDE_DIR})
+    set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/nsight-compute-2024.1.1/host/target-linux-x64/nvtx/include)
+    set(NVTX_INCLUDE_DIR ${CUDA_TOOLKIT_ROOT_DIR}/targets/x86_64-linux/include/cub/detail)
+    message(STATUS "NVTX_INCLUDE_DIR: ${NVTX_INCLUDE_DIR}")
+    include_directories(${NVTX_INCLUDE_DIR})
 
     ################################################
     # TO LINK MAGMA LIBRARY
@@ -185,6 +185,8 @@ if (USE_CUDA)
         ${CUDA_cudart_static_LIBRARY}
     )
     target_compile_definitions(BigWham PRIVATE USE_CUDA)
+
+    target_compile_definitions(BigWham PRIVATE USE_NVTX)
 
     # set_target_properties(BigWham PROPERTIES
     # CUDA_SEPARABLE_COMPILATION ON)

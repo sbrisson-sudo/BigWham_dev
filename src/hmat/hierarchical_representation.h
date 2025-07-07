@@ -30,6 +30,8 @@ struct HRepresentation {
   bool is_square_ =true; // if true - square matrix, and only permutation_0_ is stored -> not used ?
 
   int leaf_size;
+
+  std::vector<std::vector<int>> cluster_leaves_to_HR_block_map;
   
   HRepresentation() = default;
   ~HRepresentation() = default;
@@ -48,7 +50,14 @@ HRepresentationSquareMatrix(const std::shared_ptr<Mesh> &mesh, const il::int_t m
   // std::cout << " Got col points construction ...."<< "\n";
   il::Timer tt;
   tt.Start();
+
+
   Cluster cluster = bigwham::cluster(max_leaf_size, il::io, Xcol, homegeneous_size);
+
+  // We initialize the data structure that will keep the mapping from pair of cluster leaves to pattern blocks
+  // int num_cluster_leaves = count_cluster_leaves(cluster.partition, cluster.partition.root());
+  // std::cout << "num_cluster_leaves = " << num_cluster_leaves << std::endl;
+
   // std::cout << "Cluster tree creation time :  " << tt.time() << "\n";
   tt.Stop();
   tt.Reset();
