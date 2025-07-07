@@ -2618,7 +2618,7 @@ void HmatCuda<T>::setDiagonal(){
 }
 
 template <typename T>
-std::vector<T> HmatCuda<T>::diagonal(){
+std::vector<T> HmatCuda<T>::diagonal() const {
 
     if (!diagonal_stored_){
         std::cout << "[ERROR] Accessing the diagonal before building the hmat.";
@@ -2627,7 +2627,7 @@ std::vector<T> HmatCuda<T>::diagonal(){
 }
 
 template <typename T>
-std::vector<T> HmatCuda<T>::diagonalOriginal(){
+std::vector<T> HmatCuda<T>::diagonalOriginal() const {
 
     if (!diagonal_stored_){
         std::cout << "[ERROR] Accessing the diagonal before building the hmat.";

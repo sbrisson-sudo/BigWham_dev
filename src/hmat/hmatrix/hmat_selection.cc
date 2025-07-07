@@ -1,6 +1,7 @@
 #include "hmat_selection.h"
 
 // #define DEBUG
+// #define DEBUG2
 
 namespace bigwham {
 
@@ -375,60 +376,72 @@ void HmatSelection<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::
 }
 
 template <typename T> 
-std::vector<T> HmatSelection<T>::diagonalOriginal(){
+std::vector<T> HmatSelection<T>::diagonalOriginal() const {
+
+    #ifdef DEBUG2
+    std::cout << "Calling HmatSelection<T>::diagonalOriginal" << std::endl;
+    #endif
 
     const int dim_dof = this->dof_dimension_;
 
     // Initiate the diag
     if (this->size(0) != this->size(1)){
-        throw std::logic_error("get diagonal not implemented for non square hmatrix subset, use the get_full_rank method");
+        throw std::logic_error("get diagonal not implemented for non square hmatrix subset, use the get_full_blocks method");
     }
 
-    std::vector<T> diag_orig;
-    diag_orig.resize(this->size(0));
+    std::vector<T> diag;
+    diag.resize(this->size(0));
 
-    // Compute the boolean indices arrays
-    il::Array<int> x_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_), 0};
+    // Get the diagonal of the original full matrix
+    std::vector<T> diag_full = base_hmat_.diagonalOriginal();
 
-    auto x_test_edit = x_test.Edit();
+    // Selection on it 
     for (int i=0; i<col_indices_.size(); i++) {
-        x_test_edit[col_indices_perm_[i]] = 1;
+        diag[i] = diag_full[col_indices_[i]];
     }
 
-    // inverse the (partial) permutations
-    il::Array<int> permut_col_inv{dim_dof * this->hr_->permutation_0_.size(), -1};
-    for (int i=0; i<col_indices_perm_.size(); i++) {
-        for (int j=0; j<this->dof_dimension_; j++){
-            permut_col_inv[col_indices_perm_[i]*dim_dof+j] = i*dim_dof+j;
-        }
-    }
+//     // Compute the boolean indices arrays
+//     il::Array<int> x_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_), 0};
 
-    // Loop on the selected blocks
-    for (auto i : fr_blocks_selected_) {
-        auto i0 = this->hr_->pattern_.FRB_pattern(1, i);
-        auto j0 = this->hr_->pattern_.FRB_pattern(2, i);
-        auto iend = this->hr_->pattern_.FRB_pattern(3, i);
-        auto jend = this->hr_->pattern_.FRB_pattern(4, i);
+//     auto x_test_edit = x_test.Edit();
+//     for (int i=0; i<col_indices_.size(); i++) {
+//         x_test_edit[col_indices_perm_[i]] = 1;
+//     }
 
-        // Check if block is on the diagonal
-        bool in_lower = (i0 > j0) && (i0 > jend) && (iend > j0) && (iend > jend);
-        bool in_upper = (i0 < j0) && (i0 < jend) && (iend < j0) && (iend < jend);
-        if ((!in_lower) && (!in_upper)) // this fb intersect the diagonal....
-        {
-            auto a = (*full_rank_blocks_ref_[i]).view();
-            int min_size_block = std::min(a.size(0), a.size(1));
+//     // inverse the (partial) permutations
+//     il::Array<int> permut_col_inv{dim_dof * this->hr_->permutation_0_.size(), -1};
+//     for (int i=0; i<col_indices_perm_.size(); i++) {
+//         for (int j=0; j<this->dof_dimension_; j++){
+//             permut_col_inv[col_indices_perm_[i]*dim_dof+j] = i*dim_dof+j;
+//         }
+//     }
 
-            for (il::int_t ii = 0; ii < min_size_block; ii++) {
+//     // Loop on the selected blocks
+//     for (auto i : fr_blocks_selected_) {
+//         auto i0 = this->hr_->pattern_.FRB_pattern(1, i);
+//         auto j0 = this->hr_->pattern_.FRB_pattern(2, i);
+//         auto iend = this->hr_->pattern_.FRB_pattern(3, i);
+//         auto jend = this->hr_->pattern_.FRB_pattern(4, i);
 
-                if (x_test_edit[ii + dim_dof * i0] == 1){ // In the selection
+//         // Check if block is on the diagonal
+//         bool in_lower = (i0 > j0) && (i0 > jend) && (iend > j0) && (iend > jend);
+//         bool in_upper = (i0 < j0) && (i0 < jend) && (iend < j0) && (iend < jend);
+//         if ((!in_lower) && (!in_upper)) // this fb intersect the diagonal....
+//         {
+//             auto a = (*full_rank_blocks_ref_[i]).view();
+//             int min_size_block = std::min(a.size(0), a.size(1));
 
-                    diag_orig[permut_col_inv[ii + dim_dof * i0]] = a(ii,ii);
-                }
-            }
-        }
-    }
+//             for (il::int_t ii = 0; ii < min_size_block; ii++) {
 
-    return diag_orig;
+//                 if (x_test_edit[ii + dim_dof * i0] == 1){ // In the selection
+
+//                     diag_orig[permut_col_inv[ii + dim_dof * i0]] = a(ii,ii);
+//                 }
+//             }
+//         }
+//     }
+
+    return diag;
 
 }
 

@@ -144,7 +144,9 @@ class BEMatrix(LinearOperator):
         
         # if created by selection
         self.selection_indices_ = selection_indices
+        self.selection_indices_cols_ = None
         self.shape_orig_ = shape_orig
+        self.selection_by_zero_padding_ = False
 
     def _build(self):
         if not(self.built_):
@@ -168,8 +170,14 @@ class BEMatrix(LinearOperator):
         :param v: vector expected to be of size self.HMAT_size_
         :return: HMAT.v
         """
-        # shall we put a call to self._build() ?
-        return self.H_.matvec(v)
+        if (self.selection_indices_ is not None) and self.selection_by_zero_padding_:
+            # We need to pad the input/output
+            v_padded = np.zeros(self.shape_orig_[1], dtype=np.float64)
+            v_padded[self.selection_indices_cols_] = v 
+            y_padded = self.H_.matvec(v_padded)
+            return y_padded[self.selection_indices_]
+        else :
+            return self.H_.matvec(v)
     
     def _matvec_cupy(self, x, y):
         """
@@ -314,7 +322,14 @@ class BEMatrix(LinearOperator):
             row = row[mask]
             col = col[mask]
 
-        return csc_matrix((val, (row, col)), shape=self.shape_)
+        # If resorting to padding > we need to perform selection on it 
+        if (self.selection_indices_ is not None) and self.selection_by_zero_padding_:
+            fr_blocks_full = csc_matrix((val, (row, col)), shape=self.shape_orig_)
+            fr_blocks_selec = fr_blocks_full[np.ix_(self.selection_indices_, self.selection_indices_cols_)]
+            return fr_blocks_selec
+        
+        else :
+            return csc_matrix((val, (row, col)), shape=self.shape_)
 
     def _getPattern(self) -> np.ndarray:
         aux = np.asarray(self.H_.get_hpattern())
@@ -404,13 +419,7 @@ class BEMatrix(LinearOperator):
         """
         :return: the diagonal of the matrix as n array
         """
-        raise Exception("H_diag deprecated, use get_diagonal")
-        # if self.useCuda:
-        #     return self.get_diagonal()
-        # else :
-        #     self._build()
-        #     fb = self._getFullBlocks()
-        #     return fb.diagonal()
+        return self.get_diagonal()
 
     def H_jacobi_prec(self):
         """
@@ -478,7 +487,13 @@ class BEMatrix(LinearOperator):
         Get the diagonal of the matrix, in the original ordering of dof
         :return: 1D np.array of the diagonal
         """
-        return self.H_.get_diagonal()
+        if (self.selection_indices_ is not None) and self.selection_by_zero_padding_:
+            diag_full = self.H_.get_diagonal()
+            diag_selec = diag_full[self.selection_indices_]            
+            return diag_selec
+        
+        else :
+            return self.H_.get_diagonal()
     
     def isCudaAvailable(self):
         """
@@ -505,8 +520,6 @@ class BEMatrix(LinearOperator):
         """
         To get a selection of the hmat 
         """
-        if self.useCuda:
-            raise Exception("Bigwham matrix selection not implemented for CUDA support.")
         
         if not isinstance(indices, tuple) or len(indices) != 2:
             raise IndexError("Subsetting requires indices of the form (np.ix_(row_indices, col_indices))")
@@ -517,15 +530,23 @@ class BEMatrix(LinearOperator):
         new_bematrix = object.__new__(BEMatrix)
         new_bematrix.__dict__ = self.__dict__.copy()
         
-        # Update its hmatrix
-        new_bematrix.H_ = self.H_.hmatSelection(row_indices, col_indices)
+        if self.useCuda:
+            # raise Exception("Bigwham matrix selection not implemented for CUDA support.")
+            # Not implemented yet : we resort to padding
+            new_bematrix.selection_by_zero_padding_ = True
+        else :
+            # Update its hmatrix
+            new_bematrix.H_ = self.H_.hmatSelection(row_indices, col_indices)
+            # new_bematrix.shape = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
+            # new_bematrix.shape_ = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
         
         # And its shape
-        new_bematrix.shape = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
-        new_bematrix.shape_ = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
+        new_bematrix.shape = (row_indices.shape[0], col_indices.shape[0])
+        new_bematrix.shape_ = (row_indices.shape[0], col_indices.shape[0])
         new_bematrix.matvec_size_ = new_bematrix.shape[0]
         
         new_bematrix.selection_indices_ = row_indices
+        new_bematrix.selection_indices_cols_ = col_indices
         new_bematrix.shape_orig_ = self.shape_
                 
         return new_bematrix

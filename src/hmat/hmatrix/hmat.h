@@ -73,8 +73,8 @@ public:
   Hmat(const std::string &filename);
 
   virtual ~Hmat() = default;
-  virtual std::vector<T> diagonal();
-  virtual std::vector<T> diagonalOriginal();
+  virtual std::vector<T> diagonal() const;
+  virtual std::vector<T> diagonalOriginal() const;
   double compressionRatio();
   [[nodiscard]] bool isBuilt() const { return isBuilt_; }
   [[nodiscard]] il::int_t size(int k) const { return size_[k]; }

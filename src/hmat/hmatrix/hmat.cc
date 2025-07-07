@@ -239,7 +239,7 @@ namespace bigwham {
     //     //           << (this->size_[0]) * (this->size_[1]) << "\n";
     // }
 /* -------------------------------------------------------------------------- */
-    template <typename T> std::vector<T> Hmat<T>::diagonalOriginal() {
+    template <typename T> std::vector<T> Hmat<T>::diagonalOriginal() const {
         // return diagonal in original state....
         il::int_t diag_size = il::max(size_[0], size_[1]);
         il::int_t ncolpoints = diag_size / dof_dimension_;
@@ -255,7 +255,7 @@ namespace bigwham {
         return diag;
     }
 /* -------------------------------------------------------------------------- */
-    template <typename T> std::vector<T> Hmat<T>::diagonal() {
+    template <typename T> std::vector<T> Hmat<T>::diagonal() const {
         // return diagonal in permutted state....
         IL_EXPECT_FAST(isBuilt_FR_);
         il::int_t diag_size = il::max(size_[0], size_[1]);

@@ -223,8 +223,8 @@ public:
   void deallocateOnDevice();
 
   void setDiagonal();
-  std::vector<T> diagonal() override;
-  std::vector<T> diagonalOriginal() override;
+  std::vector<T> diagonal() const override;
+  std::vector<T> diagonalOriginal() const override;
 
   il::int_t nbOfEntries() override;
 
