@@ -58,7 +58,6 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         std::cout << "--------------------" << std::endl;
         std::cout << "Creation of a square BigWhamIO object with verbose on" << std::endl;
     }
-
     // This should be cleaned properly
     this->n_openMP_threads_ = n_openMP_threads;
     int n_available = this->GetAvailableOmpThreads();
@@ -69,7 +68,12 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
     
     #ifdef BIGWHAM_OPENMP
         if (this->verbose_)
+        {
+            int available_threads = this->GetAvailableOmpThreads();
+            std::cout << "Available OpenMP threads: " << available_threads << std::endl;
+        }
             std::cout << "Forcing the number of OpenMP threads to " << this->n_openMP_threads_ << std::endl;
+
         // omp_set_max_active_levels(1);  // Limit parallel region depth    
         omp_set_num_threads(this->n_openMP_threads_);
 
@@ -141,7 +145,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
                                                         coor, conn);
         ker_obj_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, Segment<0>, bigwham::ElasticKernelType::H>>(
             elas, spatial_dimension_);
-        using ObsType = Point<2>;
+        using ObsType = bigwham::Point<2>;
         ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, ObsType, bigwham::ElasticKernelType::T>>(
             elas, spatial_dimension_);
         ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, ObsType, bigwham::ElasticKernelType::W>>(
@@ -161,7 +165,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
                                                      coor, conn);
         ker_obj_ = std::make_shared<bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
             elas, spatial_dimension_);
-        using ObsType = Point<2>;
+        using ObsType = bigwham::Point<2>;
         ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::W>>(
             elas, spatial_dimension_);
         // still missing displacement for that kernel + element
@@ -214,7 +218,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         ker_obj_ = std::make_shared<
             bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
             elas, spatial_dimension_);
-        using ObsType = Point<3>;
+        using ObsType = bigwham::Point<3>;
         ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
             elas, spatial_dimension_);
         ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::W>>(
@@ -253,7 +257,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         ker_obj_ = std::make_shared<
             bigwham::BieElastostatic<EltType, EltType, bigwham::ElasticKernelType::H>>(
             elas, spatial_dimension_);
-        using ObsType = Point<3>;
+        using ObsType = bigwham::Point<3>;
         ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::T>>(
             elas, spatial_dimension_);
         ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<EltType, ObsType, bigwham::ElasticKernelType::W>>(
@@ -357,7 +361,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
             spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
         ker_obj_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, Segment<0>, bigwham::ElasticKernelType::H>>(
             elas, spatial_dimension_);
-        using ObsType = Point<2>;
+        using ObsType = bigwham::Point<2>;
         ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, ObsType, bigwham::ElasticKernelType::T>>(
             elas, spatial_dimension_);
         ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, ObsType, bigwham::ElasticKernelType::W>>(
@@ -379,7 +383,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
             spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
         ker_obj_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, Segment<0>, bigwham::ElasticKernelType::H>>(
             elas, spatial_dimension_);
-        using ObsType = Point<2>;
+        using ObsType = bigwham::Point<2>;
         ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, ObsType, bigwham::ElasticKernelType::T>>(
             elas, spatial_dimension_);
         ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<Segment<0>, ObsType, bigwham::ElasticKernelType::W>>(
@@ -395,7 +399,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         spatial_dimension_ = 2;
         flux_dimension_ = 3;
         using src_elem = Segment<0>;
-        using rec_elem = Point<2>;
+        using rec_elem = bigwham::Point<2>;
         mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
             spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
         mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
@@ -421,7 +425,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         ker_obj_ = std::make_shared<BieElastostatic<src_elem, rec_elem, ElasticKernelType::H>>(
             elas, spatial_dimension_);
         // observations....
-        using ObsType = Point<3>;
+        using ObsType = bigwham::Point<3>;
         ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<src_elem, ObsType, bigwham::ElasticKernelType::T>>(
             elas, spatial_dimension_);
         ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<src_elem, ObsType, bigwham::ElasticKernelType::W>>(
@@ -444,7 +448,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         ker_obj_ = std::make_shared<BieElastostatic<src_elem, rec_elem, ElasticKernelType::H>>(
             elas, spatial_dimension_);
         // observations....
-        using ObsType = Point<3>;
+        using ObsType = bigwham::Point<3>;
         ker_obs_u_ = std::make_shared<bigwham::BieElastostatic<src_elem, ObsType, bigwham::ElasticKernelType::T>>(
             elas, spatial_dimension_);
         ker_obs_q_ = std::make_shared<bigwham::BieElastostatic<src_elem, ObsType, bigwham::ElasticKernelType::W>>(

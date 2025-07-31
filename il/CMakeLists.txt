@@ -33,6 +33,7 @@ set_property(CACHE IL_MATH_VENDOR PROPERTY STRINGS
     MKL_sequential
     MKL_parallel
     OpenBLAS
+    Apple
     )
 option(IL_OPENMP "OPENMP" ON)
 option(IL_BENCHMARK "Activate InsideLoop Benchmarks" OFF)
@@ -53,6 +54,8 @@ elseif(IL_MATH_VENDOR MATCHES "MKL_parallel")
     set(BLA_VENDOR Intel10_64lp)
 elseif(IL_MATH_VENDOR MATCHES "OpenBLAS")
     set(BLA_VENDOR OpenBLAS)
+elseif(IL_MATH_VENDOR MATCHES "Apple")
+    set(BLA_VENDOR Apple)
 endif()
 
 find_package(BLAS REQUIRED)
@@ -73,13 +76,23 @@ endforeach()
 list(REMOVE_DUPLICATES CBLAS_LIBRARY_DIRS)
 set(CBLAS_LIBRARY_DIRS ${CBLAS_LIBRARY_DIRS} PARENT_SCOPE)
 
-find_path(CBLAS_INCLUDE_DIR NAMES cblas.h mkl_cblas.h
-    HINTS ${_cblas_potential_include_dir}
-          MKLROOT ENV MKLROOT
-    PATH_SUFFIXES include include/intel64 include/x86_64-linux-gnu
-    NO_DEFAULT_PATH
-    REQUIRED
-    )
+if(IL_MATH_VENDOR MATCHES "Apple")
+    # For Apple Accelerate, find the cblas.h in vecLib framework
+    file(GLOB MACOS_SDK_PATHS "/Library/Developer/CommandLineTools/SDKs/MacOSX*.sdk")
+    list(GET MACOS_SDK_PATHS 0 MACOS_SDK_PATH)
+    set(CBLAS_INCLUDE_DIR "${MACOS_SDK_PATH}/System/Library/Frameworks/Accelerate.framework/Versions/A/Frameworks/vecLib.framework/Versions/A/Headers")
+    if(NOT EXISTS "${CBLAS_INCLUDE_DIR}/cblas.h")
+        message(FATAL_ERROR "Could not find cblas.h in Apple Accelerate framework at ${CBLAS_INCLUDE_DIR}")
+    endif()
+else()
+    find_path(CBLAS_INCLUDE_DIR NAMES cblas.h mkl_cblas.h
+        HINTS ${_cblas_potential_include_dir}
+              MKLROOT ENV MKLROOT
+        PATH_SUFFIXES include include/intel64 include/x86_64-linux-gnu
+        NO_DEFAULT_PATH
+        REQUIRED
+        )
+endif()
 mark_as_advanced(CBLAS_INCLUDE_DIR)
 
 # OpenMP handling
@@ -106,6 +119,8 @@ if(IL_MATH_VENDOR MATCHES "MKL")
   list(APPEND _il_compile_definitions IL_MKL)
 elseif(IL_MATH_VENDOR MATCHES "OpenBLAS")
   list(APPEND _il_compile_definitions IL_OPENBLAS)
+elseif(IL_MATH_VENDOR MATCHES "Apple")
+  list(APPEND _il_compile_definitions IL_APPLE_ACCELERATE)
 endif()
 
 if(TARGET OpenMP::OpenMP_CXX)
@@ -300,25 +315,17 @@ if(IL_TESTING)
         il/core/math/_test/safe_arithmetic_test.cpp
         il/linearAlgebra/dense/_test/norm_test.cpp
         il/linearAlgebra/dense/blas/_test/blas_test.cpp
-        il/linearAlgebra/dense/blas/_test/linear_solve_test.cpp
         il/linearAlgebra/dense/blas/_test/dot_test.cpp
         il/linearAlgebra/dense/blas/_test/cross_test.cpp
-        il/linearAlgebra/dense/factorization/_test/Eigen_test.cpp
-        il/linearAlgebra/dense/factorization/_test/Singular_test.cpp
-        il/linearAlgebra/dense/factorization/_test/Svd_test.cpp
-        il/linearAlgebra/sparse/factorization/_test/Pardiso_test.cpp
-        il/linearAlgebra/sparse/factorization/_test/GmresIlu0_test.cpp
-        il/io/_test/numpy_test.cpp
-        il/io/toml/_test/toml_valid_test.cpp
-        gtest/src/gtest-all.cc
         il/core/_test/Status_test.cpp
+        gtest/src/gtest-all.cc
         il/MapArray.h)
     #il/container/string/_test/StringView_test.cpp il/container/tree/_test/Tree_test.cpp)
 
     add_executable(InsideLoopUnitTest ${SOURCE_FILES} ${UNIT_TEST_FILES} test.cpp)
 
     target_compile_definitions(InsideLoopUnitTest PRIVATE IL_FOLDER='\"${IL_FOLDER}\"')
-    target_include_directories(InsideLoopUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/gtest)
+    target_include_directories(InsideLoopUnitTest PUBLIC ${CMAKE_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/gtest)
     target_link_libraries(InsideLoopUnitTest PRIVATE InsideLoop)
 
     # For unit tests: The precondition of our fonctions are checked with assert

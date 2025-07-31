@@ -32,6 +32,8 @@
 #include <mkl_lapacke.h>
 #elif IL_OPENBLAS
 #include <lapacke.h>
+#elif IL_APPLE_ACCELERATE
+#include <il/linearAlgebra/dense/blas/blas_config.h>
 #endif
 
 namespace il {

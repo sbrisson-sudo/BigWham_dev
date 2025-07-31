@@ -45,7 +45,7 @@ public:
     // std::cout << element_list_.size() << std::endl;
     // std::cout << num_elements_ << std::endl;
   };
-  ~Mesh(){};
+  virtual ~Mesh(){};
   std::shared_ptr<BoundaryElement> GetElement(il::int_t element_id) const {
     return element_list_[element_id];
   };
