@@ -12,6 +12,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <gsl/gsl_errno.h>
+
 #include "bigwham_io.h"
 #include "bigwham_io_helper.h"
 
@@ -36,7 +38,7 @@
 
 #include "elasticity/fullspace_iso_3d_triangle/bie_elastostatic_triangle_2_influence.h"
 
-#include "elasticity/fullspace_iso_2d_hydrostatic_eigenstrain_triangle_segment/bie_elastostatic_hydrostatic_eigenstrain_triangle_influence.hh"
+#include "elasticity/fullspace_iso_2d_hydrostatic_eigenstrain_triangle_segment/bie_2d_elastostatic_hydrostatic_eigenstrain_influence.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace bigwham;
@@ -317,6 +319,9 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
 
     this->is_square_ = false;
 
+    // Set GSL default handler off 
+    gsl_set_error_handler_off();
+
     // No CUDA support for rectangular hmat yet
     if (useCuda){
         std::cerr << "No CUDA support for rectangular matrices yet, please use standard square matrices or fall back for CPU matvec" << std::endl;
@@ -492,6 +497,25 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         using rec_elem = Segment<0>;
         mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
             spatial_dimension_, /* num vertices */ 3, coor_src, conn_src);
+        mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
+
+        ker_obj_ = std::make_shared<BieElastostaticEigenstrain<src_elem, rec_elem, ElasticKernelType::V>>(
+            elas, spatial_dimension_);
+        break;
+    }
+    case "2DR0-2DS0-V"_sh:
+    { // 2D hydrostatic eigenstrain kernel, source = triangle, receiver = segmenr
+        IL_ASSERT(properties.size() == 2);
+        ElasticProperties elas(properties[0], properties[1]);
+
+        spatial_dimension_ = 2;
+        dof_dimension_ = {il::value, {2, 1}}; // non symetrical number of dofs
+
+        using src_elem = Rectangle<0>;
+        using rec_elem = Segment<0>;
+        mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+            spatial_dimension_, /* num vertices */ 4, coor_src, conn_src);
         mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
             spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
 

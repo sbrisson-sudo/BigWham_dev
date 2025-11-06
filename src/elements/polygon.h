@@ -27,6 +27,12 @@ public:
   virtual void SetRotationMatrices() override;
   virtual void SetCollocationPoints() = 0;
   virtual void SetNodes() = 0;
+  bool isPointOnBoundary(const std::array<double, 2>& xy_obs) const;
+  bool isPointInPolygon(const std::array<double, 2>& xy_obs) const;
+  double getTol() const { return tol_; };
+
+private:
+  double tol_;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -143,7 +149,109 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
   this->SetRotationMatrices();
   this->SetCollocationPoints();
   this->SetNodes();
+
+  // We set the tolerance used for isPointOnBoundary and isPointInPolygon 
+  double smallest_edge = 1e100;
+  for (il::int_t i = 0; i < num_vertices_; i++) {
+
+      double a_1_x = vertices_(i, 0);
+      double a_1_y = vertices_(i, 1);
+      double a_2_x = vertices_((i+1)%num_vertices_, 0);
+      double a_2_y = vertices_((i+1)%num_vertices_, 1);
+
+      double edge_length = std::sqrt( (a_2_x - a_1_x)*(a_2_x - a_1_x) + (a_2_y - a_1_y)*(a_2_y - a_1_y) );
+      if (edge_length < smallest_edge) smallest_edge = edge_length;
+  } 
+
+  tol_ = smallest_edge * 1e-5;
 }
+
+template <int p>
+bool Polygon<p>::isPointOnBoundary(const std::array<double, 2>& xy_obs) const
+{
+    auto point_to_segment_distance = [](
+        const std::array<double, 2>& P,
+        const std::array<double, 2>& A,
+        const std::array<double, 2>& B)
+    {
+        double dx = B[0] - A[0];
+        double dy = B[1] - A[1];
+
+        if (dx == 0.0 && dy == 0.0) {
+            // A and B are the same point
+            dx = P[0] - A[0];
+            dy = P[1] - A[1];
+            return std::sqrt(dx * dx + dy * dy);
+        }
+
+        // Project P onto segment AB
+        double t = ((P[0] - A[0]) * dx + (P[1] - A[1]) * dy) / (dx * dx + dy * dy);
+        t = std::max(0.0, std::min(1.0, t));
+
+        double proj_x = A[0] + t * dx;
+        double proj_y = A[1] + t * dy;
+
+        double dist_x = P[0] - proj_x;
+        double dist_y = P[1] - proj_y;
+
+        return std::sqrt(dist_x * dist_x + dist_y * dist_y);
+    };
+
+    for (il::int_t i = 0; i < this->num_vertices_; ++i) {
+        std::array<double, 2> A = { this->vertices_(i, 0), this->vertices_(i, 1) };
+        std::array<double, 2> B = { this->vertices_((i + 1) % this->num_vertices_, 0),
+                                    this->vertices_((i + 1) % this->num_vertices_, 1) };
+
+        if (point_to_segment_distance(xy_obs, A, B) <= this->tol_) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+template <int p>
+bool Polygon<p>::isPointInPolygon(const std::array<double, 2>& xy_obs) const
+{
+    auto cross_sign = [](
+        const std::array<double, 2>& P,
+        const std::array<double, 2>& A,
+        const std::array<double, 2>& B)
+    {
+        // Cross product AB × AP
+        return (B[0] - A[0]) * (P[1] - A[1]) - (B[1] - A[1]) * (P[0] - A[0]);
+    };
+
+    double prev_sign = 0.0;
+    bool on_edge = false;
+
+    for (il::int_t i = 0; i < this->num_vertices_; ++i) {
+        std::array<double, 2> A = {this->vertices_(i, 0), this->vertices_(i, 1)};
+        std::array<double, 2> B = {this->vertices_((i + 1) % this->num_vertices_, 0),
+                                   this->vertices_((i + 1) % this->num_vertices_, 1)};
+
+        double cross = cross_sign(xy_obs, A, B);
+
+        if (std::abs(cross) <= this->tol_) {
+            // Point is close to the edge
+            on_edge = true;
+        }
+
+        // Store the sign only if it's meaningfully non-zero
+        if (std::abs(cross) > this->tol_) {
+            if (prev_sign == 0.0) {
+                prev_sign = cross;
+            } else if (prev_sign * cross < 0.0) {
+                // Cross product changes sign → outside
+                return false;
+            }
+        }
+    }
+
+    // Point is inside if all crosses have same sign or point is exactly on edge
+    return on_edge || (prev_sign != 0.0);
+}
+
 
 } // namespace bie
 

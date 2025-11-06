@@ -288,6 +288,7 @@ if(BIGWHAM_TESTING)
             src/elements/_test/rectangle_test.cc
             src/elements/_test/point_test.cc
             src/elements/_test/segment_test.cc
+            src/elements/_test/polygon_test.cc
             src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc
             src/elasticity/fullspace_iso_2d_segment/_test/segment0_kernels_test.cc
             src/elasticity/fullspace_iso_sp3d_segment/_test/segment0_sp3d_test.cc

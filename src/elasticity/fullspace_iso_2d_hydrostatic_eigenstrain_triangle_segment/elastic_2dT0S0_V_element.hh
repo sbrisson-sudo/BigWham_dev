@@ -7,21 +7,23 @@
 #include <array>
 #include <utility>
 
+#include "elements/polygon.h"
+
 namespace bigwham {
 
 /**
- * @brief Integrate the plane strain eigenstrain kernel over a triangular
+ * @brief Integrate the plane strain eigenstrain kernel over a polygonal
  * element at a given observation point. Returns the traction given a normal.
  * 
- * @param tri_vertices vertices of the triangle
+ * @param polygon a polygon
  * @param xy_obs observation point
  * @param n_obs normal
  * @param G shear modulus
  * @param nu Poisson's ratio
  * @return il::StaticArray<double, 2> tractions
  */
-il::StaticArray<double, 2> V_twoD_triangle_0(
-    const std::array<std::array<double, 2>, 3>  tri_vertices,
+il::StaticArray<double, 2> V_twoD_polygon_0(
+    const Polygon<0> &polygon,
     const il::StaticArray<double, 2> xy_obs,
     const il::StaticArray<double, 2> n_obs,
     double G, double nu,
@@ -29,14 +31,15 @@ il::StaticArray<double, 2> V_twoD_triangle_0(
 );
 
 /**
- * @brief Compute phi_ij = \int_V \partial_{x_i}\partial_{x_y} ln(r) dx'
+ * @brief Compute phi_ij = \int_V \partial_{x_i}\partial_{x_y} ln(r) dx' for 
+ * a general polygon.
  * 
  * @param tri_vertices 
  * @param xy_obs 
  * @return std::array<std::array<double, 2>, 3> 
  */
-std::array<std::array<double, 2>, 2>  phi_ij_triangle(
-    const std::array<std::array<double, 2>, 3>  tri_vertices,
+std::array<std::array<double, 2>, 2>  phi_ij_polygon(
+    const Polygon<0> &polygon,
     const il::StaticArray<double, 2> xy_obs
 );
 
