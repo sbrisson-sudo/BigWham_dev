@@ -22,6 +22,7 @@
 
 #include "hmat/hierarchical_representation.h"
 #include "hmat/bie_matrix_generator.h"
+#include "hmat/bie_matrix_generator_by_dof.h"
 #include "hmat/hmatrix/hmat.h"
 
 #ifdef USE_CUDA
@@ -36,7 +37,7 @@ private:
   int n_openMP_threads_;
   std::string kernel_name_;
   il::int_t spatial_dimension_;
-  il::int_t dof_dimension_;
+  il::StaticArray<il::int_t, 2> dof_dimension_;
   il::int_t flux_dimension_;
 
   il::int_t max_leaf_size_;
@@ -173,7 +174,7 @@ public:
   [[nodiscard]] double pattern_time() const { return h_representation_time_; };
   [[nodiscard]] std::string kernel_name() const { return kernel_name_; };
   [[nodiscard]] int spatial_dimension() const { return spatial_dimension_; };
-  [[nodiscard]] int dof_dimension() const { return dof_dimension_; };
+  [[nodiscard]] int dof_dimension(int k) const { return dof_dimension_[k]; };
   [[nodiscard]] bool is_built() const { return is_built_; };
   void HmatrixDestructor() {
     // this function will free the memory and set the hmat obj to its initial

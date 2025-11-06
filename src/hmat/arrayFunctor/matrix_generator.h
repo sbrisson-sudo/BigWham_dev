@@ -26,7 +26,7 @@ class MatrixGenerator {
  std::shared_ptr<HRepresentation> hr_;
  public:
   virtual il::int_t size(il::int_t d) const = 0;
-  virtual il::int_t blockSize() const = 0;
+  virtual il::int_t blockSize(il::int_t k) const = 0;
   virtual il::int_t sizeAsBlocks(il::int_t d) const = 0;
   virtual void set(il::int_t b0, il::int_t b1, il::io_t,il::Array2DEdit<T> M) const = 0;
   std::shared_ptr<HRepresentation> hr() const { return hr_; }

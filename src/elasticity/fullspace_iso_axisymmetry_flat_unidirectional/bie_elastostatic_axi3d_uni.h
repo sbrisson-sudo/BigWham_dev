@@ -37,7 +37,7 @@ public:
         : BieElastostatic<Es, Er, k>() {
             IL_EXPECT_FAST(dim == 2);
             this->elas_ = elas;
-            this->dof_dimension_ = dim;
+            this->dof_dimension_ = {il::value, {dim, dim}};
             this->spatial_dimension_ = dim;
             this->kernel_properties_ = il::Array<double>(1, 10000.0);
     };
@@ -46,7 +46,7 @@ public:
                 : BieElastostatic<Es, Er, k>() {
         IL_EXPECT_FAST(dim == 2);
         this->elas_ = elas;
-        this->dof_dimension_ = dim;
+        this->dof_dimension_ = {il::value, {dim, dim}};
         this->spatial_dimension_ = dim;
         this->kernel_properties_ = il::Array<double>(1, 10000.0);
         this->local_unknowns_ = local_unknowns;

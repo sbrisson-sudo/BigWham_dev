@@ -40,7 +40,11 @@ kernels_id = [
     "3DT0-H",
     "3DT6-H",
     "3DR0-H",
-    "3DR0-H-mode1"
+    "3DR0-H-mode1",
+]
+
+kernels_id_V = [
+    "2DT0-2DS0-V"
 ]
 
 ##############################
@@ -465,6 +469,11 @@ class BEMatrixRectangular(LinearOperator):
         useCuda = False,
         fixed_rank = -1
     ):
+        
+        # Ensure kernel exists
+        if not((kernel in kernels_id) or (kernel in kernels_id_V)):
+            print(f"[ERROR] Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id + kernels_id_V)}]")
+            return
 
         self.kernel_ = kernel
         self.properties_ = properties

@@ -55,11 +55,15 @@ void residual_row(const bigwham::MatrixGenerator<T> &M,
   const il::int_t n1 = range1.end - range1.begin;
   M.set(i0, range1.begin, il::io, row);
   if (r >= 1) {
+    // Compute 
     il::blas(
         -1.0,
-        A.view(il::Range{(i0 - range0.begin) * p, (i0 - range0.begin + 1) * p},
-               il::Range{0, r * p}),
-        B.view(il::Range{0, r * p}, il::Range{0, n1 * p}), 1.0, il::io, row);
+        A.view(il::Range{(i0 - range0.begin) * p, (i0 - range0.begin + 1) * p}, il::Range{0, r * p}),
+        B.view(il::Range{0, r * p}, il::Range{0, n1 * p}), 
+        1.0, 
+        il::io, 
+        row
+      );
   }
 };
 

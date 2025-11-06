@@ -13,7 +13,7 @@ project(BigWham VERSION 1.0
         LANGUAGES CXX)
 
 # This is only for pybind11 to behave properly
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 
 # Set a default build type if none was specified
@@ -157,6 +157,9 @@ if (USE_CUDA)
 endif()
 ################################################
 
+# ------------ GNU Scientific Library 
+# Used to conveniently access QUADPACK for numerical integration
+find_package(GSL REQUIRED)
 
 ################################################################################
 # file definitions
@@ -171,7 +174,7 @@ add_subdirectory(src)
 add_library(BigWham OBJECT ${SOURCE_FILES})
 target_compile_features(BigWham PUBLIC cxx_std_17)
 target_compile_definitions(BigWham PUBLIC BIGWHAM_OPENMP)
-target_link_libraries(BigWham PUBLIC InsideLoop cnpy)
+target_link_libraries(BigWham PUBLIC InsideLoop cnpy GSL::gsl)
 set_target_properties(BigWham PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_include_directories(BigWham PUBLIC src il external/cnpy external/nlohmann)
 
@@ -292,17 +295,21 @@ if(BIGWHAM_TESTING)
             src/elasticity/fullspace_iso_3d_rectangle/_test/rectangle0_mode1_kernels_test.cc
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_kernels_test.cc
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle2_kernels_test.cc
+            src/elasticity/fullspace_iso_2d_hydrostatic_eigenstrain_triangle_segment/_test/twoD_eigenstrain_hydrostatic_triangle.cc
             src/io/_test/bigwham_io_helper_test.cc
             src/io/_test/bigwham_io_gen_test_2d.cc
             src/io/_test/bigwham_io_gen_test_3d.cc
             src/_test/bigwhamio_test_2d.cc
-            src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_tests.cc)
+            src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_tests.cc
+            src/hmat/compression/_test/adaptiveCrossApproximation_test.cpp)
 
     add_executable(BigWhamElastUnitTest ${UNIT_TEST_FILES} src/_test/Gtests-main.cc)
-    target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared)
+    target_link_libraries(BigWhamElastUnitTest PUBLIC BigWhamShared
+        InsideLoop GSL::gsl
+        )
 
     target_include_directories(BigWhamElastUnitTest
-        PUBLIC ${CMAKE_SOURCE_DIR}/il/gtest
+        PUBLIC ${CMAKE_SOURCE_DIR}/il/gtest il
         )
 
     # For unit tests: The precondition of our fonctions are checked with assert

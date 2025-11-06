@@ -48,14 +48,14 @@ public:
 
   BieElastostatic(const bigwham::ElasticProperties &elas, const il::int_t dim) : BieKernel<double>() {
     elas_ = elas;
-    this->dof_dimension_ = dim;
+    this->dof_dimension_ = {il::value, {dim, dim}};
     this->spatial_dimension_ = dim;
     this->local_unknowns_ = true;
     this->local_co_variables_ = true;
   }
   BieElastostatic(bigwham::ElasticProperties &elas, il::int_t dim,bool local_unknowns, bool local_co_variables) : BieKernel<double>() {
     elas_ = elas;
-    this->dof_dimension_ = dim;
+    this->dof_dimension_ = {il::value, {dim, dim}};
     this->spatial_dimension_ = dim;
     local_unknowns_ = local_unknowns;
     local_co_variables_ = local_co_variables;

@@ -82,6 +82,15 @@ int main(int argc, char * argv[]) {
   std::vector<double> coor_vec(coor_npy.data<double>(), coor_npy.data<double>() + coor_npy.num_vals);
   std::vector<int> conn_vec(conn_npy.data<int>(), conn_npy.data<int>() + conn_npy.num_vals);
 
+  // // Print vectors 
+  // std::cout << "conn = [";  
+  // for (const auto& elem : conn_vec) {
+  //     std::cout << elem << ", ";
+  // }
+  // std::cout << "]\n";
+
+  // return 0;
+
   std::string kernel = "3DT0-H";
 
   if (dim != 3){

@@ -33,7 +33,7 @@ TEST(TwoDP0, test_seg_0_dof_dim) {
   bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
                        bigwham::ElasticKernelType::H>
       test(elas, 2);
-  ASSERT_TRUE(test.dof_dimension() == 2);
+  ASSERT_TRUE(test.dof_dimension(0) == 2);
 }
 /* -------------------------------------------------------------------------- */
 

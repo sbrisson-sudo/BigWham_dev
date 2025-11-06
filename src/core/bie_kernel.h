@@ -13,13 +13,15 @@
 #include <string>
 #include <vector>
 
+#include <il/StaticArray.h>
+
 #include "elements/boundary_element.h"
 
 namespace bigwham {
 
 template <typename T> class BieKernel {
 protected:
-  il::int_t dof_dimension_;
+  il::StaticArray<il::int_t, 2> dof_dimension_;
   il::int_t spatial_dimension_;
   il::Array<double> kernel_properties_;
 
@@ -34,7 +36,7 @@ public:
                                    const BoundaryElement &rec_element,
                                    il::int_t colloc_id_rec) const = 0;
 
-  il::int_t dof_dimension() const { return dof_dimension_; };
+  il::int_t dof_dimension(int k) const { return dof_dimension_[k]; }
   il::int_t spatial_dimension() const { return spatial_dimension_; };
 
   void set_kernel_properties(const il::Array<double> &prop) {};
