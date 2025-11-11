@@ -289,6 +289,7 @@ if(BIGWHAM_TESTING)
             src/elements/_test/point_test.cc
             src/elements/_test/segment_test.cc
             src/elements/_test/polygon_test.cc
+            src/elements/_test/polyhedral_test.cc
             src/elasticity/fullspace_iso_2d_segment/_test/plane_elasticity_segment_test.cc
             src/elasticity/fullspace_iso_2d_segment/_test/segment0_kernels_test.cc
             src/elasticity/fullspace_iso_sp3d_segment/_test/segment0_sp3d_test.cc
@@ -296,7 +297,8 @@ if(BIGWHAM_TESTING)
             src/elasticity/fullspace_iso_3d_rectangle/_test/rectangle0_mode1_kernels_test.cc
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_kernels_test.cc
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle2_kernels_test.cc
-            src/elasticity/fullspace_iso_2d_hydrostatic_eigenstrain_triangle_segment/_test/twoD_eigenstrain_hydrostatic_triangle.cc
+            src/elasticity/fullspace_iso_2d_hydrostatic_eigenstrain/_test/twoD_eigenstrain_hydrostatic_triangle.cc
+            src/elasticity/fullspace_iso_3d_hydrostatic_eigenstrain/_test/threeD_eigenstrain_hydrostatic_polyhedra_test.cc
             src/io/_test/bigwham_io_helper_test.cc
             src/io/_test/bigwham_io_gen_test_2d.cc
             src/io/_test/bigwham_io_gen_test_3d.cc

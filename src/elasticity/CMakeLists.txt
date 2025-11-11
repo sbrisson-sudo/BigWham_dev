@@ -33,6 +33,9 @@ set(SOURCE_FILES ${SOURCE_FILES}
   ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_axisymmetry_flat_unidirectional/elastic_axi3dP0_element.cc
 
       ## 2D hydrostatic eigenstrain triangle
-      ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_2d_hydrostatic_eigenstrain_triangle_segment/elastic_2dT0S0_V_element.cc
+      ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_2d_hydrostatic_eigenstrain/hydrostatic_eigenstrain_polygon.cc
+
+      # 3D hydrostatic eigenstrain triangle
+      ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_hydrostatic_eigenstrain/hydrostatic_eigenstrain_polyhedra.cc
 
       PARENT_SCOPE)

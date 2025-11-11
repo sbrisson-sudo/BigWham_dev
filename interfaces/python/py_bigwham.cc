@@ -257,7 +257,13 @@ PYBIND11_MODULE(py_bigwham, m)
             std::vector<double> val_list;
             self.GetDiagonal(val_list);
             return py::array(val_list.size(), val_list.data());
-        });;
+        })
+      .def(
+        "get_dof_dimension",
+        [](const BigWhamIO &self) {
+          std::vector<int> dof_dim{self.dof_dimension(0), self.dof_dimension(1)};
+          return py::array(dof_dim.size(), dof_dim.data());
+      });;
 
   /* --------------------------------------------------------------------------
    */
@@ -284,6 +290,7 @@ PYBIND11_MODULE(py_bigwham, m)
       .def("build_pattern", &BigWhamIORect::BuildPattern)
       .def("load_from_file", &BigWhamIORect::LoadFromFile)
       .def("get_collocation_points", &BigWhamIORect::GetCollocationPoints)
+      .def("get_collocation_points_src", &BigWhamIORect::GetCollocationPointsSrc)
       .def("get_permutation", &BigWhamIORect::GetPermutation)
       .def("get_permutation_receivers", &BigWhamIORect::GetPermutationReceivers)
       .def("get_compression_ratio", &BigWhamIORect::GetCompressionRatio)
@@ -325,6 +332,12 @@ PYBIND11_MODULE(py_bigwham, m)
           std::vector<double> val_list;
           self.GetDiagonal(val_list);
           return py::array(val_list.size(), val_list.data());
+      })
+      .def(
+        "get_dof_dimension",
+        [](const BigWhamIORect &self) {
+          std::vector<int> dof_dim{self.dof_dimension(0), self.dof_dimension(1)};
+          return py::array(dof_dim.size(), dof_dim.data());
       });
 
 

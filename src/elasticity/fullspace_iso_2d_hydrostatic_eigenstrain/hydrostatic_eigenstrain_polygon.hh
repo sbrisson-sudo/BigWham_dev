@@ -15,7 +15,7 @@ namespace bigwham {
  * @brief Integrate the plane strain eigenstrain kernel over a polygonal
  * element at a given observation point. Returns the traction given a normal.
  * 
- * @param polygon a polygon
+ * @param polygon a polygon (in 2d space)
  * @param xy_obs observation point
  * @param n_obs normal
  * @param G shear modulus

@@ -25,6 +25,8 @@
 #include "elements/rectangle.h"
 #include "elements/segment.h"
 #include "elements/triangle.h"
+#include "elements/hexahedron.hh"
+#include "elements/tetrahedron.hh"
 
 #include "elasticity/bie_elastostatic.h"
 #include "elasticity/bie_elastostatic_eigenstrain.h"
@@ -38,7 +40,8 @@
 
 #include "elasticity/fullspace_iso_3d_triangle/bie_elastostatic_triangle_2_influence.h"
 
-#include "elasticity/fullspace_iso_2d_hydrostatic_eigenstrain_triangle_segment/bie_2d_elastostatic_hydrostatic_eigenstrain_influence.hh"
+#include "elasticity/fullspace_iso_2d_hydrostatic_eigenstrain/bie_2d_elastostatic_hydrostatic_eigenstrain_influence.hh"
+#include "elasticity/fullspace_iso_3d_hydrostatic_eigenstrain/bie_3d_elastostatic_hydrostatic_eigenstrain_influence.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace bigwham;
@@ -518,6 +521,44 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
             spatial_dimension_, /* num vertices */ 4, coor_src, conn_src);
         mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
             spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
+
+        ker_obj_ = std::make_shared<BieElastostaticEigenstrain<src_elem, rec_elem, ElasticKernelType::V>>(
+            elas, spatial_dimension_);
+        break;
+    }
+    case "3DH0-3DR0-V"_sh:
+    { // 3D hydrostatic eigenstrain kernel, source = hexahedron, receiver = rectangle
+        IL_ASSERT(properties.size() == 2);
+        ElasticProperties elas(properties[0], properties[1]);
+
+        spatial_dimension_ = 3;
+        dof_dimension_ = {il::value, {3, 1}}; // non symetrical number of dofs
+
+        using src_elem = Hexahedron<0>;
+        using rec_elem = Rectangle<0>;
+        mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+            spatial_dimension_, /* num vertices */ 8, coor_src, conn_src);
+        mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+            spatial_dimension_, /* num vertices */ 4, coor_rec, conn_rec);
+
+        ker_obj_ = std::make_shared<BieElastostaticEigenstrain<src_elem, rec_elem, ElasticKernelType::V>>(
+            elas, spatial_dimension_);
+        break;
+    }    
+    case "3DTet0-3DT0-V"_sh:
+    { // 3D hydrostatic eigenstrain kernel, source = tetrahedron, receiver = triangle
+        IL_ASSERT(properties.size() == 2);
+        ElasticProperties elas(properties[0], properties[1]);
+
+        spatial_dimension_ = 3;
+        dof_dimension_ = {il::value, {3, 1}}; // non symetrical number of dofs
+
+        using src_elem = Tetrahedron<0>;
+        using rec_elem = Triangle<0>;
+        mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+            spatial_dimension_, /* num vertices */ 4, coor_src, conn_src);
+        mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+            spatial_dimension_, /* num vertices */ 3, coor_rec, conn_rec);
 
         ker_obj_ = std::make_shared<BieElastostaticEigenstrain<src_elem, rec_elem, ElasticKernelType::V>>(
             elas, spatial_dimension_);
@@ -1202,6 +1243,30 @@ std::vector<double> BigWhamIO::GetCollocationPoints() const
     //  IL_EXPECT_FAST(is_built_);
 
     auto col_pts = mesh_rec_->collocation_points(); // this should be the receiver mesh for  generality
+    IL_EXPECT_FAST(col_pts.size(1) == spatial_dimension_);
+    il::int_t npoints = col_pts.size(0);
+    std::vector<double> flat_col;
+    flat_col.assign(npoints * spatial_dimension_, 0.);
+    int index = 0;
+    for (il::int_t i = 0; i < col_pts.size(0); i++)
+    {
+        for (il::int_t j = 0; j < col_pts.size(1); j++)
+        {
+            flat_col[index] = col_pts(i, j);
+            index++;
+        }
+    }
+    return flat_col;
+}
+
+/**
+ * @brief Return the collocation points associated with the source elements.
+ * 
+ * @return std::vector<double> 
+ */
+std::vector<double> BigWhamIO::GetCollocationPointsSrc() const
+{
+    auto col_pts = mesh_src_->collocation_points();
     IL_EXPECT_FAST(col_pts.size(1) == spatial_dimension_);
     il::int_t npoints = col_pts.size(0);
     std::vector<double> flat_col;

@@ -11,7 +11,7 @@
 #include "elements/segment.h"
 #include "elements/triangle.h"
 #include "elements/rectangle.h"
-#include "elastic_2dT0S0_V_element.hh"
+#include "hydrostatic_eigenstrain_polygon.hh"
 
 namespace bigwham {
 

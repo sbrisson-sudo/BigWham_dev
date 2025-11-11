@@ -10,7 +10,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_integration.h>
 
-#include "elastic_2dT0S0_V_element.hh"
+#include "hydrostatic_eigenstrain_polygon.hh"
 
 // #define DEBUG_T0S0_V
 // #define DEBUG_R0S0_V

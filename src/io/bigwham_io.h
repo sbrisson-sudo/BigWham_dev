@@ -121,6 +121,7 @@ public:
   il::Array<double> m_yout_; // output vector of matvec
   void HmatDestructor();
   [[nodiscard]] std::vector<double> GetCollocationPoints() const;
+  std::vector<double> GetCollocationPointsSrc() const;
   std::vector<double> GetElementNormals() const;
   std::vector<double> ComputeTractionsFromUniformStress(const std::vector<double> &stress  ) const;
   std::vector<double> GetRotationMatrix() const;

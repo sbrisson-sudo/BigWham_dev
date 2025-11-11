@@ -9,7 +9,7 @@
 #include "elements/triangle.h"
 #include "elements/rectangle.h"
 
-#include "elasticity/fullspace_iso_2d_hydrostatic_eigenstrain_triangle_segment/elastic_2dT0S0_V_element.hh"
+#include "elasticity/fullspace_iso_2d_hydrostatic_eigenstrain/hydrostatic_eigenstrain_polygon.hh"
 
 TEST(TwoDT0S0_V, test1) {
 

@@ -45,7 +45,9 @@ kernels_id = [
 
 kernels_id_rec = [
     "2DT0-2DS0-V",
-    "2DR0-2DS0-V"
+    "2DR0-2DS0-V",
+    "3DH0-3DR0-V",
+    "3DTet0-3DT0-V"
 ]
 
 ##############################
@@ -287,7 +289,7 @@ class BEMatrix(LinearOperator):
         data_pattern = self._getPattern()
         patches = []
         p_colors = []
-        max_y = data_pattern[:, 3].max()
+        max_y = data_pattern[:, 2].max()
         
         fr_counter = 0
         lr_counter = 0
@@ -321,8 +323,9 @@ class BEMatrix(LinearOperator):
         )
         p.set_array(np.array(p_colors))
         ax.add_collection(p)
-        ax.set_ylim([data_pattern[:, 0].min(), data_pattern[:, 3].max()])
-        ax.set_xlim([data_pattern[:, 1].min(), data_pattern[:, 2].max()])
+        ax.set_ylim([data_pattern[:, 0].min(), data_pattern[:, 2].max()])
+        ax.set_xlim([data_pattern[:, 1].min(), data_pattern[:, 3].max()])
+        
         ax.set_aspect("equal")
         # # fig.colorbar(p)
         # fig.show()
@@ -445,6 +448,11 @@ class BEMatrix(LinearOperator):
         for _ in range(N_matvec):
             self._matvec(x)
         return (time.time() - start_time)/N_matvec
+    
+    def getDofDimension(self):
+        """Return the number of dof for receiver and source elements
+        """
+        return self.H_.get_dof_dimension()
         
 ########################################################################################################
 #  BEMatrix Rectangular class in python   #
@@ -562,12 +570,24 @@ class BEMatrixRectangular(LinearOperator):
 
     def getMeshCollocationPoints(self) -> np.ndarray:
         """
-        Get collocation points from mesh (no permutations ....)
+        Get collocation points from the receiver mesh (no permutations ....)
         return: (no_collo_pts, dim) array from mesh
         """
         dim = self.H_.get_spatial_dimension()
+        dof_dim = self.getDofDimension()
         return np.asarray(self.H_.get_collocation_points()).reshape(
-            (self.matvec_size_ // dim, dim)
+            (self.shape_[0] // dof_dim[0], dim)
+        )
+        
+    def getSrcMeshCollocationPoints(self) -> np.ndarray:
+        """
+        Get collocation points from the source mesh (no permutations ....)
+        return: (no_collo_pts, dim) array from mesh
+        """
+        dim = self.H_.get_spatial_dimension()
+        dof_dim = self.getDofDimension()
+        return np.asarray(self.H_.get_collocation_points_src()).reshape(
+            (self.shape_[1] // dof_dim[1], dim)
         )
 
     def convert_to_global(self, x_local: np.ndarray) -> np.ndarray:
@@ -603,16 +623,20 @@ class BEMatrixRectangular(LinearOperator):
         nr = 6
         return np.reshape(aux, (int(aux.size / nr), nr))
 
-    def plotPattern(self):
+    def plotPattern(self, magnify_y=1.0):
         data_pattern = self._getPattern()
         patches = []
         p_colors = []
-        max_y = data_pattern[:, 3].max()
+        max_y = data_pattern[:, 2].max()
         for i in range(len(data_pattern)):
             height = np.abs(data_pattern[i, 0] - data_pattern[i, 2])
             width = np.abs(data_pattern[i, 1] - data_pattern[i, 3])
             y1 = max_y - data_pattern[i, 0] - height
             x1 = data_pattern[i, 1]
+            
+            height *= magnify_y
+            y1 *= magnify_y
+            
             rectangle = Rectangle((x1, y1), width, height)
             patches.append(rectangle)
             p_colors.append(data_pattern[i, 4])
@@ -624,8 +648,9 @@ class BEMatrixRectangular(LinearOperator):
         )
         p.set_array(np.array(p_colors))
         ax.add_collection(p)
-        ax.set_ylim([data_pattern[:, 0].min(), data_pattern[:, 3].max()])
-        ax.set_xlim([data_pattern[:, 1].min(), data_pattern[:, 2].max()])
+        ax.set_ylim([data_pattern[:, 0].min()*magnify_y, data_pattern[:, 2].max()*magnify_y])
+        ax.set_xlim([data_pattern[:, 1].min(), data_pattern[:, 3].max()])
+        
         ax.set_aspect("equal")
         # fig.colorbar(p)
         # fig.show()
@@ -672,6 +697,11 @@ class BEMatrixRectangular(LinearOperator):
         for _ in range(N_matvec):
             self._matvec(x)
         return (time.time() - start_time)/N_matvec
+    
+    def getDofDimension(self):
+        """Return the number of dof for receiver and source elements
+        """
+        return self.H_.get_dof_dimension()
 
 def main():
     print("bigwham4py successfully imported")
