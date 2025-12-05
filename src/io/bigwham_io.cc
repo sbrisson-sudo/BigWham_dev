@@ -284,12 +284,12 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
     }
     default:
     {
-        std::cout << "wrong inputs -abort \n";
-        il::abort();
+        std::runtime_error("BigwhamIO : invalid kernel name provided.");
     }
     }
     mesh_src_ = mesh_;
     mesh_rec_ = mesh_;
+    std::cout << std::flush;
 };
 
 // RECTANGULAR Hmatrix case
@@ -476,11 +476,11 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
     }
     default:
     {
-        std::cout << "wrong inputs -abort \n";
-        il::abort();
+        std::runtime_error("BigwhamIO : invalid kernel name provided.");
     }
     }
     mesh_ = mesh_src_;
+    std::cout << std::flush;
 }
 
 /* -------------------------------------------------------------------------- */

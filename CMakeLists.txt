@@ -252,7 +252,7 @@ if(BIGWHAM_PYTHON_INTERFACE)
     message(STATUS "Python Version: ${Python_VERSION}")
     message(STATUS "Python Include Dir: ${Python_INCLUDE_DIRS}")
     set(PYBIND11_PYTHON_VERSION 3)
-    add_external_package(pybind11 VERSION 2.13.0 CONFIG)
+    add_external_package(pybind11 VERSION 2.13.6 CONFIG)
     add_subdirectory(interfaces/python)
 endif()
 
