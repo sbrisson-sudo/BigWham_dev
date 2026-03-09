@@ -25,38 +25,6 @@
 
 namespace bigwham {
 
-// a dummy derived class for axi P0 kernel....
-template <class Es, class Er, ElasticKernelType k>
-class BieElastostaticAxi3D : public BieElastostatic<Es, Er, k> {
-    using BieElastostatic<Es, Er, k>::BieElastostatic;
-
-public:
-    BieElastostaticAxi3D() : BieElastostatic<Es, Er, k>(){};
-
-    BieElastostaticAxi3D(bigwham::ElasticProperties &elas, il::int_t dim)
-        : BieElastostatic<Es, Er, k>() {
-            IL_EXPECT_FAST(dim == 2);
-            this->elas_ = elas;
-            this->dof_dimension_ = {il::value, {dim, dim}};
-            this->spatial_dimension_ = dim;
-            this->kernel_properties_ = il::Array<double>(1, 10000.0);
-    };
-
-    BieElastostaticAxi3D(bigwham::ElasticProperties &elas, il::int_t dim,bool local_unknowns, bool local_co_variables)
-                : BieElastostatic<Es, Er, k>() {
-        IL_EXPECT_FAST(dim == 2);
-        this->elas_ = elas;
-        this->dof_dimension_ = {il::value, {dim, dim}};
-        this->spatial_dimension_ = dim;
-        this->kernel_properties_ = il::Array<double>(1, 10000.0);
-        this->local_unknowns_ = local_unknowns;
-        this->local_co_variables_ = local_co_variables;
-    };
-
-    std::vector<double> influence(const BoundaryElement &, il::int_t,
-                                  const BoundaryElement &,
-                                  il::int_t) const override;
-};
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <>

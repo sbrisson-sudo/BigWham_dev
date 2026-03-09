@@ -47,7 +47,9 @@ kernels_id_rec = [
     "2DT0-2DS0-V",
     "2DR0-2DS0-V",
     "3DH0-3DR0-V",
-    "3DTet0-3DT0-V"
+    "3DTet0-3DT0-V",
+    "Axi3DT0-Axi3DS0-V",
+    "Axi3DR0-Axi3DS0-V",
 ]
 
 ##############################

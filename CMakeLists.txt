@@ -172,7 +172,7 @@ add_subdirectory(src)
 # message(STATUS ${SOURCE_FILES})
 
 add_library(BigWham OBJECT ${SOURCE_FILES})
-target_compile_features(BigWham PUBLIC cxx_std_17)
+target_compile_features(BigWham PUBLIC cxx_std_20)
 target_compile_definitions(BigWham PUBLIC BIGWHAM_OPENMP)
 target_link_libraries(BigWham PUBLIC InsideLoop cnpy GSL::gsl)
 set_target_properties(BigWham PROPERTIES POSITION_INDEPENDENT_CODE ON)
@@ -298,6 +298,7 @@ if(BIGWHAM_TESTING)
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle0_kernels_test.cc
             src/elasticity/fullspace_iso_3d_triangle/_test/triangle2_kernels_test.cc
             src/elasticity/fullspace_iso_2d_hydrostatic_eigenstrain/_test/twoD_eigenstrain_hydrostatic_triangle.cc
+            src/elasticity/fullspace_iso_3daxis_hydrostatic_eigenstrain/_test/threeDAxis_eigenstrain_hydrostatic.cc
             src/elasticity/fullspace_iso_3d_hydrostatic_eigenstrain/_test/threeD_eigenstrain_hydrostatic_polyhedra_test.cc
             src/io/_test/bigwham_io_helper_test.cc
             src/io/_test/bigwham_io_gen_test_2d.cc

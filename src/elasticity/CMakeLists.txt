@@ -38,4 +38,7 @@ set(SOURCE_FILES ${SOURCE_FILES}
       # 3D hydrostatic eigenstrain triangle
       ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3d_hydrostatic_eigenstrain/hydrostatic_eigenstrain_polyhedra.cc
 
+      # 3D axis. hydrostatic eigenstrain 
+      ${CMAKE_CURRENT_SOURCE_DIR}/fullspace_iso_3daxis_hydrostatic_eigenstrain/hydrostatic_eigenstrain_3daxis.cc
+
       PARENT_SCOPE)

@@ -95,6 +95,28 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
       this->vertices_(i, j) = xv(i, j);
     }
   }
+
+  // Check and correct element orientation to ensure counter-clockwise ordering
+  // Using the shoelace formula for signed area
+  double signed_area = 0.0;
+  for (il::int_t i = 0; i < num_vertices_; i++) {
+    il::int_t next_i = (i + 1) % num_vertices_;
+    signed_area += (this->vertices_(i, 0) * this->vertices_(next_i, 1) -
+                    this->vertices_(next_i, 0) * this->vertices_(i, 1));
+  }
+
+  // If clockwise (negative signed area), reverse vertex order to make counter-clockwise
+  if (signed_area < 0.0) {
+    // Reverse the vertex array
+    for (il::int_t i = 0; i < num_vertices_ / 2; i++) {
+      for (il::int_t j = 0; j < spatial_dimension_; j++) {
+        double temp = this->vertices_(i, j);
+        this->vertices_(i, j) = this->vertices_(num_vertices_ - 1 - i, j);
+        this->vertices_(num_vertices_ - 1 - i, j) = temp;
+      }
+    }
+  }
+
   for (il::int_t j = 0; j < spatial_dimension_; j++) {
     for (il::int_t i = 0; i < num_vertices_; i++) {
       this->centroid_[j] = this->centroid_[j] + vertices_(i, j) / num_vertices_;

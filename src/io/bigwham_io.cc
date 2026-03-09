@@ -42,6 +42,7 @@
 
 #include "elasticity/fullspace_iso_2d_hydrostatic_eigenstrain/bie_2d_elastostatic_hydrostatic_eigenstrain_influence.hh"
 #include "elasticity/fullspace_iso_3d_hydrostatic_eigenstrain/bie_3d_elastostatic_hydrostatic_eigenstrain_influence.hh"
+#include "elasticity/fullspace_iso_3daxis_hydrostatic_eigenstrain/bie_3daxis_elastostatic_hydrostatic_eigenstrain_influence.hh"
 
 /* -------------------------------------------------------------------------- */
 using namespace bigwham;
@@ -486,6 +487,44 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
             elas, spatial_dimension_);
         // observation kernels to implement....
         // still missing displacement & stresses representation for that kernel + element
+        break;
+    }
+    case "Axi3DT0-Axi3DS0-V"_sh:
+    { // 2D hydrostatic eigenstrain kernel, source = triangle, receiver = segmenr
+        IL_ASSERT(properties.size() == 2);
+        ElasticProperties elas(properties[0], properties[1]);
+
+        spatial_dimension_ = 2;
+        dof_dimension_ = {il::value, {2, 1}}; // non symetrical number of dofs
+
+        using src_elem = Triangle<0>;
+        using rec_elem = Segment<0>;
+        mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+            spatial_dimension_, /* num vertices */ 3, coor_src, conn_src);
+        mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
+
+        ker_obj_ = std::make_shared<BieElastostaticEigenstrainAxi3D<src_elem, rec_elem, ElasticKernelType::V>>(
+            elas, spatial_dimension_);
+        break;
+    }
+    case "Axi3DR0-Axi3DS0-V"_sh:
+    { // 2D hydrostatic eigenstrain kernel, source = triangle, receiver = segmenr
+        IL_ASSERT(properties.size() == 2);
+        ElasticProperties elas(properties[0], properties[1]);
+
+        spatial_dimension_ = 2;
+        dof_dimension_ = {il::value, {2, 1}}; // non symetrical number of dofs
+
+        using src_elem = Rectangle<0>;
+        using rec_elem = Segment<0>;
+        mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+            spatial_dimension_, /* num vertices */ 4, coor_src, conn_src);
+        mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
+
+        ker_obj_ = std::make_shared<BieElastostaticEigenstrainAxi3D<src_elem, rec_elem, ElasticKernelType::V>>(
+            elas, spatial_dimension_);
         break;
     }
     case "2DT0-2DS0-V"_sh:
