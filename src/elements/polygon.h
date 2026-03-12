@@ -139,16 +139,8 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
   double size_t = il::norm(this->tangent2_, il::Norm::L2);
   double size_n = il::norm(this->normal_, il::Norm::L2);
 
-  // Area
-  // assuming its a paralleogram with tangent_1 and tangent_2
-  if (this->num_vertices_ == 4) {
-    this->size_ = size_n;
-  }
-
-  // triangle,
-  if (this->num_vertices_ == 3) {
-    this->size_ = size_n / 2.;
-  }
+  // Area: use shoelace formula for all polygons (already computed above)
+  this->size_ = std::abs(signed_area) / 2.0;
 
   // normal s and t
   for (il::int_t k = 0; k < spatial_dimension_; ++k) {

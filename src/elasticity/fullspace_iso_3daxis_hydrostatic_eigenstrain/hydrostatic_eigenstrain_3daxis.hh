@@ -13,42 +13,60 @@
 namespace bigwham {
 
 /**
+ * @brief Integration method selection for axisymmetric potential computation
+ */
+enum class IntegrationMethod {
+    QUADPACK,        // Adaptive QAGS integration (scipy quad)
+    GAUSS_LEGENDRE,  // Gauss-Legendre quadrature
+    FAR_FIELD        // Far-field approximation
+};
+
+/**
  * @brief Evaluate the potential phi(r) = \iiint_V dr'/|r-r'| for
  * V an axosymmetric domain of polygonal meridional cross section.
- * 
- * @param polygon 
- * @param rz_obs 
- * @return double 
+ *
+ * @param polygon
+ * @param rz_obs
+ * @param method Integration method to use
+ * @return double
  */
 double phi_3daxis(
     const Polygon<0> &polygon,
-    const il::StaticArray<double, 2> rz_obs
+    const il::StaticArray<double, 2> rz_obs,
+    IntegrationMethod method = IntegrationMethod::QUADPACK
 );
 
 /**
- * @brief Compute and returns the 4 non-zero strain components eps_rr, eps_zz, eps_tt, eps_rz. 
- * 
- * @param polygon 
- * @param rz_obs 
- * @return std::array<double, 4> 
+ * @brief Compute and returns the 4 non-zero strain components eps_rr, eps_zz, eps_tt, eps_rz.
+ *
+ * @param polygon
+ * @param rz_obs
+ * @param nu Poisson's ratio
+ * @param method Integration method to use
+ * @return std::array<double, 4>
  */
 std::array<double, 4> strain_3daxis(
     const Polygon<0> &polygon,
     const il::StaticArray<double, 2> rz_obs,
-    double nu
+    double nu,
+    IntegrationMethod method = IntegrationMethod::QUADPACK
 );
 
 /**
- * @brief Compute and returns the 4 non-zero stress components sigma_rr, sigma_zz, sigma_tt, sigma_rz. 
- * 
- * @param polygon 
- * @param rz_obs 
- * @return std::array<double, 4> 
+ * @brief Compute and returns the 4 non-zero stress components sigma_rr, sigma_zz, sigma_tt, sigma_rz.
+ *
+ * @param polygon
+ * @param rz_obs
+ * @param nu Poisson's ratio
+ * @param G Shear modulus
+ * @param method Integration method to use
+ * @return std::array<double, 4>
  */
 std::array<double, 4> stress_3daxis(
     const Polygon<0> &polygon,
     const il::StaticArray<double, 2> rz_obs,
-    double nu, double G
+    double nu, double G,
+    IntegrationMethod method = IntegrationMethod::QUADPACK
 );
 
 /**
