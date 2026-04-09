@@ -1,6 +1,7 @@
 #ifndef BIGWHAM_BIE_ELASTIC3D_HYDROST_EIGENSTRAIN_TRIANGLE_H
 #define BIGWHAM_BIE_ELASTIC3D_HYDROST_EIGENSTRAIN_TRIANGLE_H
 
+#include <stdexcept>
 #include <tuple>
 
 #include <il/StaticArray.h>
@@ -16,6 +17,21 @@
 #include "hydrostatic_eigenstrain_polyhedra.hh"
 
 namespace bigwham {
+
+// Base class full specializations required to satisfy the vtable in debug builds
+// (no-op bodies; influence is always overridden by BieElastostaticEigenstrain)
+template <>
+std::vector<double>
+BieElastostatic<Hexahedron<0>, Rectangle<0>, ElasticKernelType::V>::influence(
+    const BoundaryElement &, il::int_t, const BoundaryElement &, il::int_t) const {
+    throw std::logic_error("BieElastostatic base influence called for eigenstrain kernel");
+}
+template <>
+std::vector<double>
+BieElastostatic<Tetrahedron<0>, Triangle<0>, ElasticKernelType::V>::influence(
+    const BoundaryElement &, il::int_t, const BoundaryElement &, il::int_t) const {
+    throw std::logic_error("BieElastostatic base influence called for eigenstrain kernel");
+}
 
 template class BieElastostaticEigenstrain<Hexahedron<0>, Rectangle<0>, ElasticKernelType::V>;
 template class BieElastostaticEigenstrain<Tetrahedron<0>, Triangle<0>, ElasticKernelType::V>;

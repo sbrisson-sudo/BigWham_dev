@@ -31,7 +31,7 @@ public:
   bool isPointInPolygon(const std::array<double, 2>& xy_obs) const;
   double getTol() const { return tol_; };
 
-private:
+protected:
   double tol_;
 };
 
@@ -266,6 +266,92 @@ bool Polygon<p>::isPointInPolygon(const std::array<double, 2>& xy_obs) const
     return on_edge || (prev_sign != 0.0);
 }
 
+
+/* ========================================================================== */
+// Polygon2D: polygon element living in a 2D space (spatial_dimension_ == 2).
+// Used for 2D and axisymmetric eigenstrain kernels where source elements are
+// flat polygons described by (r, z) or (x, y) coordinates only.
+// Inherits from Polygon<p> so it remains substitutable wherever Polygon<p>
+// is accepted.  The constructor resets spatial_dimension_ to 2 and resizes
+// the centroid / normal / tangent arrays accordingly.  SetElement is
+// re-implemented without the cross-product normal computation, and
+// SetRotationMatrices is a no-op (rotation matrices are not used by 2D kernels).
+/* ========================================================================== */
+
+template <int p> class Polygon2D : public Polygon<p> {
+
+public:
+  Polygon2D() : Polygon<p>() {
+    // Override the 3D spatial dimension set by Polygon<p> -> BoundaryElement(3,p)
+    this->spatial_dimension_ = 2;
+    this->centroid_.Resize(2, 0.);
+    this->normal_.Resize(2, 0.);
+    this->tangent1_.Resize(2, 0.);
+    this->tangent2_.Resize(2, 0.);
+    this->rotation_matrix_.Resize(2, 2, 0.);
+    this->rotation_matrix_t_.Resize(2, 2, 0.);
+  }
+  ~Polygon2D() {}
+
+  virtual void SetElement(const il::Array2D<double> &coods_vertices) override;
+  virtual void SetRotationMatrices() override {}   // not needed in 2D
+  virtual void SetCollocationPoints() override = 0;
+  virtual void SetNodes() override = 0;
+};
+
+/* -------------------------------------------------------------------------- */
+
+template <int p>
+inline void Polygon2D<p>::SetElement(const il::Array2D<double> &xv) {
+  IL_EXPECT_FAST(xv.size(1) == 2);
+  IL_EXPECT_FAST(xv.size(0) == this->num_vertices_);
+  this->vertices_.Resize(this->num_vertices_, 2);
+
+  for (il::int_t j = 0; j < 2; j++) {
+    this->centroid_[j] = 0;
+    for (il::int_t i = 0; i < this->num_vertices_; i++) {
+      this->vertices_(i, j) = xv(i, j);
+    }
+  }
+
+  // Ensure counter-clockwise orientation via signed area (shoelace)
+  double signed_area = 0.0;
+  for (il::int_t i = 0; i < this->num_vertices_; i++) {
+    il::int_t next_i = (i + 1) % this->num_vertices_;
+    signed_area += (this->vertices_(i, 0) * this->vertices_(next_i, 1) -
+                    this->vertices_(next_i, 0) * this->vertices_(i, 1));
+  }
+  if (signed_area < 0.0) {
+    for (il::int_t i = 0; i < this->num_vertices_ / 2; i++) {
+      for (il::int_t j = 0; j < 2; j++) {
+        double temp = this->vertices_(i, j);
+        this->vertices_(i, j) = this->vertices_(this->num_vertices_ - 1 - i, j);
+        this->vertices_(this->num_vertices_ - 1 - i, j) = temp;
+      }
+    }
+  }
+
+  for (il::int_t j = 0; j < 2; j++) {
+    for (il::int_t i = 0; i < this->num_vertices_; i++) {
+      this->centroid_[j] += this->vertices_(i, j) / this->num_vertices_;
+    }
+  }
+
+  this->size_ = std::abs(signed_area) / 2.0;
+
+  // Tolerance for isPointOnBoundary / isPointInPolygon
+  double smallest_edge = 1e100;
+  for (il::int_t i = 0; i < this->num_vertices_; i++) {
+    double dx = this->vertices_((i+1)%this->num_vertices_, 0) - this->vertices_(i, 0);
+    double dy = this->vertices_((i+1)%this->num_vertices_, 1) - this->vertices_(i, 1);
+    double edge_length = std::sqrt(dx*dx + dy*dy);
+    if (edge_length < smallest_edge) smallest_edge = edge_length;
+  }
+  this->tol_ = smallest_edge * 1e-5;
+
+  this->SetCollocationPoints();
+  this->SetNodes();
+}
 
 } // namespace bie
 

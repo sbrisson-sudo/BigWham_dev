@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <limits>
 #include <numbers>
 
 #include <gsl/gsl_errno.h>
@@ -78,7 +79,7 @@ IntegrationMethod selectIntegrationMethod(
     double ratio = d / a_elmt;  // Add small epsilon to avoid division by zero
 
     // Select method based on ratio
-    if (ratio < 1.0){
+    if (ratio < 5.0){
         return IntegrationMethod::QUADPACK;
     } else if (ratio < 20.0){
         return IntegrationMethod::GAUSS_LEGENDRE;
@@ -163,7 +164,7 @@ double phi_3daxis(
     double R = rz_obs[0];
     double Z = rz_obs[1];
 
-    if (R < 0){
+    if (R <= 0){
         std::cerr << "phi_3daxis called with (R,Z)=(" << R << ", " << Z << ")\n";
         throw std::runtime_error("3D axisymmetrical eigenstrain potential: R must be positive");
     }
@@ -242,30 +243,50 @@ std::array<double, 4> strain_3daxis(
     IntegrationMethod method
 ){
 
-    // FD step
-    double eps = 1e-4;
-
-    // Compute function values for finite differences
-    double phi_0 = phi_3daxis(polygon, rz_obs, method);
-
     double R = rz_obs[0];
     double Z = rz_obs[1];
 
-    // Base stencil
-    double phi_R_plus  = phi_3daxis(polygon, {il::value, {R+eps, Z}}, method);
-    double phi_R_minus = phi_3daxis(polygon, {il::value, {R-eps, Z}}, method);
-    double phi_Z_plus  = phi_3daxis(polygon, {il::value, {R, Z+eps}}, method);
-    double phi_Z_minus = phi_3daxis(polygon, {il::value, {R, Z-eps}}, method);
+    // FD step optimal for 2nd-order centered differences:
+    // eps ~ eps_machine^(1/4) * L, where L = max(source size, obs distance)
+    double h_elmt = std::sqrt(polygon.size());
+    double r = std::sqrt(R * R + Z * Z);
+    double length_scale = std::max(h_elmt, r);
+    double eps = std::pow(std::numeric_limits<double>::epsilon(), 0.25) * length_scale;
+
+    // Use the most conservative integration method across all stencil points
+    double stencil_R[] = {R, R+eps, R-eps, R,     R,     R+eps,   R+eps,   R-eps,   R-eps  };
+    double stencil_Z[] = {Z, Z,     Z,     Z+eps, Z-eps, Z+eps,   Z-eps,   Z+eps,   Z-eps  };
+    IntegrationMethod fd_method = IntegrationMethod::FAR_FIELD;
+    for (int i = 0; i < 9; i++) {
+        il::StaticArray<double, 2> pt{il::value, {stencil_R[i], stencil_Z[i]}};
+        auto m = selectIntegrationMethod(polygon, pt);
+        if (m < fd_method) fd_method = m;
+    }
+
+    auto phi = [&](double Rp, double Zp) {
+        il::StaticArray<double, 2> pt{il::value, {Rp, Zp}};
+        return phi_3daxis(polygon, pt, fd_method);
+    };
+
+    // if (R - eps < 0) 
+    //     eps = 0.75 * R;
+
+    // Compute function values for finite differences
+    double phi_0       = phi(R,      Z     );
+    double phi_R_plus  = phi(R+eps,  Z     );
+    double phi_R_minus = phi(R-eps,  Z     );
+    double phi_Z_plus  = phi(R,      Z+eps );
+    double phi_Z_minus = phi(R,      Z-eps );
 
     // First order derivative
     double dR = (phi_R_plus - phi_R_minus) / (2 * eps);
     // double dZ = (phi_Z_plus - phi_Z_minus) / (2 * eps);
 
     // Corner points for rz component
-    double phi_RpZp = phi_3daxis(polygon, {il::value, {R+eps, Z+eps}}, method);
-    double phi_RpZm = phi_3daxis(polygon, {il::value, {R+eps, Z-eps}}, method);
-    double phi_RmZp = phi_3daxis(polygon, {il::value, {R-eps, Z+eps}}, method);
-    double phi_RmZm = phi_3daxis(polygon, {il::value, {R-eps, Z-eps}}, method);
+    double phi_RpZp = phi(R+eps, Z+eps);
+    double phi_RpZm = phi(R+eps, Z-eps);
+    double phi_RmZp = phi(R-eps, Z+eps);
+    double phi_RmZm = phi(R-eps, Z-eps);
 
     // Second derivatives
     double dRR = (phi_R_plus - 2 * phi_0 + phi_R_minus) / (eps*eps);

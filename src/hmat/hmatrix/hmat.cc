@@ -127,8 +127,8 @@ namespace bigwham {
             for (il::int_t j = 0; j < aux.size(1); j++) {
                 for (il::int_t i = 0; i < aux.size(0); i++) {
 
-                    pos_list[npos + 2 * index] = permutDOF_src[(i + dof_dimension_[0] * i0)]; // rows
-                    pos_list[npos + 2 * index + 1] = permutDOF_src[(j + dof_dimension_[1] * j0)]; // columns 
+                    pos_list[npos + 2 * index] = permutDOF_rcv[(i + dof_dimension_[0] * i0)]; // rows
+                    pos_list[npos + 2 * index + 1] = permutDOF_src[(j + dof_dimension_[1] * j0)]; // columns
 
                     // For PETSc parallel solvers (bc the submatrices are defined in an already permuted dof ordering)
                     // pos_list[npos + 2 * index] = permutDOF_rcv[(i + dof_dimension_ * i0)];

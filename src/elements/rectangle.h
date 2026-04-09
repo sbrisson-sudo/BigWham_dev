@@ -56,5 +56,38 @@ template <> inline void Rectangle<0>::SetCollocationPoints() {
   this->collocation_points_ = col;
 }
 
+/* -------------------------------------------------------------------------- */
+// Rectangle2D: rectangle element in a 2D space (r,z or x,y coordinates).
+// Inherits from Polygon2D<p>; mirrors Rectangle<p> but without 3D geometry.
+/* -------------------------------------------------------------------------- */
+
+template <int p> class Rectangle2D : public Polygon2D<p> {
+public:
+  Rectangle2D() : Polygon2D<p>() {
+    this->num_vertices_ = 4;
+    this->num_nodes_ = 1;
+    this->num_collocation_points_ = 1;
+    this->vertices_.Resize(this->num_vertices_, 2);
+    this->collocation_points_.Resize(this->num_collocation_points_, 2);
+    this->nodes_.Resize(this->num_nodes_, 2);
+  }
+  ~Rectangle2D() {}
+
+  virtual void SetCollocationPoints() override;
+  virtual void SetNodes() override;
+};
+
+template <> inline void Rectangle2D<0>::SetNodes() {
+  il::Array2D<double> col{1, 2, 0.};
+  for (il::int_t j = 0; j < 2; j++) col(0, j) = this->centroid_[j];
+  this->nodes_ = col;
+}
+
+template <> inline void Rectangle2D<0>::SetCollocationPoints() {
+  il::Array2D<double> col{1, 2, 0.};
+  for (il::int_t j = 0; j < 2; j++) col(0, j) = this->centroid_[j];
+  this->collocation_points_ = col;
+}
+
 } // namespace bie
 #endif // BIGWHAM_RECTANGLE_H

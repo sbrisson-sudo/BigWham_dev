@@ -60,9 +60,11 @@ template <class ElemType> void BEMesh<ElemType>::ConstructMesh() {
 template class BEMesh<Triangle<0>>;
 template class BEMesh<Triangle<1>>;
 template class BEMesh<Triangle<2>>;
+template class BEMesh<Triangle2D<0>>;
 template class BEMesh<Segment<0>>;
 template class BEMesh<Segment<1>>;
 template class BEMesh<Rectangle<0>>;
+template class BEMesh<Rectangle2D<0>>;
 template class BEMesh<Point<2>>;
 template class BEMesh<Point<3>>;
 template class BEMesh<Hexahedron<0>>;

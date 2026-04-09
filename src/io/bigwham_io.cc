@@ -490,14 +490,14 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         break;
     }
     case "Axi3DT0-Axi3DS0-V"_sh:
-    { // 2D hydrostatic eigenstrain kernel, source = triangle, receiver = segmenr
+    { // axisymmetric eigenstrain kernel, source = triangle (2D), receiver = segment
         IL_ASSERT(properties.size() == 2);
         ElasticProperties elas(properties[0], properties[1]);
 
         spatial_dimension_ = 2;
         dof_dimension_ = {il::value, {2, 1}}; // non symetrical number of dofs
 
-        using src_elem = Triangle<0>;
+        using src_elem = Triangle2D<0>;
         using rec_elem = Segment<0>;
         mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
             spatial_dimension_, /* num vertices */ 3, coor_src, conn_src);
@@ -509,14 +509,14 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         break;
     }
     case "Axi3DR0-Axi3DS0-V"_sh:
-    { // 2D hydrostatic eigenstrain kernel, source = triangle, receiver = segmenr
+    { // axisymmetric eigenstrain kernel, source = rectangle (2D), receiver = segment
         IL_ASSERT(properties.size() == 2);
         ElasticProperties elas(properties[0], properties[1]);
 
         spatial_dimension_ = 2;
         dof_dimension_ = {il::value, {2, 1}}; // non symetrical number of dofs
 
-        using src_elem = Rectangle<0>;
+        using src_elem = Rectangle2D<0>;
         using rec_elem = Segment<0>;
         mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
             spatial_dimension_, /* num vertices */ 4, coor_src, conn_src);
@@ -528,14 +528,14 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         break;
     }
     case "2DT0-2DS0-V"_sh:
-    { // 2D hydrostatic eigenstrain kernel, source = triangle, receiver = segmenr
+    { // 2D hydrostatic eigenstrain kernel, source = triangle (2D), receiver = segment
         IL_ASSERT(properties.size() == 2);
         ElasticProperties elas(properties[0], properties[1]);
 
         spatial_dimension_ = 2;
         dof_dimension_ = {il::value, {2, 1}}; // non symetrical number of dofs
 
-        using src_elem = Triangle<0>;
+        using src_elem = Triangle2D<0>;
         using rec_elem = Segment<0>;
         mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
             spatial_dimension_, /* num vertices */ 3, coor_src, conn_src);
@@ -547,14 +547,14 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
         break;
     }
     case "2DR0-2DS0-V"_sh:
-    { // 2D hydrostatic eigenstrain kernel, source = triangle, receiver = segmenr
+    { // 2D hydrostatic eigenstrain kernel, source = rectangle (2D), receiver = segment
         IL_ASSERT(properties.size() == 2);
         ElasticProperties elas(properties[0], properties[1]);
 
         spatial_dimension_ = 2;
         dof_dimension_ = {il::value, {2, 1}}; // non symetrical number of dofs
 
-        using src_elem = Rectangle<0>;
+        using src_elem = Rectangle2D<0>;
         using rec_elem = Segment<0>;
         mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
             spatial_dimension_, /* num vertices */ 4, coor_src, conn_src);

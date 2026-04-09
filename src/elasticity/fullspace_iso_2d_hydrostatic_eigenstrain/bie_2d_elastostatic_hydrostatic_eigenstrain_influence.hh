@@ -1,6 +1,7 @@
 #ifndef BIGWHAM_BIE_ELASTIC2D_HYDROST_EIGENSTRAIN_TRIANGLE_H
 #define BIGWHAM_BIE_ELASTIC2D_HYDROST_EIGENSTRAIN_TRIANGLE_H
 
+#include <stdexcept>
 #include <tuple>
 
 #include <il/StaticArray.h>
@@ -15,108 +16,85 @@
 
 namespace bigwham {
 
-template class BieElastostaticEigenstrain<Triangle<0>, Segment<0>, ElasticKernelType::V>;
-template class BieElastostaticEigenstrain<Rectangle<0>, Segment<0>, ElasticKernelType::V>;
+// Base class full specializations required to satisfy the vtable in debug builds
+// (no-op bodies; influence is always overridden by BieElastostaticEigenstrain)
+template <>
+std::vector<double>
+BieElastostatic<Triangle2D<0>, Segment<0>, ElasticKernelType::V>::influence(
+    const BoundaryElement &, il::int_t, const BoundaryElement &, il::int_t) const {
+    throw std::logic_error("BieElastostatic base influence called for eigenstrain kernel");
+}
+template <>
+std::vector<double>
+BieElastostatic<Rectangle2D<0>, Segment<0>, ElasticKernelType::V>::influence(
+    const BoundaryElement &, il::int_t, const BoundaryElement &, il::int_t) const {
+    throw std::logic_error("BieElastostatic base influence called for eigenstrain kernel");
+}
+
+template class BieElastostaticEigenstrain<Triangle2D<0>, Segment<0>, ElasticKernelType::V>;
+template class BieElastostaticEigenstrain<Rectangle2D<0>, Segment<0>, ElasticKernelType::V>;
 
 
 /**
- * @brief V kernel - nuclei of strain. triangle -> segment
- * 
- * @tparam  
- * @param source_elt 
- * @param i_s 
- * @param receiver_elt 
- * @param i_r 
- * @return std::vector<double> 
+ * @brief V kernel - nuclei of strain. triangle (2D) -> segment
  */
 template <>
 std::vector<double>
-BieElastostaticEigenstrain<Triangle<0>, Segment<0>, ElasticKernelType::V>::influence(
+BieElastostaticEigenstrain<Triangle2D<0>, Segment<0>, ElasticKernelType::V>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
 
-    // Get the observation point
     auto r_col = receiver_elt.collocation_points();
-    il::StaticArray<double, 2> xy_obs{il::value, {
-        r_col(i_r, 0), 
-        r_col(i_r, 1)}
-    };
+    il::StaticArray<double, 2> xy_obs{il::value, {r_col(i_r, 0), r_col(i_r, 1)}};
 
-    // Get the nornal of the segment element
     auto n_array = receiver_elt.normal();
-    il::StaticArray<double, 2> n_obs{il::value, {
-        n_array[0], 
-        n_array[1]}
-    };
+    il::StaticArray<double, 2> n_obs{il::value, {n_array[0], n_array[1]}};
 
-    // Catsting the source_elmt to Triangle<0>
-    const Triangle<0>* poly_ptr = dynamic_cast<const Triangle<0>*>(&source_elt);
+    const Triangle2D<0>* poly_ptr = dynamic_cast<const Triangle2D<0>*>(&source_elt);
     if (!poly_ptr) {
-        throw std::runtime_error("Error: source_elt is not a Triangle<0>!");
+        throw std::runtime_error("Error: source_elt is not a Triangle2D<0>!");
     }
 
-    // Compute the tractions for unit eigenstrain
     auto t_i = V_twoD_polygon_0(
-        *poly_ptr, // Triangle<0> 
-        xy_obs, // const il::StaticArray<double, 2>
-        n_obs, // const il::StaticArray<double, 2>
-        this->elas_.shear_modulus(), 
+        *poly_ptr,
+        xy_obs,
+        n_obs,
+        this->elas_.shear_modulus(),
         this->elas_.poisson_ratio()
     );
 
-    // Return as std::vector
-    std::vector<double> t_i_res = {t_i[0], t_i[1]};
-    return t_i_res;
+    return {t_i[0], t_i[1]};
 }
 
 /**
- * @brief V kernel - nuclei of strain. rectangle -> segment
- * 
- * @tparam  
- * @param source_elt 
- * @param i_s 
- * @param receiver_elt 
- * @param i_r 
- * @return std::vector<double> 
+ * @brief V kernel - nuclei of strain. rectangle (2D) -> segment
  */
 template <>
 std::vector<double>
-BieElastostaticEigenstrain<Rectangle<0>, Segment<0>, ElasticKernelType::V>::influence(
+BieElastostaticEigenstrain<Rectangle2D<0>, Segment<0>, ElasticKernelType::V>::influence(
     const BoundaryElement &source_elt, il::int_t i_s,
     const BoundaryElement &receiver_elt, il::int_t i_r) const {
 
-    // Get the observation point
     auto r_col = receiver_elt.collocation_points();
-    il::StaticArray<double, 2> xy_obs{il::value, {
-        r_col(i_r, 0), 
-        r_col(i_r, 1)}
-    };
+    il::StaticArray<double, 2> xy_obs{il::value, {r_col(i_r, 0), r_col(i_r, 1)}};
 
-    // Get the nornal of the segment element
     auto n_array = receiver_elt.normal();
-    il::StaticArray<double, 2> n_obs{il::value, {
-        n_array[0], 
-        n_array[1]}
-    };
+    il::StaticArray<double, 2> n_obs{il::value, {n_array[0], n_array[1]}};
 
-    // Catsting the source_elmt to Triangle<0>
-    const Rectangle<0>* poly_ptr = dynamic_cast<const Rectangle<0>*>(&source_elt);
+    const Rectangle2D<0>* poly_ptr = dynamic_cast<const Rectangle2D<0>*>(&source_elt);
     if (!poly_ptr) {
-        throw std::runtime_error("Error: source_elt is not a Rectangle<0>!");
+        throw std::runtime_error("Error: source_elt is not a Rectangle2D<0>!");
     }
 
-    // Compute the tractions for unit eigenstrain
     auto t_i = V_twoD_polygon_0(
-        *poly_ptr, // Rectangle<0> 
-        xy_obs, // const il::StaticArray<double, 2>
-        n_obs, // const il::StaticArray<double, 2>
-        this->elas_.shear_modulus(), 
+        *poly_ptr,
+        xy_obs,
+        n_obs,
+        this->elas_.shear_modulus(),
         this->elas_.poisson_ratio()
     );
 
-    // Return as std::vector
-    std::vector<double> t_i_res = {t_i[0], t_i[1]};
-    return t_i_res;
+    return {t_i[0], t_i[1]};
 }
 
 
