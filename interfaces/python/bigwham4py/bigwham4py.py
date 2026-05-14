@@ -34,6 +34,7 @@ from matplotlib.patches import Rectangle
 # list kernels
 kernels_id = [
     "2DS0-H",
+    "2DS0-H-mode1",
     "2DS1-H",
     "S3DS0-H",
     "Axi3DS0-H",
