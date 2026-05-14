@@ -9,8 +9,13 @@
 #define min(a,b) ((a)>(b)?(b):(a))
 
 /* Auxiliary routines prototypes */
+#ifdef IL_MKL
 extern void print_matrix( char* desc, MKL_INT m, MKL_INT n,const  double* a, MKL_INT lda );
 extern void print_AS_array( char* desc, MKL_INT m, MKL_INT n,const  double* a, MKL_INT lda );
+#else
+extern void print_matrix( char* desc, int m, int n,const  double* a, int lda );
+extern void print_AS_array( char* desc, int m, int n,const  double* a, int lda );
+#endif
 extern double get_L2_norm( const  double* a, il::Array<double> sol, il::int_t size  );
 
 TEST(Svd, test1) {

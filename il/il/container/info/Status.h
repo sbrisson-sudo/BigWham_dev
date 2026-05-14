@@ -102,7 +102,7 @@ class Status {
   Status(Status&& other);
   Status& operator=(const Status& other) = delete;
   Status& operator=(Status&& other);
-  ~Status();
+  ~Status() noexcept(false);
   void SetOk();
   void SetError(il::Error error);
   void SetInfo(const char* key, int value);
@@ -151,7 +151,7 @@ inline Status& Status::operator=(Status&& other) {
   return *this;
 }
 
-inline Status::~Status() { IL_EXPECT_MEDIUM(!to_check_); }
+inline Status::~Status() noexcept(false) { IL_EXPECT_MEDIUM(!to_check_); }
 
 inline void Status::SetError(il::Error error) {
   IL_EXPECT_MEDIUM(!to_check_);

@@ -24,8 +24,15 @@
 #include <il/Status.h>
 
 #include "Gmres.h"
+#ifdef IL_MKL
 #include "mkl_blas.h"
 #include "mkl_rci.h"
+#elif IL_APPLE_ACCELERATE
+#include <il/linearAlgebra/dense/blas/blas_config.h>
+// Note: CG with Apple Accelerate requires manual implementation of RCI interface
+#else
+#error "CG solver requires either MKL or Apple Accelerate BLAS"
+#endif
 
 namespace il {
 

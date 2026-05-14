@@ -42,24 +42,25 @@ inline il::ArrayEdit<T> as_array_edit(jlarray<T> &c)
 
 JLCXX_MODULE define_julia_module(jlcxx::Module &mod)
 {
-    mod.add_type<BigWhamIOGen>("BigWhamIO")
+    mod.add_type<BigWhamIO>("BigWhamIO")
         .constructor([](const jlarray<double> x, const jlarray<int> y, const std::string &z, const jlarray<double> w, const int num_threads)
                      {
                          auto x_ = std::vector<double>(x.data(), x.data() + x.size());
                          auto y_ = std::vector<int>(y.data(), y.data() + y.size());
                          auto w_ = std::vector<double>(w.data(), w.data() + w.size());
-                         return new BigWhamIOGen(x_, y_, z, w_, num_threads); })
-        .method("build_hierarchical_matrix", &BigWhamIOGen::BuildHierarchicalMatrix)
-        .method("get_collocation_points", &BigWhamIOGen::GetCollocationPoints)
-        .method("get_element_normals", &BigWhamIOGen::GetElementNormals)
-        .method("get_rotation_matrix", &BigWhamIOGen::GetRotationMatrix)
-        .method("matvec!", [](BigWhamIOGen &w, const jlarray<double> xin, jlarray<double> xout)
+                         return new BigWhamIO(x_, y_, z, w_, num_threads, num_threads, true, false,false,-1); })
+        .method("build_hierarchical_matrix", &BigWhamIO::BuildHierarchicalMatrix)
+        .method("get_collocation_points", &BigWhamIO::GetCollocationPoints)
+        .method("get_element_normals", &BigWhamIO::GetElementNormals)
+        .method("get_rotation_matrix", &BigWhamIO::GetRotationMatrix)
+        .method("get_omp_threads", &BigWhamIO::GetOmpThreads)
+        .method("matvec!", [](BigWhamIO &w, const jlarray<double> xin, jlarray<double> xout)
                 {
                     auto cin = as_array_view<double>(xin);
                     auto cout  = as_array_edit<double>(xout);
                     w.MatVecVoid(cin, cout);
                 })
-        .method("matvec", [](BigWhamIOGen &w, const jlarray<double> x)
+        .method("matvec", [](BigWhamIO &w, const jlarray<double> x)
                 {
                     auto c = as_array_view<double>(x);
                     w.MatVecVoid(c);

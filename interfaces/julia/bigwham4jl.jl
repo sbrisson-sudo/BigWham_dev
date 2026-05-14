@@ -54,6 +54,10 @@ function BEMatrix(coor::Matrix{Float64}, conn::Matrix{Int64},
     return BEMatrix(coor, conn, kernel, prop, num_threads)
 end
 
+function get_omp_threads(hmat::BEMatrix)
+    return get_omp_threads(hmat.bigwham_obj)
+end
+
 Base.size(hmat::BEMatrix) = hmat.size
 
 function LinearMaps._unsafe_mul!(y::AbstractVector, A::BEMatrix, x::AbstractVector)

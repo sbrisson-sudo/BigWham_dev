@@ -34,6 +34,7 @@ from matplotlib.patches import Rectangle
 # list kernels
 kernels_id = [
     "2DS0-H",
+    "2DS0-H-mode1",
     "2DS1-H",
     "S3DS0-H",
     "Axi3DS0-H",
@@ -95,8 +96,7 @@ class BEMatrix(LinearOperator):
                 
         # Ensure kernel exists
         if not(kernel in kernels_id):
-            print(f"[ERROR] Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]")
-            return
+            raise Exception(f"Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]")
         
         self.useCuda = useCuda
 

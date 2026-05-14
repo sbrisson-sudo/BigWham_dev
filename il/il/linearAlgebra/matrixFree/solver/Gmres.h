@@ -22,8 +22,15 @@
 #include <il/ArrayView.h>
 #include <il/StaticArray.h>
 
+#ifdef IL_MKL
 #include "mkl_blas.h"
 #include "mkl_rci.h"
+#elif IL_APPLE_ACCELERATE
+#include <il/linearAlgebra/dense/blas/blas_config.h>
+// Note: GMRES with Apple Accelerate requires manual implementation of RCI interface
+#else
+#error "GMRES solver requires either MKL or Apple Accelerate BLAS"
+#endif
 
 namespace il {
 
