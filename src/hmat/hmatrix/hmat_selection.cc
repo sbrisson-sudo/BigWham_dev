@@ -386,6 +386,7 @@ std::vector<T> HmatSelection<T>::diagonalOriginal() const {
 
     // Initiate the diag
     if (this->size(0) != this->size(1)){
+        std::cerr << "HmatSelection::diagonalOriginal called on selection of size = [" << this->size(0)  << ", " << this->size(1) << "]\n";
         throw std::logic_error("get diagonal not implemented for non square hmatrix subset, use the get_full_blocks method");
     }
 

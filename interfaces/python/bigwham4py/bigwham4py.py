@@ -35,26 +35,32 @@ from matplotlib.patches import Rectangle
 kernels_id = [
     "2DS0-H",
     "2DS0-H-mode1",
+    "2DS0-H-mode1-sym",
+    "Axi3DS0-H-mode1",
     "2DS1-H",
     "S3DS0-H",
     "Axi3DS0-H",
     "3DT0-H",
     "3DT6-H",
     "3DR0-H",
-    "3DR0-H-mode1"
+    "3DR0-H-mode1",
 ]
 
 # I need to check that
 kernel_to_dim_dof = {
-    "2DS0-H":2,
-    "2DS1-H":4,
-    "S3DS0-H":2,
-    "Axi3DS0-H":2,
-    "3DT0-H":3,
-    "3DT6-H":6,
-    "3DR0-H":3,
-    "3DR0-H-mode1":1
+    "2DS0-H": 2,
+    "2DS0-H-mode1": 1,
+    "2DS0-H-mode1-sym": 1,
+    "2DS1-H": 4,
+    "S3DS0-H": 2,
+    "Axi3DS0-H": 2,
+    "Axi3DS0-H-mode1": 2,
+    "3DT0-H": 3,
+    "3DT6-H": 6,
+    "3DR0-H": 3,
+    "3DR0-H-mode1": 1,
 }
+
 
 ##############################
 #  Hmatrix class in python   #
@@ -68,16 +74,16 @@ class BEMatrix(LinearOperator):
         properties: np.ndarray,
         max_leaf_size: int = 32,
         eta: float = 3.0,
-        eps_aca: float = 1.0e-3, 
-        n_openMP_threads: int =8,
-        n_GPUs:int =1,
-        directly_build:bool = True,
-        verbose:bool = True,
-        homogeneous_size_pattern:bool = False,
-        fixed_rank = -1,
-        useCuda = False,
+        eps_aca: float = 1.0e-3,
+        n_openMP_threads: int = 8,
+        n_GPUs: int = 1,
+        directly_build: bool = True,
+        verbose: bool = True,
+        homogeneous_size_pattern: bool = False,
+        fixed_rank=-1,
+        useCuda=False,
         selection_indices=None,
-        shape_orig = None
+        shape_orig=None,
     ):
         """ "
         Name:              Type:                Description:
@@ -93,22 +99,24 @@ class BEMatrix(LinearOperator):
         selection_indices   (array of int)      if the BEMatrix is generated via selection, store the indices used to perform the selection
         shape_orig          (array of int)      shape before selection
         """
-                
+
         # Ensure kernel exists
-        if not(kernel in kernels_id):
-            raise Exception(f"Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]")
-        
+        if not (kernel in kernels_id):
+            raise Exception(
+                f"Invalid kernel : {kernel}, available kernels are : [{', '.join(kernels_id)}]"
+            )
+
         self.useCuda = useCuda
 
-        self.kernel_ : str = kernel
+        self.kernel_: str = kernel
         self.dim_dof_ = kernel_to_dim_dof[kernel]
-        self.properties_ : np.ndarray = properties
-        self.max_leaf_size_ : int = int(max_leaf_size)
-        self.eta_ : float = float(eta)
-        self.eps_aca_ : float = float(eps_aca)
-        self.n_openMP_threads_ : int = n_openMP_threads
-        
-        self.H_ : BigWhamIOSelf = BigWhamIOSelf(
+        self.properties_: np.ndarray = properties
+        self.max_leaf_size_: int = int(max_leaf_size)
+        self.eta_: float = float(eta)
+        self.eps_aca_: float = float(eps_aca)
+        self.n_openMP_threads_: int = n_openMP_threads
+
+        self.H_: BigWhamIOSelf = BigWhamIOSelf(
             coor.flatten(),
             conn.flatten(),
             kernel,
@@ -118,16 +126,16 @@ class BEMatrix(LinearOperator):
             verbose,
             homogeneous_size_pattern,
             useCuda,
-            fixed_rank
+            fixed_rank,
         )
         self.built_ = False
-        if directly_build :
+        if directly_build:
             self.H_.build_hierarchical_matrix(
                 max_leaf_size,
                 eta,
                 eps_aca,
             )
-            self.built_=True
+            self.built_ = True
             self.matvec_size_ = self.H_.matrix_size(0)
             # it is mandatory to define shape and dtype of the dot product
             self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
@@ -138,10 +146,10 @@ class BEMatrix(LinearOperator):
                 eta,
             )
             # we set dummmy values.
-            self.shape_ =(0,0)
+            self.shape_ = (0, 0)
         self.dtype_ = float
         super().__init__(self.dtype_, self.shape_)
-        
+
         # if created by selection
         self.selection_indices_ = selection_indices
         self.selection_indices_cols_ = None
@@ -149,7 +157,7 @@ class BEMatrix(LinearOperator):
         self.selection_by_zero_padding_ = False
 
     def _build(self):
-        if not(self.built_):
+        if not (self.built_):
             self.H_.build_hierarchical_matrix(
                 self.max_leaf_size_,
                 self.eta_,
@@ -159,8 +167,8 @@ class BEMatrix(LinearOperator):
             # it is mandatory to define shape and dtype of the dot product
             self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
             super().__init__(self.dtype_, self.shape_)
-#            self.shape = self.shape_
-            self.built_=True
+            #            self.shape = self.shape_
+            self.built_ = True
         else:
             pass
 
@@ -173,24 +181,25 @@ class BEMatrix(LinearOperator):
         if (self.selection_indices_ is not None) and self.selection_by_zero_padding_:
             # We need to pad the input/output
             v_padded = np.zeros(self.shape_orig_[1], dtype=np.float64)
-            v_padded[self.selection_indices_cols_] = v 
+            v_padded[self.selection_indices_cols_] = v
             y_padded = self.H_.matvec(v_padded)
             return y_padded[self.selection_indices_]
-        else :
+        else:
             return self.H_.matvec(v)
-    
+
     def _matvec_cupy(self, x, y):
         """
         Dot product on cupy arrays, result y is already allocated
         """
-        import cupy 
+        import cupy
+
         assert type(x) == cupy.ndarray
         assert type(y) == cupy.ndarray
         assert x.dtype == np.float64
         assert y.dtype == np.float64
-        
+
         return self.H_.matvec_raw_ptr(x.data.ptr, y.data.ptr)
-    
+
     def _matvec_jax(self, x, y):
         """
         Dot product on JAX GPU arrays. Assumes x and y are jax.Array on GPU and of dtype float64.
@@ -198,14 +207,14 @@ class BEMatrix(LinearOperator):
         import jax
 
         # Ensure correct types and dtype
-        assert x.device.platform == 'gpu'
-        assert y.device.platform == 'gpu'
+        assert x.device.platform == "gpu"
+        assert y.device.platform == "gpu"
         assert x.dtype == np.float64
         assert y.dtype == np.float64
 
         # Extract raw pointers from __cuda_array_interface__
-        x_ptr = x.__cuda_array_interface__['data'][0]
-        y_ptr = y.__cuda_array_interface__['data'][0]
+        x_ptr = x.__cuda_array_interface__["data"][0]
+        y_ptr = y.__cuda_array_interface__["data"][0]
 
         # Call into C++ backend
         return self.H_.matvec_raw_ptr(x_ptr, y_ptr)
@@ -227,17 +236,17 @@ class BEMatrix(LinearOperator):
     def getCompression(self) -> float:
         self._build()
         return self.H_.get_compression_ratio()
-    
+
     def getStorageRequirement(self):
         return self.H_.get_storage_requirement()
-    
+
     def getGPUStorageRequirement(self):
         return self.H_.get_gpu_storage_requirement()
 
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
 
-    def get_omp_threads(self) -> int :
+    def get_omp_threads(self) -> int:
         return self.H_.get_omp_threads()
 
     def getMeshCollocationPoints(self) -> np.ndarray:
@@ -257,14 +266,20 @@ class BEMatrix(LinearOperator):
         :param x_local: local vector
         :return: global vector
         """
-        if self.selection_indices_ is None :
+        if self.selection_indices_ is None:
             return self.H_.convert_to_global(x_local)
-        else :
-            # We pad with zeros 
-            x_local_padded = np.zeros((int(self.shape_orig_[0]//self.dim_dof_), self.dim_dof_))
-            x_local_padded[self.selection_indices_,:] = x_local.reshape((-1,self.dim_dof_))
-            x_global_padded = self.H_.convert_to_global(x_local_padded.ravel()).reshape((-1,self.dim_dof_))
-            return x_global_padded[self.selection_indices_,:].ravel()
+        else:
+            # We pad with zeros
+            x_local_padded = np.zeros(
+                (int(self.shape_orig_[0] // self.dim_dof_), self.dim_dof_)
+            )
+            x_local_padded[self.selection_indices_, :] = x_local.reshape(
+                (-1, self.dim_dof_)
+            )
+            x_global_padded = self.H_.convert_to_global(x_local_padded.ravel()).reshape(
+                (-1, self.dim_dof_)
+            )
+            return x_global_padded[self.selection_indices_, :].ravel()
 
     def convert_to_local(self, x_global: np.ndarray) -> np.ndarray:
         """
@@ -272,14 +287,20 @@ class BEMatrix(LinearOperator):
         :param x_global: global vector
         :return: local vector
         """
-        if self.selection_indices_ is None :
+        if self.selection_indices_ is None:
             return self.H_.convert_to_local(x_global)
-        else :
-            # We pad with zeros 
-            x_global_padded = np.zeros((int(self.shape_orig_[0]//self.dim_dof_), self.dim_dof_))
-            x_global_padded[self.selection_indices_,:] = x_global.reshape((-1,self.dim_dof_))
-            x_local_padded = self.H_.convert_to_local(x_global_padded.ravel()).reshape((-1,self.dim_dof_))
-            return x_local_padded[self.selection_indices_,:].ravel()
+        else:
+            # We pad with zeros
+            x_global_padded = np.zeros(
+                (int(self.shape_orig_[0] // self.dim_dof_), self.dim_dof_)
+            )
+            x_global_padded[self.selection_indices_, :] = x_global.reshape(
+                (-1, self.dim_dof_)
+            )
+            x_local_padded = self.H_.convert_to_local(x_global_padded.ravel()).reshape(
+                (-1, self.dim_dof_)
+            )
+            return x_local_padded[self.selection_indices_, :].ravel()
 
     def getCollocationPoints(self) -> np.ndarray:
         """
@@ -289,20 +310,22 @@ class BEMatrix(LinearOperator):
         n = self.H_.get_spatial_dimension()
         aux = np.asarray(self.H_.get_collocation_points())
         colPts = np.reshape(aux, (int(aux.size / n), n))
-        
-        if self.selection_indices_ is None :
+
+        if self.selection_indices_ is None:
             return colPts
-        else :
-            return colPts[self.selection_indices_,:]
+        else:
+            return colPts[self.selection_indices_, :]
 
     def getSpatialDimension(self) -> int:
         return self.H_.get_spatial_dimension()
 
-    def _getFullBlocks(self, original_order=True, keep_ratio: float = 1.0) -> csc_matrix:
+    def _getFullBlocks(
+        self, original_order=True, keep_ratio: float = 1.0
+    ) -> csc_matrix:
         if not (0 < keep_ratio <= 1):
             raise ValueError("ratio must be a float between 0 and 1.")
 
-        fb = PyGetFullBlocks() 
+        fb = PyGetFullBlocks()
         fb.set(self.H_, original_order)
         val = np.asarray(fb.get_val_list(), dtype=float)
         col = np.asarray(fb.get_col())
@@ -322,13 +345,15 @@ class BEMatrix(LinearOperator):
             row = row[mask]
             col = col[mask]
 
-        # If resorting to padding > we need to perform selection on it 
+        # If resorting to padding > we need to perform selection on it
         if (self.selection_indices_ is not None) and self.selection_by_zero_padding_:
             fr_blocks_full = csc_matrix((val, (row, col)), shape=self.shape_orig_)
-            fr_blocks_selec = fr_blocks_full[np.ix_(self.selection_indices_, self.selection_indices_cols_)]
+            fr_blocks_selec = fr_blocks_full[
+                np.ix_(self.selection_indices_, self.selection_indices_cols_)
+            ]
             return fr_blocks_selec
-        
-        else :
+
+        else:
             return csc_matrix((val, (row, col)), shape=self.shape_)
 
     def _getPattern(self) -> np.ndarray:
@@ -343,7 +368,7 @@ class BEMatrix(LinearOperator):
         # we output a flatten row-major order std::vector
         nr = 6
         return np.reshape(aux, (int(aux.size / nr), nr))
-    
+
     def get_max_error_ACA(self):
         return self.H_.get_max_error_ACA()
 
@@ -356,15 +381,15 @@ class BEMatrix(LinearOperator):
         patches = []
         p_colors = []
         max_y = data_pattern[:, 3].max()
-        
+
         fr_counter = 0
         lr_counter = 0
-        
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        
+
         for i in range(len(data_pattern)):
-            
+
             height = np.abs(data_pattern[i, 0] - data_pattern[i, 2])
             width = np.abs(data_pattern[i, 1] - data_pattern[i, 3])
             y1 = max_y - data_pattern[i, 0] - height
@@ -372,18 +397,25 @@ class BEMatrix(LinearOperator):
             rectangle = Rectangle((x1, y1), width, height)
             patches.append(rectangle)
             p_colors.append(data_pattern[i, 4])
-            
+
             if plot_index:
                 idx = fr_counter if data_pattern[i, 4] == 0 else lr_counter
                 ax.text(
-                    x1 + width / 2, y1 + height / 2, str(idx),
-                    ha="center", va="center", fontsize=8, fontweight="bold", color="black"
+                    x1 + width / 2,
+                    y1 + height / 2,
+                    str(idx),
+                    ha="center",
+                    va="center",
+                    fontsize=8,
+                    fontweight="bold",
+                    color="black",
                 )
-                
-            if data_pattern[i, 4] == 0 : fr_counter+=1
-            if data_pattern[i, 4] == 1 : lr_counter+=1
-            
-        
+
+            if data_pattern[i, 4] == 0:
+                fr_counter += 1
+            if data_pattern[i, 4] == 1:
+                lr_counter += 1
+
         p = PatchCollection(
             patches, cmap=matplotlib.cm.PiYG, edgecolors="black", alpha=0.4
         )
@@ -398,7 +430,9 @@ class BEMatrix(LinearOperator):
         return fig
 
     # a method constructing an ILU Preconditionner of the H matrix
-    def H_ILU_prec(self, fill_factor=1, drop_tol=1e-3, keep_ratio=1.0) -> LinearOperator:
+    def H_ILU_prec(
+        self, fill_factor=1, drop_tol=1e-3, keep_ratio=1.0
+    ) -> LinearOperator:
         """
         Return an ILU operator (using scipy spilu) built from the full-rank blocks of the matrix.
         :param fill_factor: integer (default 1) for the maximum number of fill-in (see scipy spilu)
@@ -408,10 +442,10 @@ class BEMatrix(LinearOperator):
         # if self.useCuda:
         #     print("[ERROR] The ILU on the hierachical matrix can't be called when using CUDA as the data is not on host memory anymore, falling back to jacobi preconditionner.")
         #     return self.H_jacobi_prec()
-        
+
         self._build()
         fb = self._getFullBlocks(keep_ratio=keep_ratio)
-                
+
         fbILU = spilu(fb, fill_factor=fill_factor, drop_tol=drop_tol)
         return LinearOperator(self.shape_, fbILU.solve)
 
@@ -430,7 +464,7 @@ class BEMatrix(LinearOperator):
         overdiag = 1.0 / diag
         return diags(overdiag, dtype=np.float64)
 
-    def compute_displacements(self,list_coor,local_solu):
+    def compute_displacements(self, list_coor, local_solu):
         """
         Compute the induced displacements - for a given value local_solu of the solution over the source mesh
         :param list_coor: array of dim 2. containing the coordinates where displacements will be evaluated
@@ -439,11 +473,13 @@ class BEMatrix(LinearOperator):
         """
         self._build()
         n = self.H_.get_spatial_dimension()
-        assert n == list_coor.shape[1], "Coordinates dimension of the given points is not matching the problem spatial dimension !"
-        u = self.H_.compute_displacements(list_coor.flatten(),local_solu.flatten())
-        return np.reshape(u,(-1,n))
+        assert (
+            n == list_coor.shape[1]
+        ), "Coordinates dimension of the given points is not matching the problem spatial dimension !"
+        u = self.H_.compute_displacements(list_coor.flatten(), local_solu.flatten())
+        return np.reshape(u, (-1, n))
 
-    def compute_stresses(self,list_coor,local_solu):
+    def compute_stresses(self, list_coor, local_solu):
         """
          Compute the induced stresses - for a given value local_solu of the solution over the source mesh
         :param list_coor:  array of dim 2. containing the coordinates where displacements will be evaluated
@@ -452,13 +488,15 @@ class BEMatrix(LinearOperator):
         """
         self._build()
         n = self.H_.get_spatial_dimension()
-        assert (n==2 or n ==3 ), " Problem spatial dimension must be 2 or 3"
-        assert n == list_coor.shape[1], "Coordinates dimension of the given points is not matching the problem spatial dimension !"
+        assert n == 2 or n == 3, " Problem spatial dimension must be 2 or 3"
+        assert (
+            n == list_coor.shape[1]
+        ), "Coordinates dimension of the given points is not matching the problem spatial dimension !"
         nstress = 3
         if n == 3:
             nstress = 6
-        sig = self.H_.compute_stresses(list_coor.flatten(),local_solu.flatten())
-        return np.reshape(sig,(-1,nstress))
+        sig = self.H_.compute_stresses(list_coor.flatten(), local_solu.flatten())
+        return np.reshape(sig, (-1, nstress))
 
     def get_element_normals(self):
         """
@@ -481,7 +519,7 @@ class BEMatrix(LinearOperator):
         [r00,r01,r10,r11,...]
         """
         return np.asarray(self.H_.get_rotation_matrix())
-    
+
     def get_diagonal(self):
         """
         Get the diagonal of the matrix, in the original ordering of dof
@@ -489,19 +527,19 @@ class BEMatrix(LinearOperator):
         """
         if (self.selection_indices_ is not None) and self.selection_by_zero_padding_:
             diag_full = self.H_.get_diagonal()
-            diag_selec = diag_full[self.selection_indices_]            
+            diag_selec = diag_full[self.selection_indices_]
             return diag_selec
-        
-        else :
+
+        else:
             return self.H_.get_diagonal()
-    
+
     def isCudaAvailable(self):
         """
         Return if BigWham has been compiled with CUDA support
         :return: boolean value
         """
         return self.H_.get_cuda_available()
-    
+
     def getMatvecTime(self, N_matvec=100):
         """
         Time the matvec operation
@@ -510,70 +548,76 @@ class BEMatrix(LinearOperator):
         x = np.ones(self.shape[0])
         # One first matvec performed not taken into account
         self._matvec(x)
-        # Then we time it 
+        # Then we time it
         start_time = time.time()
         for _ in range(N_matvec):
             self._matvec(x)
-        return (time.time() - start_time)/N_matvec
-    
+        return (time.time() - start_time) / N_matvec
+
     def __getitem__(self, indices):
         """
-        To get a selection of the hmat 
+        To get a selection of the hmat
         """
-        
+
         if not isinstance(indices, tuple) or len(indices) != 2:
-            raise IndexError("Subsetting requires indices of the form (np.ix_(row_indices, col_indices))")
-        
+            raise IndexError(
+                "Subsetting requires indices of the form (np.ix_(row_indices, col_indices))"
+            )
+
         row_indices, col_indices = indices
-        
+        row_indices = np.asarray(row_indices).ravel()
+        col_indices = np.asarray(col_indices).ravel()
+
         # Copy attributes (shallow copy, so mutable attributes are shared)
         new_bematrix = object.__new__(BEMatrix)
         new_bematrix.__dict__ = self.__dict__.copy()
-        
+
         if self.useCuda:
             # raise Exception("Bigwham matrix selection not implemented for CUDA support.")
             # Not implemented yet : we resort to padding
             new_bematrix.selection_by_zero_padding_ = True
-        else :
+        else:
             # Update its hmatrix
             new_bematrix.H_ = self.H_.hmatSelection(row_indices, col_indices)
             # new_bematrix.shape = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
             # new_bematrix.shape_ = (new_bematrix.H_.matrix_size(0),new_bematrix.H_.matrix_size(1))
-        
+
         # And its shape
         new_bematrix.shape = (row_indices.shape[0], col_indices.shape[0])
         new_bematrix.shape_ = (row_indices.shape[0], col_indices.shape[0])
         new_bematrix.matvec_size_ = new_bematrix.shape[0]
-        
+
         new_bematrix.selection_indices_ = row_indices
         new_bematrix.selection_indices_cols_ = col_indices
         new_bematrix.shape_orig_ = self.shape_
-                
+
         return new_bematrix
-        
+
+
 ########################################################################################################
 #  BEMatrix Rectangular class in python   #
 ########################################################################################################
 
+
 class BEMatrixRectangular(LinearOperator):
     def __init__(
         self,
-        kernel : str,
-        coor_src : np.ndarray,
-        conn_src : np.ndarray,
-        coor_rec : np.ndarray,
-        conn_rec : np.ndarray,
-        properties : np.ndarray,
-        max_leaf_size : int =100,
-        eta : float=3.0,
-        eps_aca : float=1.0e-3, 
-        n_openMP_threads:int =8,
-        n_GPUs:int =1,
-        directly_build:bool = True,
-        verbose:bool = True,
-        homogeneous_size_pattern:bool = False,
-        useCuda = False,
-        fixed_rank = -1
+        kernel: str,
+        coor_src: np.ndarray,
+        conn_src: np.ndarray,
+        coor_rec: np.ndarray,
+        conn_rec: np.ndarray,
+        properties: np.ndarray,
+        max_leaf_size: int = 100,
+        eta: float = 3.0,
+        eps_aca: float = 1.0e-3,
+        n_openMP_threads: int = 8,
+        n_GPUs: int = 1,
+        directly_build: bool = True,
+        verbose: bool = True,
+        homogeneous_size_pattern: bool = False,
+        useCuda=False,
+        fixed_rank=-1,
     ):
 
         self.kernel_ = kernel
@@ -581,10 +625,10 @@ class BEMatrixRectangular(LinearOperator):
         self.max_leaf_size_ = max_leaf_size
         self.eta_ = eta
         self.eps_aca_ = eps_aca
-        self.n_openMP_threads_=n_openMP_threads
-        self.built_=False
+        self.n_openMP_threads_ = n_openMP_threads
+        self.built_ = False
 
-        self.H_ : BigWhamIORect= BigWhamIORect(
+        self.H_: BigWhamIORect = BigWhamIORect(
             coor_src.flatten(),
             conn_src.flatten(),
             coor_rec.flatten(),
@@ -596,35 +640,34 @@ class BEMatrixRectangular(LinearOperator):
             verbose,
             homogeneous_size_pattern,
             useCuda,
-            fixed_rank
+            fixed_rank,
         )
         self.dtype_ = float
 
         if directly_build:
             self.H_.build_hierarchical_matrix(
-            max_leaf_size,
-            eta,
-            eps_aca,
+                max_leaf_size,
+                eta,
+                eps_aca,
             )
             # it is mandatory to define shape and dtype of the dot product
             self.matvec_size_ = self.H_.matrix_size(0)
             self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
-            self.built_=True
+            self.built_ = True
         else:
-            self.H_.build_pattern(max_leaf_size,eta)
+            self.H_.build_pattern(max_leaf_size, eta)
 
         self.dtype_ = float
         super().__init__(self.dtype_, self.shape_)
 
-
     def _build(self):
-        if not(self.built_):
+        if not (self.built_):
             self.H_.build_hierarchical_matrix(
                 self.max_leaf_size_,
                 self.eta_,
                 self.eps_aca_,
             )
-            self.built_=True
+            self.built_ = True
             self.matvec_size_ = self.H_.matrix_size(0)
             self.shape_ = (self.H_.matrix_size(0), self.H_.matrix_size(1))
             super().__init__(self.dtype_, self.shape_)
@@ -653,7 +696,7 @@ class BEMatrixRectangular(LinearOperator):
 
     def getPermutation(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation())
-    
+
     def getPermutationReceivers(self) -> np.ndarray:
         return np.asarray(self.H_.get_permutation_receivers())
 
@@ -739,26 +782,26 @@ class BEMatrixRectangular(LinearOperator):
         val = np.asarray(fb.get_val_list(), dtype=float)
         col = np.asarray(fb.get_col())
         row = np.asarray(fb.get_row())
-        
+
         # print(f"{col.min()=} {col.max()=}", flush=True)
         # print(f"{row.min()=} {row.max()=}", flush=True)
-        
+
         return csc_matrix((val, (row, col)), shape=self.shape_)
-    
+
     def isCudaAvailable(self):
         """
         Return if BigWham has been compiled with CUDA support
         :return: boolean value
         """
         return self.H_.get_cuda_available()
-    
+
     # def get_diagonal(self):
     #     """
     #     Get the diagonal of the matrix, in the original ordering of dof
     #     :return: 1D np.array of the diagonal
     #     """
     #     return self.H_.get_diagonal()
-    
+
     def getMatvecTime(self, N_matvec=100):
         """
         Time the matvec operation
@@ -767,14 +810,16 @@ class BEMatrixRectangular(LinearOperator):
         x = np.ones(self.shape[0])
         # One first matvec performed not taken into account
         self._matvec(x)
-        # Then we time it 
+        # Then we time it
         start_time = time.time()
         for _ in range(N_matvec):
             self._matvec(x)
-        return (time.time() - start_time)/N_matvec
+        return (time.time() - start_time) / N_matvec
+
 
 def main():
     print("bigwham4py successfully imported")
-    
+
+
 if __name__ == "__main__":
     main()
