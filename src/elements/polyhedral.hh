@@ -196,23 +196,33 @@ inline void Polyhedral<p>::SetElement(const il::Array2D<double> &xv) {
         for (int i(0); i<3; i++) faceCentroids_(i_face, i) = face_centroid[i];
     }
 
-    // We set the tolerance used
-    // We are not looping on the edges but we dont care 
-    double smallest_edge = 1e100;
-    for (il::int_t i = 0; i < num_vertices_; i++) {
+    // Compute volume via divergence theorem: V = (1/3) * sum_faces( face_normal . face_centroid * face_area )
+    // Since face normals are already unit vectors, we need the unnormalized cross product magnitude for area.
+    double volume = 0.0;
+    for (int i_face(0); i_face < numFaces_; i_face++) {
+        size_t a_1_i = faceIndices_(i_face, 0);
+        size_t a_2_i = faceIndices_(i_face, 1);
+        size_t a_3_i = faceIndices_(i_face, 2);
+        il::StaticArray<double, 3> a_1 = {il::value,
+            {vertices_(a_1_i, 0), vertices_(a_1_i, 1), vertices_(a_1_i, 2)}};
+        il::StaticArray<double, 3> a_2 = {il::value,
+            {vertices_(a_2_i, 0), vertices_(a_2_i, 1), vertices_(a_2_i, 2)}};
+        il::StaticArray<double, 3> a_3 = {il::value,
+            {vertices_(a_3_i, 0), vertices_(a_3_i, 1), vertices_(a_3_i, 2)}};
+        // Unnormalized cross product u1 x u2 — its magnitude is 2 * triangle_area
+        double u1x = a_2[0]-a_1[0], u1y = a_2[1]-a_1[1], u1z = a_2[2]-a_1[2];
+        double u2x = a_3[0]-a_1[0], u2y = a_3[1]-a_1[1], u2z = a_3[2]-a_1[2];
+        double cx = u1y*u2z - u1z*u2y;
+        double cy = u1z*u2x - u1x*u2z;
+        double cz = u1x*u2y - u1y*u2x;
+        // Contribution: (1/6) * a_1 . (cx, cy, cz)
+        volume += a_1[0]*cx + a_1[1]*cy + a_1[2]*cz;
+    }
+    volume = std::abs(volume) / 6.0;
 
-        double a_1_x = vertices_(i, 0);
-        double a_1_y = vertices_(i, 1);
-        double a_1_z = vertices_(i, 2);
-        double a_2_x = vertices_((i+1)%num_vertices_, 0);
-        double a_2_y = vertices_((i+1)%num_vertices_, 1);
-        double a_2_z = vertices_((i+1)%num_vertices_, 2);
-
-        double edge_length = std::sqrt( (a_2_x - a_1_x)*(a_2_x - a_1_x) + (a_2_y - a_1_y)*(a_2_y - a_1_y) + (a_2_z - a_1_z)*(a_2_z - a_1_z));
-        if (edge_length < smallest_edge) smallest_edge = edge_length;
-    } 
-
-    tol_ = smallest_edge * 1e-5;
+    // Use cbrt(volume) as the reference length scale for tolerances
+    double ref_length = std::cbrt(volume);
+    tol_ = ref_length * 1e-5;
 }
 
 /**
@@ -385,8 +395,7 @@ bool Polyhedral<p>::isPointInPolyhedron(const std::array<double, 3>& xyz_obs) co
         // Use tolerance to handle points very close to boundary
 
 
-        // if (signed_dist > tol_) {
-        if (signed_dist > 0) {
+        if (signed_dist > tol_) {
             return false;
         }
     }

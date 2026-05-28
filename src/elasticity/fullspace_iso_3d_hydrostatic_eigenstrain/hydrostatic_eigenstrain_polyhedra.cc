@@ -124,9 +124,9 @@ il::StaticArray<double, 3> V_threeD_polyhedra_0(
         }
 
         // Get traction 
-        t_i[0] = sigma_ij[0][0]*n_obs[0] + sigma_ij[1][0]*n_obs[1] + sigma_ij[2][0]*n_obs[2];
+        t_i[0] = sigma_ij[0][0]*n_obs[0] + sigma_ij[0][1]*n_obs[1] + sigma_ij[0][2]*n_obs[2];
         t_i[1] = sigma_ij[1][0]*n_obs[0] + sigma_ij[1][1]*n_obs[1] + sigma_ij[1][2]*n_obs[2];
-        t_i[2] = sigma_ij[2][0]*n_obs[0] + sigma_ij[1][2]*n_obs[1] + sigma_ij[2][2]*n_obs[2];
+        t_i[2] = sigma_ij[2][0]*n_obs[0] + sigma_ij[2][1]*n_obs[1] + sigma_ij[2][2]*n_obs[2];
     }
 
     return t_i;
@@ -146,9 +146,8 @@ std::array<std::array<double, 3>, 3>  phi_ij_polyhedra(
     auto vertices = polyhedra.vertices();
     auto faceIndices = polyhedra.getFaceIndices();
 
-    // Tolerance 
-    // double eps = 100 * polyhedra.getTol();
-    double eps = 1e-8;
+    // Tolerance: relative to element size (cbrt of volume)
+    double eps = polyhedra.getTol();
 
     // Loop on polygonal faces
     for (int i_face(0); i_face<numFaces; i_face++){
@@ -215,7 +214,7 @@ std::array<std::array<double, 3>, 3>  phi_ij_polyhedra(
             double r_1_v = r_1[0]*v[0] + r_1[1]*v[1] + r_1[2]*v[2];
             double r_2_v = r_2[0]*v[0] + r_2[1]*v[1] + r_2[2]*v[2];
 
-            // No contribution if r_b = 0 
+            // No contribution if r_b = 0
             if (std::abs(r_b) < eps) continue;
 
             // Compute I_-1 

@@ -9,6 +9,7 @@
 
 // #include "elements/triangle.h"
 #include "elements/hexahedron.hh"
+#include "elements/tetrahedron.hh"
 
 #include "elasticity/fullspace_iso_3d_hydrostatic_eigenstrain/hydrostatic_eigenstrain_polyhedra.hh"
 
@@ -129,6 +130,56 @@ TEST(ThreeDHex0R0_V, test1) {
     t_i = V_threeD_polyhedra_0(hex, x_obs, n_obs, G, nu);
 
     std::vector<double> t_i_ref_3{-1.45301927, 0., 0.};
+    for (int i(0); i<3; i++){
+        ASSERT_NEAR(t_i[i], t_i_ref_3[i], tol);
+    }
+}
+
+TEST(ThreeDTet0T0_V, test1) {
+
+    double tol = 1e-3;
+
+    double nu = 0.25;
+    double G = 1.0;
+
+    // Regular tetrahedron-like shape
+    // v0=(0,0,h), v1=(cos(pi/6), -sin(pi/6), 0), v2=(-cos(pi/6), -sin(pi/6), 0), v3=(0,1,0)
+    // h=1, cos(pi/6)=sqrt(3)/2, sin(pi/6)=0.5
+    const double c = std::sqrt(3.0) / 2.0; // cos(pi/6)
+    const double s = 0.5;                   // sin(pi/6)
+
+    il::Array2D<double> tet_vertices{il::value, {
+        {0.0,  c, -c, 0.0},  // x coordinates of v0,v1,v2,v3
+        {0.0, -s, -s, 1.0},  // y coordinates
+        {1.0,  0.0,  0.0, 0.0}   // z coordinates
+    }};
+
+    Tetrahedron<0> tet;
+    tet.SetElement(tet_vertices);
+
+    il::StaticArray<double, 3> n_obs{il::value, {0.0, 0.0, 1.0}};
+    il::StaticArray<double, 3> x_obs{0.};
+
+    // Inside
+    x_obs[0] = 0.0; x_obs[1] = 0.0; x_obs[2] = 0.5;
+    auto t_i = V_threeD_polyhedra_0(tet, x_obs, n_obs, G, nu);
+    std::vector<double> t_i_ref_1{0.0, 0.0, -1.77676398};
+    for (int i(0); i<3; i++){
+        ASSERT_NEAR(t_i[i], t_i_ref_1[i], tol);
+    }
+
+    // On boundary
+    x_obs[0] = 0.0; x_obs[1] = 0.0; x_obs[2] = 0.0;
+    t_i = V_threeD_polyhedra_0(tet, x_obs, n_obs, G, nu);
+    std::vector<double> t_i_ref_2{0.0, 0.0, -1.48453059};
+    for (int i(0); i<3; i++){
+        ASSERT_NEAR(t_i[i], t_i_ref_2[i], tol);
+    }
+
+    // Outside
+    x_obs[0] = 0.0; x_obs[1] = 0.0; x_obs[2] = -0.5;
+    t_i = V_threeD_polyhedra_0(tet, x_obs, n_obs, G, nu);
+    std::vector<double> t_i_ref_3{0.0, 0.0, -0.67974900};
     for (int i(0); i<3; i++){
         ASSERT_NEAR(t_i[i], t_i_ref_3[i], tol);
     }
