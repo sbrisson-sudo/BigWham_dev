@@ -42,7 +42,7 @@ protected:
 
     std::shared_ptr<HRepresentation> hr_;
 
-    il::int_t dof_dimension_;            //  dof per collocation points
+    il::StaticArray<il::int_t, 2> dof_dimension_; //  dof per collocation points (receivers, sources)
     il::StaticArray<il::int_t, 2> size_; // size of tot mat (row, cols)
 
     ContiguousArray2DVector<T> full_rank_blocks_container_;
@@ -79,7 +79,7 @@ public:
   [[nodiscard]] bool isBuilt() const { return isBuilt_; }
   [[nodiscard]] il::int_t size(int k) const { return size_[k]; }
   bigwham::HPattern pattern() { return hr_->pattern_; }
-  [[nodiscard]] il::int_t dofDimension() const { return dof_dimension_; }
+  [[nodiscard]] il::int_t dofDimension(int k) const { return dof_dimension_[k]; }
   virtual il::int_t nbOfEntries();
   virtual void fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);
   void fullBlocksPerm(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list);

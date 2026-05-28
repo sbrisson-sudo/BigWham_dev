@@ -52,8 +52,18 @@ print("Number of points", mesh.points.shape[0])
 print("Number of Elements", mesh.get_cells_type("triangle").shape[0])
 plot(mesh.points, mesh.get_cells_type("triangle"))
 
-points = np.asfortranarray(mesh.points)
-triangles = np.asfortranarray(mesh.get_cells_type("triangle"))
+# points = np.asfortranarray(mesh.points)
+# triangles = np.asfortranarray(mesh.get_cells_type("triangle"))
 
-np.save("mesh_coords", points)
-np.save("mesh_conn", triangles)
+# np.save("mesh_coords", points)
+# np.save("mesh_conn", triangles)
+
+points = mesh.points 
+triangles = mesh.get_cells_type("triangle")
+
+print(triangles[0])
+
+np.save("mesh_coor_tri", points.astype(np.float64))
+np.save("mesh_conn_tri", triangles.astype(np.int32))
+
+print("Mesh written in mesh_coor_tri.npy and mesh_conn_tri.npy")

@@ -26,7 +26,7 @@ TEST(SP3D, test_seg_0_dof_dim) {
   bigwham::BieElastostatic<bigwham::Segment<0>, bigwham::Segment<0>,
                        bigwham::ElasticKernelType::H>
       test(elas, xy.size(1));
-  ASSERT_TRUE(test.dof_dimension() == 2);
+  ASSERT_TRUE(test.dof_dimension(0) == 2);
 }
 /* -------------------------------------------------------------------------- */
 

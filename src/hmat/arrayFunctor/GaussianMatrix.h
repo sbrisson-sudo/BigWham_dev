@@ -36,7 +36,7 @@ public:
   GaussianMatrix(il::int_t n, il::Range range0, il::Range range1, double alpha,
                  const std::shared_ptr<HRepresentation> &hr);
   il::int_t size(il::int_t d) const override;
-  il::int_t blockSize() const override;
+  il::int_t blockSize(il::int_t k=0) const override;
   il::int_t sizeAsBlocks(il::int_t d) const override;
   void set(il::int_t b0, il::int_t b1, il::io_t,
            il::Array2DEdit<double> M) const override;
@@ -83,7 +83,7 @@ template <typename T> il::int_t GaussianMatrix<T>::size(il::int_t d) const {
   return -1;
 };
 
-template <typename T> il::int_t GaussianMatrix<T>::blockSize() const {
+template <typename T> il::int_t GaussianMatrix<T>::blockSize(il::int_t k) const {
   return 1;
 }
 

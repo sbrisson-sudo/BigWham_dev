@@ -21,7 +21,7 @@
 #include <ctime>
 
 #include "cnpy.h"
-
+#include "hmat/bie_matrix_generator_by_dof.h"
 
 
 namespace bigwham {
@@ -85,8 +85,8 @@ namespace bigwham {
         // return the full blocks in the permutted Original dof state
         // in the val_list and pos_list 1D arrays.
         IL_EXPECT_FAST(isBuilt_FR_);
-        IL_EXPECT_FAST(hr_->permutation_0_.size() * dof_dimension_ == size_[0]);
-        IL_EXPECT_FAST(hr_->permutation_1_.size() * dof_dimension_ == size_[1]);
+        IL_EXPECT_FAST(hr_->permutation_0_.size() * dof_dimension_[0] == size_[0]);
+        IL_EXPECT_FAST(hr_->permutation_1_.size() * dof_dimension_[1] == size_[1]);
 
         //  compute the number of  entries in the whole full rank blocks
         int nbfentry = 0;
@@ -99,20 +99,20 @@ namespace bigwham {
         pos_list.Resize(nbfentry * 2);
         val_list.Resize(nbfentry);
 
-        il::Array<int> permutDOF_rcv{dof_dimension_ * hr_->permutation_0_.size(), 0};
+        il::Array<int> permutDOF_rcv{dof_dimension_[0] * hr_->permutation_0_.size(), 0};
         IL_EXPECT_FAST(permutDOF_rcv.size() == size_[0]);
         for (il::int_t i = 0; i < hr_->permutation_0_.size(); i++) {
-            for (il::int_t j = 0; j < dof_dimension_; j++) {
-                permutDOF_rcv[i * dof_dimension_ + j] =
-                        hr_->permutation_0_[i] * dof_dimension_ + j;
+            for (il::int_t j = 0; j < dof_dimension_[0]; j++) {
+                permutDOF_rcv[i * dof_dimension_[0] + j] =
+                        hr_->permutation_0_[i] * dof_dimension_[0] + j;
             }
         }
 
-        il::Array<int> permutDOF_src{dof_dimension_ * hr_->permutation_1_.size(), 0};
+        il::Array<int> permutDOF_src{dof_dimension_[1] * hr_->permutation_1_.size(), 0};
         for (il::int_t i = 0; i < hr_->permutation_1_.size(); i++) {
-            for (il::int_t j = 0; j < dof_dimension_; j++) {
-                permutDOF_src[i * dof_dimension_ + j] =
-                        hr_->permutation_1_[i] * dof_dimension_ + j;
+            for (il::int_t j = 0; j < dof_dimension_[1]; j++) {
+                permutDOF_src[i * dof_dimension_[1] + j] =
+                        hr_->permutation_1_[i] * dof_dimension_[1] + j;
             }
         }
 
@@ -127,8 +127,8 @@ namespace bigwham {
             for (il::int_t j = 0; j < aux.size(1); j++) {
                 for (il::int_t i = 0; i < aux.size(0); i++) {
 
-                    pos_list[npos + 2 * index] = permutDOF_src[(i + dof_dimension_ * i0)]; // rows
-                    pos_list[npos + 2 * index + 1] = permutDOF_src[(j + dof_dimension_ * j0)]; // columns 
+                    pos_list[npos + 2 * index] = permutDOF_rcv[(i + dof_dimension_[0] * i0)]; // rows
+                    pos_list[npos + 2 * index + 1] = permutDOF_src[(j + dof_dimension_[1] * j0)]; // columns
 
                     // For PETSc parallel solvers (bc the submatrices are defined in an already permuted dof ordering)
                     // pos_list[npos + 2 * index] = permutDOF_rcv[(i + dof_dimension_ * i0)];
@@ -176,8 +176,8 @@ namespace bigwham {
                 il::int_t index = 0;
                 for (il::int_t j = 0; j < aux.size(1); j++) {
                     for (il::int_t i = 0; i < aux.size(0); i++) {
-                        pos_list[npos + 2 * index] = (i + dof_dimension_ * i0); // rows
-                        pos_list[npos + 2 * index + 1] = (j + dof_dimension_ * j0); // columns
+                        pos_list[npos + 2 * index] = (i + dof_dimension_[0] * i0); // rows
+                        pos_list[npos + 2 * index + 1] = (j + dof_dimension_[1] * j0); // columns
                         val_list[nr + index] = aux(i, j);
                         index++;
                     }
@@ -241,15 +241,16 @@ namespace bigwham {
 /* -------------------------------------------------------------------------- */
     template <typename T> std::vector<T> Hmat<T>::diagonalOriginal() const {
         // return diagonal in original state....
+        IL_ASSERT(dof_dimension_[0] == dof_dimension_[1]);
         il::int_t diag_size = il::max(size_[0], size_[1]);
-        il::int_t ncolpoints = diag_size / dof_dimension_;
+        il::int_t ncolpoints = diag_size / dof_dimension_[0];
         std::vector<T> diag_raw = this->diagonal();
         std::vector<T> diag(diag_raw.size(), 0.);
         // permut back
         for (il::int_t i = 0; i < ncolpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                diag[dof_dimension_ * hr_->permutation_1_[i] + j] =
-                        diag_raw[dof_dimension_ * i + j];
+            for (int j = 0; j < dof_dimension_[0]; j++) {
+                diag[dof_dimension_[0] * hr_->permutation_1_[i] + j] =
+                        diag_raw[dof_dimension_[0] * i + j];
             }
         }
         return diag;
@@ -257,6 +258,7 @@ namespace bigwham {
 /* -------------------------------------------------------------------------- */
     template <typename T> std::vector<T> Hmat<T>::diagonal() const {
         // return diagonal in permutted state....
+        IL_ASSERT(dof_dimension_[0] == dof_dimension_[1]);
         IL_EXPECT_FAST(isBuilt_FR_);
         il::int_t diag_size = il::max(size_[0], size_[1]);
         std::vector<T> diag(static_cast<long>(diag_size), 0.);
@@ -275,9 +277,9 @@ namespace bigwham {
             {
                 for (il::int_t j = 0; j < aux.size(1); j++) {
                     for (il::int_t i = 0; i < aux.size(0); i++) {
-                        if ((i + dof_dimension_ * i0) ==
-                            (j + dof_dimension_ * j0)) { // on diagonal !
-                            diag[(i + dof_dimension_ * i0)] = aux(i, j);
+                        if ((i + dof_dimension_[0] * i0) ==
+                            (j + dof_dimension_[0] * j0)) { // on diagonal !
+                            diag[(i + dof_dimension_[0] * i0)] = aux(i, j);
                         }
                     }
                 }
@@ -336,8 +338,8 @@ void Hmat<T>::buildFR(const bigwham::MatrixGenerator<T> & matrix_gen){
         il::int_t iend = hr_->pattern_.FRB_pattern(3, i);
         il::int_t jend = hr_->pattern_.FRB_pattern(4, i);
 
-        const il::int_t ni = matrix_gen.blockSize() * (iend - i0);
-        const il::int_t nj = matrix_gen.blockSize() * (jend - j0);
+        const il::int_t ni = matrix_gen.blockSize(0) * (iend - i0);
+        const il::int_t nj = matrix_gen.blockSize(1) * (jend - j0);
 
         std::unique_ptr<il::Array2D<T>> a = std::make_unique<il::Array2D<T>>(ni, nj);
         matrix_gen.set(i0, j0, il::io, a->Edit());
@@ -360,7 +362,6 @@ template <il::int_t dim>
 void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const double epsilon) {
 
     // constructing the low rank blocks
-    dof_dimension_ = matrix_gen.blockSize();
     if (this->verbose_){
         std::cout << "Loop on low rank blocks construction\n";
     }
@@ -376,10 +377,29 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     // #pragma omp parallel for schedule(static, lrb_chunk_size_) num_threads(this->n_openMP_threads_)
     #pragma omp parallel for schedule(static, lrb_chunk_size_)
     for (il::int_t i = 0; i < hr_->pattern_.n_LRB; i++) {
+
         il::int_t i0 = hr_->pattern_.LRB_pattern(1, i);
         il::int_t j0 = hr_->pattern_.LRB_pattern(2, i);
         il::int_t iend = hr_->pattern_.LRB_pattern(3, i);
         il::int_t jend = hr_->pattern_.LRB_pattern(4, i);
+
+        // Non symmetric number of dofs
+        if (dof_dimension_[0] != dof_dimension_[1]){
+            // runtime check 
+            if (dim != 1) 
+                throw std::logic_error("buildLR: dim must be 1 for non symetric num of dofs.");
+
+            // std::cerr << "ACA on block [" << i0 << "," << iend << "]x[" << j0 << "," << jend << "]\n";
+
+            // We operate on dofs
+            i0 *= dof_dimension_[0];
+            j0 *= dof_dimension_[1];
+            iend *= dof_dimension_[0];
+            jend *= dof_dimension_[1]; 
+
+            // std::cerr << "block dof range : [" << i0 << "," << iend << "]x[" << j0 << "," << jend << "]\n";
+        }
+
         il::Range range0{i0, iend};
         il::Range range1{j0, jend};
 
@@ -387,6 +407,9 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         // generator... here we have an if condition for the LRA call dependent on
         // dof_dimension_
         auto lra = bigwham::adaptiveCrossApproximation<dim>(matrix_gen, range0, range1, epsilon, this->fixed_rank_);
+
+        // std::cerr << "ACA results on LR block of dof size (" << iend-i0 << ", " << jend-j0 << ") : A.size = (" << lra->A.size(0) << ", " << lra->A.size(1) << "), B.size = (" << lra->B.size(0) << ", " << lra->B.size(1) << ")\n";
+
 
         // store the rank in the low_rank pattern
         hr_->pattern_.LRB_pattern(5, i) = lra->A.size(1);
@@ -422,9 +445,12 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
     template <typename T>
     void Hmat<T>::build(const bigwham::MatrixGenerator<T> & matrix_gen,
                         const double epsilon) {
-        dof_dimension_ = matrix_gen.blockSize();
-        size_[0] = matrix_gen.size(0);
-        size_[1] = matrix_gen.size(1);
+
+        dof_dimension_ = {il::value, {matrix_gen.blockSize(0), matrix_gen.blockSize(1)}};
+        size_ = {il::value, {matrix_gen.size(0), matrix_gen.size(1)}};
+
+        // size_[0] = matrix_gen.size(0);
+        // size_[1] = matrix_gen.size(1);
 
 #ifdef TIMING
         struct timespec start, end;
@@ -441,17 +467,30 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
         clock_gettime(CLOCK_MONOTONIC, &start);
 #endif // TIMING 
 
-        switch (matrix_gen.blockSize()) {
-            case 1:
-                buildLR<1>(matrix_gen, epsilon);
-                break;
-            case 2:
-                buildLR<2>(matrix_gen, epsilon);
-                break;
-            case 3:
-                buildLR<3>(matrix_gen, epsilon);
-                break;
+        if (dof_dimension_[0] == dof_dimension_[1]){
+            // We can use the block ACA
+            switch (matrix_gen.blockSize(0)) {
+                case 1:
+                    buildLR<1>(matrix_gen, epsilon);
+                    break;
+                case 2:
+                    buildLR<2>(matrix_gen, epsilon);
+                    break;
+                case 3:
+                    buildLR<3>(matrix_gen, epsilon);
+                    break;
+            }
         }
+        // We use it in its scalar version
+        else {
+
+            // matrix generator by dof 
+            BieMatrixGeneratorByDof<double> matrix_gen_bydof{dynamic_cast<const BieMatrixGenerator<double>&>(matrix_gen)};
+
+            buildLR<1>(matrix_gen_bydof, epsilon);
+        }
+
+
 
 #ifdef TIMING
         clock_gettime(CLOCK_MONOTONIC, &end);
@@ -497,8 +536,8 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
                 auto jend = hr_->pattern_.FRB_pattern(4, i);
 
                 auto a = (*full_rank_blocks_[i]).view();
-                auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
-                auto ys = yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+                auto xs = x.view(il::Range{j0 * dof_dimension_[1], jend * dof_dimension_[1]});
+                auto ys = yprivate.Edit(il::Range{i0 * dof_dimension_[0], iend * dof_dimension_[0]});
 
                 il::blas(1.0, a, xs, 1.0, il::io, ys);
             }
@@ -518,8 +557,8 @@ void Hmat<T>::buildLR(const bigwham::MatrixGenerator<T> & matrix_gen, const doub
                 auto a = low_rank_blocks_[ii]->A.view();
                 auto b = low_rank_blocks_[ii]->B.view();
 
-                auto xs = x.view(il::Range{j0 * dof_dimension_, jend * dof_dimension_});
-                auto ys =yprivate.Edit(il::Range{i0 * dof_dimension_, iend * dof_dimension_});
+                auto xs = x.view(il::Range{j0 * dof_dimension_[1], jend * dof_dimension_[1]});
+                auto ys =yprivate.Edit(il::Range{i0 * dof_dimension_[0], iend * dof_dimension_[0]});
                 auto r = a.size(1);
                 il::Array<double> tmp{r, 0.0};
 
@@ -585,12 +624,12 @@ void Hmat<T>::matvecOriginal(T* x, T* y) {
 
         // permutation of the dofs according to the re-ordering sue to clustering
         // this could be passed to OpenMP if needed
-        il::int_t ncolpoints = this->size(1) / dof_dimension_;
-        il::int_t nrowpoints = this->size(0) / dof_dimension_;
+        il::int_t ncolpoints = this->size(1) / dof_dimension_[1];
+        il::int_t nrowpoints = this->size(0) / dof_dimension_[0];
         for (il::int_t i = 0; i < ncolpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                z[dof_dimension_ * i + j] =
-                        x[dof_dimension_ * hr_->permutation_1_[i] + j];
+            for (int j = 0; j < dof_dimension_[1]; j++) {
+                z[dof_dimension_[1] * i + j] =
+                        x[dof_dimension_[1] * hr_->permutation_1_[i] + j];
             }
         }
 
@@ -621,9 +660,9 @@ void Hmat<T>::matvecOriginal(T* x, T* y) {
         yout.Resize(y.size(), 0.);
         // permut back
         for (il::int_t i = 0; i < nrowpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
-                        y[dof_dimension_ * i + j];
+            for (int j = 0; j < dof_dimension_[0]; j++) {
+                yout[dof_dimension_[0] * hr_->permutation_0_[i] + j] =
+                        y[dof_dimension_[0] * i + j];
             }
         }
 
@@ -643,12 +682,12 @@ void Hmat<T>::matvecOriginal(T* x, T* y) {
         IL_EXPECT_FAST(x.size()==size_[1]);
         il::Array<T> z{static_cast<il::int_t>(x.size())};
         // permutation of the dofs according to the re-ordering sue to clustering
-        il::int_t ncolpoints = this->size(1) / dof_dimension_;
-        il::int_t nrowpoints = this->size(0) / dof_dimension_;
+        il::int_t ncolpoints = this->size(1) / dof_dimension_[1];
+        il::int_t nrowpoints = this->size(0) / dof_dimension_[0];
         for (il::int_t i = 0; i < ncolpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                z[dof_dimension_ * i + j] =
-                        x[dof_dimension_ * hr_->permutation_1_[i] + j];
+            for (int j = 0; j < dof_dimension_[1]; j++) {
+                z[dof_dimension_[1] * i + j] =
+                        x[dof_dimension_[1] * hr_->permutation_1_[i] + j];
             }
         }
         il::Array<T> y = this->matvec(z.view());
@@ -656,9 +695,9 @@ void Hmat<T>::matvecOriginal(T* x, T* y) {
         yout.assign(y.size(), 0.);
         // permut back
         for (il::int_t i = 0; i < nrowpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
-                        y[dof_dimension_ * i + j];
+            for (int j = 0; j < dof_dimension_[0]; j++) {
+                yout[dof_dimension_[0] * hr_->permutation_0_[i] + j] =
+                        y[dof_dimension_[0] * i + j];
             }
         }
         return yout;
@@ -672,20 +711,20 @@ void Hmat<T>::matvecOriginal(T* x, T* y) {
 
         il::Array<T> z{static_cast<il::int_t>(x.size())};
         // permutation of the dofs according to the re-ordering sue to clustering
-        il::int_t ncolpoints = this->size(1) / dof_dimension_;
-        il::int_t nrowpoints = this->size(0) / dof_dimension_;
+        il::int_t ncolpoints = this->size(1) / dof_dimension_[1];
+        il::int_t nrowpoints = this->size(0) / dof_dimension_[0];
         for (il::int_t i = 0; i < ncolpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                z[dof_dimension_ * i + j] =
-                        x[dof_dimension_ * hr_->permutation_1_[i] + j];
+            for (int j = 0; j < dof_dimension_[1]; j++) {
+                z[dof_dimension_[1] * i + j] =
+                        x[dof_dimension_[1] * hr_->permutation_1_[i] + j];
             }
         }
         il::Array<T> y = this->matvec(z.view());
         // permut back
         for (il::int_t i = 0; i < nrowpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
-                        y[dof_dimension_ * i + j];
+            for (int j = 0; j < dof_dimension_[0]; j++) {
+                yout[dof_dimension_[0] * hr_->permutation_0_[i] + j] =
+                        y[dof_dimension_[0] * i + j];
             }
         }
     }
@@ -698,20 +737,20 @@ void Hmat<T>::matvecOriginal(T* x, T* y) {
 
         il::Array<T> z{static_cast<il::int_t>(x.size())};
         // permutation of the dofs according to the re-ordering sue to clustering
-        il::int_t ncolpoints = this->size(1) / dof_dimension_;
-        il::int_t nrowpoints = this->size(0) / dof_dimension_;
+        il::int_t ncolpoints = this->size(1) / dof_dimension_[1];
+        il::int_t nrowpoints = this->size(0) / dof_dimension_[0];
         for (il::int_t i = 0; i < ncolpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                z[dof_dimension_ * i + j] =
-                        x[dof_dimension_ * hr_->permutation_1_[i] + j];
+            for (int j = 0; j < dof_dimension_[1]; j++) {
+                z[dof_dimension_[1] * i + j] =
+                        x[dof_dimension_[1] * hr_->permutation_1_[i] + j];
             }
         }
         il::Array<T> y = this->matvec(z.view());
         // permut back
         for (il::int_t i = 0; i < nrowpoints; i++) {
-            for (int j = 0; j < dof_dimension_; j++) {
-                yout[dof_dimension_ * hr_->permutation_0_[i] + j] =
-                        y[dof_dimension_ * i + j];
+            for (int j = 0; j < dof_dimension_[0]; j++) {
+                yout[dof_dimension_[0] * hr_->permutation_0_[i] + j] =
+                        y[dof_dimension_[0] * i + j];
             }
         }
     }

@@ -35,9 +35,12 @@ add_executable(test_contiguous_array2d test_contiguous_array2d_vector.cpp)
 target_include_directories(test_contiguous_array2d PUBLIC ../../il ../../src)
 
 
-configure_file(generate_penny_mesh.py ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
-configure_file(mesh_conn.npy ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
-configure_file(mesh_coords.npy ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(generate_penny_tri_mesh.py ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(generate_line_segment_mesh.py ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+configure_file(generate_2d_fracture_bulk_mesh.py ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+
+# configure_file(mesh_conn.npy ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+# configure_file(mesh_coords.npy ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 configure_file(rep_test.py ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
 if (VTUNE_PROFILING)
@@ -54,3 +57,39 @@ if (VTUNE_PROFILING)
     endif()
 
 endif()
+
+add_executable(dense_matrix_2DS0_H dense_matrix_2DS0_H.cc)
+target_link_libraries(dense_matrix_2DS0_H PRIVATE InsideLoop cnpy BigWhamShared)
+target_include_directories(dense_matrix_2DS0_H PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/il
+    ${CMAKE_SOURCE_DIR}/external/cnpy
+    ${CMAKE_SOURCE_DIR}/external/nlohmann
+)
+
+add_executable(dense_matrix_2DS0T0_V dense_matrix_2DS0T0_V.cc)
+target_link_libraries(dense_matrix_2DS0T0_V PRIVATE InsideLoop cnpy BigWhamShared GSL::gsl)
+target_include_directories(dense_matrix_2DS0T0_V PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/il
+    ${CMAKE_SOURCE_DIR}/external/cnpy
+    ${CMAKE_SOURCE_DIR}/external/nlohmann
+)
+
+add_executable(hr_pattern_2DS0T0 hr_pattern_2DS0T0.cc)
+target_link_libraries(hr_pattern_2DS0T0 PRIVATE InsideLoop cnpy BigWhamShared GSL::gsl)
+target_include_directories(hr_pattern_2DS0T0 PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/il
+    ${CMAKE_SOURCE_DIR}/external/cnpy
+    ${CMAKE_SOURCE_DIR}/external/nlohmann
+)
+
+add_executable(matvec_2DS0T0_V matvec_2DS0T0_V.cc)
+target_link_libraries(matvec_2DS0T0_V PRIVATE InsideLoop cnpy BigWhamShared GSL::gsl)
+target_include_directories(matvec_2DS0T0_V PRIVATE
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/il
+    ${CMAKE_SOURCE_DIR}/external/cnpy
+    ${CMAKE_SOURCE_DIR}/external/nlohmann
+)
