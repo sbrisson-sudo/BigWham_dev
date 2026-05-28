@@ -170,7 +170,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         IL_ASSERT(properties.size() == 2);
         ElasticProperties elas(properties[0], properties[1]);
         spatial_dimension_ = 2;
-        dof_dimension_ = 1;
+        dof_dimension_ = {il::value, {1, 1}};
         flux_dimension_ = 3;
         int nvertices_per_elt_ = 2;
         using EltType = Segment<0>;
@@ -224,7 +224,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         IL_ASSERT(properties.size() == 2);
         ElasticProperties elas(properties[0], properties[1]);
         spatial_dimension_ = 2;
-        dof_dimension_ = 1;
+        dof_dimension_ = {il::value, {1, 1}};
         int nvertices_per_elt_ = 2;
         using EltType = bigwham::Segment<0>;
         mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,

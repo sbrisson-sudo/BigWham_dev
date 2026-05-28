@@ -29,7 +29,7 @@ public:
         : BieElastostatic<Es, Er, k>() {
         IL_EXPECT_FAST(dim == 2);
         this->elas_ = elas;
-        this->dof_dimension_ = 1;
+        this->dof_dimension_ =  {il::value, {1, 1}};
         this->spatial_dimension_ = dim;
     };
 
@@ -38,7 +38,7 @@ public:
         : BieElastostatic<Es, Er, k>() {
         IL_EXPECT_FAST(dim == 2);
         this->elas_ = elas;
-        this->dof_dimension_ = 1;
+        this->dof_dimension_ =  {il::value, {1, 1}};
         this->spatial_dimension_ = dim;
         this->local_unknowns_ = local_unknowns;
         this->local_co_variables_ = local_co_variables;
