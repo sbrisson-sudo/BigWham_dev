@@ -38,6 +38,7 @@ kernels_id = [
     "2DS1-H",
     "S3DS0-H",
     "Axi3DS0-H",
+    "Axi3DS0-H-mode1",
     "3DT0-H",
     "3DT6-H",
     "3DR0-H",

@@ -13,3 +13,5 @@ compile_commands.json
 /site/*
 .dir-locals.el
 *egg-info.cache/
+*.egg-info
+.cache
