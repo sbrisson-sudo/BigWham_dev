@@ -83,7 +83,7 @@ TEST(bigwham_io_gen_2d, Sp3DS0_1_2) {
   BigWhamIO my_io{coor, conn, "S3DS0-H", properties, n_openMP_threads, n_GPUs, verbose, homogeneous_size_pattern, useCuda};
 
   my_io.BuildHierarchicalMatrix(32, 2, 1.e-3);
-  ASSERT_TRUE(my_io.dof_dimension() == 2 &&
+  ASSERT_TRUE(my_io.dof_dimension(1) == 2 &&
               my_io.spatial_dimension() == 2); // h_.isBuilt()
 }
 /* -------------------------------------------------------------------------- */

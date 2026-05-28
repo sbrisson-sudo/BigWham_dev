@@ -14,19 +14,19 @@
 #include <il/Array2D.h>
 #include <il/math.h>
 
-#include "Hmat-lib/arrayFunctor/MatrixGenerator.h"
+#include "hmat/arrayFunctor/matrix_generator.h"
 
 namespace il {
 
 template <typename T>
-class FullMatrix : public bie::MatrixGenerator<T> {
+class FullMatrix : public bigwham::MatrixGenerator<T> {
  private:
   il::Array2D<T> A_;
 
  public:
   FullMatrix(il::Array2D<T> A);
   il::int_t size(il::int_t d) const override;
-  il::int_t blockSize() const override;
+  il::int_t blockSize(il::int_t k=0) const override;
   il::int_t sizeAsBlocks(il::int_t d) const override;
   void set(il::int_t b0, il::int_t b1, il::io_t,
            il::Array2DEdit<T> M) const override;
@@ -43,7 +43,7 @@ il::int_t FullMatrix<T>::size(il::int_t d) const {
 };
 
 template <typename T>
-il::int_t FullMatrix<T>::blockSize() const {
+il::int_t FullMatrix<T>::blockSize(il::int_t k) const {
   return 1;
 }
 

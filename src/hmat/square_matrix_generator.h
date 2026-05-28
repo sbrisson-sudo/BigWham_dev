@@ -45,7 +45,7 @@ public:
                         const std::shared_ptr<BieKernel<T>> &bie_kernel,
                         const std::shared_ptr<HRepresentation> &hr);
   il::int_t size(il::int_t d) const override;
-  il::int_t blockSize() const override;
+  il::int_t blockSize(il::int_t k=0) const override;
   il::int_t sizeAsBlocks(il::int_t d) const override;
   void set(il::int_t b0, il::int_t b1, il::io_t,
            il::Array2DEdit<T> M) const override;
@@ -58,7 +58,7 @@ SquareMatrixGenerator<T>::SquareMatrixGenerator(
     : mesh_(mesh), bie_kernel_(bie_kernel) {
   this->hr_ = hr;
   num_points_ = this->mesh_->num_collocation_points();
-  dof_dimension_ = this->bie_kernel_->dof_dimension();
+  dof_dimension_ = this->bie_kernel_->dof_dimension(0);
   size_ = num_points_ * dof_dimension_;
 };
 
@@ -68,7 +68,7 @@ il::int_t SquareMatrixGenerator<T>::size(il::int_t d) const {
   return size_;
 };
 
-template <typename T> il::int_t SquareMatrixGenerator<T>::blockSize() const {
+template <typename T> il::int_t SquareMatrixGenerator<T>::blockSize(il::int_t k) const {
   return dof_dimension_;
 }
 

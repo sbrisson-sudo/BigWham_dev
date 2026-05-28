@@ -11,6 +11,8 @@
 #ifndef BIGWHAM_ADAPTIVECROSSAPPROXIMATION_H
 #define BIGWHAM_ADAPTIVECROSSAPPROXIMATION_H
 
+// #define DEBUG_ACA
+
 #include <il/Timer.h>
 #include <il/linearAlgebra/dense/blas/blas_static.h>
 #include <il/math.h>
@@ -50,18 +52,31 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
   double frobenius_low_rank = 0.0;
   double frobenius_norm_difference = -1.0;
 
+  #ifdef DEBUG_ACA
+  std::vector<double> frobenius_norm_ab_list;
+  std::vector<double> frobenius_norm_low_rank_list;
+  #endif
+
   il::Array2D<T> row{p, n1 * p};
   il::Array2D<T> column{n0 * p, p};
   while (true) {
+
+    // Update the i0-th row of the approximate error matrix R = M - sum_1^{k-1} u_l v_l
     bigwham::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
                          row.Edit());
+    
+    // Find the column index associated to the largest entry over this line
     const il::int_t i1_search =
         bigwham::find_largest_singular_value<p>(row, range1, i1_used);
     if (i1_search == -1) {
+      std::cerr << "[Warning] ACA : error when looking for column pivot index i1\n";
       break;
     }
+
+    // Update the indices
     i0_used.Append(i0_search);
     i1_used.Append(i1_search);
+
     // Now, we compute the inverse for the pxp-matrix which has the largest
     // smallest singular value. The matrix we have has to be nonsingular.
     // Otherwise, we would have gotten i1_search == -1
@@ -88,15 +103,20 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
       }
     }
     if (!is_finite) {
+      std::cerr << "[Warning] ACA : error when inverting pivot\n";
       break;
     }
-    // Just to check
-    il::StaticArray2D<T, p, p> check_identity = il::dot(gamma, pivot_matrix);
+    // // Just to check
+    // il::StaticArray2D<T, p, p> check_identity = il::dot(gamma, pivot_matrix);
 
     // Update the Matrices A and B to take into account the new ranks
     A.Resize(n0 * p, (rank + 1) * p);
+
+    // Update the i1-th column of the app. error matrix
     bigwham::residual_column<p>(M, A, B, range0, range1, i1_search, rank, il::io,
                             column.Edit());
+
+    // Set the k-th vector of A from the i1-th column of R
     for (il::int_t i0 = range0.begin; i0 < range0.end; ++i0) {
       for (il::int_t j1 = 0; j1 < p; ++j1) {
         for (il::int_t j0 = 0; j0 < p; ++j0) {
@@ -105,9 +125,15 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
         }
       }
     }
+
+
     B.Resize((rank + 1) * p, n1 * p);
+
+    // Update the row again ?
     bigwham::residual_row<p>(M, A, B, range0, range1, i0_search, rank, il::io,
                          row.Edit());
+
+    // Set the k-th vector of B from the i1-th row of R
     for (il::int_t i1 = range1.begin; i1 < range1.end; ++i1) {
       il::StaticArray2D<T, p, p> matrix{};
       for (il::int_t j1 = 0; j1 < p; ++j1) {
@@ -131,12 +157,14 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
              il::Dot::Star,
              A.view(il::Range{0, n0 * p}, il::Range{rank * p, (rank + 1) * p}),
              0.0, il::io, frobenius_A.Edit());
+
     // New value for the norm of B
     il::StaticArray2D<T, p, p> frobenius_B{0.0};
     il::blas(1.0,
              B.view(il::Range{rank * p, (rank + 1) * p}, il::Range{0, n1 * p}),
              B.view(il::Range{rank * p, (rank + 1) * p}, il::Range{0, n1 * p}),
              il::Dot::Star, 0.0, il::io, frobenius_B.Edit());
+
     // compute ||A_k B_k||^2
     T frobenius_norm_ab = 0.0;
     for (il::int_t b1 = 0; b1 < p; ++b1) {
@@ -174,6 +202,7 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
     frobenius_low_rank +=
         2 * il::real(scalar_product) + il::real(frobenius_norm_ab);
 
+    // Find the next row index
     i0_search = bigwham::searchI0<p>(A, range0, range1, i0_used, i1_search, rank);
     ++rank;
 
@@ -187,12 +216,19 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
     //    frobenius_norm_difference =
     //        il::frobeniusNorm(difference_matrix);
 
-    // Break if issue or if max rank
-    if (i0_search == -1){
+    #ifdef DEBUG_ACA
+    frobenius_norm_ab_list.push_back(frobenius_norm_ab);
+    frobenius_norm_low_rank_list.push_back(frobenius_low_rank);
+    #endif
+
+    // Break if issue or if max rank    
+    if (rank == il::min(n0, n1)) {
+      std::cerr << "[Warning] ACA : rank == minimal size of the input matrix\n";
       break;
     }
-    
-    if (rank == il::min(n0, n1)) {
+
+    if (i0_search == -1){
+      std::cerr << "[Warning] ACA : error when looking for row pivot index i0\n";
       break;
     }
 
@@ -200,17 +236,41 @@ adaptiveCrossApproximation(const bigwham::MatrixGenerator<T> &M, il::Range range
     if (use_fixed_rank && (rank >= fixed_rank)) {
       // We retrieve the frobenius error
       lrb->error_on_approximation = std::sqrt(il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank));
+
+      #ifdef DEBUG_ACA
+      std::cerr << "[Debug] ACA : exiting gracefully : fixed rank reached\n";
+      #endif
+
       break;
     }
 
     // Break if not using fixed rank and error is bellow threahold
     if (!use_fixed_rank &&
-        il::abs(frobenius_norm_ab) <=
-            il::ipow<2>(epsilon) * il::abs(frobenius_low_rank)) {
+        il::abs(frobenius_norm_ab) <= il::ipow<2>(epsilon) * il::abs(frobenius_low_rank)) {
       lrb->error_on_approximation = std::sqrt(il::abs(frobenius_norm_ab) / il::abs(frobenius_low_rank));
+
+      #ifdef DEBUG_ACA
+      std::cerr << "[Debug] ACA : exiting gracefully : error on approximation reached\n";
+      #endif
+
       break;
     }
   }
+
+  #ifdef DEBUG_ACA
+  // Output what happened
+  std::cerr << "||AB||_F = [";
+  for (int r(0); r<rank; r++) std::cerr << il::abs(frobenius_norm_ab_list[r]) << ", ";
+  std::cerr << "]\n";
+
+  std::cerr << "||low rank||_F = [";
+  for (int r(0); r<rank; r++) std::cerr << il::abs(frobenius_norm_low_rank_list[r]) << ", ";
+  std::cerr << "]\n";
+
+  std::cerr << "eps^2 * ||low rank||_F = [";
+  for (int r(0); r<rank; r++) std::cerr << il::ipow<2>(epsilon) * il::abs(frobenius_norm_low_rank_list[r]) << ", ";
+  std::cerr << "]\n";
+  #endif
 
   //  il::Array2D<T> difference_matrix =
   //      il::fullDifference(M, range0, range1, A, B, rank);

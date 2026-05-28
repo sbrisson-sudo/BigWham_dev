@@ -119,7 +119,7 @@ TEST(bigwham_io_gen_3d, 3DT0_3) {
     obspts[2]=10.;obspts[0]=0.3;
     obspts[1]=-2.44;
 
-    std::cout <<" dof dim " << my_io.dof_dimension() <<"\n";
+    std::cout <<" dof dim " << my_io.dof_dimension(1) <<"\n";
 
     il::Array<double> displ =my_io.ComputeDisplacements(obspts,dd.view());
     for (int i=0;i<displ.size();i++){

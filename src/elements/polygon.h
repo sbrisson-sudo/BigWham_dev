@@ -27,6 +27,12 @@ public:
   virtual void SetRotationMatrices() override;
   virtual void SetCollocationPoints() = 0;
   virtual void SetNodes() = 0;
+  bool isPointOnBoundary(const std::array<double, 2>& xy_obs) const;
+  bool isPointInPolygon(const std::array<double, 2>& xy_obs) const;
+  double getTol() const { return tol_; };
+
+protected:
+  double tol_;
 };
 
 /* -------------------------------------------------------------------------- */
@@ -89,6 +95,28 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
       this->vertices_(i, j) = xv(i, j);
     }
   }
+
+  // Check and correct element orientation to ensure counter-clockwise ordering
+  // Using the shoelace formula for signed area
+  double signed_area = 0.0;
+  for (il::int_t i = 0; i < num_vertices_; i++) {
+    il::int_t next_i = (i + 1) % num_vertices_;
+    signed_area += (this->vertices_(i, 0) * this->vertices_(next_i, 1) -
+                    this->vertices_(next_i, 0) * this->vertices_(i, 1));
+  }
+
+  // If clockwise (negative signed area), reverse vertex order to make counter-clockwise
+  if (signed_area < 0.0) {
+    // Reverse the vertex array
+    for (il::int_t i = 0; i < num_vertices_ / 2; i++) {
+      for (il::int_t j = 0; j < spatial_dimension_; j++) {
+        double temp = this->vertices_(i, j);
+        this->vertices_(i, j) = this->vertices_(num_vertices_ - 1 - i, j);
+        this->vertices_(num_vertices_ - 1 - i, j) = temp;
+      }
+    }
+  }
+
   for (il::int_t j = 0; j < spatial_dimension_; j++) {
     for (il::int_t i = 0; i < num_vertices_; i++) {
       this->centroid_[j] = this->centroid_[j] + vertices_(i, j) / num_vertices_;
@@ -111,16 +139,8 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
   double size_t = il::norm(this->tangent2_, il::Norm::L2);
   double size_n = il::norm(this->normal_, il::Norm::L2);
 
-  // Area
-  // assuming its a paralleogram with tangent_1 and tangent_2
-  if (this->num_vertices_ == 4) {
-    this->size_ = size_n;
-  }
-
-  // triangle,
-  if (this->num_vertices_ == 3) {
-    this->size_ = size_n / 2.;
-  }
+  // Area: use shoelace formula for all polygons (already computed above)
+  this->size_ = std::abs(signed_area) / 2.0;
 
   // normal s and t
   for (il::int_t k = 0; k < spatial_dimension_; ++k) {
@@ -141,6 +161,194 @@ inline void Polygon<p>::SetElement(const il::Array2D<double> &xv) {
     this->tangent2_[j] = this->tangent2_[j] / norm;
   }
   this->SetRotationMatrices();
+  this->SetCollocationPoints();
+  this->SetNodes();
+
+  // We set the tolerance used for isPointOnBoundary and isPointInPolygon 
+  double smallest_edge = 1e100;
+  for (il::int_t i = 0; i < num_vertices_; i++) {
+
+      double a_1_x = vertices_(i, 0);
+      double a_1_y = vertices_(i, 1);
+      double a_2_x = vertices_((i+1)%num_vertices_, 0);
+      double a_2_y = vertices_((i+1)%num_vertices_, 1);
+
+      double edge_length = std::sqrt( (a_2_x - a_1_x)*(a_2_x - a_1_x) + (a_2_y - a_1_y)*(a_2_y - a_1_y) );
+      if (edge_length < smallest_edge) smallest_edge = edge_length;
+  } 
+
+  tol_ = smallest_edge * 1e-5;
+}
+
+template <int p>
+bool Polygon<p>::isPointOnBoundary(const std::array<double, 2>& xy_obs) const
+{
+    auto point_to_segment_distance = [](
+        const std::array<double, 2>& P,
+        const std::array<double, 2>& A,
+        const std::array<double, 2>& B)
+    {
+        double dx = B[0] - A[0];
+        double dy = B[1] - A[1];
+
+        if (dx == 0.0 && dy == 0.0) {
+            // A and B are the same point
+            dx = P[0] - A[0];
+            dy = P[1] - A[1];
+            return std::sqrt(dx * dx + dy * dy);
+        }
+
+        // Project P onto segment AB
+        double t = ((P[0] - A[0]) * dx + (P[1] - A[1]) * dy) / (dx * dx + dy * dy);
+        t = std::max(0.0, std::min(1.0, t));
+
+        double proj_x = A[0] + t * dx;
+        double proj_y = A[1] + t * dy;
+
+        double dist_x = P[0] - proj_x;
+        double dist_y = P[1] - proj_y;
+
+        return std::sqrt(dist_x * dist_x + dist_y * dist_y);
+    };
+
+    for (il::int_t i = 0; i < this->num_vertices_; ++i) {
+        std::array<double, 2> A = { this->vertices_(i, 0), this->vertices_(i, 1) };
+        std::array<double, 2> B = { this->vertices_((i + 1) % this->num_vertices_, 0),
+                                    this->vertices_((i + 1) % this->num_vertices_, 1) };
+
+        if (point_to_segment_distance(xy_obs, A, B) <= this->tol_) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+template <int p>
+bool Polygon<p>::isPointInPolygon(const std::array<double, 2>& xy_obs) const
+{
+    auto cross_sign = [](
+        const std::array<double, 2>& P,
+        const std::array<double, 2>& A,
+        const std::array<double, 2>& B)
+    {
+        // Cross product AB × AP
+        return (B[0] - A[0]) * (P[1] - A[1]) - (B[1] - A[1]) * (P[0] - A[0]);
+    };
+
+    double prev_sign = 0.0;
+    bool on_edge = false;
+
+    for (il::int_t i = 0; i < this->num_vertices_; ++i) {
+        std::array<double, 2> A = {this->vertices_(i, 0), this->vertices_(i, 1)};
+        std::array<double, 2> B = {this->vertices_((i + 1) % this->num_vertices_, 0),
+                                   this->vertices_((i + 1) % this->num_vertices_, 1)};
+
+        double cross = cross_sign(xy_obs, A, B);
+
+        if (std::abs(cross) <= this->tol_) {
+            // Point is close to the edge
+            on_edge = true;
+        }
+
+        // Store the sign only if it's meaningfully non-zero
+        if (std::abs(cross) > this->tol_) {
+            if (prev_sign == 0.0) {
+                prev_sign = cross;
+            } else if (prev_sign * cross < 0.0) {
+                // Cross product changes sign → outside
+                return false;
+            }
+        }
+    }
+
+    // Point is inside if all crosses have same sign or point is exactly on edge
+    return on_edge || (prev_sign != 0.0);
+}
+
+
+/* ========================================================================== */
+// Polygon2D: polygon element living in a 2D space (spatial_dimension_ == 2).
+// Used for 2D and axisymmetric eigenstrain kernels where source elements are
+// flat polygons described by (r, z) or (x, y) coordinates only.
+// Inherits from Polygon<p> so it remains substitutable wherever Polygon<p>
+// is accepted.  The constructor resets spatial_dimension_ to 2 and resizes
+// the centroid / normal / tangent arrays accordingly.  SetElement is
+// re-implemented without the cross-product normal computation, and
+// SetRotationMatrices is a no-op (rotation matrices are not used by 2D kernels).
+/* ========================================================================== */
+
+template <int p> class Polygon2D : public Polygon<p> {
+
+public:
+  Polygon2D() : Polygon<p>() {
+    // Override the 3D spatial dimension set by Polygon<p> -> BoundaryElement(3,p)
+    this->spatial_dimension_ = 2;
+    this->centroid_.Resize(2, 0.);
+    this->normal_.Resize(2, 0.);
+    this->tangent1_.Resize(2, 0.);
+    this->tangent2_.Resize(2, 0.);
+    this->rotation_matrix_.Resize(2, 2, 0.);
+    this->rotation_matrix_t_.Resize(2, 2, 0.);
+  }
+  ~Polygon2D() {}
+
+  virtual void SetElement(const il::Array2D<double> &coods_vertices) override;
+  virtual void SetRotationMatrices() override {}   // not needed in 2D
+  virtual void SetCollocationPoints() override = 0;
+  virtual void SetNodes() override = 0;
+};
+
+/* -------------------------------------------------------------------------- */
+
+template <int p>
+inline void Polygon2D<p>::SetElement(const il::Array2D<double> &xv) {
+  IL_EXPECT_FAST(xv.size(1) == 2);
+  IL_EXPECT_FAST(xv.size(0) == this->num_vertices_);
+  this->vertices_.Resize(this->num_vertices_, 2);
+
+  for (il::int_t j = 0; j < 2; j++) {
+    this->centroid_[j] = 0;
+    for (il::int_t i = 0; i < this->num_vertices_; i++) {
+      this->vertices_(i, j) = xv(i, j);
+    }
+  }
+
+  // Ensure counter-clockwise orientation via signed area (shoelace)
+  double signed_area = 0.0;
+  for (il::int_t i = 0; i < this->num_vertices_; i++) {
+    il::int_t next_i = (i + 1) % this->num_vertices_;
+    signed_area += (this->vertices_(i, 0) * this->vertices_(next_i, 1) -
+                    this->vertices_(next_i, 0) * this->vertices_(i, 1));
+  }
+  if (signed_area < 0.0) {
+    for (il::int_t i = 0; i < this->num_vertices_ / 2; i++) {
+      for (il::int_t j = 0; j < 2; j++) {
+        double temp = this->vertices_(i, j);
+        this->vertices_(i, j) = this->vertices_(this->num_vertices_ - 1 - i, j);
+        this->vertices_(this->num_vertices_ - 1 - i, j) = temp;
+      }
+    }
+  }
+
+  for (il::int_t j = 0; j < 2; j++) {
+    for (il::int_t i = 0; i < this->num_vertices_; i++) {
+      this->centroid_[j] += this->vertices_(i, j) / this->num_vertices_;
+    }
+  }
+
+  this->size_ = std::abs(signed_area) / 2.0;
+
+  // Tolerance for isPointOnBoundary / isPointInPolygon
+  double smallest_edge = 1e100;
+  for (il::int_t i = 0; i < this->num_vertices_; i++) {
+    double dx = this->vertices_((i+1)%this->num_vertices_, 0) - this->vertices_(i, 0);
+    double dy = this->vertices_((i+1)%this->num_vertices_, 1) - this->vertices_(i, 1);
+    double edge_length = std::sqrt(dx*dx + dy*dy);
+    if (edge_length < smallest_edge) smallest_edge = edge_length;
+  }
+  this->tol_ = smallest_edge * 1e-5;
+
   this->SetCollocationPoints();
   this->SetNodes();
 }

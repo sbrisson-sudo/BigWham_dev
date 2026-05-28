@@ -1,10 +1,12 @@
 #include <gtest/gtest.h>
 
+#include <il/Array.h>
+
 #include <hmat/arrayFunctor/FullMatrix.h>
 #include <hmat/arrayFunctor/GaussianMatrix.h>
-#include <hmat/compression/toHMatrix.h>
 #include <hmat/hmatrix/HMatrixType.h>
-#include <hmat/hmatrix/HMatrixUtils.h>
+#include <hmat/hmatrix/LowRank.h>
+#include <hmat/compression/adaptiveCrossApproximation.h>
 //
 //TEST(adaptiveCrossApproximation, test0) {
 //  const il::int_t n = 4;
@@ -33,26 +35,73 @@
 //}
 
 TEST(adaptiveCrossApproximation, test1) {
-  //  A0 = {1 - I/2, 2 - I, 3 - 3 I/2, 4 - 2 I};
-  //  B0 = {4, 3, 2, 1};
-  //  A1 = {4 + I/2, 3 + I, 2 + 3 I/2, 1 + 2 I};
-  //  B1 = {1, 2, 3, 4};
-  const il::int_t n = 4;
-  il::Array2D<std::complex<double>> A{
+
+  /*
+  Python code used to generate this test matrix of rank 2 :
+
+  # 1. Compute A = U V^T
+  U = np.arange(0., 1., 1/12).reshape((6,2))
+  V = np.arange(1., 2., 1/12).reshape((6,2))
+  A = U @ V.T  # This creates a 6x6 matrix of rank 2
+  print("A =\n", A)
+  print(f"Shape: {A.shape}, Rank: {np.linalg.matrix_rank(A)}")
+
+  # 2. Write the corresponding C++ code string
+  cpp_code = """il::Array2D<double> A{
       il::value,
-      {{{8.0, -3.0 / 2}, {11.0, -3.0}, {14.0, -9.0 / 2}, {17.0, -6.0}},
-       {{11.0, -1.0 / 2}, {12.0, -1.0}, {13.0, -3.0 / 2}, {14.0, -2.0}},
-       {{14.0, 1.0 / 2}, {13.0, 1.0}, {12.0, 3.0 / 2}, {11.0, 2.0}},
-       {{17.0, 3.0 / 2}, {14.0, 3.0}, {11.0, 9.0 / 2}, {8.0, 6.0}}}};
-  const il::FullMatrix<std::complex<double>> G{A};
+  {{""" + \
+  "},\n     {".join(
+          [", ".join(f"{A[j,i]:.6f}" for j in range(A.shape[1])) for i in range(A.shape[0])]
+      ) + "}}};"
+  print("\nC++ code:\n")
+  print(cpp_code)
+  
+  */
 
-  il::Tree<il::SubHMatrix, 4> tree{};
-  const il::spot_t s = tree.root();
-  tree.Set(s, il::SubHMatrix{il::Range{0, n}, il::Range{0, n},
-                             il::HMatrixType::LowRank});
+  il::Array2D<double> A{
+      il::value,
+    {{0.090278, 0.437500, 0.784722, 1.131944, 1.479167, 1.826389},
+     {0.104167, 0.506944, 0.909722, 1.312500, 1.715278, 2.118056},
+     {0.118056, 0.576389, 1.034722, 1.493056, 1.951389, 2.409722},
+     {0.131944, 0.645833, 1.159722, 1.673611, 2.187500, 2.701389},
+     {0.145833, 0.715278, 1.284722, 1.854167, 2.423611, 2.993056},
+     {0.159722, 0.784722, 1.409722, 2.034722, 2.659722, 3.284722}}};
+  const il::int_t n = 6;
+  const il::FullMatrix<double> matgen{A};
 
-  const double epsilon = 1.0e-4;
- // const il::HMatrix<std::complex<double>> H = il::toHMatrix(G, tree, epsilon);
+  il::Range range0{0, n};
+  il::Range range1{0, n};
 
-  ASSERT_TRUE(true);
+  // Here we cerate a LowRank struct that stores the two Array2D we want to copy
+  double epsilon = 1e-6;
+  auto lra = bigwham::adaptiveCrossApproximation<1>(matgen, range0, range1, epsilon);
+
+  // Compute matvec y=Ax  
+  auto a = lra->A.view();
+  auto b = lra->B.view();
+
+  // std::cout << "rank = " << a.size(1) << "\n";
+
+  il::Array<double> x{n, 0.};
+  il::Array<double> y{n, 0.};
+  auto x_edit = x.Edit();
+  for (int i(0); i<n; i++) x_edit[i] = i; 
+
+  il::Array<double> tmp{a.size(1), 0.};
+
+  il::blas(1.0, b, il::Dot::None, x.view(), 0.0, il::io, tmp.Edit()); 
+  il::blas(1.0, a, tmp.view(), 1.0, il::io, y.Edit());
+
+  // std::cout << "y = [";
+  // for (int i(0); i<n; i++) std::cout << y[i] << ", ";
+  // std::cout << "]\n"; 
+
+  // matvec result 
+  std::vector<double> y_ref{2.11805556, 10.38194444, 18.64583333, 26.90972222, 35.17361111, 43.4375};
+  double tol = 1e-4;
+
+  for (size_t i = 0; i < n; ++i) {
+    ASSERT_NEAR(y[i], y_ref[i], tol) << "Mismatch at index " << i;
+  }
+
 }
