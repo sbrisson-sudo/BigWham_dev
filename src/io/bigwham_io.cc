@@ -190,7 +190,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         IL_ASSERT(properties.size() == 2);
         ElasticProperties elas(properties[0], properties[1]);
         spatial_dimension_ = 2;
-        dof_dimension_ = 1;
+        dof_dimension_ =  {il::value, {1, 1}};
         flux_dimension_ = 3;
         int nvertices_per_elt_ = 2;
         using EltType = Segment<0>;
@@ -246,21 +246,6 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         // still missing displacement & stresses representation for that kernel + element
         break;
     }
-    case "Axi3DS0-H-mode1"_sh:
-    { // flat axisymmetry ring P0 element, H-kernel - Mode I only (opening/normal DD)
-        IL_ASSERT(properties.size() == 2);
-        ElasticProperties elas(properties[0], properties[1]);
-        spatial_dimension_ = 2;
-        dof_dimension_ = {il::value, {1, 1}};
-        int nvertices_per_elt_ = 2;
-        using EltType = bigwham::Segment<0>;
-        mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
-                                                     coor, conn);
-        ker_obj_ = std::make_shared<bigwham::BieElastostaticAxi3DModeI<EltType, EltType, bigwham::ElasticKernelType::H>>(
-            elas, spatial_dimension_);
-        // observation kernels not yet implemented for mode-I only
-        break;
-    }
     case "Axi3DS0-H"_sh:
     { // flat axisymmetry unidirectional shear+tensile, 2D ring  piece-wise constant (0) element, H-kernel
         IL_ASSERT(properties.size() == 2);
@@ -280,7 +265,7 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor,
         IL_ASSERT(properties.size() == 2);
         ElasticProperties elas(properties[0], properties[1]);
         spatial_dimension_ = 2;
-        dof_dimension_ = 1;
+        dof_dimension_ =  {il::value, {1, 1}};
         int nvertices_per_elt_ = 2;
         using EltType = bigwham::Segment<0>;
         mesh_ = bigwham::CreateMeshFromVect<EltType>(spatial_dimension_, nvertices_per_elt_,
@@ -563,6 +548,72 @@ BigWhamIO::BigWhamIO(const std::vector<double> &coor_src,
             elas, spatial_dimension_);
         // observation kernels to implement....
         // still missing displacement & stresses representation for that kernel + element
+        break;
+    }
+    case "2DS0-2DS0-H-mode1"_sh:
+    { // 2D segment P0 element, H-kernel - Mode I only (opening/normal DD), source != receiver mesh
+        IL_ASSERT(properties.size() == 2);
+        ElasticProperties elas(properties[0], properties[1]);
+        spatial_dimension_ = 2;
+        dof_dimension_ = {il::value, {1, 1}};
+        flux_dimension_ = 3;
+        using src_elem = Segment<0>;
+        using rec_elem = Segment<0>;
+        mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
+        mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
+        ker_obj_ = std::make_shared<bigwham::BieElastostaticModeI<src_elem, rec_elem, bigwham::ElasticKernelType::H>>(
+            elas, spatial_dimension_);
+        // observation kernels not yet implemented for mode-I only
+        break;
+    }
+    case "2DS0-2DS0-H-mode1-sym"_sh:
+    { // 2D segment P0 element, H-kernel - Mode I only, symmetric about x=0, source != receiver mesh
+        // The meshes must be defined on x>0; the kernel accounts for both the
+        // actual element and its mirror image reflected about x=0.
+        IL_ASSERT(properties.size() == 2);
+        ElasticProperties elas(properties[0], properties[1]);
+        spatial_dimension_ = 2;
+        dof_dimension_ = {il::value, {1, 1}};
+        flux_dimension_ = 3;
+        using src_elem = Segment<0>;
+        using rec_elem = Segment<0>;
+        mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
+        mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
+        // Verify that all vertex x-coordinates are >= 0 (required for symmetry)
+        {
+            auto coords_s = mesh_src_->coordinates();
+            for (il::int_t v = 0; v < coords_s.size(0); ++v) {
+                IL_ASSERT(coords_s(v, 0) >= 0.0);
+            }
+            auto coords_r = mesh_rec_->coordinates();
+            for (il::int_t v = 0; v < coords_r.size(0); ++v) {
+                IL_ASSERT(coords_r(v, 0) >= 0.0);
+            }
+        }
+        ker_obj_ = std::make_shared<bigwham::BieElastostaticModeISym<src_elem, rec_elem, bigwham::ElasticKernelType::H>>(
+            elas, spatial_dimension_);
+        // observation kernels not yet implemented for mode-I sym
+        break;
+    }
+    case "Axi3DS0-Axi3DS0-H-mode1"_sh:
+    { // flat axisymmetry ring P0 element, H-kernel - Mode I only (opening/normal DD), source != receiver mesh
+        IL_ASSERT(properties.size() == 2);
+        ElasticProperties elas(properties[0], properties[1]);
+        spatial_dimension_ = 2;
+        dof_dimension_ = {il::value, {1, 1}};
+        using src_elem = Segment<0>;
+        using rec_elem = Segment<0>;
+        mesh_src_ = bigwham::CreateMeshFromVect<src_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_src, conn_src);
+        mesh_rec_ = bigwham::CreateMeshFromVect<rec_elem>(
+            spatial_dimension_, /* num vertices */ 2, coor_rec, conn_rec);
+        ker_obj_ = std::make_shared<bigwham::BieElastostaticAxi3DModeI<src_elem, rec_elem, bigwham::ElasticKernelType::H>>(
+            elas, spatial_dimension_);
+        // observation kernels not yet implemented for mode-I only
         break;
     }
     case "Axi3DT0-Axi3DS0-V"_sh:

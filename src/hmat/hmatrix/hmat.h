@@ -110,7 +110,7 @@ public:
     bool get_isBuilt_LR() const {return isBuilt_LR_;}
     bool get_isBuilt_FR() const {return isBuilt_FR_;}
     std::shared_ptr<HRepresentation> get_hr() const {return hr_;}
-    il::int_t get_dof_dimension() const {return dof_dimension_;};
+    il::StaticArray<il::int_t, 2> get_dof_dimension() const {return dof_dimension_;};
     il::StaticArray<il::int_t, 2> get_size() const {return size_;}
     int get_n_openMP_threads() const {return n_openMP_threads_;}
     int get_frb_chunk_size() const {return frb_chunk_size_;}

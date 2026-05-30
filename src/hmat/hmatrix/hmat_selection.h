@@ -42,6 +42,9 @@ public:
         this->hr_ = base_hmat.get_hr();
         this->dof_dimension_ = base_hmat.get_dof_dimension();
 
+        if (this->dof_dimension_[0] != this->dof_dimension_[1])
+            throw std::runtime_error("Hmat selection tool only supports Ndof receiver == Ndof source");
+
         // Store "full" size
         this->base_size_[0] = base_hmat.size(0);
         this->base_size_[1] = base_hmat.size(1);
@@ -50,8 +53,8 @@ public:
         validateIndices();
         
         // Update size to reflect the selection
-        this->size_[0] = static_cast<il::int_t>(row_indices_.size()) * this->dof_dimension_;
-        this->size_[1] = static_cast<il::int_t>(col_indices_.size()) * this->dof_dimension_;
+        this->size_[0] = static_cast<il::int_t>(row_indices_.size()) * this->dof_dimension_[0];
+        this->size_[1] = static_cast<il::int_t>(col_indices_.size()) * this->dof_dimension_[0];
 
         // Copy other attributes
         this->isBuilt_ = base_hmat.get_isBuilt();

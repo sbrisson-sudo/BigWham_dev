@@ -27,7 +27,7 @@ public:
     BieElastostaticModeISym(bigwham::ElasticProperties &elas, il::int_t dim) :
     BieElastostatic<Es, Er, k>() {
         this->elas_ = elas;
-        this->dof_dimension_ = 1;
+        this->dof_dimension_ =  {il::value, {1, 1}};
         this->spatial_dimension_ = dim;
     };
 
@@ -35,7 +35,7 @@ public:
         il::int_t dim, bool local_unknowns, bool local_co_variables) :
     BieElastostatic<Es, Er, k>() {
         this->elas_ = elas;
-        this->dof_dimension_ = 1;
+        this->dof_dimension_ =  {il::value, {1, 1}};
         this->spatial_dimension_ = dim;
         this->local_unknowns_ = local_unknowns;
         this->local_co_variables_ = local_co_variables;

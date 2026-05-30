@@ -10,7 +10,7 @@ namespace bigwham {
 template <typename T>
 void HmatSelection<T>::validateIndices() const {
 
-    const int dim_dof = this->dof_dimension_;
+    const int dim_dof = this->dof_dimension_[0];
 
     #ifdef DEBUG 
     std::cout << "row_indices_ = [";
@@ -44,7 +44,7 @@ void HmatSelection<T>::validateIndices() const {
 template <typename T>
 void HmatSelection<T>::blockSelection() {
 
-    const int dim_dof = this->dof_dimension_;
+    const int dim_dof = this->dof_dimension_[0];
 
     // 1. We apply permutation to the input spans
 
@@ -67,8 +67,8 @@ void HmatSelection<T>::blockSelection() {
     }
 
     // 2. We define boolean array (1 true, 0 false)
-    il::Array<int> x_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_), 0};
-    il::Array<int> y_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_), 0};
+    il::Array<int> x_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_[0]), 0};
+    il::Array<int> y_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_[0]), 0};
 
     auto x_test_edit = x_test.Edit();
     auto y_test_edit = y_test.Edit();
@@ -141,7 +141,7 @@ void HmatSelection<T>::blockSelection() {
 template <typename T> 
 il::Array<T> HmatSelection<T>::matvec_full(il::ArrayView<T> x_full) {
 
-    int dof_dimension = this->dof_dimension_;
+    int dof_dimension = this->dof_dimension_[0];
 
     il::Array<T> y_full(this->base_size_[0], 0.0, il::align_t(), 64);
 
@@ -197,7 +197,7 @@ il::Array<T> HmatSelection<T>::matvec(il::ArrayView<T> x) {
     IL_EXPECT_FAST(this->isBuilt_);
     IL_EXPECT_FAST(x.size() == this->size_[1]);
 
-    int dof_dimension = this->dof_dimension_;
+    int dof_dimension = this->dof_dimension_[0];
 
     // 1. We copy the values we need in a full x vector
     // Note : x is already permuted here
@@ -232,7 +232,7 @@ il::Array<T> HmatSelection<T>::matvecOriginal(il::ArrayView<T> x) {
     IL_EXPECT_FAST(this->isBuilt_);
     IL_EXPECT_FAST(x.size() == this->size_[1]);
 
-    int dof_dimension = this->dof_dimension_;
+    int dof_dimension = this->dof_dimension_[0];
 
     // 1. We copy the values we need in a full x vector
     // Note : here we also permute x
@@ -267,12 +267,12 @@ il::Array<T> HmatSelection<T>::matvecOriginal(il::ArrayView<T> x) {
 template <typename T> 
 void HmatSelection<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::Array<int> & pos_list){
 
-    const int dim_dof = this->dof_dimension_;
+    const int dim_dof = this->dof_dimension_[0];
 
     // 1. We compute the number of entries
     // 1.a. We define boolean array (1 true, 0 false)
-    il::Array<int> x_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_), 0};
-    il::Array<int> y_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_), 0};
+    il::Array<int> x_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_[0]), 0};
+    il::Array<int> y_test{static_cast<il::int_t>(this->base_size_[0]/this->dof_dimension_[0]), 0};
 
     auto x_test_edit = x_test.Edit();
     auto y_test_edit = y_test.Edit();
@@ -322,13 +322,13 @@ void HmatSelection<T>::fullBlocksOriginal(il::io_t, il::Array<T> & val_list,il::
     il::Array<int> permut_col_inv{dim_dof * this->hr_->permutation_0_.size(), -1};
     il::Array<int> permut_row_inv{dim_dof * this->hr_->permutation_0_.size(), -1};
     for (int i=0; i<col_indices_perm_.size(); i++) {
-        for (int j=0; j<this->dof_dimension_; j++){
+        for (int j=0; j<this->dof_dimension_[0]; j++){
             // std::cout << "col_indices_perm_[i]*dim_dof+j = " << col_indices_perm_[i]*dim_dof+j << std::endl;
             permut_col_inv[col_indices_perm_[i]*dim_dof+j] = i*dim_dof+j;
         }
     }
     for (int i=0; i<row_indices_perm_.size(); i++) {
-        for (int j=0; j<this->dof_dimension_; j++){
+        for (int j=0; j<this->dof_dimension_[0]; j++){
             // std::cout << "row_indices_perm_[i]*dim_dof+j = " << row_indices_perm_[i]*dim_dof+j << std::endl;
             permut_row_inv[row_indices_perm_[i]*dim_dof+j] = i*dim_dof+j;
         }
@@ -382,7 +382,7 @@ std::vector<T> HmatSelection<T>::diagonalOriginal() const {
     std::cout << "Calling HmatSelection<T>::diagonalOriginal" << std::endl;
     #endif
 
-    const int dim_dof = this->dof_dimension_;
+    const int dim_dof = this->dof_dimension_[0];
 
     // Initiate the diag
     if (this->size(0) != this->size(1)){
